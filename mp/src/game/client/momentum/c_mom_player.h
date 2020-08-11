@@ -6,6 +6,42 @@
 class C_MomentumOnlineGhostEntity;
 class C_MomentumReplayGhostEntity;
 
+struct SurfaceInteraction
+{
+    enum Type
+    {
+        TYPE_LEAVE = 0,
+        TYPE_FLOOR,
+        TYPE_WALL,
+        TYPE_CEILING,
+        TYPE_LAND,
+        TYPE_GROUNDED,
+        TYPE_COUNT
+    };
+
+    enum Action
+    {
+        ACTION_LEAVE = 0,
+        ACTION_KNOCKBACK,
+        ACTION_WALK,
+        ACTION_DUCKWALK,
+        ACTION_JUMP,
+        ACTION_DUCKJUMP,
+        ACTION_CTAP,
+        ACTION_COLLISION,
+        ACTION_SLIDE,
+        ACTION_EDGEBUG,
+        ACTION_LAND,
+        ACTION_GROUNDED,
+    };
+
+    int tick;
+    trace_t trace;
+    Vector velocity;
+    Action action;
+};
+typedef SurfaceInteraction SurfInt;
+
 class C_MomentumPlayer : public C_BasePlayer, public CMomRunEntity
 {
 public:
@@ -89,10 +125,11 @@ public:
     float GetGrabbableLadderTime() const { return m_flGrabbableLadderTime; }
     void SetGrabbableLadderTime(float new_time) { m_flGrabbableLadderTime = new_time; }
 
-    // Last collision
-    void SetLastCollision(const trace_t &tr);
-    int GetLastCollisionTick() const { return m_iLastCollisionTick; }
-    const trace_t& GetLastCollisionTrace() const { return m_trLastCollisionTrace; }
+    // Surface interactions
+    int GetInteractionIndex(SurfInt::Type type) const;
+    const SurfInt& GetInteraction(int index) const;
+    bool SetLastInteraction(const trace_t &tr, const Vector &velocity, SurfInt::Type type);
+    void UpdateLastAction(SurfInt::Action action);
 
     // Mobility sound functions
     void PlayStepSound(const Vector &vecOrigin, surfacedata_t *psurface, float fvol, bool force) override;
@@ -138,9 +175,9 @@ private:
     // Ladder stuff
     float m_flGrabbableLadderTime;
 
-    // Last collision
-    int m_iLastCollisionTick; // Tick at which the player last collided with a non-vertical surface
-    trace_t m_trLastCollisionTrace; // (startpos and endpos raised up to player head for ceilings)
+    // List of airborne surface interations and start and end ground interactions
+    SurfInt m_surfIntList[SurfInt::TYPE_COUNT]; // Stores interactions by type
+    SurfInt::Type m_surfIntHistory[SurfInt::TYPE_COUNT]; // Keeps track of the history of interactions
 
     float m_flStamina;
 

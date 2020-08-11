@@ -366,18 +366,86 @@ void CMomentumPlayer::KickBack(float up_base, float lateral_base, float up_modif
     SetPunchAngle(angle);
 }
 
-void CMomentumPlayer::SetLastCollision(const trace_t &tr)
+int CMomentumPlayer::GetInteractionIndex(SurfInt::Type type) const
 {
-    m_iLastCollisionTick = gpGlobals->tickcount;
-    m_trLastCollisionTrace = tr;
+    for (int index = 0; index < SurfInt::TYPE_COUNT; index++)
+    {
+        if (m_surfIntHistory[index] == type)
+            return index;
+    }
+    return -1;
+}
+
+const SurfInt& CMomentumPlayer::GetInteraction(int index) const
+{
+    return m_surfIntList[m_surfIntHistory[index]];
+}
+
+bool CMomentumPlayer::SetLastInteraction(const trace_t &tr, const Vector &velocity, SurfInt::Type type)
+{
+    // Set default action
+    SurfInt::Action action;
+    if (type == SurfInt::TYPE_LEAVE)
+    {
+        action = SurfInt::ACTION_LEAVE;
+    }
+    else if (type == SurfInt::TYPE_FLOOR || type == SurfInt::TYPE_WALL || type == SurfInt::TYPE_CEILING)
+    {
+        action = SurfInt::ACTION_COLLISION;
+    }
+    else if (type == SurfInt::TYPE_LAND)
+    {
+        action = SurfInt::ACTION_LAND;
+    }
+    else if (type == SurfInt::TYPE_GROUNDED)
+    {
+        action = SurfInt::ACTION_GROUNDED;
+    }
+    else
+    {
+        return false;
+    }
+
+    SurfInt &surfInt = m_surfIntList[type];
+    surfInt.tick = gpGlobals->tickcount;
+    surfInt.trace = tr;
+    surfInt.velocity = velocity;
+    surfInt.action = action;
 
     // Raise origin position if it was a ceiling that was hit
     if (tr.plane.normal.z < 0.0f)
     {
         float flOffset = (CollisionProp()->OBBMaxs() - CollisionProp()->OBBMins()).z;
-        m_trLastCollisionTrace.startpos.z += flOffset;
-        m_trLastCollisionTrace.endpos.z   += flOffset;
+        surfInt.trace.startpos.z += flOffset;
+        surfInt.trace.endpos.z   += flOffset;
     }
+
+    // Check if this type is already the latest
+    int index = GetInteractionIndex(type);
+    if (index == 0)
+        return true;
+
+    // Clear or shift other entries accordingly
+    if (type == SurfInt::TYPE_LEAVE)
+    {
+        for (int i = 1; i < SurfInt::TYPE_COUNT; i++)
+            m_surfIntHistory[i] = SurfInt::TYPE_COUNT;
+    }
+    else
+    {
+        int end = (index == -1) ? (SurfInt::TYPE_COUNT - 1) : index;
+        for (int i = end; i > 0; i--)
+            m_surfIntHistory[i] = m_surfIntHistory[i-1];
+    }
+
+    m_surfIntHistory[0] = type;
+
+    return true;
+}
+
+void CMomentumPlayer::UpdateLastAction(SurfInt::Action action)
+{
+    m_surfIntList[m_surfIntHistory[0]].action = action;
 }
 
 void CMomentumPlayer::PlayStepSound(const Vector &vecOrigin, surfacedata_t *psurface, float fvol, bool force)
