@@ -2307,6 +2307,14 @@
     fogend(string) : "Fog End" : "2000.0" : "Distance at which the skybox fog should be fully opaque."
 ]
 
+@PointClass base(Targetname) size(-8 -8 -8, 8 8 8) = skybox_swapper : 
+	"An entity that swaps skybox textures." 
+[
+	SkyboxName(string) : "Sky Name" : "" : "The name of the sky texture to change to."
+	
+	input Trigger(void) : "Causes the current sky texture to change to the one specified in this entity."
+]
+
 @BaseClass base(Targetname, ResponseContext) = BaseSpeaker
 [
     delaymin(string) : "Min Delay Between Announcements" : "15"
