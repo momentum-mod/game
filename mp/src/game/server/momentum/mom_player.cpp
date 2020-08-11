@@ -2070,6 +2070,11 @@ void CMomentumPlayer::ApplyPushFromDamage(const CTakeDamageInfo &info, Vector &v
     Vector vecForce = -vecDir * force;
     ApplyAbsVelocityImpulse(vecForce);
 
+    if (GetFlags() & FL_ONGROUND)
+    {
+        UpdateLastAction(SurfInt::ACTION_KNOCKBACK);
+    }
+
     IGameEvent *pEvent = gameeventmanager->CreateEvent("player_explosive_hit");
     if (pEvent)
     {
