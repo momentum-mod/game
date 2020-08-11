@@ -3,6 +3,7 @@
 #include "in_buttons.h"
 #include "mom_gamemovement.h"
 #include "mom_player_shared.h"
+#include "mom_shareddefs.h"
 #include "movevars_shared.h"
 #include "coordsize.h"
 #include "mom_system_gamemode.h"
@@ -1658,11 +1659,11 @@ void CMomentumGameMovement::CategorizePosition()
 
                         TracePlayerBBox(mv->GetAbsOrigin(), endFall, PlayerSolidMask(), COLLISION_GROUP_PLAYER_MOVEMENT, pmFall);
                     }
-                    else if (m_pPlayer->GetLastCollisionTick() == gpGlobals->tickcount)
+                    else if (m_pPlayer->GetInteraction(0).tick == gpGlobals->tickcount)
                     {
                         // Pretend we are starting the edgebug from where we hit the surface and then simulate a max
                         // distance edgebug to ensure consistency (see note on the sliding simulation)
-                        pmFall = m_pPlayer->GetLastCollisionTrace();
+                        pmFall = m_pPlayer->GetInteraction(0).trace;
                     }
                     else
                     {
@@ -1985,9 +1986,9 @@ void CMomentumGameMovement::FullWalkMove()
         }
 
         // Let player bhop after an edgebug
-        const trace_t &tr = m_pPlayer->GetLastCollisionTrace();
+        const trace_t &tr = m_pPlayer->GetInteraction(0).trace;
         if (sv_edge_fix.GetBool() && !bIsSliding &&
-            bInAirBefore && bInAirAfter && m_pPlayer->GetLastCollisionTick() == gpGlobals->tickcount && // Player edgebugged
+            bInAirBefore && bInAirAfter && m_pPlayer->GetInteraction(0).tick == gpGlobals->tickcount && // Player edgebugged
             (m_pPlayer->HasAutoBhop() && (mv->m_nButtons & IN_JUMP)) && // Player wants to bhop
             tr.plane.normal.z >= 0.7f && mv->m_vecVelocity.z <= NON_JUMP_VELOCITY) // Player can jump on what they edgebugged on
         {
@@ -2412,7 +2413,7 @@ int CMomentumGameMovement::TryPlayerMove(Vector *pFirstDest, trace_t *pFirstTrac
                     // Don't perform this fix on additional collisions this tick which have trace fraction == 0.0.
                     // This situation occurs when wedged between a standable slope and a ceiling.
                     // The player would be locked in place with full velocity (but no movement) without this check.
-                    bool bWedged = m_pPlayer->GetLastCollisionTick() == gpGlobals->tickcount && pm.fraction == 0.0f;
+                    bool bWedged = m_pPlayer->GetInteraction(0).tick == gpGlobals->tickcount && pm.fraction == 0.0f;
 
                     if (bValidHit && bCouldStandHere && bMovingIntoPlane2D && !bWedged)
                     {
@@ -2528,8 +2529,17 @@ int CMomentumGameMovement::TryPlayerMove(Vector *pFirstDest, trace_t *pFirstTrac
         //  for contact
         // Add it if it's not already in the list!!!
         MoveHelper()->AddToTouched(pm, mv->m_vecVelocity);
-        if (!CloseEnough(pm.plane.normal[2], 0.0f)) // Filter out straight walls
-            m_pPlayer->SetLastCollision(pm);
+
+        if (player->GetGroundEntity() == nullptr)
+        {
+            SurfInt::Type type = SurfInt::TYPE_WALL;
+            if (pm.plane.normal.z > 0.0f)
+                type = SurfInt::TYPE_FLOOR;
+            else if (pm.plane.normal.z < 0.0f)
+                type = SurfInt::TYPE_CEILING;
+            
+            m_pPlayer->SetLastInteraction(pm, mv->m_vecVelocity, type);
+        }
 
         // If the plane we hit has a high z component in the normal, then
         //  it's probably a floor
@@ -2835,11 +2845,17 @@ void CMomentumGameMovement::SetGroundEntity(const trace_t *pm)
         }
     }
 
-    BaseClass::SetGroundEntity(pm);
-
     if (pm && pm->m_pEnt) // if (newGround)
-        m_pPlayer->SetLastCollision(*pm);
+    {
+        SurfInt::Type type = m_pPlayer->GetGroundEntity() ? SurfInt::TYPE_GROUNDED : SurfInt::TYPE_LAND;
+        m_pPlayer->SetLastInteraction(*pm, mv->m_vecVelocity, type);
+    }
+    else if (m_pPlayer->GetGroundEntity()) // Leaving ground
+    {
+        m_pPlayer->SetLastInteraction(m_pPlayer->GetInteraction(0).trace, mv->m_vecVelocity, SurfInt::TYPE_LEAVE);
+    }
 
+    BaseClass::SetGroundEntity(pm);
 
     // Doing this after the BaseClass call in case OnLand wants to use the new ground stuffs
     if (bLanded)
