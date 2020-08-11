@@ -147,7 +147,9 @@ bool CEngineBinary::Init()
 
 void CEngineBinary::PostInit()
 {
+#ifdef GAME_DLL
     ApplyAllPatches();
+#endif
 }
 
 inline bool CEngineBinary::DataCompare(const char* data, const char* pattern, const char* mask)
