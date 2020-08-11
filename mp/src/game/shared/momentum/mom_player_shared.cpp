@@ -102,7 +102,7 @@ void CMomentumPlayer::FireBullet(Vector vecSrc,             // shooting position
     float flPenetrationDistance = g_pAmmoDef->PenetrationDistance(iBulletType); // distance at which the bullet is capable of penetrating a wall
     float flDamageModifier = 0.5f;    // default modification of bullets power after they go through a wall.
     float flPenetrationModifier = 1.f;
-    bool bPaintGun = iBulletType == AMMO_TYPE_PAINT;
+    bool bPaintAmmo = iBulletType == AMMO_TYPE_PAINT;
     float flDistance = g_pAmmoDef->Range(iBulletType);
 
     if (!pevAttacker)
@@ -118,7 +118,7 @@ void CMomentumPlayer::FireBullet(Vector vecSrc,             // shooting position
     CBasePlayer *lastPlayerHit = nullptr;
 
     // MDLCACHE_CRITICAL_SECTION();
-    while (fCurrentDamage > 0 || bPaintGun)
+    while (fCurrentDamage > 0 || bPaintAmmo)
     {
         Vector vecEnd = vecSrc + vecDir * flDistance;
 
@@ -202,7 +202,7 @@ void CMomentumPlayer::FireBullet(Vector vecSrc,             // shooting position
         if (bDoEffects)
         {
             // See if the bullet ended up underwater + started out of the water
-            if (enginetrace->GetPointContents(tr.endpos) & (CONTENTS_WATER | CONTENTS_SLIME) && !bPaintGun)
+            if (enginetrace->GetPointContents(tr.endpos) & (CONTENTS_WATER | CONTENTS_SLIME) && !bPaintAmmo)
             {
                 trace_t waterTrace;
                 UTIL_TraceLine(vecSrc, tr.endpos, (MASK_SHOT | CONTENTS_WATER | CONTENTS_SLIME), this,
@@ -225,11 +225,11 @@ void CMomentumPlayer::FireBullet(Vector vecSrc,             // shooting position
             }
             else if (shouldDecal && bEntValid)
             {
-                UTIL_ImpactTrace(&tr, iDamageType, bPaintGun ? "Painting" : nullptr);
+                UTIL_ImpactTrace(&tr, iDamageType, bPaintAmmo ? "Painting" : nullptr);
             }
         }
 
-        if (bPaintGun)
+        if (bPaintAmmo)
             return;
 
 #ifndef CLIENT_DLL

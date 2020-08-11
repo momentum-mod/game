@@ -103,8 +103,9 @@ void FX_FireBullets(int iEntIndex, const Vector &vOrigin, const QAngle &vAngles,
     CBaseEntity *pAttacker = CBaseEntity::Instance(iEntIndex);
     CMomentumPlayer *pPlayer = ToCMOMPlayer(pAttacker);
 
+    // make an exception for paint, which doesnt have a gun
     const auto hWeaponID = g_pAmmoDef->WeaponID(iAmmoType);
-    if (hWeaponID == WEAPON_NONE)
+    if (hWeaponID == WEAPON_NONE && iAmmoType != AMMO_TYPE_PAINT)
     {
         DevMsg("FX_FireBullets: Cannot find weapon info for given ammo type %i\n", iAmmoType);
         return;
@@ -120,11 +121,13 @@ void FX_FireBullets(int iEntIndex, const Vector &vOrigin, const QAngle &vAngles,
         DecalPacket decalPacket;
         if (iAmmoType == AMMO_TYPE_PAINT)
         {
+            static ConVarRef mom_paint_color("mom_paint_color"), mom_paint_scale("mom_paint_scale");
+
             Color decalColor;
-            if (!MomUtil::GetColorFromHex(ConVarRef("mom_paintgun_color").GetString(), decalColor))
+            if (!MomUtil::GetColorFromHex(mom_paint_color.GetString(), decalColor))
                 decalColor = COLOR_WHITE;
 
-            decalPacket = DecalPacket::Paint(vOrigin, vAngles, decalColor, ConVarRef("mom_paintgun_scale").GetFloat());
+            decalPacket = DecalPacket::Paint(vOrigin, vAngles, decalColor, mom_paint_scale.GetFloat());
         }
         else
         {
@@ -141,16 +144,17 @@ void FX_FireBullets(int iEntIndex, const Vector &vOrigin, const QAngle &vAngles,
 
 #ifdef GAME_DLL
     // Weapon sounds are server-only for PAS ability
+    static ConVarRef mom_paint_apply_sound("mom_paint_apply_sound");
 
-    static ConVarRef paintgun_shoot_sound("mom_paintgun_shoot_sound");
-
-    // Do an extra paintgun check here
-    const bool bPreventShootSound = iAmmoType == AMMO_TYPE_PAINT && !paintgun_shoot_sound.GetBool();
-
-    if (!bPreventShootSound)
+    // Do an extra paint check here
+    if (iAmmoType != AMMO_TYPE_PAINT)
     {
         const auto pWeaponScript = g_pWeaponDef->GetWeaponScript(hWeaponID);
         FX_WeaponSound(iEntIndex, pWeaponScript->pKVWeaponSounds->GetString("single_shot"), vOrigin);
+    }
+    else if (mom_paint_apply_sound.GetBool())
+    {
+        FX_WeaponSound(iEntIndex, SND_PAINT_SHOT, vOrigin);
     }
 #endif
 

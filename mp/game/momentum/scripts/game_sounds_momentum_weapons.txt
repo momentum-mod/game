@@ -48,16 +48,6 @@
 //	SNDLVL_140dB	= 140,	// 0.2
 //	SNDLVL_150dB	= 150,	// 0.2
 
-"Weapon_Paintgun.Single"
-{
-    "channel" "CHAN_WEAPON"
-    "volume" "0.32"
-    "soundlevel" "SNDLVL_GUNFIRE"
-    "pitch" "PITCH_NORM"
-    
-    "wave" "weapons/paintgun/paintgun_shot.wav"
-}
-
 "Weapon_RL.Single"
 {
     "channel" "CHAN_WEAPON"

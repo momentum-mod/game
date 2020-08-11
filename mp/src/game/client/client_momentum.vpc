@@ -201,14 +201,6 @@ $Project "Client (Momentum)"
                     $File "momentum\ui\spectate\mom_replayui.cpp"
                     $File "momentum\ui\spectate\mom_replayui.h"
                 }
-                
-                $Folder "PaintGun"
-                {
-                    $File "momentum\ui\PaintGunPanel.cpp"
-                    $File "momentum\ui\PaintGunPanel.h"
-                    $File "momentum\ui\PaintGunScreenPanel.h"
-                    $File "momentum\ui\PaintGunScreenPanel.cpp"
-                }
 
                 $Folder "Credits"
                 {
@@ -249,8 +241,6 @@ $Project "Client (Momentum)"
                 $File "$SRCDIR\game\shared\momentum\weapon\weapon_mom_sniper.cpp"
                 $File "$SRCDIR\game\shared\momentum\weapon\weapon_mom_grenade.h"
                 $File "$SRCDIR\game\shared\momentum\weapon\weapon_mom_grenade.cpp"
-                $File "$SRCDIR\game\shared\momentum\weapon\weapon_mom_paintgun.h"
-                $File "$SRCDIR\game\shared\momentum\weapon\weapon_mom_paintgun.cpp"
                 $File "$SRCDIR\game\shared\momentum\weapon\weapon_cs_guns.cpp"
                 $File "$SRCDIR\game\shared\momentum\weapon\weapon_base.h"
                 $File "$SRCDIR\game\shared\momentum\weapon\weapon_base.cpp"

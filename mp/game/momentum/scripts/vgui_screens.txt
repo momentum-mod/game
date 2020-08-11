@@ -26,14 +26,4 @@
 		"acceptsinput"  0
 		"resfile"	"scripts/screens/slideshow_display_screen.res"
 	}
-    
-    "paintgun_screen"
-    {
-        "type" "paintgun_screen"
-        
-        "pixelswide" "256"
-        "pixelshigh" "128"
-        "acceptsinput" 0
-        "resfile" "scripts/screens/paintgun_screen.res"
-    }
 }

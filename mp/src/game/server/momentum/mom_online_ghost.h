@@ -71,4 +71,6 @@ private:
     ReceivedFrame_t<PositionPacket>* m_pCurrentFrame;
     ReceivedFrame_t<PositionPacket>* m_pNextFrame;
     CUtlQueue<ReceivedFrame_t<DecalPacket>*> m_vecDecalPackets;
+
+    ConVarRef m_cvarPaintSound;
 };

@@ -5,7 +5,6 @@
     {
     // Weapons
         "MOM_Weapon_Machinegun" "Bullet Sinkhole"
-        "MOM_Weapon_Paintgun" "Graffiti Enabler"
         "MOM_Weapon_Knife" "Stabby McStabface"
         "MOM_Weapon_Grenade" "Spontaneous Combustion"
         "MOM_Weapon_Pistol" "Pea Shooter"
@@ -555,13 +554,6 @@
         "MOM_MB_DeleteRunConfirmation" "NOTE: If you delete a local run, keep in mind that there's currently no way to get it back!"
 
         "MOM_Momentum" "Momentum"
-
-        // Paint gun panel
-        "MOM_PaintGunPanel_SliderText" "Decal scale:"
-        "MOM_PaintGunPanel_Viewmodel" "Paintgun Viewmodel Visible"
-        "MOM_PaintGunPanel_Sound" "Paintgun Shoot Sound Enabled"
-        "MOM_PaintGunPanel_Color" "Decal color:"
-        "MOM_PaintGunPanel_Color_TT" "Change the color of the paint"
         
         // Lobby members panel / related strings
         "MOM_Lobby_Spectate" "Spectate"
