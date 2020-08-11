@@ -330,6 +330,8 @@ enum WallRunState
 #define SND_FLASHLIGHT_ON "CSPlayer.FlashlightOn"
 #define SND_FLASHLIGHT_OFF "CSPlayer.FlashlightOff"
 
+#define SND_PAINT_SHOT "MomPlayer.PaintShot"
+
 #define LOBBY_DATA_MAP "map"
 #define LOBBY_DATA_APPEARANCE "appearance"
 #define LOBBY_DATA_TYPING "isTyping"

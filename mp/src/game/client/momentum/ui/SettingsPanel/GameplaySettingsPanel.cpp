@@ -7,7 +7,26 @@
 #include "vgui_controls/CvarToggleCheckButton.h"
 #include "vgui_controls/CvarComboBox.h"
 
+#include "mom_shareddefs.h"
+#include "util/mom_util.h"
+
 #include "tier0/memdbgon.h"
+
+static void PaintScaleCallback(IConVar *var, const char *pOldValue, float flOldValue);
+
+static ConVar mom_paint_color("mom_paint_color", "0000FFFF", FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
+                              "Color of the paint decal");
+
+static MAKE_TOGGLE_CONVAR(mom_paint_apply_sound, "1", FCVAR_ARCHIVE | FCVAR_CLIENTCMD_CAN_EXECUTE,
+                          "Toggles the applying paint noise. 0 = OFF, 1 = ON\n");
+
+static MAKE_CONVAR_C(mom_paint_scale, "1.0", FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
+                     "Scale the size of the paint decal\n", 0.001f, 1.0f, PaintScaleCallback);
+
+static void PaintScaleCallback(IConVar *var, const char *pOldValue, float flOldValue)
+{
+    MomUtil::UpdatePaintDecalScale(mom_paint_scale.GetFloat());
+}
 
 using namespace vgui;
 

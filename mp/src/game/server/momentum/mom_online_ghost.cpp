@@ -50,13 +50,11 @@ static MAKE_CONVAR_C(mom_ghost_online_alpha_override, "100", FCVAR_REPLICATED | 
 static MAKE_TOGGLE_CONVAR_C(mom_ghost_online_trail_enable, "1", FCVAR_REPLICATED | FCVAR_ARCHIVE,
                             "Toggles drawing other ghost's trails. 0 = OFF, 1 = ON\n", RefreshGhostData);
 
-extern ConVar mom_paintgun_shoot_sound;
-
 static MAKE_TOGGLE_CONVAR_C(mom_ghost_online_flashlights_enable, "1", FCVAR_ARCHIVE | FCVAR_REPLICATED, "Toggles drawing other ghosts' flashlights. 0 = OFF, 1 = ON\n", RefreshGhostData);
 
 static MAKE_CONVAR(mom_ghost_online_sticky_alpha, "50", FCVAR_ARCHIVE | FCVAR_REPLICATED, "Sets the ghost stickybomb alpha value. 10 = more transparent, 255 = opaque.", 10.0f, 255.0f);
 
-CMomentumOnlineGhostEntity::CMomentumOnlineGhostEntity(): m_pCurrentFrame(nullptr), m_pNextFrame(nullptr)
+CMomentumOnlineGhostEntity::CMomentumOnlineGhostEntity() : m_pCurrentFrame(nullptr), m_pNextFrame(nullptr), m_cvarPaintSound("mom_paint_apply_sound")
 {
     ListenForGameEvent("mapfinished_panel_closed");
     m_nGhostButtons = 0;
@@ -167,18 +165,14 @@ void CMomentumOnlineGhostEntity::DoPaint(const DecalPacket& packet)
 
     DispatchEffect("Painting", data);
 
-    // Play the paintgun sound
-    if (mom_paintgun_shoot_sound.GetBool())
+    // Play the paint shot sound
+    if (m_cvarPaintSound.GetBool())
     {
-        const char *shootsound = g_pWeaponDef->GetWeaponSound(WEAPON_PAINTGUN, "single_shot");
-        if (!shootsound || !shootsound[0])
-            return;
-
-        CPASAttenuationFilter filter(packet.vOrigin, shootsound);
+        CPASAttenuationFilter filter(packet.vOrigin, SND_PAINT_SHOT);
         if (!te->CanPredict())
             return;
 
-        EmitSound(filter, entindex(), shootsound, &packet.vOrigin);
+        EmitSound(filter, entindex(), SND_PAINT_SHOT, &packet.vOrigin);
     }
 }
 

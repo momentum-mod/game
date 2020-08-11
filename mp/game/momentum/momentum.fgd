@@ -372,7 +372,6 @@
 @PointClass base(Weapon) studio("models/weapons/w_mom_shotgun.mdl") = weapon_momentum_shotgun : "Shotgun" []
 @PointClass base(Weapon) studio("models/weapons/mom_sniper.mdl") = weapon_momentum_sniper : "Sniper" []
 @PointClass base(Weapon) studio("models/weapons/w_mom_grenade.mdl") = weapon_momentum_grenade : "Grenade" []
-@PointClass base(Weapon) studio("models/weapons/w_mom_paintgun.mdl") = weapon_momentum_paintgun : "Paintgun" []
 
 
 //-------------------------------------------------------------------------

@@ -14,7 +14,7 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-static MAKE_TOGGLE_CONVAR(mom_paintgun_limit_to_world, "0", FCVAR_ARCHIVE, "Limits applying paint decals to only world geometry. 0 = OFF, 1 = ON\n");
+static MAKE_TOGGLE_CONVAR(mom_paint_limit_to_world, "0", FCVAR_ARCHIVE, "Limits applying paint decals to only world geometry. 0 = OFF, 1 = ON\n");
 
 //-----------------------------------------------------------------------------
 // Purpose: Handle gauss impacts
@@ -137,7 +137,7 @@ void PaintingCallback(const CEffectData &data)
     }
 
     // Let's only allow the world if the user wants us to
-    if (pEntity->entindex() != 0 && mom_paintgun_limit_to_world.GetBool())
+    if (pEntity->entindex() != 0 && mom_paint_limit_to_world.GetBool())
         return;
 
     Color color;
@@ -150,9 +150,9 @@ void PaintingCallback(const CEffectData &data)
     }
     else
     {
-        ConVarRef mom_paintgun_color("mom_paintgun_color"), paintgun_scale("mom_paintgun_scale");
-        MomUtil::GetColorFromHex(mom_paintgun_color.GetString(), color);
-        MomUtil::UpdatePaintDecalScale(paintgun_scale.GetFloat());
+        static ConVarRef mom_paint_color("mom_paint_color"), paint_scale("mom_paint_scale");
+        MomUtil::GetColorFromHex(mom_paint_color.GetString(), color);
+        MomUtil::UpdatePaintDecalScale(paint_scale.GetFloat());
     }
 
     // If we hit, perform our custom effects and play the sound

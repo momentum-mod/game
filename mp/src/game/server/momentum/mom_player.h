@@ -229,7 +229,6 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
     SavedLocation_t *GetStartMark(int track) const { return (track >= 0 && track < MAX_TRACKS) ? m_pStartZoneMarks[track] : nullptr; }
     void ClearStartMark(int track);
 
-    void DoMuzzleFlash() OVERRIDE;
     void PreThink() override;
     void PostThink() OVERRIDE;
 
