@@ -3658,7 +3658,8 @@ void CBasePlayer::HandleFuncTrain(void)
 	
 	if ( !pTrain )
 	{
-		if ( GetActiveWeapon()->ObjectCaps() & FCAP_DIRECTIONAL_USE )
+		const auto pActiveWeapon = GetActiveWeapon();
+		if ( pActiveWeapon && (pActiveWeapon->ObjectCaps() & FCAP_DIRECTIONAL_USE) )
 		{
 			m_iTrain = TRAIN_ACTIVE | TRAIN_NEW;
 
