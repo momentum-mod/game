@@ -6477,6 +6477,83 @@
     input SetCheapWaterEndDistance(float) : "Set the distance that water finishes transitioning to cheap water."
 ]
 
+//-------------------------------------------------------------------------
+//
+// Camera/monitor entities
+//
+//-------------------------------------------------------------------------
+@PointClass base(Targetname, Parentname, Angles) studioprop("models/editor/camera.mdl") frustum(FOV,fogstart,fogend,250 250 250,-1) = point_camera : "Camera"
+[
+	// MAPBASE: sphere(fogstart) sphere(fogend) is distracting, especially with the frustum.
+	// Instead of using spheres, we just stuck it into the frustum peroperties.
+
+	spawnflags(Flags) =
+	[
+		1 : "[1] Start Off" : 0
+	]
+
+	FOV(float) : "FOV" : 90 : "Field of view in degrees"
+//	resolution(float) : "resolution" : 256 : "width/height of the render target for the camera"
+	UseScreenAspectRatio(choices) : "Screen Aspect Ratio" : 0 =
+	[
+		0 : "No"
+		1 : "Yes"
+	]	
+	fogEnable(choices) : "Fog Enable" : 0 =
+	[
+		0 : "No"
+		1 : "Yes"
+	]	
+	fogColor(color255) : "Fog Color" : "0 0 0"
+	fogStart(float) : "Fog Start" : 2048 : "The near fog plane."
+	fogEnd(float) : "Fog End" : 4096 : "The far fog/clipping plane."
+	fogMaxDensity(float) : "Fog Max Density [0..1]" : 1 : "The maximum fog density. 0=no fog, 1=full fog."
+	
+	SkyMode(choices) : "Sky Mode" : 2 : "How to draw the sky through this point_camera." =
+	[
+		2 : "Draw sky texture"
+		1 : "Draw 3D skybox"
+	]
+
+	// Inputs
+	input ChangeFOV(string) : "Changes camera's FOV over time"
+	input SetOnAndTurnOthersOff(void) : "Turn the camera on, and turn all other cameras off."
+	input SetOn(void) : "Turn the camera on."
+	input SetOff(void) : "Turn the camera off."
+	input SetSkyMode(void) : "Sets the sky mode. NOTE: 2 = draw sky texture, 1 = draw 3D skybox!"
+]
+
+@PointClass base(point_camera) studioprop("models/editor/camera.mdl") = point_camera_ortho : "Orthographic Camera"
+[
+	Ortho0(float) : "Ortho Top" : 100 : "The ortho's top dimension. Will be FOV if 0."
+	Ortho1(float) : "Ortho Bottom" : 0 : "The ortho's bottom dimension. Will be a negative version of the top if 0."
+	Ortho2(float) : "Ortho Left" : 0 : "The ortho's left dimension. Will be the top if 0."
+	Ortho3(float) : "Ortho Right" : 0 : "The ortho's right dimension. Will be a negative version of the left if 0."
+	IsOrtho(choices) : "Ortho Enabled" : 1 : "Sets whether this camera is orthographic. This is for when you want to toggle ortho mode via input." =
+	[
+		0 : "No"
+		1 : "Yes"
+	]
+
+	// Inputs
+	input SetOrthoEnabled(bool) : "Changes camera's FOV over time"
+	input SetOrthoTop(string) : "Changes the top ortho over time"
+	input SetOrthoBottom(string) : "Changes the bottom ortho over time"
+	input SetOrthoLeft(string) : "Changes the left ortho over time"
+	input SetOrthoRight(string) : "Changes the right ortho over time"
+]
+
+@SolidClass base(func_brush) = func_monitor :
+	"A monitor that renders the view from a given point_camera entity."
+[
+	target(target_destination) : "Camera name"
+	
+	// Inputs
+	input Toggle(void) : "Toggle - If on, turn off, if off, turn on."
+	input Enable(void) : "Enable."
+	input Disable(void) : "Disable."
+	input SetCamera(target_destination) : "Sets the camera to use for this monitor. Takes the name of a point_camera entity in the map."
+]
 
 //-------------------------------------------------------------------------
 // Used to allow entities to use point_cameras for their materials

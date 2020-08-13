@@ -25,6 +25,7 @@ IMPLEMENT_CLIENTCLASS_DT( C_PointCamera, DT_PointCamera, CPointCamera )
 	RecvPropFloat( RECVINFO( m_flFogMaxDensity ) ), 
 	RecvPropInt( RECVINFO( m_bActive ) ),
 	RecvPropInt( RECVINFO( m_bUseScreenAspectRatio ) ),
+	RecvPropInt( RECVINFO( m_iSkyMode ) ),
 END_RECV_TABLE()
 
 C_EntityClassList<C_PointCamera> g_PointCameraList;
@@ -113,4 +114,8 @@ void C_PointCamera::GetToolRecordingState( KeyValues *msg )
 	msg->SetPtr( "monitor", &state );
 }
 
+IMPLEMENT_CLIENTCLASS_DT( C_PointCameraOrtho, DT_PointCameraOrtho, CPointCameraOrtho )
+	RecvPropInt( RECVINFO( m_bOrtho ) ),
+	RecvPropArray( RecvPropFloat( RECVINFO( m_OrthoDimensions[0] ) ), m_OrthoDimensions ),
+END_RECV_TABLE()
 

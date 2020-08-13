@@ -2967,14 +2967,49 @@ bool CViewRender::DrawOneMonitor( ITexture *pRenderTarget, int cameraNum, C_Poin
 	monitorView.origin = pCameraEnt->GetAbsOrigin();
 	monitorView.angles = pCameraEnt->GetAbsAngles();
 	monitorView.fov = pCameraEnt->GetFOV();
-	monitorView.m_bOrtho = false;
+	if (pCameraEnt->IsOrtho())
+	{
+		monitorView.m_bOrtho = true;
+		pCameraEnt->GetOrthoDimensions(monitorView.m_OrthoTop, monitorView.m_OrthoBottom,
+			monitorView.m_OrthoLeft, monitorView.m_OrthoRight);
+	}
+	else
+	{
+		monitorView.m_bOrtho = false;
+	}
 	monitorView.m_flAspectRatio = pCameraEnt->UseScreenAspectRatio() ? 0.0f : 1.0f;
 
-	// @MULTICORE (toml 8/11/2006): this should be a renderer....
-	Frustum frustum;
- 	render->Push3DView( monitorView, VIEW_CLEAR_DEPTH | VIEW_CLEAR_COLOR, pRenderTarget, (VPlane *)frustum );
-	ViewDrawScene( false, SKYBOX_2DSKYBOX_VISIBLE, monitorView, 0, VIEW_MONITOR );
- 	render->PopView( frustum );
+	// 
+	// Monitor sky handling
+	// 
+	if (pCameraEnt->SkyMode() == SKYBOX_3DSKYBOX_VISIBLE)
+	{
+		int nClearFlags = (VIEW_CLEAR_DEPTH | VIEW_CLEAR_COLOR);
+		bool bDrew3dSkybox = false;
+		SkyboxVisibility_t nSkyMode = pCameraEnt->SkyMode();
+
+		Frustum frustum;
+		render->Push3DView(monitorView, nClearFlags, pRenderTarget, (VPlane*)frustum);
+
+		// if the 3d skybox world is drawn, then don't draw the normal skybox
+		CSkyboxView* pSkyView = new CSkyboxView(this);
+		if ((bDrew3dSkybox = pSkyView->Setup(monitorView, &nClearFlags, &nSkyMode)) != false)
+		{
+			AddViewToScene(pSkyView);
+		}
+		SafeRelease(pSkyView);
+
+		ViewDrawScene(bDrew3dSkybox, nSkyMode, monitorView, nClearFlags, VIEW_MONITOR);
+		render->PopView(frustum);
+	}
+	else
+	{
+		// @MULTICORE (toml 8/11/2006): this should be a renderer....
+		Frustum frustum;
+		render->Push3DView(monitorView, VIEW_CLEAR_DEPTH | VIEW_CLEAR_COLOR, pRenderTarget, (VPlane*)frustum);
+		ViewDrawScene(false, SKYBOX_2DSKYBOX_VISIBLE, monitorView, 0, VIEW_MONITOR);
+		render->PopView(frustum);
+	}
 
 	// Reset the world fog parameters.
 	if ( fogEnabled )
