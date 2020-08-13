@@ -37,6 +37,9 @@ public:
 	void InputSetOnAndTurnOthersOff( inputdata_t &inputdata );
 	void InputSetOn( inputdata_t &inputdata );
 	void InputSetOff( inputdata_t &inputdata );
+	void InputSetSkyMode(inputdata_t& inputdata) { m_iSkyMode = inputdata.value.Int(); }
+
+	float GetFOV() const { return m_FOV; }
 
 private:
 	float m_TargetFOV;
@@ -51,12 +54,58 @@ private:
 	CNetworkVar( float, m_flFogMaxDensity );
 	CNetworkVar( bool, m_bActive );
 	CNetworkVar( bool, m_bUseScreenAspectRatio );
+	CNetworkVar(int, m_iSkyMode);
 
 	// Allows the mapmaker to control whether a camera is active or not
 	bool	m_bIsOn;
 
 public:
 	CPointCamera	*m_pNext;
+};
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+class CPointCameraOrtho : public CPointCamera
+{
+public:
+	DECLARE_CLASS(CPointCameraOrtho, CPointCamera);
+	DECLARE_SERVERCLASS();
+	DECLARE_DATADESC();
+	CPointCameraOrtho();
+	~CPointCameraOrtho();
+
+	enum
+	{
+		ORTHO_TOP,
+		ORTHO_BOTTOM,
+		ORTHO_LEFT,
+		ORTHO_RIGHT,
+
+		NUM_ORTHO_DIMENSIONS
+	};
+
+	void Spawn(void);
+
+	bool KeyValue(const char* szKeyName, const char* szValue);
+	bool GetKeyValue(const char* szKeyName, char* szValue, int iMaxLen);
+
+	void ChangeOrtho(int iType, const char* szChange);
+	void ChangeOrthoThink(void);
+
+	void InputSetOrthoEnabled(inputdata_t& inputdata) { m_bOrtho = inputdata.value.Bool(); }
+	void InputScaleOrtho(inputdata_t& inputdata);
+	void InputSetOrthoTop(inputdata_t& inputdata) { ChangeOrtho(ORTHO_TOP, inputdata.value.String()); }
+	void InputSetOrthoBottom(inputdata_t& inputdata) { ChangeOrtho(ORTHO_BOTTOM, inputdata.value.String()); }
+	void InputSetOrthoLeft(inputdata_t& inputdata) { ChangeOrtho(ORTHO_LEFT, inputdata.value.String()); }
+	void InputSetOrthoRight(inputdata_t& inputdata) { ChangeOrtho(ORTHO_RIGHT, inputdata.value.String()); }
+
+private:
+	float m_TargetOrtho[NUM_ORTHO_DIMENSIONS];
+	float m_TargetOrthoDPS;
+
+	CNetworkVar(bool, m_bOrtho);
+	CNetworkArray(float, m_OrthoDimensions, NUM_ORTHO_DIMENSIONS);
 };
 
 CPointCamera *GetPointCameraList();
