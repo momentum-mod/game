@@ -390,6 +390,8 @@ protected:
 	void			Enable3dSkyboxFog( void );
 	void			DrawInternal( view_id_t iSkyBoxViewID, bool bInvokePreAndPostRender, ITexture *pRenderTarget, ITexture *pDepthTarget );
 
+	void			CalculateSkyAngles(const QAngle& angAngles);
+
 	sky3dparams_t *	PreRender3dSkyboxWorld( SkyboxVisibility_t nSkyboxVisible );
 
 	sky3dparams_t *m_pSky3dParams;
@@ -4608,13 +4610,37 @@ void CSkyboxView::DrawInternal( view_id_t iSkyBoxViewID, bool bInvokePreAndPostR
 		VectorScale( origin, scale, origin );
 	}
 	Enable3dSkyboxFog();
-	VectorAdd( origin, m_pSky3dParams->origin, origin );
+
+	// Skybox angle support.
+	// 
+	// If any of the angles aren't 0, do the rotation code.
+	if (m_pSky3dParams->skycamera)
+	{
+		// Re-use the x coordinate to determine if we shuld do this with angles
+		if (m_pSky3dParams->angles.GetX() != 0)
+		{
+			CalculateSkyAngles(m_pSky3dParams->skycamera->GetAbsAngles());
+		}
+
+		VectorAdd(origin, m_pSky3dParams->skycamera->GetAbsOrigin(), origin);
+	}
+	else
+	{
+		if (m_pSky3dParams->angles.GetX() != 0 ||
+			m_pSky3dParams->angles.GetY() != 0 ||
+			m_pSky3dParams->angles.GetZ() != 0)
+		{
+			CalculateSkyAngles(m_pSky3dParams->angles.Get());
+		}
+
+		VectorAdd(origin, m_pSky3dParams->origin, origin);
+	}
 
 	// BUGBUG: Fix this!!!  We shouldn't need to call setup vis for the sky if we're connecting
 	// the areas.  We'd have to mark all the clusters in the skybox area in the PVS of any 
 	// cluster with sky.  Then we could just connect the areas to do our vis.
 	//m_bOverrideVisOrigin could hose us here, so call direct
-	render->ViewSetupVis( false, 1, &m_pSky3dParams->origin.Get() );
+	render->ViewSetupVis( false, 1, m_pSky3dParams->skycamera ? &m_pSky3dParams->skycamera->GetAbsOrigin() : &m_pSky3dParams->origin.Get() );
 	render->Push3DView( (*this), m_ClearFlags, pRenderTarget, GetFrustum(), pDepthTarget );
 
 	// Store off view origin and angles
@@ -4664,6 +4690,53 @@ void CSkyboxView::DrawInternal( view_id_t iSkyBoxViewID, bool bInvokePreAndPostR
 //-----------------------------------------------------------------------------
 // 
 //-----------------------------------------------------------------------------
+void CSkyboxView::CalculateSkyAngles(const QAngle& angAngles)
+{
+	// Unfortunately, it's not as simple as "angles += m_pSky3dParams->angles".
+	// This stuff took a long time to figure out. I'm glad I got it working.
+
+	// First, create a matrix for the sky's angles.
+	matrix3x4_t matSkyAngles;
+	AngleMatrix(angAngles, matSkyAngles);
+
+	// The code in between the lines below was mostly lifted from projected texture screenspace code and was a huge lifesaver.
+	// The comments are my attempt at explaining the little I understand of what's going on here.
+	// ----------------------------------------------------------------------
+
+	// These are the vectors that would eventually become our final angle directions.
+	Vector vecSkyForward, vecSkyRight, vecSkyUp;
+
+	// Get vectors from our original angles.
+	Vector vPlayerForward, vPlayerRight, vPlayerUp;
+	AngleVectors(angles, &vPlayerForward, &vPlayerRight, &vPlayerUp);
+
+	// Transform them from our sky angles matrix and put the results in those vectors we declared earlier.
+	VectorTransform(vPlayerForward, matSkyAngles, vecSkyForward);
+	VectorTransform(vPlayerRight, matSkyAngles, vecSkyRight);
+	VectorTransform(vPlayerUp, matSkyAngles, vecSkyUp);
+
+	// Normalize them.
+	VectorNormalize(vecSkyForward);
+	VectorNormalize(vecSkyRight);
+	VectorNormalize(vecSkyUp);
+
+	// Now do a bit of quaternion magic and apply that to our original angles.
+	// This works perfectly, so I'm not gonna touch it.
+	Quaternion quat;
+	BasisToQuaternion(vecSkyForward, vecSkyRight, vecSkyUp, quat);
+	QuaternionAngles(quat, angles);
+
+	// End of code mostly lifted from projected texture screenspace stuff
+	// ----------------------------------------------------------------------
+
+	// Now just rotate our origin with that matrix.
+	// We create a copy of the origin since VectorRotate doesn't want in1 to be the same variable as the destination.
+	VectorRotate(Vector(origin), matSkyAngles, origin);
+}
+
+//-----------------------------------------------------------------------------
+// 
+//-----------------------------------------------------------------------------
 bool CSkyboxView::Setup( const CViewSetup &viewSetup, int *pClearFlags, SkyboxVisibility_t *pSkyboxVisible )
 {
 	BaseClass::Setup( viewSetup );
@@ -4684,7 +4757,18 @@ bool CSkyboxView::Setup( const CViewSetup &viewSetup, int *pClearFlags, SkyboxVi
 	*pClearFlags |= VIEW_CLEAR_DEPTH; // Need to clear depth after rendering the skybox
 
 	m_DrawFlags = DF_RENDER_UNDERWATER | DF_RENDER_ABOVEWATER | DF_RENDER_WATER;
-	if( r_skybox.GetBool() )
+	if (m_pSky3dParams->skycolor.GetA() != 0 && *pSkyboxVisible != SKYBOX_NOT_VISIBLE)
+	{
+		m_ClearFlags |= (VIEW_CLEAR_COLOR | VIEW_CLEAR_DEPTH);
+		m_DrawFlags |= DF_CLIP_SKYBOX;
+
+		color32 color = m_pSky3dParams->skycolor.Get();
+
+		CMatRenderContextPtr pRenderContext(materials);
+		pRenderContext->ClearColor4ub(color.r, color.g, color.b, color.a);
+		pRenderContext.SafeRelease();
+	}
+	else if( r_skybox.GetBool() )
 	{
 		m_DrawFlags |= DF_DRAWSKYBOX;
 	}

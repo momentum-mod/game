@@ -2281,30 +2281,67 @@
     output OnGustEnd(void) : "Fired when a wind gust ends."
 ]
 
-@PointClass base(Angles) size(-16 -16 -16, 16 16 16) color(0 0 255) = sky_camera : 
-    "An entity used to control the 3D Skybox. Its origin is used to determine the 3D Skybox's position relative to the map. Place this entity, in the 3D Skybox, at the point where the origin of the map should be."
+// We can't add a new sprite because the "scale" keyvalue makes it huge
+@PointClass base(Targetname, Parentname, Angles) size(-16 -16 -16, 16 16 16) studio("models/editor/axis_helper.mdl") color(0 0 255) = sky_camera : 
+	"An entity used to control the 3D Skybox. Its origin is used to determine the 3D Skybox's position relative to the map. Place this entity, in the 3D Skybox, at the point where the origin of the map should be."
 [
-    scale(integer) : "3D Skybox scale" : 16 : "Scale of the skybox."
-    fogenable(choices) : "Fog Enable" : 0 =
-    [
-        0 : "No"
-        1 : "Yes"
-    ]
-    fogblend(choices) : "Fog Blend" : 0 =
-    [
-        0 : "No"
-        1 : "Yes"
-    ]
-    use_angles(choices) : "Use Angles for Fog Dir" : 0 =
-    [
-        0 : "No"
-        1 : "Yes"
-    ]
-    fogcolor(color255) : "Primary Fog Color" : "255 255 255"
-    fogcolor2(color255) : "Secondary Fog Color" : "255 255 255"
-    fogdir(string) : "Primary Fog Dir" : "1 0 0"
-    fogstart(string) : "Fog Start" : "500.0" : "Distance at which the skybox fog should start."
-    fogend(string) : "Fog End" : "2000.0" : "Distance at which the skybox fog should be fully opaque."
+	parentname(target_destination) : "Parent" : : "The name of the entity to move with. NOTE: sky_camera's position is normally only updated on spawn. Fire the ForceUpdate or StartUpdating inputs to update the sky_camera's position! You might also want to enable Use Angles for Sky."
+	
+	spawnflags(flags) =
+	[
+		1: "[1] Master (takes priority if multiple sky_cameras exist)" : 0
+		2: "[2] Continuously update position (for moving sky_cameras)" : 0
+	]
+	
+	skycolor(color255) : "Sky Color" : "255 255 255 0" : "Causes the skybox to use a solid color instead of the sky texture specified in worldspawn. Blended alpha is unfortunately not supported, but an alpha of '0' disables the effect and any alpha greater than that (e.g. 255) enables the effect."
+
+	scale(integer) : "3D Skybox scale" : 16 : "Scale of the skybox."
+	fogenable(choices) : "Fog Enable" : 0 =
+	[
+		0 : "No"
+		1 : "Yes"
+	]
+	fogblend(choices) : "Fog Blend" : 0 =
+	[
+		0 : "No"
+		1 : "Yes"
+	]
+	use_angles(choices) : "Use Angles for Fog Dir" : 0 =
+	[
+		0 : "No"
+		1 : "Yes"
+	]
+	use_angles_for_sky(choices) : "Use Angles for Sky" : 0 : "Uses angles for actual skybox rotation, as if the world were tilted on this entity's axis." =
+	[
+		0 : "No"
+		1 : "Yes"
+	]
+	fogcolor(color255) : "Primary Fog Color" : "255 255 255"
+	fogcolor2(color255) : "Secondary Fog Color" : "255 255 255"
+	fogdir(string) : "Primary Fog Dir" : "1 0 0"
+	fogstart(string) : "Fog Start" : "500.0" : "Distance at which the skybox fog should start."
+	fogend(string) : "Fog End" : "2000.0" : "Distance at which the skybox fog should be fully opaque."
+	fogmaxdensity(float) : "Fog Max Density [0..1]" : "1"
+	
+	farz(float) : "Far Z Clip Plane" : "0" : "Clips the sky."
+	
+	// Inputs
+	input ForceUpdate(void) : "Forces the 3D skybox to update with this sky_camera's position."
+	input StartUpdating(void) : "Begins per-tick skybox updating, which is needed if you want this sky_camera to move."
+	input StopUpdating(void) : "Ends per-tick skybox updating if it was enabled before."
+	
+	input ActivateSkybox(void) : "Makes this sky_camera the active skybox."
+	input DeactivateSkybox(void) : "Stops making this sky_camera the active skybox if it is currently the active skybox, which causes the sky to clear."
+	
+	input SetFogStartDist(float) : "Sets the fog start distance."
+	input SetFogEndDist(float) : "Sets the fog end distance."
+	input TurnOnFog(void) : "Turns the fog on."
+	input TurnOffFog(void) : "Turns the fog off."
+	input SetFogColor(color255) : "Sets the primary fog color."
+	input SetFogColorSecondary(color255) : "Sets the secondary fog color."
+	input SetFarZ(integer): "Sets the far clip plane distance."
+	
+	input SetSkyColor(color255) : "Sets the sky color."
 ]
 
 @PointClass base(Targetname) size(-8 -8 -8, 8 8 8) = skybox_swapper : 
