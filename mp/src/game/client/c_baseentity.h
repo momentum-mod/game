@@ -1274,6 +1274,8 @@ public:
 
 	CNetworkColor32( m_clrRender );
 
+	int								m_iViewHideFlags;
+
 private:
 	
 	// Model for rendering
