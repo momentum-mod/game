@@ -2557,9 +2557,13 @@ int CMomentumGameMovement::TryPlayerMove(Vector *pFirstDest, trace_t *pFirstTrac
         {
             SurfInt::Type type = SurfInt::TYPE_WALL;
             if (pm.plane.normal.z > 0.0f)
+            {
                 type = SurfInt::TYPE_FLOOR;
+            }
             else if (pm.plane.normal.z < 0.0f)
+            {
                 type = SurfInt::TYPE_CEILING;
+            }
             
             m_pPlayer->SetLastInteraction(pm, mv->m_vecVelocity, type);
         }
