@@ -436,13 +436,19 @@ SavedLocation_t* CSaveLocSystem::CreateSaveloc(int components /*= SAVELOC_ALL*/)
 
 void CSaveLocSystem::CreateAndSaveLocation()
 {
-    SavedLocation_t *created = CreateSaveloc();
-    if (created)
+    const auto pPlayer = CMomentumPlayer::GetLocalPlayer();
+    if (!pPlayer)
+        return;
+
+    if (pPlayer->CreateStartMark())
     {
-        AddSaveloc(created);
-        ClientPrint(CMomentumPlayer::GetLocalPlayer(), HUD_PRINTTALK, CFmtStr("Saveloc #%i created!", m_rcSavelocs.Count()));
-        UpdateRequesters();
+        UTIL_HudHintText(pPlayer, "#MOM_Hint_CreateStartMark");
+        return;
     }
+
+    AddSaveloc(CreateSaveloc());
+    ClientPrint(pPlayer, HUD_PRINTTALK, CFmtStr("Saveloc #%i created!", m_rcSavelocs.Count()));
+    UpdateRequesters();
 }
 
 void CSaveLocSystem::AddSaveloc(SavedLocation_t* saveloc)

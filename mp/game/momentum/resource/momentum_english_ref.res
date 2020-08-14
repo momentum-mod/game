@@ -135,6 +135,9 @@
     //Guns
         "MOM_Gun" "Momentum Gun"
 
+    //Hud hints
+        "MOM_Hint_CreateStartMark" "%mom_start_mark_create%Create start mark"
+
     //Map Selection
         "MOM_MapSelector_BrowseMaps" "Browse"
         "MOM_MapSelector_LibraryMaps" "Library"
