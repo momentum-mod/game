@@ -4694,6 +4694,12 @@ C_BaseAnimating *C_BaseAnimating::CreateRagdollCopy()
 	pRagdoll->m_nForceBone = m_nForceBone;
 	pRagdoll->SetNextClientThink( CLIENT_THINK_ALWAYS );
 
+	pRagdoll->m_iViewHideFlags = m_iViewHideFlags;
+
+	pRagdoll->m_fadeMinDist = m_fadeMinDist;
+	pRagdoll->m_fadeMaxDist = m_fadeMaxDist;
+	pRagdoll->m_flFadeScale = m_flFadeScale;
+
 	pRagdoll->SetModelName( AllocPooledString(pModelName) );
 	pRagdoll->SetModelScale( GetModelScale() );
 	return pRagdoll;
