@@ -3599,8 +3599,11 @@ void CGameMovement::SetGroundEntity( trace_t *pm )
 		player->m_flWaterJumpTime = 0;
 
 		// Not jumping or duck jumping
-		player->m_Local.m_flDuckJumpTime = 0;
-		player->m_Local.m_flJumpTime = 0;
+		if (g_pGameModeSystem->GameModeIs(GAMEMODE_PARKOUR))
+		{
+			player->m_Local.m_flDuckJumpTime = 0;
+			player->m_Local.m_flJumpTime = 0;
+		}
 
 		// Standing on an entity other than the world, so signal that we are touching something.
 		if ( !pm->DidHitWorld() )

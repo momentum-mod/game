@@ -2935,7 +2935,7 @@ int CMomentumGameMovement::ClipVelocity(Vector in, Vector &normal, Vector &out, 
 }
 #endif
 
-inline float VectorYaw(Vector &v)
+inline float VectorYaw(const Vector &v)
 {
     QAngle ang;
     VectorAngles(v, ang);
