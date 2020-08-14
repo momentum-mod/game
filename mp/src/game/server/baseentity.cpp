@@ -3910,14 +3910,38 @@ bool CBaseEntity::AcceptInput( const char *szInputName, CBaseEntity *pActivator,
 					{
 						if ( !(Value.FieldType() == FIELD_VOID && dmap->dataDesc[i].fieldType == FIELD_STRING) ) // allow empty strings
 						{
-							if ( !Value.Convert( (fieldtype_t)dmap->dataDesc[i].fieldType ) )
+							// Activator, etc. support for EHANDLE convert
+							if ( !Value.Convert( (fieldtype_t)dmap->dataDesc[i].fieldType, this, pActivator, pCaller ) )
 							{
-								// bad conversion
-								Warning( "!! ERROR: bad input/output link:\n!! %s(%s,%s) doesn't match type from %s(%s)\n", 
-									STRING(m_iClassname), GetDebugName(), szInputName, 
-									( pCaller != NULL ) ? STRING(pCaller->m_iClassname) : "<null>",
-									( pCaller != NULL ) ? STRING(pCaller->m_iName) : "<null>" );
-								return false;
+								bool bBadConversion = true;
+
+								// Attempt to convert to string and back.
+								// Almost all field types support being converted to a string, and many support being parsed from a string too.
+								fieldtype_t originalfield = Value.FieldType();
+								if (Value.Convert(FIELD_STRING))
+								{
+									bBadConversion = !(Value.Convert((fieldtype_t)dmap->dataDesc[i].fieldType, this, pActivator, pCaller));
+									if (!bBadConversion)
+									{
+										// Actual support should be added for each field, but if it works, it works.
+										// Warning against it only matters if you're a programmer and want to add support for each field.
+										// Only send a warning in dev mode.
+										DevWarning("!! Had to convert to string and back\n"
+													"!! Source Field Type: %i, Target Field Type: %i\n",
+												originalfield, dmap->dataDesc[i].fieldType);
+									}
+								}
+
+								if (bBadConversion)
+								{
+									Warning( "!! ERROR: bad input/output link:\n!! Unable to convert value \"%s\" from %s (%s) to field type %i\n!! Target Entity: %s (%s), Input: %s\n", 
+										Value.GetDebug(),
+										( pCaller != NULL ) ? STRING(pCaller->m_iClassname) : "<null>",
+										( pCaller != NULL ) ? STRING(pCaller->m_iName) : "<null>",
+										dmap->dataDesc[i].fieldType,
+										STRING(m_iClassname), GetDebugName(), szInputName );
+									return false;
+								}
 							}
 						}
 					}
