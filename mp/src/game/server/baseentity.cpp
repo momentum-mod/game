@@ -982,6 +982,18 @@ int CBaseEntity::DrawDebugTextOverlays(void)
 			EntityText( offset,tempstr,0 );
 			offset++;
 		}
+
+		if (m_ResponseContexts.Count() > 0)
+		{
+			const char *contexts = UTIL_VarArgs("%s:%s", STRING(m_ResponseContexts[0].m_iszName), STRING(m_ResponseContexts[0].m_iszValue));
+			for (int i = 1; i < GetContextCount(); i++)
+			{
+				contexts = UTIL_VarArgs("%s,%s:%s", contexts, STRING(m_ResponseContexts[i].m_iszName), STRING(m_ResponseContexts[i].m_iszValue));
+			}
+			Q_snprintf(tempstr, sizeof(tempstr), "Response Contexts:%s", contexts);
+			EntityText(offset, tempstr, 0);
+			offset++;
+		}
 	}
 
 	if (m_debugOverlays & OVERLAY_VIEWOFFSET)
@@ -4789,6 +4801,57 @@ void ConsoleFireTargets( CBasePlayer *pPlayer, const char *name)
 }
 
 //------------------------------------------------------------------------------
+// Purpose : More concommands needed access to entities, so this has been moved to its own function.
+// Input   : cmdname - The name of the command.
+//			 &commands - Where the complete autocompletes should be sent to.
+//			 substring - The current search query. (only pool entities that start with this)
+//			 checklen - The number of characters to check.
+// Output  : A pointer to a cUtlRBTRee containing all of the entities.
+//------------------------------------------------------------------------------
+static int AutoCompleteEntities(const char *cmdname, CUtlVector< CUtlString > &commands, CUtlRBTree< CUtlString > &symbols, char *substring, int checklen = 0)
+{
+	CBaseEntity *pos = NULL;
+	while ((pos = gEntList.NextEnt(pos)) != NULL)
+	{
+		const char *name = pos->GetClassname();
+		if (pos->GetEntityName() == NULL_STRING || Q_strnicmp(STRING(pos->GetEntityName()), substring, checklen))
+		{
+			if (Q_strnicmp(pos->GetClassname(), substring, checklen))
+				continue;
+		}
+		else
+			name = STRING(pos->GetEntityName());
+
+		CUtlString sym = name;
+		int idx = symbols.Find(sym);
+		if (idx == symbols.InvalidIndex())
+		{
+			symbols.Insert(sym);
+		}
+
+		// Too many
+		if (symbols.Count() >= COMMAND_COMPLETION_MAXITEMS)
+			break;
+	}
+
+	// Now fill in the results
+	for (int i = symbols.FirstInorder(); i != symbols.InvalidIndex(); i = symbols.NextInorder(i))
+	{
+		const char *name = symbols[i].String();
+
+		char buf[512];
+		Q_strncpy(buf, name, sizeof(buf));
+		Q_strlower(buf);
+
+		CUtlString command;
+		command = CFmtStr("%s %s", cmdname, buf);
+		commands.AddToTail(command);
+	}
+
+	return symbols.Count();
+}
+
+//------------------------------------------------------------------------------
 // Purpose : 
 // Input   :
 // Output  :
@@ -4800,11 +4863,39 @@ void CC_Ent_Name( const CCommand& args )
 static ConCommand ent_name("ent_name", CC_Ent_Name, 0, FCVAR_CHEAT);
 
 //------------------------------------------------------------------------------
-void CC_Ent_Text( const CCommand& args )
+
+class CEntTextAutoCompletionFunctor : public ICommandCallback, public ICommandCompletionCallback
 {
-	SetDebugBits(UTIL_GetCommandClient(),args[1],OVERLAY_TEXT_BIT);
-}
-static ConCommand ent_text("ent_text", CC_Ent_Text, "Displays text debugging information about the given entity(ies) on top of the entity (See Overlay Text)\n\tArguments:   	{entity_name} / {class_name} / no argument picks what player is looking at ", FCVAR_CHEAT);
+public:
+	virtual void CommandCallback(const CCommand& command)
+	{
+		SetDebugBits(UTIL_GetCommandClient(), command.Arg(1), OVERLAY_TEXT_BIT);
+	}
+
+	virtual int CommandCompletionCallback(const char* partial, CUtlVector< CUtlString >& commands)
+	{
+		if (!g_pGameRules)
+		{
+			return 0;
+		}
+
+		const char* cmdname = "ent_text";
+
+		char* substring = (char*)partial;
+		if (Q_strstr(partial, cmdname))
+		{
+			substring = (char*)partial + strlen(cmdname) + 1;
+		}
+
+		int checklen = Q_strlen(substring);
+
+		CUtlRBTree< CUtlString > symbols(0, 0, UtlStringLessFunc);
+		return AutoCompleteEntities(cmdname, commands, symbols, substring, checklen);
+	}
+};
+
+static CEntTextAutoCompletionFunctor g_EntTextAutoComplete;
+static ConCommand ent_text("ent_text", &g_EntTextAutoComplete, "Displays text debugging information about the given entity(ies) on top of the entity (See Overlay Text)\n\tArguments:   	{entity_name} / {class_name} / no argument picks what player is looking at ", FCVAR_CHEAT, &g_EntTextAutoComplete);
 
 //------------------------------------------------------------------------------
 void CC_Ent_BBox( const CCommand& args )
@@ -5148,7 +5239,7 @@ public:
 		{
 			const char *target = "", *action = "Use";
 			variant_t value;
-			int delay = 0;
+			float delay = 0;
 
 			target = STRING( AllocPooledString(command.Arg( 1 ) ) );
 
@@ -5186,7 +5277,7 @@ public:
 			}
 			if ( command.ArgC() >= 5 )
 			{
-				delay = atoi( command.Arg( 4 ) );
+				delay = atof( command.Arg( 4 ) );
 			}
 
 			g_EventQueue.AddEvent( target, action, value, delay, pPlayer, pPlayer );
@@ -5219,45 +5310,8 @@ public:
 			checklen = Q_strlen( substring );
 		}
 
-		CUtlRBTree< CUtlString > symbols( 0, 0, UtlStringLessFunc );
-
-		CBaseEntity *pos = NULL;
-		while ( ( pos = gEntList.NextEnt( pos ) ) != NULL )
-		{
-			// Check target name against partial string
-			if ( pos->GetEntityName() == NULL_STRING )
-				continue;
-
-			if ( Q_strnicmp( STRING( pos->GetEntityName() ), substring, checklen ) )
-				continue;
-
-			CUtlString sym = STRING( pos->GetEntityName() );
-			int idx = symbols.Find( sym );
-			if ( idx == symbols.InvalidIndex() )
-			{
-				symbols.Insert( sym );
-			}
-
-			// Too many
-			if ( symbols.Count() >= COMMAND_COMPLETION_MAXITEMS )
-				break;
-		}
-
-		// Now fill in the results
-		for ( int i = symbols.FirstInorder(); i != symbols.InvalidIndex(); i = symbols.NextInorder( i ) )
-		{
-			const char *name = symbols[ i ].String();
-
-			char buf[ 512 ];
-			Q_strncpy( buf, name, sizeof( buf ) );
-			Q_strlower( buf );
-
-			CUtlString command;
-			command = CFmtStr( "%s %s", cmdname, buf );
-			commands.AddToTail( command );
-		}
-
-		return symbols.Count();
+		CUtlRBTree< CUtlString > symbols(0, 0, UtlStringLessFunc);
+		return AutoCompleteEntities(cmdname, commands, symbols, substring, checklen);
 	}
 private:
 	int EntFire_AutoCompleteInput( const char *partial, CUtlVector< CUtlString > &commands )
@@ -5286,7 +5340,8 @@ private:
 		Q_strncat( targetEntity, substring, sizeof( targetEntity ), nEntityNameLength );
 
 		// Find the target entity by name
-		CBaseEntity *target = gEntList.FindEntityByName( NULL, targetEntity );
+		CBasePlayer* pPlayer = UTIL_GetCommandClient();
+		CBaseEntity* target = gEntList.FindEntityGeneric(NULL, targetEntity, pPlayer, pPlayer, pPlayer);
 		if ( target == NULL )
 			return 0;
 
@@ -5311,10 +5366,6 @@ private:
 
 				// Only want inputs
 				if ( !( field->flags & FTYPEDESC_INPUT ) )
-					continue;
-
-				// Only want input functions
-				if ( field->flags & FTYPEDESC_SAVE )
 					continue;
 
 				// See if we've got a partial string for the input name already
@@ -5431,6 +5482,150 @@ void CC_Ent_Info( const CCommand& args )
 }
 static ConCommand ent_info("ent_info", CC_Ent_Info, "Usage:\n   ent_info <class name>\n", FCVAR_CHEAT);
 
+//------------------------------------------------------------------------------
+// Purpose : 
+// Input   :
+// Output  :
+//------------------------------------------------------------------------------
+void CC_Ent_Info_Datatable(const CCommand& args)
+{
+	CBasePlayer* pPlayer = ToBasePlayer(UTIL_GetCommandClient());
+	if (!pPlayer)
+	{
+		return;
+	}
+
+	if (args.ArgC() < 2)
+	{
+		ClientPrint(pPlayer, HUD_PRINTCONSOLE, "Usage:\n   ent_info_datatable <class name>\n");
+	}
+	else
+	{
+		// Each element corresponds to a specific field type.
+		// Hey, if you've got a better idea, be my guest.
+		static const char* g_FieldStrings[FIELD_TYPECOUNT] =
+		{
+			"VOID",
+			"FLOAT",
+			"STRING",
+			"VECTOR",
+			"QUATERNION",
+			"INTEGER",
+			"BOOLEAN",
+			"SHORT",
+			"CHARACTER",
+			"COLOR32",
+			"EMBEDDED",
+			"CUSTOM",
+
+			"CLASSPTR",
+			"EHANDLE",
+			"EDICT",
+
+			"POSITION_VECTOR",
+			"TIME",
+			"TICK",
+			"MODELNAME",
+			"SOUNDNAME",
+
+			"INPUT",
+			"FUNCTION",
+			"VMATRIX",
+			"VMATRIX_WORLDSPACE",
+			"MATRIX3X4_WORLDSPACE",
+			"INTERVAL",
+			"MODELINDEX",
+			"MATERIALINDEX",
+
+			"VECTOR2D",
+		};
+
+		// iterate through all the ents printing out their details
+		CBaseEntity* ent = CreateEntityByName(args[1]);
+
+		if (ent)
+		{
+#define ENT_INFO_BY_HIERARCHY 1
+#ifdef ENT_INFO_BY_HIERARCHY
+			CUtlVector<const char*> dmap_namelist;
+
+			CUtlVector< CUtlVector<const char*> > dmap_fieldlist;
+			CUtlVector< CUtlVector<int> > dmap_fieldtypelist;
+
+			datamap_t* dmap;
+			int dmapnum = 0;
+			for (dmap = ent->GetDataDescMap(); dmap != NULL; dmap = dmap->baseMap)
+			{
+				dmap_fieldlist.AddToTail();
+				dmap_fieldtypelist.AddToTail();
+
+				// search through all the actions in the data description, printing out details
+				for (int i = 0; i < dmap->dataNumFields; i++)
+				{
+					dmap_fieldlist[dmapnum].AddToTail(dmap->dataDesc[i].fieldName);
+					dmap_fieldtypelist[dmapnum].AddToTail(dmap->dataDesc[i].fieldType);
+				}
+
+				dmapnum++;
+				dmap_namelist.AddToTail(dmap->dataClassName);
+			}
+
+			char offset[64] = { 0 }; // Needed so garbage isn't spewed at the beginning
+			for (int i = 0; i < dmapnum; i++)
+			{
+				Q_strncat(offset, "  ", sizeof(offset));
+
+				// Header for each class
+				ClientPrint(pPlayer, HUD_PRINTCONSOLE, UTIL_VarArgs("%s=========| %s |=========\n", offset, dmap_namelist[i]));
+
+				Q_strncat(offset, " ", sizeof(offset));
+
+				int iFieldCount = dmap_fieldlist[i].Count();
+				for (int index = 0; index < iFieldCount; index++)
+				{
+					int iType = dmap_fieldtypelist[i][index];
+					ClientPrint(pPlayer, HUD_PRINTCONSOLE, UTIL_VarArgs("%s%s (%i): %s\n", offset, g_FieldStrings[iType], iType, dmap_fieldlist[i][index]));
+				}
+
+				// Clean up after ourselves
+				dmap_fieldlist[i].RemoveAll();
+				dmap_fieldtypelist[i].RemoveAll();
+			}
+#else // This sorts by field type instead
+			CUtlVector<const char*> fieldlist[FIELD_TYPECOUNT];
+
+			datamap_t* dmap;
+			for (dmap = ent->GetDataDescMap(); dmap != NULL; dmap = dmap->baseMap)
+			{
+				// search through all the actions in the data description, printing out details
+				for (int i = 0; i < dmap->dataNumFields; i++)
+				{
+					fieldlist[dmap->dataDesc[i].fieldType].AddToTail(dmap->dataDesc[i].fieldName);
+				}
+			}
+
+			for (int i = 0; i < FIELD_TYPECOUNT; i++)
+			{
+				const char* typestring = g_FieldStrings[i];
+				for (int index = 0; index < fieldlist[i].Count(); index++)
+				{
+					ClientPrint(pPlayer, HUD_PRINTCONSOLE, UTIL_VarArgs("  %s (%i): %s\n", typestring, i, fieldlist[i][index]));
+				}
+
+				// Clean up after ourselves
+				fieldlist[i].RemoveAll();
+			}
+#endif
+
+			delete ent;
+		}
+		else
+		{
+			ClientPrint(pPlayer, HUD_PRINTCONSOLE, UTIL_VarArgs("no such entity %s\n", args[1]));
+		}
+	}
+}
+static ConCommand ent_info_datatable("ent_info_datatable", CC_Ent_Info_Datatable, "Usage:\n   ent_info_datatable <class name>\n", FCVAR_CHEAT);
 
 //------------------------------------------------------------------------------
 // Purpose : 
@@ -7086,76 +7281,130 @@ void CBaseEntity::SetCollisionBoundsFromModel()
 	}
 }
 
+
+extern int EntityFactory_AutoComplete( const char *cmdname, CUtlVector< CUtlString > &commands, CUtlRBTree< CUtlString > &symbols, char *substring, int checklen = 0 );
+
 //------------------------------------------------------------------------------
-// Purpose: Create an NPC of the given type
+// Purpose: Create an entity of the given type
 //------------------------------------------------------------------------------
-void CC_Ent_Create( const CCommand& args )
+class CEntCreateAutoCompletionFunctor : public ICommandCallback, public ICommandCompletionCallback
 {
-	MDLCACHE_CRITICAL_SECTION();
+public:
+	virtual bool CreateAimed() { return false; }
 
-	CBasePlayer *pPlayer = UTIL_GetCommandClient();
-	if (!pPlayer)
+	virtual void CommandCallback( const CCommand &args )
 	{
-		return;
+		MDLCACHE_CRITICAL_SECTION();
+
+		CBasePlayer *pPlayer = UTIL_GetCommandClient();
+		if (!pPlayer)
+		{
+			return;
+		}
+
+		// Don't allow regular users to create point_servercommand entities for the same reason as blocking ent_fire
+		if ( !Q_stricmp( args[1], "point_servercommand" ) )
+		{
+			if ( engine->IsDedicatedServer() )
+			{
+				// We allow people with disabled autokick to do it, because they already have rcon.
+				if ( pPlayer->IsAutoKickDisabled() == false )
+					return;
+			}
+			else if ( gpGlobals->maxClients > 1 )
+			{
+				// On listen servers with more than 1 player, only allow the host to create point_servercommand.
+				CBasePlayer *pHostPlayer = UTIL_GetListenServerHost();
+				if ( pPlayer != pHostPlayer )
+					return;
+			}
+		}
+
+		bool allowPrecache = CBaseEntity::IsPrecacheAllowed();
+		CBaseEntity::SetAllowPrecache( true );
+
+		// Try to create entity
+		CBaseEntity *entity = dynamic_cast< CBaseEntity * >( CreateEntityByName(args[1]) );
+		if (entity)
+		{
+			// Pass in any additional parameters.
+			for ( int i = 2; i + 1 < args.ArgC(); i += 2 )
+			{
+				const char *pKeyName = args[i];
+				const char *pValue = args[i+1];
+				entity->KeyValue( pKeyName, pValue );
+			}
+
+			DispatchSpawn(entity);
+
+			// Now attempt to drop into the world
+			trace_t tr;
+			Vector forward;
+			pPlayer->EyeVectors( &forward );
+			UTIL_TraceLine(pPlayer->EyePosition(),
+				pPlayer->EyePosition() + forward * MAX_TRACE_LENGTH,MASK_SOLID, 
+				pPlayer, COLLISION_GROUP_NONE, &tr );
+
+			if ( tr.fraction != 1.0 )
+			{
+				// Raise the end position a little up off the floor, place the npc and drop him down
+				tr.endpos.z += 12;
+
+				if (CreateAimed())
+				{
+					QAngle angles;
+					VectorAngles( forward, angles );
+					angles.x = 0;
+					angles.z = 0;
+					entity->Teleport( &tr.endpos, &angles, NULL );
+				}
+				else
+				{
+					entity->Teleport( &tr.endpos, NULL, NULL );
+				}
+
+				UTIL_DropToFloor( entity, MASK_SOLID );
+			}
+
+			entity->Activate();
+		}
+		CBaseEntity::SetAllowPrecache( allowPrecache );
 	}
 
-	// Don't allow regular users to create point_servercommand entities for the same reason as blocking ent_fire
-	if ( !Q_stricmp( args[1], "point_servercommand" ) )
+	virtual int CommandCompletionCallback( const char *partial, CUtlVector< CUtlString > &commands )
 	{
-		if ( engine->IsDedicatedServer() )
+		if ( !g_pGameRules )
 		{
-			// We allow people with disabled autokick to do it, because they already have rcon.
-			if ( pPlayer->IsAutoKickDisabled() == false )
-				return;
+			return 0;
 		}
-		else if ( gpGlobals->maxClients > 1 )
+
+		const char *cmdname = CreateAimed() ? "ent_create_aimed" : "ent_create";
+
+		char *substring = (char *)partial;
+		if ( Q_strstr( partial, cmdname ) )
 		{
-			// On listen servers with more than 1 player, only allow the host to create point_servercommand.
-			CBasePlayer *pHostPlayer = UTIL_GetListenServerHost();
-			if ( pPlayer != pHostPlayer )
-				return;
+			substring = (char *)partial + strlen( cmdname ) + 1;
 		}
+
+		int checklen = Q_strlen( substring );
+
+		CUtlRBTree< CUtlString > symbols( 0, 0, UtlStringLessFunc );
+		return EntityFactory_AutoComplete( cmdname, commands, symbols, substring, checklen );
 	}
+};
 
-	bool allowPrecache = CBaseEntity::IsPrecacheAllowed();
-	CBaseEntity::SetAllowPrecache( true );
+static CEntCreateAutoCompletionFunctor g_EntCreateAutoComplete;
+static ConCommand ent_create("ent_create", &g_EntCreateAutoComplete, "Creates an entity of the given type where the player is looking.  Additional parameters can be passed in in the form: ent_create <entity name> <param 1 name> <param 1> <param 2 name> <param 2>...<param N name> <param N>", FCVAR_GAMEDLL | FCVAR_CHEAT, &g_EntCreateAutoComplete);
 
-	// Try to create entity
-	CBaseEntity *entity = dynamic_cast< CBaseEntity * >( CreateEntityByName(args[1]) );
-	if (entity)
-	{
-		entity->Precache();
+class CEntCreateAimedAutoCompletionFunctor : public CEntCreateAutoCompletionFunctor
+{
+public:
+	virtual bool CreateAimed() { return true; }
+};
 
-		// Pass in any additional parameters.
-		for ( int i = 2; i + 1 < args.ArgC(); i += 2 )
-		{
-			const char *pKeyName = args[i];
-			const char *pValue = args[i+1];
-			entity->KeyValue( pKeyName, pValue );
-		}
+static CEntCreateAimedAutoCompletionFunctor g_EntCreateAimedAutoComplete;
 
-		DispatchSpawn(entity);
-
-		// Now attempt to drop into the world
-		trace_t tr;
-		Vector forward;
-		pPlayer->EyeVectors( &forward );
-		UTIL_TraceLine(pPlayer->EyePosition(),
-			pPlayer->EyePosition() + forward * MAX_TRACE_LENGTH,MASK_SOLID, 
-			pPlayer, COLLISION_GROUP_NONE, &tr );
-		if ( tr.fraction != 1.0 )
-		{
-			// Raise the end position a little up off the floor, place the npc and drop him down
-			tr.endpos.z += 12;
-			entity->Teleport( &tr.endpos, NULL, NULL );
-			UTIL_DropToFloor( entity, MASK_SOLID );
-		}
-
-		entity->Activate();
-	}
-	CBaseEntity::SetAllowPrecache( allowPrecache );
-}
-static ConCommand ent_create("ent_create", CC_Ent_Create, "Creates an entity of the given type where the player is looking.  Additional parameters can be passed in in the form: ent_create <entity name> <param 1 name> <param 1> <param 2 name> <param 2>...<param N name> <param N>", FCVAR_MAPPING);
+static ConCommand ent_create_aimed("ent_create_aimed", &g_EntCreateAimedAutoComplete, "Creates an entity of the given type where the player is looking.  Additional parameters can be passed in in the form: ent_create_aimed <entity name> <param 1 name> <param 1> <param 2 name> <param 2>...<param N name> <param N>", FCVAR_CHEAT, &g_EntCreateAimedAutoComplete);
 
 //------------------------------------------------------------------------------
 // Purpose: Teleport a specified entity to where the player is looking
@@ -7212,26 +7461,50 @@ bool CC_GetCommandEnt( const CCommand& args, CBaseEntity **ent, Vector *vecTarge
 	return true;
 }
 
-//------------------------------------------------------------------------------
-// Purpose: Teleport a specified entity to where the player is looking
-//------------------------------------------------------------------------------
-void CC_Ent_Teleport( const CCommand& args )
+
+class CEntTeleportAutoCompletionFunctor : public ICommandCallback, public ICommandCompletionCallback
 {
-	if ( args.ArgC() < 2 )
+public:
+	virtual void CommandCallback( const CCommand &command )
 	{
-		Msg( "Format: ent_teleport <entity name>\n" );
-		return;
+		if ( command.ArgC() < 2 )
+		{
+			Msg( "Format: ent_teleport <entity name>\n" );
+			return;
+		}
+
+		CBaseEntity *pEnt;
+		Vector vecTargetPoint;
+		if ( CC_GetCommandEnt( command, &pEnt, &vecTargetPoint, NULL ) )
+		{
+			pEnt->Teleport( &vecTargetPoint, NULL, NULL );
+		}
 	}
 
-	CBaseEntity *pEnt;
-	Vector vecTargetPoint;
-	if ( CC_GetCommandEnt( args, &pEnt, &vecTargetPoint, NULL ) )
+	virtual int CommandCompletionCallback( const char *partial, CUtlVector< CUtlString > &commands )
 	{
-		pEnt->Teleport( &vecTargetPoint, NULL, NULL );
-	}
-}
+		if ( !g_pGameRules )
+		{
+			return 0;
+		}
 
-static ConCommand ent_teleport("ent_teleport", CC_Ent_Teleport, "Teleport the specified entity to where the player is looking.\n\tFormat: ent_teleport <entity name>", FCVAR_MAPPING);
+		const char *cmdname = "ent_teleport";
+
+		char *substring = (char *)partial;
+		if ( Q_strstr( partial, cmdname ) )
+		{
+			substring = (char *)partial + strlen( cmdname ) + 1;
+		}
+
+		int checklen = Q_strlen( substring );
+
+		CUtlRBTree< CUtlString > symbols( 0, 0, UtlStringLessFunc );
+		return AutoCompleteEntities(cmdname, commands, symbols, substring, checklen);
+	}
+};
+
+static CEntTeleportAutoCompletionFunctor g_EntTeleportAutoComplete;
+static ConCommand ent_teleport("ent_teleport", &g_EntTeleportAutoComplete, "Teleport the specified entity to where the player is looking.\n\tFormat: ent_teleport <entity name>", FCVAR_CHEAT, &g_EntTeleportAutoComplete);
 
 //------------------------------------------------------------------------------
 // Purpose: Orient a specified entity to match the player's angles
