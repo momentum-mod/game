@@ -3,3 +3,23 @@
 pushd `dirname $0`
 devtools/bin/vpc /momentum +game /mksln games
 popd
+
+# Add /bin/ to executables for use without sudo
+check=$(grep -o -P 'shell \/' games.mak)
+if [ -z "$check" ]
+then
+	sed -i -E 's/shell /shell \/bin\//g' games.mak
+	echo games.mak
+fi
+
+grep -r -P '@\+cd.+' games.mak | while read line; do
+    dir=$(echo "$line" | grep -o -P '(?<=@\+cd ).+?(?= &&)')
+    file=$(echo "$line" | grep -o -P '(?<=-f ).+?(?= \$\(SUBMAKE_PARAMS\))')
+
+    check=$(grep -o -P 'shell \/' "$dir"/"$file")
+	if [ -z "$check" ]
+	then
+		sed -i -E 's/shell /shell \/bin\//g' "$dir"/"$file"
+		echo "$dir"/"$file"
+	fi
+done
