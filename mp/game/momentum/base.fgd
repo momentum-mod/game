@@ -78,6 +78,48 @@
     input FireUser2(void) : "Causes this entity's OnUser2 output to be fired."
     input FireUser3(void) : "Causes this entity's OnUser3 output to be fired."
     input FireUser4(void) : "Causes this entity's OnUser4 output to be fired."
+    
+    // Mapbase -- New User I
+    input PassUser1(string) : "Causes this entity's OutUser1 output to be fired. Can pass any parameter."
+    input PassUser2(string) : "Causes this entity's OutUser2 output to be fired. Can pass any parameter."
+    input PassUser3(string) : "Causes this entity's OutUser3 output to be fired. Can pass any parameter."
+    input PassUser4(string) : "Causes this entity's OutUser4 output to be fired. Can pass any parameter."
+    
+    input FireRandomUser(void) : "Fires OnUser1, OnUser2, OnUser3, or OnUser4 with a 25% chance of each."
+    input PassRandomUser(string) : "Fires OutUser1, OutUser2, OutUser3, or OutUser4 with a 25% chance of each. Can pass any parameter."
+    
+    // Mapbase -- BaseEntity I/O
+    input FireOutput(string) : "Fires the named output on this entity. Format: '<output name>:<activator>:<caller>:<parameter>:<delay>' (OnDeath:hl3cardgame:gaben). Everything beyond the output name is optional."
+    input RemoveOutput(string) : "Removes all instances of the named output on this entity. Wildcards are supported, meaning you could just pass '*' to wipe all outputs from this entity."
+    input AcceptInput(string) : "Fires the named input on this entity. Format: '<input name>:<parameter>:<activator>:<caller>:<output ID>' (SetTarget:cheese). Everything beyond the input name is optional. Mind the fact this is arranged differently from FireOutput, having the parameter right after the input name."
+    input CancelPending(void) : "Cancels any events fired by this entity that are currently pending in the I/O event queue."
+    
+    input SetLocalOrigin(vector) : "Sets this entity's origin in local space, relative to its parent if one exists. Otherwise relative to the world."
+    input SetAbsOrigin(vector) : "Sets this entity's origin in the map, always relative to the world origin."
+    input SetLocalVelocity(vector) : "Sets this entity's current velocity."
+    input SetLocalAngularVelocity(vector) : "Sets this entity's current angular velocity."
+    
+    input AddSpawnFlags(integer) : "Adds spawnflag(s) to this entity."
+    input RemoveSpawnFlags(integer) : "Removes spawnflag(s) from this entity."
+    
+    input AddSolidFlags(integer) : "Adds solid flags to this entity."
+    input RemoveSolidFlags(integer) : "Removes solid flags from this entity."
+    
+    input SetHealth(integer) : "Sets this entity's health."
+    input AddHealth(integer) : "Adds to this entity's health."
+    input RemoveHealth(integer) : "Removes from this entity's health."
+    
+    input SetMaxHealth(integer) : "Sets this entity's max health."
+    
+    input SetEntityName(target_destination) : "Sets this entity's name that other entities should refer to it by."
+    
+    input SetTarget(target_destination) : "Sets this entity's target. This is specific to certain entities, particularly logic entities that involve a target."
+    input SetOwnerEntity(target_destination) : "Sets this entity's owner entity. This has nothing to do with parenting and has more to do with collision and kill credits."
+    
+    input SetThinkNull(void) : "Sets this entity's general think function to null. Behavior varies from entity to entity.."
+    
+    input Use(void) : "More or less replicates the player interacting with an entity. (+USE)"
+    input Touch(target_destination) : "Simulates this entity touching the specified entity."
 
     // Outputs    
     output OnUser1(void) : "Fired in response to FireUser1 input."
@@ -85,6 +127,12 @@
     output OnUser3(void) : "Fired in response to FireUser3 input."
     output OnUser4(void) : "Fired in response to FireUser4 input."
     output OnKilled(void) : "Fired in response to Kill or KillHierarchy input."
+    
+    // Mapbase -- New User O
+    output OutUser1(string) : "Fires in response to PassUser1 input. Can pass any parameter."
+    output OutUser2(string) : "Fires in response to PassUser2 input. Can pass any parameter."
+    output OutUser3(string) : "Fires in response to PassUser3 input. Can pass any parameter."
+    output OutUser4(string) : "Fires in response to PassUser4 input. Can pass any parameter."
 ]
 
 @BaseClass = Parentname
@@ -173,6 +221,17 @@
     ]
     renderamt(integer) : "FX Amount (0 - 255)" : 255 : "The FX amount is used by the selected Render Mode."
     rendercolor(color255) : "FX Color (R G B)" : "255 255 255" : "The FX color is used by the selected Render Mode."
+	
+    viewhideflags(choices) : "View ID nodraw" : 0 : "This keyvalue can control whether an entity should only draw on things like monitors or mirrors, or the opposite. The code for this is { m_iViewHideFlags & (1 << CurrentViewID()) } and supports any combination of view IDs." =
+    [
+        0 : "Draw normally"
+        193 : "Hide in main view (player's eyes)" // VIEW_MAIN + VIEW_INTRO_CAMERA + VIEW_SHADOW_DEPTH_TEXTURE
+        36 : "Hide in cameras" // VIEW_MONITOR + VIEW_INTRO_PLAYER
+        24 : "Hide in mirrors/water" // VIEW_REFLECTION + VIEW_REFRACTION
+        60 : "Hide in cameras and mirrors/water" // VIEW_MONITOR + VIEW_INTRO_PLAYER + VIEW_REFLECTION + VIEW_REFRACTION
+        2 : "Hide in 3D skybox" // VIEW_3DSKY
+        128 : "Hide projected texture shadows" // VIEW_SHADOW_DEPTH_TEXTURE
+    ]
 
     disablereceiveshadows(choices) : "Disable Receiving Shadows" : 0 =
     [
@@ -182,6 +241,19 @@
 
     input Alpha(integer) : "Set the sprite's alpha (0 - 255)."
     input Color(color255) : "Set the sprite's color (R G B)."
+	
+    input SetRenderMode(integer) : "Sets this entity's render mode."
+    input SetRenderFX(integer) : "Sets this entity's render FX."
+    input SetViewHideFlags(integer) : "Sets this entity's view ID nodraw flags (takes raw flag combination)."
+    input AddEffects(integer) : "Adds an entity effect."
+    input RemoveEffects(integer) : "Removes an entity effect."
+    input EnableDraw(void) : "Draws an entity if it is not drawn. Equivalent to RemoveEffects > 32."
+    input DisableDraw(void) : "Undraws an entity if it is drawn. Equivalent to AddEffects > 32."
+    input AddEFlags(integer) : "Adds an entity flag. NOTE: Entity flags are not the spawn flags you see in Hammer. Use AddSpawnFlags to add spawnflags."
+    input RemoveEFlags(integer) : "Removes an entity flag. NOTE: Entity flags are not the spawn flags you see in Hammer. Use RemoveSpawnFlags to remove spawnflags."
+    
+    // This is the closest I could get without putting this in Targetname, as most entities that use collision groups usually use render fields as well
+    input SetCollisionGroup(integer) : "Sets this entity's collision group."
 ]
 
 

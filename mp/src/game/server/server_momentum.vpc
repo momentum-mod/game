@@ -39,6 +39,8 @@ $Project "Server (Momentum)"
                 }
                 $File "momentum\tickset.h"
                 $File "momentum\tickset.cpp"
+                $File "momentum\datadesc_mod.cpp"
+                $File "momentum\datadesc_mod.h"
                 $File "$SRCDIR\game\shared\momentum\matchers.cpp"
                 $File "$SRCDIR\game\shared\momentum\matchers.h"
                 $File "$SRCDIR\game\shared\momentum\util\mom_util.cpp"

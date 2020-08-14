@@ -662,10 +662,71 @@ public:
 	void InputDisableShadow( inputdata_t &inputdata );
 	void InputEnableShadow( inputdata_t &inputdata );
 	void InputAddOutput( inputdata_t &inputdata );
+	void InputChangeVariable( inputdata_t &inputdata );
 	void InputFireUser1( inputdata_t &inputdata );
 	void InputFireUser2( inputdata_t &inputdata );
 	void InputFireUser3( inputdata_t &inputdata );
 	void InputFireUser4( inputdata_t &inputdata );
+	void InputPassUser1( inputdata_t &inputdata );
+	void InputPassUser2( inputdata_t &inputdata );
+	void InputPassUser3( inputdata_t &inputdata );
+	void InputPassUser4( inputdata_t &inputdata );
+
+	void InputFireRandomUser( inputdata_t &inputdata );
+	void InputPassRandomUser( inputdata_t &inputdata );
+
+	void InputSetEntityName( inputdata_t &inputdata );
+
+	virtual void InputSetTarget( inputdata_t &inputdata );
+	virtual void InputSetOwnerEntity( inputdata_t &inputdata );
+
+	virtual void InputAddHealth( inputdata_t &inputdata );
+	virtual void InputRemoveHealth( inputdata_t &inputdata );
+	virtual void InputSetHealth( inputdata_t &inputdata );
+
+	virtual void InputSetMaxHealth( inputdata_t &inputdata );
+
+	void InputFireOutput( inputdata_t &inputdata );
+	void InputRemoveOutput( inputdata_t &inputdata );
+	//virtual void InputCancelOutput( inputdata_t &inputdata ); // Find a way to implement this
+	void InputReplaceOutput( inputdata_t &inputdata );
+	void InputAcceptInput( inputdata_t &inputdata );
+	virtual void InputCancelPending( inputdata_t &inputdata );
+
+	void InputFreeChildren( inputdata_t &inputdata );
+
+	void InputSetLocalOrigin( inputdata_t &inputdata );
+	void InputSetLocalAngles( inputdata_t &inputdata );
+	void InputSetAbsOrigin( inputdata_t &inputdata );
+	void InputSetAbsAngles( inputdata_t &inputdata );
+	void InputSetLocalVelocity( inputdata_t &inputdata );
+	void InputSetLocalAngularVelocity( inputdata_t &inputdata );
+
+	void InputAddSpawnFlags( inputdata_t &inputdata );
+	void InputRemoveSpawnFlags( inputdata_t &inputdata );
+	void InputSetRenderMode( inputdata_t &inputdata );
+	void InputSetRenderFX( inputdata_t &inputdata );
+	void InputSetViewHideFlags( inputdata_t &inputdata );
+	void InputAddEffects( inputdata_t &inputdata );
+	void InputRemoveEffects( inputdata_t &inputdata );
+	void InputDrawEntity( inputdata_t &inputdata );
+	void InputUndrawEntity( inputdata_t &inputdata );
+	void InputAddEFlags( inputdata_t &inputdata );
+	void InputRemoveEFlags( inputdata_t &inputdata );
+	void InputAddSolidFlags( inputdata_t &inputdata );
+	void InputRemoveSolidFlags( inputdata_t &inputdata );
+	void InputSetMoveType( inputdata_t &inputdata );
+	void InputSetCollisionGroup( inputdata_t &inputdata );
+
+	void InputTouch( inputdata_t &inputdata );
+
+	virtual void InputKilledNPC( inputdata_t &inputdata );
+
+	void InputKillIfNotVisible( inputdata_t &inputdata );
+	void InputKillWhenNotVisible( inputdata_t &inputdata );
+
+	void InputSetThinkNull( inputdata_t &inputdata );
+
 
 	// Returns the origin at which to play an inputted dispatcheffect 
 	virtual void GetInputDispatchEffectPosition( const char *sInputString, Vector &pOrigin, QAngle &pAngles );
@@ -794,6 +855,14 @@ public:
 	CNetworkArray( int, m_nModelIndexOverrides, MAX_VISION_MODES ); // used to override the base model index on the client if necessary
 #endif
 
+	// Prevents this entity from drawing under certain view IDs. Each flag is (1 << the view ID to hide from).
+	// For example, hiding an entity from VIEW_MONITOR prevents it from showing up on RT camera monitors
+	// and hiding an entity from VIEW_MAIN just prevents it from showing up through the player's own "eyes".
+	// Doing this via flags allows for the entity to be hidden from multiple view IDs at the same time.
+	// 
+	// This was partly inspired by Underhell's keyvalue that allows entities to only render in mirrors and cameras.
+	CNetworkVar( int, m_iViewHideFlags );
+
 	// was pev->rendercolor
 	CNetworkColor32( m_clrRender );
 	const color32 GetRenderColor() const;
@@ -847,6 +916,12 @@ public:
 	int GetContextCount() const;                  // Call RemoveExpiredConcepts to clean out expired concepts
 	const char *GetContextName(int index) const;  // note: context may be expired
 	const char *GetContextValue(int index) const; // note: context may be expired
+
+	bool	HasContext( const char *name, const char *value ) const;
+	bool	HasContext( string_t name, string_t value ) const; // NOTE: string_t version only compares pointers!
+	bool	HasContext( const char *nameandvalue ) const;
+	const char *GetContextValue( const char *contextName ) const;
+	void	RemoveContext( const char *nameandvalue );
 
 protected:
 	CUtlVector< ResponseContext_t > m_ResponseContexts;
@@ -1042,6 +1117,8 @@ public:
 	void					SUB_CallUseToggle( void ) { this->Use( this, this, USE_TOGGLE, 0 ); }
 	void					SUB_PerformFadeOut( void );
 	virtual	bool			SUB_AllowedToFade( void );
+	// For KillWhenNotVisible
+	void					SUB_RemoveWhenNotVisible( void );
 
 	// change position, velocity, orientation instantly
 	// passing NULL means no change
@@ -1684,6 +1761,10 @@ private:
 	CNetworkVar( bool, m_bAlternateSorting );
 
 	// User outputs. Fired when the "FireInputX" input is triggered.
+	COutputVariant m_OutUser1;
+	COutputVariant m_OutUser2;
+	COutputVariant m_OutUser3;
+	COutputVariant m_OutUser4;
 	COutputEvent m_OnUser1;
 	COutputEvent m_OnUser2;
 	COutputEvent m_OnUser3;

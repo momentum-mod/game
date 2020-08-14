@@ -53,6 +53,7 @@
 #include "prediction.h"
 #include "studio_stats.h"
 #include "tier1/callqueue.h"
+#include "viewrender.h"
 
 #ifdef TF_CLIENT_DLL
 #include "c_tf_player.h"
@@ -3148,6 +3149,15 @@ int C_BaseAnimating::DrawModel( int flags )
 		return 0;
 
 	int drawn = 0;
+
+	if (m_iViewHideFlags > 0)
+	{
+		// Hide this entity if it's not supposed to be drawn in this view.
+		if (m_iViewHideFlags & (1 << CurrentViewID()))
+		{
+			return 0;
+		}
+	}
 
 #ifdef TF_CLIENT_DLL
 	ValidateModelIndex();
