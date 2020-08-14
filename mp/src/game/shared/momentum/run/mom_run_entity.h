@@ -12,6 +12,42 @@ class CTriggerZone;
 class CMomExplosive;
 #endif
 
+struct SurfaceInteraction
+{
+    enum Type
+    {
+        TYPE_LEAVE = 0,
+        TYPE_FLOOR,
+        TYPE_WALL,
+        TYPE_CEILING,
+        TYPE_LAND,
+        TYPE_GROUNDED,
+        TYPE_COUNT
+    };
+
+    enum Action
+    {
+        ACTION_LEAVE = 0,
+        ACTION_KNOCKBACK,
+        ACTION_WALK,
+        ACTION_DUCKWALK,
+        ACTION_JUMP,
+        ACTION_DUCKJUMP,
+        ACTION_CTAP,
+        ACTION_COLLISION,
+        ACTION_SLIDE,
+        ACTION_EDGEBUG,
+        ACTION_LAND,
+        ACTION_GROUNDED,
+    };
+
+    int tick;
+    trace_t trace;
+    Vector velocity;
+    Action action;
+};
+typedef SurfaceInteraction SurfInt;
+
 enum RUN_ENT_TYPE
 {
     RUN_ENT_PLAYER = 0, // Local player
