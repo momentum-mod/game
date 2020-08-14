@@ -445,6 +445,14 @@ CBaseEntity *CGlobalEntityList::FindEntityProcedural( const char *szName, CBaseE
 		{
 			return pSearchingEntity;
 		}
+		else if ( FStrEq( pName, "parent" ) )
+		{
+			return pSearchingEntity ? pSearchingEntity->GetParent() : NULL;
+		}
+		else if ( FStrEq( pName, "owner" ) )
+		{
+			return pSearchingEntity ? pSearchingEntity->GetOwnerEntity() : NULL;
+		}
 		else 
 		{
 			Warning( "Invalid entity search name %s\n", szName );
