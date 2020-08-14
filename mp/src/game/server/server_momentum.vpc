@@ -39,6 +39,8 @@ $Project "Server (Momentum)"
                 }
                 $File "momentum\tickset.h"
                 $File "momentum\tickset.cpp"
+                $File "$SRCDIR\game\shared\momentum\matchers.cpp"
+                $File "$SRCDIR\game\shared\momentum\matchers.h"
                 $File "$SRCDIR\game\shared\momentum\util\mom_util.cpp"
                 $File "$SRCDIR\game\shared\momentum\util\mom_util.h"
                 $File "$SRCDIR\game\shared\momentum\util\baseautocompletefilelist.cpp"

@@ -342,6 +342,8 @@ $Project "Client (Momentum)"
                 $File "$SRCDIR\game\shared\momentum\run\mom_run_safeguards.cpp"
                 $File "$SRCDIR\game\shared\momentum\util\jsontokv.h"
                 $File "$SRCDIR\game\shared\momentum\util\jsontokv.cpp"
+                $File "$SRCDIR\game\shared\momentum\matchers.cpp"
+                $File "$SRCDIR\game\shared\momentum\matchers.h"
                 $File "$SRCDIR\game\shared\momentum\util\engine_patch.h"
                 $File "$SRCDIR\game\shared\momentum\util\engine_patch.cpp"
                 {
