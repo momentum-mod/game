@@ -116,6 +116,7 @@ mp/game/momentum/custom/
 CMakeLists.txt
 mp/game/momentum/cfg/pet.txt
 *.exe
+nbproject
 
 # Shader output
 mp/src/materialsystem/stdshaders/filestocopy.txt

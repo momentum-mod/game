@@ -23,3 +23,6 @@ grep -r -P '@\+cd.+' games.mak | while read line; do
 		echo "$dir"/"$file"
 	fi
 done
+
+# Create NetBeans project folder if it doesn't exist
+cp -Tur nbproject_default nbproject
