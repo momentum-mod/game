@@ -36,10 +36,7 @@
       </nativedebugger>
       <runprofile version="9">
         <runcommandpicklist>
-          <runcommandpicklistitem>${PROJECT_DIR}/</runcommandpicklistitem>
           <runcommandpicklistitem>"${OUTPUT_PATH}"</runcommandpicklistitem>
-          <runcommandpicklistitem>hl2_linux</runcommandpicklistitem>
-          <runcommandpicklistitem>${OUTPUT_PATH} -game momentum -debug -console -mapping -windowed -w 1920 -h 1080 +developer 1 +sv_cheats 1 +cl_showpos 2</runcommandpicklistitem>
           <runcommandpicklistitem>hl2_linux -game momentum -debug -console -mapping -windowed -w 1920 -h 1080 +developer 1 +sv_cheats 1 +cl_showpos 2</runcommandpicklistitem>
         </runcommandpicklist>
         <runcommand>hl2_linux -game momentum -debug -console -mapping -windowed -w 1920 -h 1080 +developer 1 +sv_cheats 1 +cl_showpos 2</runcommand>

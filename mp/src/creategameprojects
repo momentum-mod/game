@@ -9,7 +9,6 @@ check=$(grep -o -P 'shell \/' games.mak)
 if [ -z "$check" ]
 then
 	sed -i -E 's/shell /shell \/bin\//g' games.mak
-	echo games.mak
 fi
 
 grep -r -P '@\+cd.+' games.mak | while read line; do
@@ -20,7 +19,6 @@ grep -r -P '@\+cd.+' games.mak | while read line; do
 	if [ -z "$check" ]
 	then
 		sed -i -E 's/shell /shell \/bin\//g' "$dir"/"$file"
-		echo "$dir"/"$file"
 	fi
 done
 
