@@ -297,7 +297,7 @@ else
 		# lines above or else a new changelist will be created each time.
 		# Warning: the behavior of 'echo' is not consistent. In bash you need the "-e" option in order for \n to be
 		# interpreted as a line-feed, but in dash you do not, and if "-e" is passed along then it is printed, which
-		# confuses p4. So, if you run this command from the bash shell /bin/don't forget to add "-e" to the echo command.
+		# confuses p4. So, if you run this command from the bash shell don't forget to add "-e" to the echo command.
 		P4_EDIT_CHANGELIST = $(shell /bin/echo -e "Change: new\nDescription: POSIX Auto Checkout" | $(P4BIN) change -i | cut -f 2 -d ' ')
 	endif
 
