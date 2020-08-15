@@ -1,4 +1,5 @@
 #include "cbase.h"
+#include "ai_activity.h"
 #include "weapon_mom_pistol.h"
 #include "fx_mom_shared.h"
 #include "mom_player_shared.h"
@@ -50,6 +51,11 @@ bool CMomentumPistol::Deploy()
     m_iPistolShotsFired = 0;
     m_flPistolShoot = 0.0f;
     return BaseClass::Deploy();
+}
+
+Activity CMomentumPistol::GetDrawActivity()
+{
+    return m_bBurstMode ? ACT_VM_DRAW_SPECIAL : BaseClass::GetDrawActivity();
 }
 
 void CMomentumPistol::SecondaryAttack()
@@ -165,7 +171,11 @@ void CMomentumPistol::PrimaryAttack()
 
     //We need to figure out where to place the particle effect, so look up where the muzzle is
     // MOM_TODO: Make this a better effect
-    // DispatchParticleEffect("weapon_muzzle_smoke", PATTACH_POINT_FOLLOW, GetPlayerOwner()->GetViewModel(), LookupAttachment("barrel"));
+    /* VxPDX: I originally re-enabled this and planned creating a better smoke system, but using this makes the particle system
+       throw an error when switching to a weapon without the muzzle attachment or, if it has one, attaches itself to next weapon's
+       muzzle.
+    */
+    //DispatchParticleEffect("weapon_muzzle_smoke", PATTACH_POINT_FOLLOW, GetPlayerOwner()->GetViewModel(), LookupAttachment("muzzle"));
 
     // player "shoot" animation
     pPlayer->SetAnimation(PLAYER_ATTACK1);
@@ -227,14 +237,13 @@ void CMomentumPistol::WeaponIdle()
 
     if (m_flTimeWeaponIdle > gpGlobals->curtime)
         return;
+    
+    SendWeaponAnim(m_bBurstMode ? ACT_VM_IDLE_LOWERED : ACT_VM_IDLE);
 
 #ifdef WEAPONS_USE_AMMO
     // only idle if the slid isn't back
     if (m_iClip1 != 0)
 #endif
-    {
-        SendWeaponAnim(ACT_VM_IDLE);
-    }
 }
 
 void CMomentumPistol::ToggleBurst(CMomentumPlayer *pPlayer)
@@ -244,13 +253,14 @@ void CMomentumPistol::ToggleBurst(CMomentumPlayer *pPlayer)
     {
         ClientPrint(pPlayer, HUD_PRINTCENTER, "#MOM_Weapon_SwitchToSemiAuto");
         m_bBurstMode = false;
-}
+        SendWeaponAnim(ACT_VM_LOWERED_TO_IDLE);
+    }
     else
     {
         ClientPrint(pPlayer, HUD_PRINTCENTER, "#MOM_Weapon_SwitchToBurstFire");
         m_bBurstMode = true;
+        SendWeaponAnim(ACT_VM_IDLE_TO_LOWERED);
     }
-    SendWeaponAnim(ACT_VM_SECONDARYATTACK_SPECIAL);
 
-    m_flNextSecondaryAttack = gpGlobals->curtime + 0.3;
+    m_flNextSecondaryAttack = m_flNextPrimaryAttack = gpGlobals->curtime + 0.8;
 }
