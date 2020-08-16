@@ -187,6 +187,8 @@ $Project "Server (Momentum)"
             $File "momentum\mom_timer.cpp"
             $File "momentum\mom_ghost_base.h"
             $File "momentum\mom_ghost_base.cpp"
+            $File "momentum\trigger_trace_enums.h"
+            $File "momentum\trigger_trace_enums.cpp"
             
             $File "$SRCDIR\game\shared\momentum\mom_system_gamemode.cpp"
             $File "$SRCDIR\game\shared\momentum\mom_system_gamemode.h"

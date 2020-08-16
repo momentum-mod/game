@@ -7,6 +7,7 @@
 #include "mom_timer.h"
 #include "mom_triggers.h"
 #include "movevars_shared.h"
+#include "trigger_trace_enums.h"
 
 #include "tier0/memdbgon.h"
 
@@ -201,39 +202,6 @@ CON_COMMAND_F(mom_zone_info,
               "Sends info about the trigger that is being looked at (if one exists). Internal usage only.\n",
               FCVAR_HIDDEN | FCVAR_MAPPING)
 {
-    class CZoneTriggerTraceEnum : public IEntityEnumerator
-    {
-      public:
-        CZoneTriggerTraceEnum() { m_pZone = nullptr; }
-
-        // Return true to continue enumerating or false to stop
-        virtual bool EnumEntity(IHandleEntity *pHandleEntity) OVERRIDE
-        {
-            CBaseEntity *pEnt = gEntList.GetBaseEntity(pHandleEntity->GetRefEHandle());
-
-            // Stop the trace if this entity is solid.
-            if (pEnt->IsSolid())
-            {
-                return false;
-            }
-
-            m_pZone = dynamic_cast<CBaseMomentumTrigger *>(pEnt);
-            if (m_pZone != nullptr)
-            {
-                // Found our target, stop here
-                return false;
-            }
-
-            // No dice, let's keep searching
-            return true;
-        }
-
-        CBaseMomentumTrigger *GetZone() const { return m_pZone; }
-
-      private:
-        CBaseMomentumTrigger *m_pZone;
-    };
-
     CMomentumPlayer *pPlayer = CMomentumPlayer::GetLocalPlayer();
     if (!pPlayer)
         return;
