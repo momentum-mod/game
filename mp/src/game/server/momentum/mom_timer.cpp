@@ -9,22 +9,10 @@
 #include "mom_triggers.h"
 #include "movevars_shared.h"
 #include "run/mom_run_safeguards.h"
+#include "trigger_trace_enums.h"
 
 #include "tier0/memdbgon.h"
 
-class CTimeTriggerTraceEnum : public IEntityEnumerator
-{
-  public:
-    CTimeTriggerTraceEnum(Ray_t *pRay, Vector velocity) : m_vecVelocity(velocity), m_pRay(pRay) { m_flOffset = 0.0f; }
-
-    bool EnumEntity(IHandleEntity *pHandleEntity) OVERRIDE;
-    float GetOffset() { return m_flOffset; }
-
-  private:
-    float m_flOffset;
-    Vector m_vecVelocity;
-    Ray_t *m_pRay;
-};
 
 CMomentumTimer::CMomentumTimer() : CAutoGameSystemPerFrame("CMomentumTimer"),
       m_iStartTick(0), m_iEndTick(0), m_bIsRunning(false),
@@ -310,38 +298,6 @@ void CMomentumTimer::CalculateTickIntervalOffset(CMomentumPlayer *pPlayer, const
     DevLog("Time offset was %f seconds (%s)\n", endTriggerTraceEnum.GetOffset(),
            zoneType == ZONE_TYPE_START ? "EndTouch" : "StartTouch");
     SetIntervalOffset(zoneNumber, endTriggerTraceEnum.GetOffset());
-}
-
-// override of IEntityEnumerator's EnumEntity() in order for our trace to hit zone triggers
-bool CTimeTriggerTraceEnum::EnumEntity(IHandleEntity *pHandleEntity)
-{
-    trace_t tr;
-    // store entity that we found on the trace
-    CBaseEntity *pEnt = gEntList.GetBaseEntity(pHandleEntity->GetRefEHandle());
-
-    // Stop the trace if this entity is solid.
-    if (pEnt->IsSolid())
-        return false;
-
-    // if we aren't hitting a momentum trigger
-    // the return type of EnumEntity tells the engine whether to continue enumerating future entities
-    // or not.
-    if (Q_strnicmp(pEnt->GetClassname(), "trigger_momentum_", Q_strlen("trigger_momentum_")) == 1)
-        return false;
-
-    // In this case, we want to continue in case we hit another type of trigger.
-
-    enginetrace->ClipRayToEntity(*m_pRay, MASK_ALL, pHandleEntity, &tr);
-    if (tr.fraction > 0.0f)
-    {
-        m_flOffset = tr.startpos.DistTo(tr.endpos) / m_vecVelocity.Length();
-
-        // Account for slowmotion/timescale
-        m_flOffset /= gpGlobals->interval_per_tick / gpGlobals->frametime;
-        return true; // We hit our target
-    }
-
-    return false;
 }
 
 // Practice mode that stops the timer and allows the player to noclip.
