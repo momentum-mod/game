@@ -30,6 +30,7 @@ private:
     vgui::CvarToggleCheckButton *m_pHudFastSwitch;
     vgui::CvarToggleCheckButton *m_pOverlappingKeys;
     vgui::CvarToggleCheckButton *m_pReleaseForwardOnJump;
+    vgui::CvarToggleCheckButton *m_pDrawViewmodel;
 
     vgui::CvarToggleCheckButton *m_pPlayBlockSound;
     vgui::CvarToggleCheckButton *m_pSaveCheckpoints;

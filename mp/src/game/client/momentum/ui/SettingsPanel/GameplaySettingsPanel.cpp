@@ -37,6 +37,8 @@ GameplaySettingsPanel::GameplaySettingsPanel(Panel *pParent, Button *pAssociate)
     m_pPlayBlockSound = new CvarToggleCheckButton(this, "PlayBlockSound", "#MOM_Settings_Play_BlockSound", "mom_bhop_playblocksound");
     m_pSaveCheckpoints = new CvarToggleCheckButton(this, "SaveCheckpoints", "#MOM_Settings_Save_Checkpoints", "mom_saveloc_save_between_sessions");
 
+    m_pDrawViewmodel = new CvarToggleCheckButton(this, "DrawViewmodel", "#MOM_Settings_Draw_Viewmodel", "r_drawviewmodel");
+
     // Paint settings
     m_pPaintDecalScaleSlider = new CvarSlider(this, "PaintScaleSlider", "mom_paint_scale", 2, true);
     m_pPaintDecalScaleSlider->AddActionSignalTarget(this);
