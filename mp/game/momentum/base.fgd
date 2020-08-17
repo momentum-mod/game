@@ -4803,9 +4803,17 @@
         0 : "Allow entities that match criteria"
         1 : "Disallow entities that match criteria"
     ]
+	
+    PassCallerWhenTested(choices) : "Pass caller when tested" : 0 : "When tested with TestActivator or TestEntity, this causes the OnPass and OnFail outputs to use either this filter as the caller or the entity that called the test as the caller." =
+    [
+        0 : "No"
+        1 : "Yes"
+    ]
 
     // Inputs
     input TestActivator(void) : "Test the activator against the filter and fires OnPass or OnFail output."
+    input TestEntity(target_destination) : "Tests the target entity against the specified entity and fires the OnPass or OnFail output."
+    input SetField(string) : "Sets this filter's primary test criteria. (e.g. the name to test against the activator)"
 
     // Outputs
     output OnPass(void) : "Fired in response to TestActivator input if the activator passes the filter."
@@ -4845,27 +4853,42 @@
         "all entities EXCEPT those whose name matches the string will pass the filter."
 ]
 
-@FilterClass base(BaseFilter) iconsprite("editor/filter_name.vmt") = filter_activator_model :
+@FilterClass base(BaseFilter) iconsprite("editor/filter_model.vmt") = filter_activator_model :
     "A filter that filters by the model of the activator."
 [
-    model(studio) : "Filter Model" : : "The model to filter by. If the filter mode is Allow, only entities whose "+
+    filtermodel(studio) : "Filter Model" : : "The model to filter by. If the filter mode is Allow, only entities whose "+
         "model matches the given string will pass the filter. If the filter mode is Disallow, "+
-        "all entities EXCEPT those whose model matches the string will pass the filter."
+        "all entities EXCEPT those whose model matches the given string will pass the filter."
+        
+    skin(string) : "Skin" : -1 : "Some models have multiple versions of their textures, called skins. Use this if you want to filter by skins as well. If you want any skin to be allowed, be sure to leave this at -1! It might automatically change when you choose a model."
 ]
 
-@FilterClass base(BaseFilter) iconsprite("editor/filter_name.vmt") = filter_activator_context :
+@FilterClass base(BaseFilter) iconsprite("editor/filter_context.vmt") = filter_activator_context :
     "A filter that filters by a context and value on the activator."
 [
-    CompareType(choices) : "Compare Type" : 0 : "The comparison criteria" =
+    ResponseContext(string) : "Filter Context" : : "The context(s) to filter by. Syntax is 'key:value,key:value'. "+
+        "Values in this field can use wilcards. For example, if this filter contains 'lastname:*', it will pass any entity with the context 'lastname', regardless of its value. "+
+        "Wildcards do not apply to context names and you cannot define the same context multiple times, but inputs like AddContext or RemoveContext can be used to add to the filter context."
+        
+    any(choices) : "Pass if entity has any of these contexts" : 0 : "Should this filter only pass if the entity contains all of these contexts or can it pass if the entity has at least one of them?" =
     [
-        0 : "Greater than"
-        1 : "Equal"
-        2 : "Less than"
+        0 : "No"
+        1 : "Yes"
     ]
-    FilterContext(string) : "Filter Context" : : "The context to filter by. If the filter mode is Allow, only entities that "+
-        "have a context matching the given string, of a value that passes the criteria, will pass the filter. If the filter mode is Disallow, "+
-        "all entities EXCEPT those whose context passes the criteria will pass the filter."
-    FilterValue(integer) : "Filter Value" : 0 : "The context value to compare with."
+        
+    // Inputs
+    input AddContext(string) : "Adds a context to this fitler's list of response contexts. The format should be 'key:value'."
+    input RemoveContext(string) : "Remove a context from this filter's list of response contexts. The name should match the 'key' of a previously added context."
+    input ClearContext(void) : "Removes all contexts in this filter's list of response contexts."
+]
+
+@FilterClass base(BaseFilter) iconsprite("editor/filter_keyfield.vmt") = filter_activator_keyfield :
+    "A filter that filters by the activator's keyfields."
+[
+    keyname(string) : "Key" : : "The key name to filter by. Please note that certain keyvalues, particularly "+
+        "targetnames and base values related to clientside rendering (e.g. render mode), cannot be found by this filter."
+        
+    value(string) : "Value (Optional)" : : "The key value to filter by. If empty, the filter will pass if the entity just has the keyfield."
 ]
 
 @FilterClass base(BaseFilter) iconsprite("editor/filter_class.vmt") = filter_activator_class :
@@ -4876,7 +4899,7 @@
         "all entities EXCEPT those whose class name matches the given string will pass the filter."
 ]
 
-@FilterClass base(BaseFilter) iconsprite("editor/filter_class.vmt") = filter_activator_mass_greater :
+@FilterClass base(BaseFilter) iconsprite("editor/filter_generic.vmt") = filter_activator_mass_greater :
     "A filter that filters by the mass of the activator."
 [
     filtermass(float) : "Filter Mass" : : "The mass to filter by. If the filter mode is Allow, only entities whose "+
@@ -4932,6 +4955,31 @@
     spawnflags(Flags) =
     [
         1 : "Do not lose target if already aquired but filter failed." : 0
+    ]
+]
+
+@FilterClass base(BaseFilter) iconsprite("editor/filter_involume.vmt") = filter_activator_involume :
+    "A filter that tests whether the activator is within a volume."
+[
+    target(target_destination) : "Volume" : : "The volume to be tested with. This filter passes if the activator is within this volume. Intended to be a brush entity. (e.g. a trigger)"
+    
+    tester(target_destination) : "Volume Tester" : "!activator" : "Who should be in the volume for the filter to pass?"
+]
+
+@FilterClass base(BaseFilter) iconsprite("editor/filter_generic.vmt") = filter_activator_surfacedata :
+    "A filter that tests the activator's surface data."
+[
+    filtersurfaceprop(choices) : "Surface" : : "The surface to test with." =
+    [
+        "metal" : "Metal"
+        "metalgrate" : "Metal Grate"
+        "metalvent" : "Metal Vent"
+    ]
+    
+    SurfaceType(choices) : "Type" : 1 : "What to actually filter by."  =
+    [
+        0 : "Surface Prop"
+        1 : "Game Material"
     ]
 ]
 
