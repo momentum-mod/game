@@ -93,6 +93,7 @@ END_SEND_TABLE();
 CBaseMomZoneTrigger::CBaseMomZoneTrigger()
 {
     m_iTrackNumber = TRACK_MAIN; // Default zones to the main map.
+    m_vecRestartPos = vec3_invalid;
 }
 
 void CBaseMomZoneTrigger::InitCustomCollision(CPhysCollide* pPhysCollide, const Vector& vecMins, const Vector& vecMaxs)
@@ -191,6 +192,31 @@ bool CBaseMomZoneTrigger::FindStandableGroundBelow(const Vector& traceStartPos, 
     dropPos = dropOnGround ? solidTr.endpos : traceStartPos;
 
     return dropOnGround;
+}
+
+const Vector& CBaseMomZoneTrigger::GetRestartPosition()
+{
+    if(m_vecRestartPos == vec3_invalid)
+    {
+        Vector zoneMaxsRel = CollisionProp()->OBBMaxs();
+        Vector zoneMaxs;
+        VectorTransform(zoneMaxsRel, CollisionProp()->CollisionToWorldTransform(), zoneMaxs);
+        Vector zoneMinsRel = CollisionProp()->OBBMins();
+        Vector zoneMins;
+        VectorTransform(zoneMinsRel, CollisionProp()->CollisionToWorldTransform(), zoneMins);
+
+        // Fallback restart position in the middle
+        Vector zoneCenter(0.5f * (zoneMaxs + zoneMins));
+        // Where we actually trace from to find the landing position
+        Vector zoneCeilCenter = Vector(zoneCenter.x, zoneCenter.y, zoneMaxs.z);
+
+        Vector dropPos;
+        bool foundGround = FindStandableGroundBelow(zoneCeilCenter, dropPos);
+
+        bool groundIsHighEnough = (dropPos.z >= zoneMins.z - 0.9f * (VEC_DUCK_HULL_MAX.z - VEC_DUCK_HULL_MIN.z));
+        m_vecRestartPos = (foundGround && groundIsHighEnough) ? dropPos : zoneCenter;
+    }
+    return m_vecRestartPos;
 }
 
 // --------- CTriggerZone ----------------------------------------------

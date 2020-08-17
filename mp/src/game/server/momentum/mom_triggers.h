@@ -110,16 +110,21 @@ public:
 
     virtual int GetZoneType();
 
+    const Vector& GetRestartPosition();
+
     IMPLEMENT_NETWORK_VAR_FOR_DERIVED(m_iTrackNumber);
 
     CNetworkVar(float, m_flZoneHeight);
     // Point-based zone editing
     CUtlVector<Vector> m_vecZonePoints;
 
+
 private:
     friend class CMomPointZoneBuilder;
 
     bool FindStandableGroundBelow(const Vector& traceStartPos, Vector& dropPos);
+
+    Vector m_vecRestartPos;
 };
 
 // A zone trigger has a signifying "zone number" used to give the player
