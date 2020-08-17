@@ -1252,6 +1252,7 @@
         2: "Modulate" : 0
         4: "Triggering player only" : 0
         8: "Stay Out" : 0
+		16: "Don't purge other active fades" : 0
     ]
     duration(string) : "Duration (seconds)" : "2" : "The time that it will take to fade the screen in or out."
     ReverseFadeDuration(float) : "Reverse Fade Duration (seconds)" : "2" : "The duration of the reverse fade."
