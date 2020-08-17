@@ -1715,7 +1715,7 @@ struct collidelist_t
 
 // NOTE: This routine is relatively slow.  If you need to use it for per-frame work, consider that fact.
 // UNDONE: Expand this to the full matrix of solid types on each side and move into enginetrace
-static bool TestEntityTriggerIntersection_Accurate( CBaseEntity *pTrigger, CBaseEntity *pEntity )
+bool TestEntityTriggerIntersection_Accurate( CBaseEntity *pTrigger, CBaseEntity *pEntity )
 {
 	Assert( pTrigger->GetSolid() == SOLID_BSP );
 
