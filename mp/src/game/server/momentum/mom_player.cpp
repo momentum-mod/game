@@ -1753,7 +1753,7 @@ void CMomentumPlayer::TimerCommand_Restart(int track)
         {
             // Don't set angles if still in start zone.
             QAngle ang = pStart->GetLookAngles();
-            Teleport(&pStart->WorldSpaceCenter(), (pStart->HasLookAngles() ? &ang : nullptr), &vec3_origin);
+            Teleport(&pStart->GetRestartPosition(), (pStart->HasLookAngles() ? &ang : nullptr), &vec3_origin);
         }
 
         m_Data.m_iCurrentTrack = track;
@@ -1788,8 +1788,7 @@ void CMomentumPlayer::TimerCommand_RestartStage(int stage, int track)
         {
             DestroyExplosives();
 
-            // MOM_TODO do a trace downwards from the top of the trigger's center to touchable land, teleport the player there
-            Teleport(&pCurrentZone->WorldSpaceCenter(), nullptr, &vec3_origin);
+            Teleport(&pCurrentZone->GetRestartPosition(), nullptr, &vec3_origin);
         }
         return;
     }
@@ -1802,7 +1801,7 @@ void CMomentumPlayer::TimerCommand_RestartStage(int stage, int track)
     {
         if (pStage->GetZoneNumber() == stage && pStage->GetTrackNumber() == track)
         {
-            Teleport(&pStage->GetAbsOrigin(), &pStage->GetAbsAngles(), &vec3_origin);
+            Teleport(&pStage->GetRestartPosition(), &pStage->GetAbsAngles(), &vec3_origin);
             // Stop *after* the teleport
             g_pMomentumTimer->Stop(this);
             return;
@@ -2103,3 +2102,4 @@ CON_COMMAND(toggle_duck, "Toggles duck state of the player. Only usable in the A
 
     pPlayer->ToggleDuck();
 }
+
