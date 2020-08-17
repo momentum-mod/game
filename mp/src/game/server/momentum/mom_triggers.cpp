@@ -10,6 +10,7 @@
 #include "fmtstr.h"
 #include "mom_timer.h"
 #include "mom_modulecomms.h"
+#include "trigger_trace_enums.h"
 
 #include "dt_utlvector_send.h"
 
@@ -162,6 +163,34 @@ bool CBaseMomZoneTrigger::LoadFromKeyValues(KeyValues *pKvFrom)
 int CBaseMomZoneTrigger::GetZoneType()
 {
     return ZONE_TYPE_INVALID;
+}
+
+bool CBaseMomZoneTrigger::FindStandableGroundBelow(const Vector& traceStartPos, Vector& dropPos)
+{
+    // Trace for a suitable landing position
+    Vector collisionEnd(traceStartPos + Vector(0, 0, -MAX_TRACE_LENGTH));
+    int mask = MASK_PLAYERSOLID_BRUSHONLY;
+    int group = COLLISION_GROUP_NONE;
+    trace_t solidTr;
+    UTIL_TraceHull(traceStartPos, collisionEnd, VEC_HULL_MIN, VEC_HULL_MAX, mask, nullptr, group, &solidTr);
+
+    // Check if we would land in a teleport trigger
+    Ray_t tpRay;
+    tpRay.Init(traceStartPos, solidTr.endpos);
+    CTeleportTriggerTraceEnum traceEnum(&tpRay);
+    enginetrace->EnumerateEntities(tpRay, true, &traceEnum);
+
+    // Check if one of the following happened:
+    // We would land on a trigger_teleport
+    // We didn't actually find any ground to stand on
+    // We would land on a ramp you cannot stand on
+    bool dropOnGround =
+        traceEnum.GetTeleportEntity() == nullptr
+        && solidTr.DidHit()
+        && (!solidTr.allsolid && solidTr.plane.normal.z >= 0.7);
+    dropPos = dropOnGround ? solidTr.endpos : traceStartPos;
+
+    return dropOnGround;
 }
 
 // --------- CTriggerZone ----------------------------------------------
