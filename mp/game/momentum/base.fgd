@@ -1303,12 +1303,14 @@
     "An entity that controls the HDR tonemapping for the player. Think of it as a method of controlling the exposure of the player's eyes."
 [
     // Inputs
-    input SetTonemapScale(void) : "Set the player's tonemap scale. It should be a value between 0 and 2, where 0 is the eyes fully closed, 1 is use the unchanged autoexposure (default), and 2 is the eye fully wide open."
+    input SetTonemapScale(float) : "Set the player's tonemap scale. It should be a value between 0 and 2, where 0 is the eyes fully closed, 1 is use the unchanged autoexposure (default), and 2 is the eye fully wide open."
     input BlendTonemapScale(string) : "Blend from the player's current tonemap scale to a new one. The parameter syntax is as follows: <target tonemap scale> <blend duration>. For example: '0.5 10' would blend from the current tonemap scale to 0.5 over a period of 10 seconds. Tonemap scale is a value between 0 and 2, where 0 is the eyes fully closed, 1 is use the unchanged autoexposure (default), and 2 is the eye fully wide open."
     input UseDefaultAutoExposure(void) : "Revert to using the default tonemap auto exposure."
+    input UseDefaultBloomScale(void) : "Reverts to using the default bloom scale."
     input SetAutoExposureMin(float) : "Set a custom tonemap auto exposure minimum."
     input SetAutoExposureMax(float) : "Set a custom tonemap auto exposure maximum."
     input SetBloomScale(float) : "Set a custom bloom scale."
+    input SetBloomScaleRange(string) : "Sets a range for the bloom scale. First number is the maximum, second number is the minimum."
     input SetTonemapRate(float) : "Set the rate for autoexposure adjustment."
 ]
 
