@@ -118,6 +118,8 @@ public:
 
 private:
     friend class CMomPointZoneBuilder;
+
+    bool FindStandableGroundBelow(const Vector& traceStartPos, Vector& dropPos);
 };
 
 // A zone trigger has a signifying "zone number" used to give the player
