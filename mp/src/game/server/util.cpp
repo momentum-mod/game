@@ -2419,6 +2419,9 @@ void UTIL_PredictedPosition( CBaseEntity *pTarget, float flTimeDelta, Vector *ve
 		if ( pAnimating != NULL )
 		{
 			vecPredictedVel = pAnimating->GetGroundSpeedVelocity();
+
+			if (vecPredictedVel.IsZero())
+				vecPredictedVel = pAnimating->GetSmoothedVelocity();
 		}
 		else
 		{
@@ -2429,6 +2432,60 @@ void UTIL_PredictedPosition( CBaseEntity *pTarget, float flTimeDelta, Vector *ve
 
 	//Get the result
 	(*vecPredictedPosition) = pTarget->GetAbsOrigin() + ( vecPredictedVel * flTimeDelta );
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: Same as above, except you don't have to use the absolute origin and can use your own position to predict from.
+//-----------------------------------------------------------------------------
+void UTIL_PredictedPosition( CBaseEntity *pTarget, const Vector &vecActualPosition, float flTimeDelta, Vector *vecPredictedPosition )
+{
+	if ( ( pTarget == NULL ) || ( vecPredictedPosition == NULL ) )
+		return;
+
+	Vector	vecPredictedVel;
+	CBasePlayer	*pPlayer = ToBasePlayer( pTarget );
+	if ( pPlayer != NULL )
+	{
+		vecPredictedVel = pPlayer->GetSmoothedVelocity();
+	}
+	else
+	{
+		CBaseAnimating *pAnimating = dynamic_cast<CBaseAnimating *>(pTarget);
+		if ( pAnimating != NULL )
+		{
+			vecPredictedVel = pAnimating->GetGroundSpeedVelocity();
+			if (vecPredictedVel.IsZero())
+				vecPredictedVel = pAnimating->GetSmoothedVelocity();
+		}
+		else
+			vecPredictedVel = pTarget->GetSmoothedVelocity();
+	}
+
+	// Get the result
+	(*vecPredictedPosition) = vecActualPosition + ( vecPredictedVel * flTimeDelta );
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: Predicts angles through angular velocity instead of predicting origin through regular velocity.
+//-----------------------------------------------------------------------------
+void UTIL_PredictedAngles( CBaseEntity *pTarget, const QAngle &angActualAngles, float flTimeDelta, QAngle *angPredictedAngles )
+{
+	if ( ( pTarget == NULL ) || ( angPredictedAngles == NULL ) )
+		return;
+
+	QAngle	angPredictedVel;
+	CBasePlayer	*pPlayer = ToBasePlayer( pTarget );
+	if ( pPlayer != NULL )
+	{
+		angPredictedVel = pPlayer->GetLocalAngularVelocity();
+	}
+	else
+	{
+		angPredictedVel = pTarget->GetLocalAngularVelocity();
+	}
+
+	// Get the result
+	(*angPredictedAngles) = angActualAngles + ( angPredictedVel * flTimeDelta );
 }
 
 //-----------------------------------------------------------------------------
