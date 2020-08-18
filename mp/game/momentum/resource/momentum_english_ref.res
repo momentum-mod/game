@@ -329,7 +329,7 @@
         "MOM_Settings_Overlapping_Keys_TT" "When checked, key presses will overlap and null each other out, much like null binds."
         "MOM_Settings_Release_Forward_On_Jump" "Release forward key on jump"
         "MOM_Settings_Release_Forward_On_Jump_TT" "When checked the game will determine the forward key based on movement while on ground and release the determined key when you jump."
-        "MOM_Settings_Draw_Viewmodel" "Show viewmodels"
+        "MOM_Settings_Draw_Viewmodel" "Show weapon viewmodels"
 
         // Gameplay - paint
         "MOM_Settings_Title_Gameplay_Paint" "Paint Settings"
