@@ -2631,14 +2631,14 @@
     input DoSpark(void) : "Force a single arc."
 ]
 
-@PointClass base(Targetname) size(-8 -8 -8, 8 8 8) = point_clientcommand : 
+@PointClass base(Targetname) iconsprite("editor/clientcommand.vmt") = point_clientcommand : 
     "An entity that issues commands to the client console, as if it was typed in by the player (if activator is a player, or the local player in single player)."
 [
     // Inputs
     input Command(string) : "Command to execute."
 ]
 
-@PointClass base(Targetname) size(-8 -8 -8, 8 8 8) = point_servercommand : 
+@PointClass base(Targetname) iconsprite("editor/servercommand.vmt") = point_servercommand : 
     "An entity that issues commands to the server console."
 [
     // Inputs

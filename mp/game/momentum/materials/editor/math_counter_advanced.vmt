@@ -1,0 +1,7 @@
+Sprite
+{
+	"$spriteorientation" "vp_parallel"
+	"$spriteorigin" "[ 0.50 0.50 ]"
+	"$basetexture" "editor/math_counter_advanced"
+	"$no_fullbright" 1
+}
