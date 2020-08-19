@@ -153,6 +153,11 @@ int	FindMiptex (const char *name)
 	{
 		textureref[i].flags |= SURF_NOLIGHT;
 	}
+	// handle Slammin-inspired %compileNoShadows%
+	else if ( ( propVal = GetMaterialVar( matID, "%compileNoShadows" ) ) && StringIsTrue( propVal ) )
+	{
+		textureref[i].flags |= SURF_NOSHADOWS;
+	}
 	else
 	{
 		// HANDLE ALL OF THE STUFF THAT IS RENDERED WITH THE MATERIAL THAT IS ON IT.
