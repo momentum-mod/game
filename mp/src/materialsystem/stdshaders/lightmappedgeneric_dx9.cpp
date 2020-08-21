@@ -81,6 +81,11 @@ BEGIN_VS_SHADER( LightmappedGeneric,
         SHADER_PARAM(ENVMAPPARALLAXOBB3, SHADER_PARAM_TYPE_VEC4, "[0 0 1 0]", "The third line of the parallax correction OBB matrix")
         SHADER_PARAM(ENVMAPORIGIN, SHADER_PARAM_TYPE_VEC3, "[0 0 0]", "The world space position of the env_cubemap being corrected")
 
+		SHADER_PARAM( PHONG, SHADER_PARAM_TYPE_BOOL, "0", "enables phong lighting" )
+		SHADER_PARAM( PHONGBOOST, SHADER_PARAM_TYPE_FLOAT, "1.0", "Phong overbrightening factor (specular mask channel should be authored to account for this)" )
+		SHADER_PARAM( PHONGFRESNELRANGES, SHADER_PARAM_TYPE_VEC3, "[0  0.5  1]", "Parameters for remapping fresnel output" )
+		SHADER_PARAM( PHONGEXPONENT, SHADER_PARAM_TYPE_FLOAT, "5.0", "Phong exponent for local specular lights" )
+
 END_SHADER_PARAMS
 
 	void SetupVars( LightmappedGeneric_DX9_Vars_t& info )
@@ -148,6 +153,11 @@ END_SHADER_PARAMS
         info.m_nEnvmapParallaxObb2 = ENVMAPPARALLAXOBB2;
         info.m_nEnvmapParallaxObb3 = ENVMAPPARALLAXOBB3;
         info.m_nEnvmapOrigin = ENVMAPORIGIN;
+
+		info.m_nPhong = PHONG;
+		info.m_nPhongBoost = PHONGBOOST;
+		info.m_nPhongFresnelRanges = PHONGFRESNELRANGES;
+		info.m_nPhongExponent = PHONGEXPONENT;
 	}
 
 	SHADER_FALLBACK
