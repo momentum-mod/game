@@ -1,6 +1,8 @@
 // ALL SKIP STATEMENTS THAT AFFECT THIS SHADER!!!
 // ($SEPARATE_DETAIL_UVS) && ($SEAMLESS_DETAIL)
 // ($DONT_GAMMA_CONVERT_VERTEX_COLOR && ( ! $VERTEXCOLOR ) )
+// ($TREESWAY) && ($MORPHING)
+// ( $TREESWAY ) && ( $SEAMLESS_DETAIL || $SEAMLESS_BASE )
 // defined $LIGHTING_PREVIEW && defined $FASTPATH && $LIGHTING_PREVIEW && $FASTPATH
 
 #ifndef VERTEXLIT_AND_UNLIT_GENERIC_VS30_H
@@ -21,6 +23,7 @@ class vertexlit_and_unlit_generic_vs30_Static_Index
 	unsigned int m_nSEPARATE_DETAIL_UVS : 2;
 	unsigned int m_nDECAL : 2;
 	unsigned int m_nDONT_GAMMA_CONVERT_VERTEX_COLOR : 2;
+	unsigned int m_nTREESWAY : 2;
 #ifdef _DEBUG
 	bool m_bVERTEXCOLOR : 1;
 	bool m_bCUBEMAP : 1;
@@ -31,6 +34,7 @@ class vertexlit_and_unlit_generic_vs30_Static_Index
 	bool m_bSEPARATE_DETAIL_UVS : 1;
 	bool m_bDECAL : 1;
 	bool m_bDONT_GAMMA_CONVERT_VERTEX_COLOR : 1;
+	bool m_bTREESWAY : 1;
 #endif	// _DEBUG
 public:
 	void SetVERTEXCOLOR( int i )
@@ -114,6 +118,15 @@ public:
 #endif	// _DEBUG
 	}
 
+	void SetTREESWAY( int i )
+	{
+		Assert( i >= 0 && i <= 2 );
+		m_nTREESWAY = i;
+#ifdef _DEBUG
+		m_bTREESWAY = true;
+#endif	// _DEBUG
+	}
+
 	vertexlit_and_unlit_generic_vs30_Static_Index( IShaderShadow* pShaderShadow, IMaterialVar** params )
 	{
 		m_nVERTEXCOLOR = 0;
@@ -125,6 +138,7 @@ public:
 		m_nSEPARATE_DETAIL_UVS = 0;
 		m_nDECAL = 0;
 		m_nDONT_GAMMA_CONVERT_VERTEX_COLOR = 0;
+		m_nTREESWAY = 0;
 #ifdef _DEBUG
 		m_bVERTEXCOLOR = false;
 		m_bCUBEMAP = false;
@@ -135,17 +149,18 @@ public:
 		m_bSEPARATE_DETAIL_UVS = false;
 		m_bDECAL = false;
 		m_bDONT_GAMMA_CONVERT_VERTEX_COLOR = false;
+		m_bTREESWAY = false;
 #endif	// _DEBUG
 	}
 
 	int GetIndex() const
 	{
-		Assert( m_bVERTEXCOLOR && m_bCUBEMAP && m_bHALFLAMBERT && m_bFLASHLIGHT && m_bSEAMLESS_BASE && m_bSEAMLESS_DETAIL && m_bSEPARATE_DETAIL_UVS && m_bDECAL && m_bDONT_GAMMA_CONVERT_VERTEX_COLOR );
-		return ( 256 * m_nVERTEXCOLOR ) + ( 512 * m_nCUBEMAP ) + ( 1024 * m_nHALFLAMBERT ) + ( 2048 * m_nFLASHLIGHT ) + ( 4096 * m_nSEAMLESS_BASE ) + ( 8192 * m_nSEAMLESS_DETAIL ) + ( 16384 * m_nSEPARATE_DETAIL_UVS ) + ( 32768 * m_nDECAL ) + ( 65536 * m_nDONT_GAMMA_CONVERT_VERTEX_COLOR ) + 0;
+		Assert( m_bVERTEXCOLOR && m_bCUBEMAP && m_bHALFLAMBERT && m_bFLASHLIGHT && m_bSEAMLESS_BASE && m_bSEAMLESS_DETAIL && m_bSEPARATE_DETAIL_UVS && m_bDECAL && m_bDONT_GAMMA_CONVERT_VERTEX_COLOR && m_bTREESWAY );
+		return ( 256 * m_nVERTEXCOLOR ) + ( 512 * m_nCUBEMAP ) + ( 1024 * m_nHALFLAMBERT ) + ( 2048 * m_nFLASHLIGHT ) + ( 4096 * m_nSEAMLESS_BASE ) + ( 8192 * m_nSEAMLESS_DETAIL ) + ( 16384 * m_nSEPARATE_DETAIL_UVS ) + ( 32768 * m_nDECAL ) + ( 65536 * m_nDONT_GAMMA_CONVERT_VERTEX_COLOR ) + ( 131072 * m_nTREESWAY ) + 0;
 	}
 };
 
-#define shaderStaticTest_vertexlit_and_unlit_generic_vs30 vsh_forgot_to_set_static_VERTEXCOLOR + vsh_forgot_to_set_static_CUBEMAP + vsh_forgot_to_set_static_HALFLAMBERT + vsh_forgot_to_set_static_FLASHLIGHT + vsh_forgot_to_set_static_SEAMLESS_BASE + vsh_forgot_to_set_static_SEAMLESS_DETAIL + vsh_forgot_to_set_static_SEPARATE_DETAIL_UVS + vsh_forgot_to_set_static_DECAL + vsh_forgot_to_set_static_DONT_GAMMA_CONVERT_VERTEX_COLOR
+#define shaderStaticTest_vertexlit_and_unlit_generic_vs30 vsh_forgot_to_set_static_VERTEXCOLOR + vsh_forgot_to_set_static_CUBEMAP + vsh_forgot_to_set_static_HALFLAMBERT + vsh_forgot_to_set_static_FLASHLIGHT + vsh_forgot_to_set_static_SEAMLESS_BASE + vsh_forgot_to_set_static_SEAMLESS_DETAIL + vsh_forgot_to_set_static_SEPARATE_DETAIL_UVS + vsh_forgot_to_set_static_DECAL + vsh_forgot_to_set_static_DONT_GAMMA_CONVERT_VERTEX_COLOR + vsh_forgot_to_set_static_TREESWAY
 
 
 class vertexlit_and_unlit_generic_vs30_Dynamic_Index
