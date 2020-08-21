@@ -114,6 +114,8 @@ private:
 	bool _active;
 	Color _textColor;
 	Color _dimTextColor;
+	Color _activeBgColor;
+	Color _inactiveBgColor;
 	int m_bMaxTabWidth;
 	IBorder *m_pActiveBorder;
 	IBorder *m_pNormalBorder;
@@ -309,6 +311,8 @@ public:
 		// set up the scheme settings
 		Button::ApplySchemeSettings(pScheme);
 
+		_activeBgColor = GetSchemeColor("PropertySheet.ActiveTabBgColor", GetBgColor(), pScheme);
+		_inactiveBgColor = GetSchemeColor("PropertySheet.InactiveTabBgColor", GetBgColor(), pScheme);
 		_textColor = GetSchemeColor("PropertySheet.SelectedTextColor", GetFgColor(), pScheme);
 		_dimTextColor = GetSchemeColor("PropertySheet.TextColor", GetFgColor(), pScheme);
 		m_pActiveBorder = pScheme->GetBorder("TabActiveBorder");
@@ -377,22 +381,25 @@ public:
 	IBorder *GetBorder(bool depressed, bool armed, bool selected, bool keyfocus)
 	{
 		if (_active)
-		{
 			return m_pActiveBorder;
-		}
+
 		return m_pNormalBorder;
 	}
 
 	virtual Color GetButtonFgColor()
 	{
 		if (_active)
-		{
 			return _textColor;
-		}
-		else
-		{
-			return _dimTextColor;
-		}
+
+	    return _dimTextColor;
+	}
+
+	virtual Color GetButtonBgColor() override
+	{
+	    if (_active)
+			return _activeBgColor;
+
+		return _inactiveBgColor;
 	}
 
 	virtual void SetActive(bool state)
