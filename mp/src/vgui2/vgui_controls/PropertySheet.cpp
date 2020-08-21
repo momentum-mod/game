@@ -652,6 +652,7 @@ void PropertySheet::AddPage(Panel *page, const char *title, char const *imageNam
 
 	page->SetParent(this);
 	page->AddActionSignalTarget(this);
+	LayoutPage(page);
 	PostMessage(page, new KeyValues("ResetData"));
 
 	page->SetVisible(false);
@@ -967,6 +968,27 @@ void PropertySheet::PaintBorder()
 	border->Paint(0, py + ptall, wide, tall, IBorder::SIDE_TOP, px + 1, px + pwide - 1);
 }
 
+void PropertySheet::LayoutPage(Panel* pPage)
+{
+	if (!pPage)
+		return;
+
+	int x, y, wide, tall;
+	GetBounds(x, y, wide, tall);
+	int tabHeight = IsSmallTabs() ? m_iTabHeightSmall : m_iTabHeight;
+
+	if (_showTabs)
+	{
+		pPage->SetBounds(0, tabHeight, wide, tall - tabHeight);
+	}
+	else
+	{
+		pPage->SetBounds(0, 0, wide, tall);
+	}
+
+	pPage->InvalidateLayout();
+}
+
 //-----------------------------------------------------------------------------
 // Purpose: Lays out the dialog
 //-----------------------------------------------------------------------------
@@ -974,23 +996,7 @@ void PropertySheet::PerformLayout()
 {
 	BaseClass::PerformLayout();
 
-	int x, y, wide, tall;
-	GetBounds(x, y, wide, tall);
-	if (_activePage)
-	{
-		int tabHeight = IsSmallTabs() ? m_iTabHeightSmall : m_iTabHeight;
-
-		if(_showTabs)
-		{
-			_activePage->SetBounds(0, tabHeight, wide, tall - tabHeight);
-		}
-		else
-		{
-			_activePage->SetBounds(0, 0, wide, tall );
-		}
-		_activePage->InvalidateLayout();
-	}
-
+	LayoutPage(_activePage);
 	
 	int xtab;
 	int limit = m_PageTabs.Count();
