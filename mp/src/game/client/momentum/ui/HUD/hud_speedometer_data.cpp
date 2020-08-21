@@ -6,6 +6,7 @@
 
 #include "mom_system_gamemode.h"
 #include "filesystem.h"
+#include "fmtstr.h"
 
 #include "tier0/memdbgon.h"
 
@@ -110,33 +111,50 @@ void SpeedometerData::LoadGamemodeData(GameMode_t gametype)
 
     m_CurrentlyLoadedGamemodeSettings = gametype;
 
-    // get ordering
-    KeyValues *pOrderKV = pGamemodeKV->FindKey("order");
-    if (pOrderKV)
+    // get autolayout. if no custom layout specified, set autolayout on
+    KeyValues *pLayoutKV = pGamemodeKV->FindKey("layout");
+    bool bAutoLayout = pGamemodeKV->GetBool("autolayout", true) || !pLayoutKV;
+    g_pSpeedometer->SetAutoLayout(bAutoLayout);
+
+    if (bAutoLayout)
     {
-        auto pOrderList = g_pSpeedometer->GetLabelOrderListPtr();
-        pOrderList->RemoveAll();
-        char szIndex[BUFSIZELOCL];
-        for (unsigned int i = 1; i <= SPEEDOMETER_MAX_LABELS; i++)
+        g_pSpeedometer->LoadControlSettings(g_pSpeedometer->GetResFile());
+        // get ordering
+        KeyValues *pOrderKV = pGamemodeKV->FindKey("order");
+        if (pOrderKV)
         {
-            Q_snprintf(szIndex, BUFSIZELOCL, "%i", i);
-            const char *szSpeedo = pOrderKV->GetString(szIndex);
-            if (szSpeedo)
+            auto pOrderList = g_pSpeedometer->GetLabelOrderListPtr();
+            pOrderList->RemoveAll();
+            for (unsigned int i = 1; i <= SPEEDOMETER_MAX_LABELS; i++)
             {
-                SpeedometerLabel *label = GetLabelFromName(szSpeedo);
-                if (label)
+                const char *szSpeedo = pOrderKV->GetString(CFmtStr("%i", i).Get());
+                if (szSpeedo[0])
                 {
-                    pOrderList->AddToTail(label);
+                    SpeedometerLabel *label = GetLabelFromName(szSpeedo);
+                    if (label)
+                    {
+                        pOrderList->AddToTail(label);
+                    }
                 }
             }
+        }
+        else
+        {
+            g_pSpeedometer->ResetLabelOrder();
         }
     }
     else
     {
-        g_pSpeedometer->ResetLabelOrder();
+        KeyValuesAD layoutKVTmp(pLayoutKV->MakeCopy());
+        // get control settings then merge them into the custom layout (keeping its settings)
+        KeyValuesAD pSpeedoSettings("SpeedoSettings");
+        pSpeedoSettings->LoadFromFile(g_pFullFileSystem, g_pSpeedometer->GetResFile());
+        layoutKVTmp->RecursiveMergeKeyValues(pSpeedoSettings);
+        g_pSpeedometer->LoadControlSettings(g_pSpeedometer->GetResFile(), NULL, layoutKVTmp);
     }
 
     // get speedometer label setups
+    // must be last as it overrides some control settings loaded above
     FOR_EACH_SUBKEY(pGamemodeKV, pSpeedoItem)
     {
         const char *speedoname = pSpeedoItem->GetName();
@@ -180,12 +198,13 @@ void SpeedometerData::SaveGamemodeData(GameMode_t gametype)
     auto pOrderList = g_pSpeedometer->GetLabelOrderListPtr();
     KeyValues *pOrderKVs = pGamemodeKV->FindKey("order", true);
     pOrderKVs->Clear();
-    char tmpBuf[BUFSIZELOCL];
     for (auto i = 0; i < pOrderList->Count(); i++)
     {
-        Q_snprintf(tmpBuf, BUFSIZELOCL, "%i", i + 1);
-        pOrderKVs->SetString(tmpBuf, (*pOrderList)[i]->GetName());
+        pOrderKVs->SetString(CFmtStr("%i", i + 1).Get(), (*pOrderList)[i]->GetName());
     }
+
+    // set autolayout
+    pGamemodeKV->SetBool("autolayout", g_pSpeedometer->GetAutoLayout());
 
     m_pGamemodeSetupData->SaveToFile(g_pFullFileSystem, SPEEDOMETER_FILENAME, "MOD");
 }

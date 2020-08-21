@@ -31,7 +31,7 @@ CHudSpeedMeter *g_pSpeedometer = nullptr;
 
 CHudSpeedMeter::CHudSpeedMeter(const char *pElementName)
     : CHudElement(pElementName), EditablePanel(g_pClientMode->GetViewport(), "HudSpeedMeter"), 
-    m_cvarTimeScale("mom_replay_timescale"), m_pRunStats(nullptr), m_pRunEntData(nullptr), m_iLastZone(0)
+    m_cvarTimeScale("mom_replay_timescale"), m_pRunStats(nullptr), m_pRunEntData(nullptr), m_iLastZone(0), m_bAutoLayout(true)
 {
     ListenForGameEvent("zone_exit");
     ListenForGameEvent("zone_enter");
@@ -81,7 +81,7 @@ CHudSpeedMeter::CHudSpeedMeter(const char *pElementName)
 
     ResetLabelOrder();
 
-    LoadControlSettings("resource/ui/Speedometer.res");
+    LoadControlSettings(GetResFile());
 }
 
 void CHudSpeedMeter::Init()
@@ -183,13 +183,16 @@ void CHudSpeedMeter::ApplySchemeSettings(IScheme *pScheme)
 
 void CHudSpeedMeter::OnReloadControls()
 {
-    BaseClass::OnReloadControls();
+    // no need to call baseclass as controls are reloaded when loading speedo data
     g_pSpeedometerData->LoadGamemodeData(g_pSpeedometerData->GetCurrentlyLoadedGameMode());
 }
 
 void CHudSpeedMeter::PerformLayout()
 {
     EditablePanel::PerformLayout();
+
+    if (!m_bAutoLayout)
+        return;
 
     int iHeightAcc = 0;
     for (auto i = 0; i < m_LabelOrderList.Count(); i++)

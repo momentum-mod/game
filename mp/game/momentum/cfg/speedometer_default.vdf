@@ -3,7 +3,59 @@
     
     "#MOM_GameType_Unknown"
     {
-        "order"
+        "autolayout" "1"
+        "layout" // only used when autolayout is off
+        {
+            // Override control settings here
+            "HudSpeedMeter"
+            {
+                "xpos" "c-60"
+                "ypos" "c+22"
+                "wide" "120"
+                "tall" "60"
+            }
+            "AbsSpeedometer"
+            {
+                "xpos" "0"
+                "ypos" "0"
+            }
+            "HorizSpeedometer"
+            {
+                "xpos" "0"
+                "ypos" "0"
+            }
+            "VertSpeedometer"
+            {
+                "xpos" "0"
+                "ypos" "0"
+            }
+            "ExplosiveJumpVelocity"
+            {
+                "xpos" "0"
+                "ypos" "0"
+            }
+            "LastJumpVelocity"
+            {
+                "xpos" "0"
+                "ypos" "0"
+            }
+            "RampBoardVelocity"
+            {
+                "xpos" "0"
+                "ypos" "0"
+            }
+            "RampLeaveVelocity"
+            {
+                "xpos" "0"
+                "ypos" "0"
+            }
+            "StageEnterExitVelocity"
+            {
+                "xpos" "0"
+                "ypos" "0"
+            }
+        }
+        "order" // only used when autolayout is on
         {
             "1" "AbsSpeedometer"
             "2" "HorizSpeedometer"
@@ -60,7 +112,13 @@
     
     "#MOM_GameType_Surf"
     {
-        "order"
+        "autolayout" "1"
+        "layout" // only used when autolayout is off
+        {
+            // Override control settings here
+            // see "#MOM_GameType_Unknown" for an example
+        }
+        "order" // only used when autolayout is on
         {
             "1" "AbsSpeedometer"
             "2" "HorizSpeedometer"
@@ -117,7 +175,13 @@
 
     "#MOM_GameType_Bhop"
     {
-        "order"
+        "autolayout" "1"
+        "layout" // only used when autolayout is off
+        {
+            // Override control settings here
+            // see "#MOM_GameType_Unknown" for an example
+        }
+        "order" // only used when autolayout is on
         {
             "1" "AbsSpeedometer"
             "2" "HorizSpeedometer"
@@ -170,7 +234,13 @@
 
     "#MOM_GameType_RJ"
     {
-        "order"
+        "autolayout" "1"
+        "layout" // only used when autolayout is off
+        {
+            // Override control settings here
+            // see "#MOM_GameType_Unknown" for an example
+        }
+        "order" // only used when autolayout is on
         {
             "1" "AbsSpeedometer"
             "2" "HorizSpeedometer"
@@ -244,7 +314,13 @@
 
     "#MOM_GameType_SJ"
     {
-        "order"
+        "autolayout" "1"
+        "layout" // only used when autolayout is off
+        {
+            // Override control settings here
+            // see "#MOM_GameType_Unknown" for an example
+        }
+        "order" // only used when autolayout is on
         {
             "1" "AbsSpeedometer"
             "2" "HorizSpeedometer"
@@ -341,7 +417,13 @@
 
     "#MOM_GameType_Ahop"
     {
-        "order"
+        "autolayout" "1"
+        "layout" // only used when autolayout is off
+        {
+            // Override control settings here
+            // see "#MOM_GameType_Unknown" for an example
+        }
+        "order" // only used when autolayout is on
         {
             "1" "AbsSpeedometer"
             "2" "HorizSpeedometer"
@@ -394,7 +476,13 @@
 
     "#MOM_GameType_Parkour"
     {
-        "order"
+        "autolayout" "1"
+        "layout" // only used when autolayout is off
+        {
+            // Override control settings here
+            // see "#MOM_GameType_Unknown" for an example
+        }
+        "order" // only used when autolayout is on
         {
             "1" "AbsSpeedometer"
             "2" "HorizSpeedometer"
