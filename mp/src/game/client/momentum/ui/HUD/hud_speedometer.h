@@ -33,8 +33,15 @@ class CHudSpeedMeter : public CHudElement, public vgui::EditablePanel
 
     void ResetLabelOrder();
 
+    void SetAutoLayout(bool bEnabled) { m_bAutoLayout = bEnabled; }
+    bool GetAutoLayout() const { return m_bAutoLayout; }
+
+    const char* GetResFile() const { return "resource/ui/Speedometer.res"; }
+
   private:
     int m_iLastZone;
+
+    bool m_bAutoLayout;
 
     SpeedometerLabel *m_pAbsSpeedoLabel, *m_pHorizSpeedoLabel, *m_pVertSpeedoLabel, *m_pExplosiveJumpVelLabel,
                      *m_pLastJumpVelLabel, *m_pRampBoardVelLabel, *m_pRampLeaveVelLabel, *m_pStageEnterExitVelLabel;
