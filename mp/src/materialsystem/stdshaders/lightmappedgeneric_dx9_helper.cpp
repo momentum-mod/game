@@ -934,6 +934,12 @@ void DrawLightmappedGeneric_DX9_Internal(CBaseVSShader *pShader, IMaterialVar** 
 				nFixedLightingMode = 0;
 			else
 				bVertexShaderFastPath = false;
+			if ( pContextData->m_bVertexShaderFastPath )
+			{
+				DynamicCmdsOut.SetVertexShaderTextureTransform( VERTEX_SHADER_SHADER_SPECIFIC_CONST_0, info.m_nBaseTextureTransform );
+				DynamicCmdsOut.SetVertexShaderTextureTransform( VERTEX_SHADER_SHADER_SPECIFIC_CONST_2, info.m_nBumpTransform );
+				DynamicCmdsOut.SetVertexShaderTextureTransform( VERTEX_SHADER_SHADER_SPECIFIC_CONST_4, info.m_nEnvmapMaskTransform );
+			}
 		}
 
 		MaterialFogMode_t fogType = pShaderAPI->GetSceneFogMode();
