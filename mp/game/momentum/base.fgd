@@ -6276,7 +6276,6 @@
     ]
 
     speed(integer) : "Speed of Push" : 40 : "The speed at which to push entities away, in inches / second."
-    alternateticksfix(float) : "Scale force for alternate ticks" : "0" : "If nonzero, scale the force by this amount when running with alternate ticks. This fixes problems with an overly large force due to the longer frametime on when running with sv_alternateticks 1."
 ]
 
 @SolidClass base(Trigger, Angles) = trigger_wind : 

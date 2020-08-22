@@ -1366,8 +1366,6 @@ public:
 
 	static bool m_bAllowPrecache;
 
-	static bool IsSimulatingOnAlternateTicks();
-
 	virtual bool IsDeflectable() { return false; }
 	virtual void Deflected( CBaseEntity *pDeflectedBy, Vector &vecDir ) {}
 

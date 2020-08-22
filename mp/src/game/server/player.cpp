@@ -3200,7 +3200,7 @@ void CBasePlayer::PhysicsSimulate( void )
 
 	// If we're running multiple ticks this frame, don't peel off all of the commands, spread them out over
 	// the server ticks.  Use blocks of two in alternate ticks
-	int commandLimit = CBaseEntity::IsSimulatingOnAlternateTicks() ? 2 : 1;
+	int commandLimit = 1;
 	int commandsToRun = vecAvailCommands.Count();
 	if ( gpGlobals->simTicksThisFrame >= commandLimit && vecAvailCommands.Count() > commandLimit )
 	{
@@ -7337,10 +7337,6 @@ void CBasePlayer::VPhysicsShadowUpdate( IPhysicsObject *pPhysics )
 
 				if ( !IsRideablePhysics(pPhysGround) )
 				{
-					if ( !(m_afPhysicsFlags & PFLAG_VPHYSICS_MOTIONCONTROLLER ) && IsSimulatingOnAlternateTicks() )
-					{
-						newVelocity *= 0.5f;
-					}
 					ApplyAbsVelocityImpulse( newVelocity );
 				}
 			}
