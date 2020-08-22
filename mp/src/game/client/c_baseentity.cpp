@@ -50,8 +50,6 @@
 	bool g_bRestoreInterpolatedVarValues = false;
 #endif
 
-
-static bool g_bWasSkipping = (bool)-1;
 static bool g_bWasThreaded =(bool)-1;
 static int  g_nThreadModeTicks = 0;
 
@@ -3198,9 +3196,8 @@ void C_BaseEntity::InterpolateServerEntities()
 		}
 	}
 
-	if ( IsSimulatingOnAlternateTicks() != g_bWasSkipping || IsEngineThreaded() != g_bWasThreaded )
+	if ( IsEngineThreaded() != g_bWasThreaded )
 	{
-		g_bWasSkipping = IsSimulatingOnAlternateTicks();
 		g_bWasThreaded = IsEngineThreaded();
 
 		C_BaseEntityIterator iterator;
@@ -5894,11 +5891,6 @@ float C_BaseEntity::GetInterpolationAmount(int flags)
 {
 	// If single player server is "skipping ticks" everything needs to interpolate for a bit longer
 	int serverTickMultiple = 1;
-	if (IsSimulatingOnAlternateTicks())
-	{
-		serverTickMultiple = 2;
-	}
-
 	if (GetPredictable() || IsClientCreated())
 	{
 		return TICK_INTERVAL * serverTickMultiple;

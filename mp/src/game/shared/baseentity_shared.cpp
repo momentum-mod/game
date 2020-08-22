@@ -2502,22 +2502,6 @@ void CBaseEntity::SetWaterType( int nType )
 		m_nWaterType |= 2;
 }
 
-ConVar	sv_alternateticks( "sv_alternateticks", ( "0", FCVAR_SPONLY, "If set, server only simulates entities on even numbered ticks.\n" ) );
-
-//-----------------------------------------------------------------------------
-// Purpose: 
-// Output : Returns true on success, false on failure.
-//-----------------------------------------------------------------------------
-bool CBaseEntity::IsSimulatingOnAlternateTicks()
-{
-	if ( gpGlobals->maxClients != 1 )
-	{
-		return false;
-	}
-
-	return sv_alternateticks.GetBool();
-}
-
 #ifdef CLIENT_DLL
 //-----------------------------------------------------------------------------
 // Purpose: 

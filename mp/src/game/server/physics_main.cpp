@@ -1636,12 +1636,6 @@ void CBaseEntity::StepSimulationThink( float dt )
 		step->m_angNextRotation = GetStepAngles();
 		step->m_Next.nTickCount = GetNextThinkTick();
 
-		// Hack:  Add a tick if we are simulating every other tick
-		if ( CBaseEntity::IsSimulatingOnAlternateTicks() )
-		{
-			++step->m_Next.nTickCount;
-		}
-
 		// Check for teleportation/snapping of the origin
 		if ( dt > 0.0f )
 		{

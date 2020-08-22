@@ -1122,18 +1122,6 @@ void CServerGameDLL::GameFrame( bool simulating )
 	if ( g_InRestore )
 		return;
 
-	if ( CBaseEntity::IsSimulatingOnAlternateTicks() )
-	{
-		// only run simulation on even numbered ticks
-		if ( gpGlobals->tickcount & 1 )
-		{
-			UpdateAllClientData();
-			return;
-		}
-		// If we're skipping frames, then the frametime is 2x the normal tick
-		gpGlobals->frametime *= 2.0f;
-	}
-
 	float oldframetime = gpGlobals->frametime;
 
 #ifdef _DEBUG

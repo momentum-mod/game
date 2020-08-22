@@ -627,8 +627,6 @@ public:
 
 	static bool m_bAllowPrecache;
 
-	static bool IsSimulatingOnAlternateTicks();
-
 // C_BaseEntity local functions
 public:
 

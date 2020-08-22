@@ -290,19 +290,6 @@ void CPhysicsHook::FrameUpdatePostEntityThink( )
 	// Tracker 24846:  If game is paused, don't simulate vphysics
 	float interval = ( gpGlobals->frametime > 0.0f ) ? TICK_INTERVAL : 0.0f;
 
-	// update the physics simulation, not we don't use gpGlobals->frametime, since that can be 30 msec or 15 msec
-	// depending on whether IsSimulatingOnAlternateTicks is true or not
-	if ( CBaseEntity::IsSimulatingOnAlternateTicks() )
-	{
-		m_isFinalTick = false;
-
-#ifdef PORTAL //slight detour if we're the portal mod
-		PortalPhysFrame( interval );
-#else
-		PhysFrame( interval );
-#endif
-
-	}
 	m_isFinalTick = true;
 
 #ifdef PORTAL //slight detour if we're the portal mod

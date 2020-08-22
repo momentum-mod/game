@@ -99,6 +99,15 @@ bool CMomServerEvents::Init()
     UnloadConVarOrCommand("setpause");
     UnloadConVarOrCommand("unpause");
 
+    // Certain lower-end hardware configurations can lead to this being set to 1, which causes all sorts of issues
+    static ConVar* sv_alternateticks = g_pCVar->FindVar("sv_alternateticks");
+
+    if (sv_alternateticks)
+    {
+        sv_alternateticks->SetValue(0);
+        sv_alternateticks->Unload();
+    }
+
     return true;
 }
 

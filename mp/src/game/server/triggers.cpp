@@ -2139,7 +2139,6 @@ public:
 
 BEGIN_DATADESC( CTriggerPush )
 	DEFINE_KEYFIELD( m_vecPushDir, FIELD_VECTOR, "pushdir" ),
-	DEFINE_KEYFIELD( m_flAlternateTicksFix, FIELD_FLOAT, "alternateticksfix" ),
 	//DEFINE_FIELD( m_flPushSpeed, FIELD_FLOAT ),
 END_DATADESC()
 
@@ -2174,17 +2173,7 @@ void CTriggerPush::Spawn()
 //-----------------------------------------------------------------------------
 void CTriggerPush::Activate()
 {
-	// Fix problems with triggers pushing too hard under sv_alternateticks.
-	// This is somewhat hacky, but it's simple and we're really close to shipping.
-	ConVarRef sv_alternateticks( "sv_alternateticks" );
-	if ( ( m_flAlternateTicksFix != 0 ) && sv_alternateticks.GetBool() )
-	{
-		m_flPushSpeed = m_flSpeed * m_flAlternateTicksFix;
-	}
-	else
-	{
-		m_flPushSpeed = m_flSpeed;
-	}
+	m_flPushSpeed = m_flSpeed;
 	
 	BaseClass::Activate();
 }
