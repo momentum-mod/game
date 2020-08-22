@@ -94,6 +94,11 @@ bool CMomServerEvents::Init()
         );
     }
 
+    // These commands pause/unpause server simulation entirely and so are unwanted
+    UnloadConVarOrCommand("pause");
+    UnloadConVarOrCommand("setpause");
+    UnloadConVarOrCommand("unpause");
+
     return true;
 }
 
