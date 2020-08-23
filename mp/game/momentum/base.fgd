@@ -29,9 +29,14 @@
     model(studio) : "World Model"
     skin(integer) : "Skin" : 0 : "Some models have multiple versions of their textures, called skins. Set this to a number other than 0 to use that skin instead of the default."
     modelscale(float) : "Model Scale" : "1.0" : "A multiplier for the size of the model."
+    
+    glowenabled(choices) : "Glow Enabled" : 0 =
+    [
+        0 : "No"
+        1 : "Yes"
+    ]
     glowdist(integer) : "Glow Max Distance" : 0 : "The distance for glow falloff, 0 is infinite."
-    glowenabled(boolean) : "Enable glow effect" : 0
-    glowcolor(color255) : "Glow Color (R G B)" : "255 255 255" : "The color of the glow (if enabled)."
+    glowcolor(color255) : "Glow Color (R G B)" : "255 255 255" : "The color of the glow effect (if enabled)."
 
     disableshadows(choices) : "Disable Shadows" : 0 : "Used to disable dynamic shadows on this entity." =
     [
