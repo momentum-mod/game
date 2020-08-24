@@ -47,7 +47,6 @@ protected:
 
 protected:
     vgui::HFont m_hFont;
-    Color        m_bgColor;
     CUtlVector<vgui::Label *> m_Labels;
     CPanelAnimationVarAliasType(int, m_iTextX, "text_xpos", "8", "proportional_int");
     CPanelAnimationVarAliasType(int, m_iTextY, "text_ypos", "8", "proportional_int");
@@ -56,6 +55,7 @@ protected:
 
     bool        m_bLastLabelUpdateHack;
     CPanelAnimationVar(float, m_flLabelSizePercentage, "HintSize", "0");
+    CPanelAnimationVar(Color, m_bgColor, "BgColor", "BlackHO");
 };
 
 DECLARE_HUDELEMENT(CHudHintDisplay);
@@ -101,6 +101,7 @@ void CHudHintDisplay::ApplySchemeSettings(vgui::IScheme *pScheme)
     BaseClass::ApplySchemeSettings(pScheme);
 
     SetFgColor(GetSchemeColor("HintMessageFg", pScheme));
+    SetBgColor(m_bgColor);
     m_hFont = pScheme->GetFont("HudHintText", true);
 }
 
@@ -363,6 +364,8 @@ private:
     CPanelAnimationVarAliasType(float, m_iTextGapX, "text_xgap", "8", "proportional_float");
     CPanelAnimationVarAliasType(float, m_iTextGapY, "text_ygap", "8", "proportional_float");
     CPanelAnimationVarAliasType(float, m_iYOffset, "YOffset", "0", "proportional_float");
+
+    CPanelAnimationVar(Color, m_bgColor, "BgColor", "BlackHO");
 };
 
 DECLARE_HUDELEMENT(CHudHintKeyDisplay);
@@ -405,6 +408,8 @@ void CHudHintKeyDisplay::ApplySchemeSettings(vgui::IScheme *pScheme)
     m_hLargeFont = pScheme->GetFont("HudHintTextLarge", true);
 
     BaseClass::ApplySchemeSettings(pScheme);
+
+    SetBgColor(m_bgColor);
 }
 
 //-----------------------------------------------------------------------------
