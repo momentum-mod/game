@@ -22,27 +22,6 @@ static MAKE_TOGGLE_CONVAR(mom_triggers_overlay_bbox_enable, "0", FCVAR_DEVELOPME
 static MAKE_TOGGLE_CONVAR(mom_triggers_overlay_text_enable, "0", FCVAR_DEVELOPMENTONLY,
                           "Toggles showing the entity text for momentum triggers, needs map restart if changed!\n");
 
-CON_COMMAND(mom_trigger_teleport_progress, "Teleports player to the last progress trigger\n")
-{
-    CMomentumPlayer *pPlayer = CMomentumPlayer::GetLocalPlayer();
-    if (pPlayer)
-    {
-        CBaseMomentumTrigger *pTrigger = pPlayer->GetCurrentProgressTrigger();
-
-        if (pTrigger)
-        {
-            pPlayer->Teleport(&pTrigger->GetAbsOrigin(), nullptr, &vec3_origin);
-        }
-        else
-        {
-            DevWarning("mom_trigger_teleport_progress cannot teleport, CurrentProgressTrigger is null!\n");
-        }
-    }
-    else
-    {
-        DevWarning("mom_trigger_teleport_progress cannot teleport, Player is null!\n");
-    }
-}
 
 // ------------- Base Trigger ------------------------------------
 BEGIN_DATADESC(CBaseMomentumTrigger)
