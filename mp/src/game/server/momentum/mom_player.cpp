@@ -467,7 +467,7 @@ void CMomentumPlayer::Spawn()
 
         for (int i = 0; i < MAX_TRACKS; i++)
         {
-            ClearStartMark(i);
+            ClearStartMark(i, false);
         }
 
         g_MapZoneSystem.DispatchMapInfo(this);
@@ -743,34 +743,43 @@ CBaseMomentumTrigger* CMomentumPlayer::GetCurrentProgressTrigger() const
     return m_CurrentProgress.Get();
 }
 
-void CMomentumPlayer::CreateStartMark()
+bool CMomentumPlayer::CreateStartMark()
 {
     const auto pCurrentZoneTrigger = GetCurrentZoneTrigger();
 
     if (pCurrentZoneTrigger && pCurrentZoneTrigger->IsTouching(this) && pCurrentZoneTrigger->GetZoneType() == ZONE_TYPE_START)
     {
-        ClearStartMark(m_Data.m_iCurrentTrack);
+        ClearStartMark(m_Data.m_iCurrentTrack, false);
 
         m_pStartZoneMarks[m_Data.m_iCurrentTrack] = g_pSavelocSystem->CreateSaveloc(SAVELOC_POS | SAVELOC_ANG);
         if (m_pStartZoneMarks[m_Data.m_iCurrentTrack])
         {
             DevLog("Successfully created a starting mark!\n");
+            ClientPrint(this, HUD_PRINTTALK, "Start Mark Created!");
+            return true;
         }
         else
         {
             Warning("Could not create the start mark for some reason!\n");
         }
     }
+    return false;
 }
 
-void CMomentumPlayer::ClearStartMark(int track)
+bool CMomentumPlayer::ClearStartMark(int track, bool bPrintMsg)
 {
     if (track >= 0 && track < MAX_TRACKS)
     {
         if (m_pStartZoneMarks[track])
             delete m_pStartZoneMarks[track];
         m_pStartZoneMarks[track] = nullptr;
+
+        if (bPrintMsg)
+            ClientPrint(this, HUD_PRINTTALK, "Start Mark Cleared!");
+
+        return true;
     }
+    return false;
 }
 
 bool CMomentumPlayer::CanSprint() const
