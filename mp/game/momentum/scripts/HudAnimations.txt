@@ -659,51 +659,51 @@ event CraneMagnetFlash
 
 event HintMessageShow
 {
-	StopPanelAnimations HudHintDisplay	0.0
+    StopPanelAnimations HudHintDisplay 0.0
 
-	Animate HudHintDisplay HintSize	"1"		Deaccel 0.0	0.3
-	Animate HudHintDisplay FgColor	"FgColor" 	Linear 0.4      0.4
+    Animate HudHintDisplay HintSize 1" Deaccel 0.0 0.3
+    Animate HudHintDisplay FgColor  "OffWhite" Linear 0.4 0.4
 
-	// flash text
-	Animate HudHintDisplay FgColor	"FgColor" 	Linear 1.5 0.01
-	Animate HudHintDisplay FgColor	"255 220 0 255" Linear 2.0 0.2
-	Animate HudHintDisplay FgColor	"FgColor" 	Linear 2.2 0.2
-	Animate HudHintDisplay FgColor	"255 220 0 255" Linear 3.0 0.2
-	Animate HudHintDisplay FgColor	"FgColor" 	Linear 3.2 0.2
+    // flash text
+    Animate HudHintDisplay FgColor "OffWhite"  Linear 1.5 0.01
+    Animate HudHintDisplay FgColor "MomentumBlue"  Linear 2.0 0.2
+    Animate HudHintDisplay FgColor "OffWhite"  Linear 2.2 0.2
+    Animate HudHintDisplay FgColor "MomentumBlue"  Linear 3.0 0.2
+    Animate HudHintDisplay FgColor "OffWhite"  Linear 3.2 0.2
 
-	// hide the panel after a while	
-	Animate HudHintDisplay FgColor	"255 220 0 0"   Linear  10.0 	0.2
-	Animate HudHintDisplay HintSize	"0"		Deaccel 10.2	0.3
+    // hide the panel after a while
+    Animate HudHintDisplay FgColor  "255 220 0 0" Linear 10.0 0.2
+    Animate HudHintDisplay HintSize "0" Deaccel 10.2 0.3
 }
 
 
 event HintMessageHide
 {
-	Animate HudHintDisplay FgColor	"255 220 0 0"   Linear  0.0 	0.2
-	Animate HudHintDisplay HintSize	"0"		Deaccel 0.2	0.3
+    Animate HudHintDisplay FgColor  "Blank" Linear  0.0 0.2
+    Animate HudHintDisplay HintSize "0"     Deaccel 0.2 0.3
 }
 
 event KeyHintMessageShow
 {
-	StopPanelAnimations HudHintKeyDisplay	0.0
+    StopPanelAnimations HudHintKeyDisplay 0.0
 
-	// show the hints
-	Animate HudHintKeyDisplay Alpha	255 Linear 0.0 0.5
+    // show the hints
+    Animate HudHintKeyDisplay Alpha 255 Linear 0.0 0.5
 
-	// flash text
-	Animate HudHintKeyDisplay FgColor	"FgColor" 	Linear 0.0 0.01
-	Animate HudHintKeyDisplay FgColor	"255 220 0 255" Linear 0.5 0.2
-	Animate HudHintKeyDisplay FgColor	"FgColor" 	Linear 0.7 0.2
-	Animate HudHintKeyDisplay FgColor	"255 220 0 255" Linear 1.5 0.2
-	Animate HudHintKeyDisplay FgColor	"FgColor" 	Linear 1.7 0.2
+    // flash text
+    Animate HudHintKeyDisplay FgColor "OffWhite"     Linear 0.0 0.01
+    Animate HudHintKeyDisplay FgColor "MomentumBlue" Linear 0.5 0.2
+    Animate HudHintKeyDisplay FgColor "OffWhite"     Linear 0.7 0.2
+    Animate HudHintKeyDisplay FgColor "MomentumBlue" Linear 1.5 0.2
+    Animate HudHintKeyDisplay FgColor "OffWhite"     Linear 1.7 0.2
 
-	// hide the panel after a while	
-	Animate HudHintKeyDisplay Alpha	0 Linear 12.0 1.0
+    // hide the panel after a while
+    Animate HudHintKeyDisplay Alpha 0 Linear 5.0 1.0
 }
 
 event KeyHintMessageHide
 {
-	Animate HudHintKeyDisplay Alpha	0 Linear 0.0 0.5
+    Animate HudHintKeyDisplay Alpha 0 Linear 0.0 0.5
 }
 
 
