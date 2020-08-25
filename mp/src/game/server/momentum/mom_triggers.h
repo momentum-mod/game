@@ -527,6 +527,15 @@ private:
     void ToggleButtons(CMomRunEntity *pEnt, bool bEnable);
 };
 
+enum
+{
+    BOOST_SET = 0,
+    BOOST_ADD,
+    BOOST_SET_IF_LOWER,
+    BOOST_ADD_IF_LOWER,
+    BOOST_BASEVELOCITY
+};
+
 // CFuncShootBoost
 class CFuncShootBoost : public CBreakable
 {
@@ -545,6 +554,7 @@ class CFuncShootBoost : public CBreakable
     // 2: Only if the player's velocity is lower than the push velocity, set player's velocity to final push velocity
     // 3: Only if the player's velocity is lower than the push velocity, increase player's velocity by final push
     // velocity
+    // 4: Basevelocity push
     int m_iIncrease;
     // Dictates the direction of push
     Vector m_vPushDir;
@@ -562,6 +572,7 @@ class CTriggerMomentumPush : public CBaseMomentumTrigger
     CTriggerMomentumPush();
 
   public:
+    void Spawn() OVERRIDE;
     void OnStartTouch(CBaseEntity *) OVERRIDE;
     void OnEndTouch(CBaseEntity *) OVERRIDE;
     // Called when (and by) either a OnStartTouch() or OnEndTouch() event happens and their requisites are met
@@ -570,11 +581,12 @@ class CTriggerMomentumPush : public CBaseMomentumTrigger
   private:
     // Force in units per seconds applied to the player
     float m_fPushForce;
-    // 1: SetPlayerVelocity to final push force
-    // 2: Increase player's current velocity by push final force amount // This is almost like the default trigger_push
+    // 0: Set the player's velocity to final push force
+    // 1: Increase player's current velocity by push final force amount // This is almost like the default trigger_push
     // behaviour
-    // 3: Only set the player's velocity to the final push velocity if player's velocity is lower than final push
+    // 2: Only set the player's velocity to the final push velocity if player's velocity is lower than final push
     // velocity
+    // 3: Act as a basevelocity push
     int m_iIncrease;
     // Dictates the direction of push
     Vector m_vPushDir;
