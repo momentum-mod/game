@@ -51,7 +51,7 @@
 
 @BaseClass base(Trigger, TrackNum) = MomentumTrigger []
 
-@FilterClass base(Targetname, TrackNum) = filter_momentum_track_number : "Filter a player based on if their track number is the one defined here. -1 defaults to true." []
+@FilterClass base(BaseFilter, TrackNum) = filter_momentum_track_number : "Filter a player based on if their track number is the one defined here. -1 defaults to true." []
 
 @BaseClass base(MomentumTrigger) = ZoneTrigger
 [
@@ -169,7 +169,7 @@
     output OnResetOnehops(void) : "Fired when the player touches this trigger."
 ]
 
-@FilterClass base(Targetname) = filter_momentum_progress : "Filter that checks to see if the player is at or above the given progress number."
+@FilterClass base(BaseFilter) = filter_momentum_progress : "Filter that checks to see if the player is at or above the given progress number."
 [
     progress_check(integer) : "Minimum req. prog. num" : -1 : "The minimum progress number that the player needs to be at in order for the filter to accept them."
 ]
