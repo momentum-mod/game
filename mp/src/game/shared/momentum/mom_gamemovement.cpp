@@ -2721,6 +2721,7 @@ int CMomentumGameMovement::TryPlayerMove(Vector *pFirstDest, trace_t *pFirstTrac
                 if (m_pPlayer->m_bSurfing || m_pPlayer->GetInteractionIndex(SurfInt::TYPE_FLOOR) == 0)
                 {
                     m_pPlayer->SetLastInteraction(pm, mv->m_vecVelocity, SurfInt::TYPE_LEAVE);
+                    m_pPlayer->UpdateLastAction(SurfInt::ACTION_RAMPLEAVE);
                 }
             }
 
