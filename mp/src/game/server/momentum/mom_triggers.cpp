@@ -5,6 +5,7 @@
 #include "mom_player_shared.h"
 #include "mom_shareddefs.h"
 #include "mom_replay_entity.h"
+#include "run/mom_run_entity.h"
 #include "mom_system_gamemode.h"
 #include "mom_system_progress.h"
 #include "mom_stickybomb.h"
@@ -84,6 +85,46 @@ bool CFilterTrackNumber::PassesFilterImpl(CBaseEntity *pCaller, CBaseEntity *pEn
 {
     CMomRunEntity *pEnt = dynamic_cast<CMomRunEntity*>(pEntity);
     return (m_iTrackNumber > -1 && pEnt && pEnt->GetRunEntData()->m_iCurrentTrack == m_iTrackNumber);
+}
+
+// -------------- FilterPlayerState --------------------------
+LINK_ENTITY_TO_CLASS(filter_momentum_player_state, CFilterPlayerState);
+
+BEGIN_DATADESC(CFilterPlayerState)
+DEFINE_KEYFIELD(m_iPlayerState, FIELD_INTEGER, "player_state"),
+END_DATADESC();
+
+CFilterPlayerState::CFilterPlayerState()
+{
+    m_iPlayerState = -1;
+}
+
+bool CFilterPlayerState::PassesFilterImpl(CBaseEntity* pCaller, CBaseEntity* pEntity)
+{
+    const auto pPlayer = static_cast<CMomentumPlayer*>(pEntity);
+
+    if (!pPlayer)
+        return false;
+
+    // 0 for any of these means they are the current interaction
+    int floor = pPlayer->GetInteractionIndex(SurfInt::TYPE_FLOOR);      // Player is sliding on the floor
+    int land = pPlayer->GetInteractionIndex(SurfInt::TYPE_LAND);        // Player landed on the floor such that they can jump off without speed loss (perfect bhop)
+    int ground = pPlayer->GetInteractionIndex(SurfInt::TYPE_GROUNDED);  // Player has settled on the ground
+
+    switch (m_iPlayerState)
+    {
+    case PLAYER_STATE_GROUND:
+        return (floor == 0 && pPlayer->GetInteraction(0).trace.plane.normal.z >= 0.7) || land == 0 || ground == 0;
+
+    case PLAYER_STATE_SURF:
+        return floor == 0 && pPlayer->GetInteraction(0).trace.plane.normal.z < 0.7; // The floor is a surf ramp
+
+    case PLAYER_STATE_BHOP:
+        return land == 0 && pPlayer->m_nButtons & IN_JUMP;
+
+    default:
+        return false;
+    }
 }
 
 // -------------- BaseMomZoneTrigger ------------------------------

@@ -174,6 +174,16 @@
     progress_check(integer) : "Minimum req. prog. num" : -1 : "The minimum progress number that the player needs to be at in order for the filter to accept them."
 ]
 
+@FilterClass base(BaseFilter) = filter_momentum_player_state : "Filter that checks the player's movement state"
+[
+    player_state(choices) : "Player State" : "Ground" =
+    [
+        0 : "Ground"
+        1 : "Surfing" 
+        2 : "Bhopping" 
+    ]
+]
+
 @SolidClass base(TeleTrigger) = trigger_momentum_teleport_progress : "Trigger that teleports the player to their last touched trigger_momentum_progress." []
 
 @SolidClass base(MomentumTrigger) = trigger_momentum_resetonehop : "Trigger that resets all of the onehop triggers the player has touched." 
