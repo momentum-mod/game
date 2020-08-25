@@ -97,6 +97,8 @@ float3 calculateLight(float3 lightIn, float3 lightIntensity, float3 lightOut, fl
 
     // F - Calculate Fresnel term for direct lighting
     float3 F = fresnelSchlick(fresnelReflectance, max(0.0, dot(HalfAngle, lightOut)));
+    float3 F2 = fresnelSchlick(fresnelReflectance, max(0.0, dot(normal, lightOut)));
+    float3 F3 = fresnelSchlick(fresnelReflectance, max(0.0, dot(normal, lightIn)));
 
     // D - Calculate normal distribution for specular BRDF
     float D = ndfGGX(cosHalfAngle, roughness);
@@ -117,7 +119,7 @@ float3 calculateLight(float3 lightIn, float3 lightIntensity, float3 lightOut, fl
     // Diffuse scattering happens due to light being refracted multiple times by a dielectric medium
     // Metals on the other hand either reflect or absorb energso diffuse contribution is always, zero
     // To be energy conserving we must scale diffuse BRDF contribution based on Fresnel factor & metalness
-    float3 kd = lerp(float3(1, 1, 1) - F, float3(0, 0, 0), metalness);
+    float3 kd = lerp((float3(1, 1, 1) - F2 ) * (float3(1, 1, 1) - F3 ), float3(0, 0, 0), metalness);
     float3 diffuseBRDF = kd * albedo;
     return (diffuseBRDF + specularBRDF) * lightIntensity * cosLightIn;
 
