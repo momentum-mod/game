@@ -88,6 +88,28 @@ private:
     int m_iTrackNumber;
 };
 
+// A filter that checks the player's movement state
+class CFilterPlayerState : public CBaseFilter
+{
+public:
+    DECLARE_CLASS(CFilterPlayerState, CBaseFilter);
+    DECLARE_DATADESC();
+
+    CFilterPlayerState();
+
+    bool PassesFilterImpl(CBaseEntity* pCaller, CBaseEntity* pEntity) OVERRIDE;
+
+private:
+    int m_iPlayerState;
+
+    enum
+    {
+        PLAYER_STATE_GROUND = 0,
+        PLAYER_STATE_SURF,
+        PLAYER_STATE_BHOP
+    };
+};
+
 // Base class for all Zone trigger entities (can be created by zone tools)
 class CBaseMomZoneTrigger : public CBaseMomentumTrigger
 {
