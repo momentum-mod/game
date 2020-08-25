@@ -282,10 +282,11 @@
     "Ignored if -Use the direction vector as final force instead of calculating it by force amount- flag is set."
     increase(choices) : "Handling of player's velocity" : 3 =
     [
-        0 : "Set player velocity to final push force"
-        1 : "Increase player's current velocity by push final foce ammount"
-        2 : "Only set the player's velocity to the final push velocity if player's velocity is lower than final push velocity"
-        3 : "Act as basevelocity"
+        0 : "Set player's velocity to push final force"
+        1 : "Increase player's velocity by push final force"
+        2 : "Only if the player's velocity is lower than the push velocity, set player's velocity to final push velocity"
+        3 : "Only if the player's velocity is lower than the push velocity, increase player's velocity by final push velocity"
+        4 : "Act as basevelocity"
     ]
     spawnflags(flags) = 
     [ 

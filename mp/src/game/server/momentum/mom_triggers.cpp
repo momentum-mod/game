@@ -1027,43 +1027,49 @@ int CFuncShootBoost::OnTakeDamage(const CTakeDamageInfo &info)
     const auto pInflictor = info.GetAttacker();
     if (pInflictor)
     {
-        Vector finalVel = m_vPushDir.Normalized() * m_fPushForce;
+        if (m_hEntityCheck.Get())
+        {
+            const auto pTrigger = dynamic_cast<CBaseTrigger*>(m_hEntityCheck.Get());
+            if (pTrigger && !pTrigger->IsTouching(pInflictor))
+                return info.GetDamage();
+        }
+
+        // Transform the vector back to world space
+        Vector vecAbsDir;
+        VectorRotate(m_vPushDir, EntityToWorldTransform(), vecAbsDir);
+
+        Vector finalVel;
+        if (HasSpawnFlags(SF_PUSH_DIRECTION_AS_FINAL_FORCE))
+            finalVel = vecAbsDir;
+        else
+            finalVel = vecAbsDir.Normalized() * m_fPushForce;
+
         switch (m_iIncrease)
         {
-        case 0:
+        case BOOST_SET:
             break;
-        case 1:
+        case BOOST_ADD:
             finalVel += pInflictor->GetAbsVelocity();
             break;
-        case 2:
+        case BOOST_SET_IF_LOWER:
             if (finalVel.LengthSqr() < pInflictor->GetAbsVelocity().LengthSqr())
                 finalVel = pInflictor->GetAbsVelocity();
             break;
-        case 3:
+        case BOOST_ADD_IF_LOWER:
             // The description of this method says the player velocity is increased by final velocity,
             // but we're just adding one vec to the other, which is not quite the same
             if (finalVel.LengthSqr() < pInflictor->GetAbsVelocity().LengthSqr())
                 finalVel += pInflictor->GetAbsVelocity();
             break;
-        case 4:
+        case BOOST_BASEVELOCITY:
             pInflictor->SetBaseVelocity(finalVel);
-            break;
+            return info.GetDamage();
         default:
             DevWarning("CFuncShootBoost:: %i not recognized as valid for m_iIncrease", m_iIncrease);
             break;
         }
-        if (m_hEntityCheck.Get())
-        {
-            const auto pTrigger = dynamic_cast<CBaseTrigger*>(m_hEntityCheck.Get());
-            if (pTrigger && pTrigger->IsTouching(pInflictor))
-            {
-                pInflictor->SetAbsVelocity(finalVel);
-            }
-        }
-        else
-        {
-            pInflictor->SetAbsVelocity(finalVel);
-        }
+        
+        pInflictor->SetAbsVelocity(finalVel);
     }
     // As we don't want to break it, we don't call BaseClass::OnTakeDamage(info);
     // OnTakeDamage returns the damage dealt
@@ -1085,6 +1091,19 @@ CTriggerMomentumPush::CTriggerMomentumPush(): m_fPushForce(300.0f), m_iIncrease(
     m_vPushDir.Init();
 }
 
+void CTriggerMomentumPush::Spawn()
+{
+    BaseClass::Spawn();
+
+    // Convert pushdir from angles to a vector (copied straight from CTriggerPush::Spawn)
+    Vector vecAbsDir;
+    QAngle angPushDir = QAngle(m_vPushDir.x, m_vPushDir.y, m_vPushDir.z);
+    AngleVectors(angPushDir, &vecAbsDir);
+
+    // Transform the vector into entity space
+    VectorIRotate(vecAbsDir, EntityToWorldTransform(), m_vPushDir);
+}
+
 void CTriggerMomentumPush::OnStartTouch(CBaseEntity *pOther)
 {
     BaseClass::OnStartTouch(pOther);
@@ -1103,25 +1122,34 @@ void CTriggerMomentumPush::OnSuccessfulTouch(CBaseEntity *pOther)
 {
     if (pOther)
     {
+        // Transform the vector back to world space
+        Vector vecAbsDir;
+        VectorRotate(m_vPushDir, EntityToWorldTransform(), vecAbsDir);
+
         Vector finalVel;
         if (HasSpawnFlags(SF_PUSH_DIRECTION_AS_FINAL_FORCE))
-            finalVel = m_vPushDir;
+            finalVel = vecAbsDir;
         else
-            finalVel = m_vPushDir.Normalized() * m_fPushForce;
+            finalVel = vecAbsDir.Normalized() * m_fPushForce;
+
         switch (m_iIncrease)
         {
-        case 0:
+        case BOOST_SET:
             break;
-        case 1:
+        case BOOST_ADD:
             finalVel += pOther->GetAbsVelocity();
             break;
-        case 2:
+        case BOOST_SET_IF_LOWER:
             if (finalVel.LengthSqr() < pOther->GetAbsVelocity().LengthSqr())
                 finalVel = pOther->GetAbsVelocity();
             break;
-        case 3:
-            pOther->SetBaseVelocity(finalVel);
+        case BOOST_ADD_IF_LOWER:
+            if (finalVel.LengthSqr() < pOther->GetAbsVelocity().LengthSqr())
+                finalVel += pOther->GetAbsVelocity();
             break;
+        case BOOST_BASEVELOCITY:
+            pOther->SetBaseVelocity(finalVel);
+            return;
         default:
             DevWarning("CTriggerMomentumPush:: %i not recognized as valid for m_iIncrease", m_iIncrease);
             break;
