@@ -28,6 +28,7 @@ struct SurfaceInteraction
     enum Action
     {
         ACTION_LEAVE = 0,
+        ACTION_RAMPLEAVE,
         ACTION_KNOCKBACK,
         ACTION_WALK,
         ACTION_DUCKWALK,
