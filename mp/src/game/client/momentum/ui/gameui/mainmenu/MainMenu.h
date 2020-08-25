@@ -33,6 +33,7 @@ class MainMenu : public vgui::EditablePanel, public CGameEventListener
     void CheckVersion();
     void Paint() OVERRIDE;
     void PerformLayout() override;
+    void OnKeyCodeTyped(vgui::KeyCode code) override;
 
     void Activate();
 

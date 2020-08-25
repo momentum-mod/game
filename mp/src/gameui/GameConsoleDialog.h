@@ -24,7 +24,6 @@ class CGameConsoleDialog : public vgui::CConsoleDialog
     CGameConsoleDialog();
 
 protected:
-    MESSAGE_FUNC(OnClosedByHittingTilde, "ClosedByHittingTilde");
     MESSAGE_FUNC_CHARPTR(OnCommandSubmitted, "CommandSubmitted", command);
 
     void OnKeyCodeTyped(vgui::KeyCode code) OVERRIDE;

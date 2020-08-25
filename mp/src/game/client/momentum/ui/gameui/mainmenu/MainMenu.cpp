@@ -4,6 +4,7 @@
 #include "MainMenuButton.h"
 #include "gameui/BaseMenuPanel.h"
 #include "gameui/GameUIUtil.h"
+#include "IGameUIFuncs.h"
 
 #include "vgui/ISurface.h"
 
@@ -444,6 +445,21 @@ void MainMenu::PerformLayout()
         m_pButtonInviteFriends->GetYPos() - m_pButtonSpectate->GetTall() - m_iButtonsSpace);
 
     m_pVersionLabel->SetPos(screenWide - m_pVersionLabel->GetWide() - GetScaledVal(4), GetScaledVal(2));
+}
+
+void MainMenu::OnKeyCodeTyped(KeyCode code) 
+{
+    BaseClass::OnKeyCodeTyped(code);
+
+    // HACK HACK
+    // For some reason show/toggleconsole are not being called when not in game on the main menu
+    // Doing it this way though, you can't open console when, say, map selector is in focus
+    // Find a better way of letting these actually work pls
+    const char *binding = gameuifuncs->GetBindingForButtonCode(code);
+    if (binding && (FStrEq(binding, "showconsole") || FStrEq(binding, "toggleconsole")))
+    {
+        engine->ClientCmd_Unrestricted(binding);
+    }
 }
 
 void MainMenu::Activate()

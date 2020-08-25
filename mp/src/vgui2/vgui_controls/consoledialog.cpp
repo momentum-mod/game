@@ -665,23 +665,11 @@ void CConsolePanel::OnTextChanged(Panel *panel)
 	bool ctrlKeyDown = ( vgui::input()->IsKeyDown( KEY_LCONTROL ) || vgui::input()->IsKeyDown( KEY_RCONTROL ) ) ? true : false;
 
 	// Alt-Tilde toggles Japanese IME on/off!!!
-	if ( ( len > 0 ) && hitTilde )
+	if ( ( len > 0 ) && hitTilde && (altKeyDown || ctrlKeyDown) )
 	{
 		// Strip the last character (tilde)
 		m_szPartialText[ len - 1 ] = L'\0';
-
-		if( !altKeyDown && !ctrlKeyDown )
-		{
-			m_pEntry->SetText( "" );
-
-			// close the console
-			PostMessage( this, new KeyValues( "Close" ) );
-			PostActionSignal( new KeyValues( "ClosedByHittingTilde" ) );
-		}
-		else
-		{
-			m_pEntry->SetText( m_szPartialText );
-		}
+		m_pEntry->SetText( m_szPartialText );
 		return;
 	}
 

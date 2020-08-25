@@ -1987,6 +1987,9 @@ void TextEntry::OnKeyCodeTyped(KeyCode code)
 		case KEY_F10:
 		case KEY_F11:
 		case KEY_F12:
+        // added so `OnKeyCodeTyped` can be called with tilde in GameConsoleDialog.cpp
+        // might break something!
+        case KEY_BACKQUOTE:
 			{
 				fallThrough = true;
 				break;

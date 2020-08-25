@@ -307,6 +307,10 @@ void InputSettingsPanel::FillInDefaultBindings()
 
     engine->ClientCmd_Unrestricted("unbindall\n");
 
+    // unbindall doesn't unbind `, so manually do it here
+    // not in danger as it is bound to ` later in this function if nothing is bound to toggleconsole
+    engine->ClientCmd_Unrestricted("unbind `\n");
+
     int size = g_pFullFileSystem->Size(fh) + 1;
     CUtlBuffer buf(0, size, CUtlBuffer::TEXT_BUFFER);
     g_pFullFileSystem->Read(buf.Base(), size, fh);

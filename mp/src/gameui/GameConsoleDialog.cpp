@@ -23,21 +23,33 @@ void CGameConsoleDialog::OnKeyCodeTyped(KeyCode code)
 {
     BaseClass::OnKeyCodeTyped(code);
 
+    // HACK HACK
+    // Hiding console if function key or tilde is pressed
+    const char *binding = gameuifuncs->GetBindingForButtonCode(code);
+    if (!binding || !binding[0])
+        return;
+
+    if (!Q_strcmp(binding, "toggleconsole"))
+    {
+        if (!GameUI().IsInLoading())
+        {
+            Hide();
+            GameUI().HideGameUI();
+        }
+        return;
+    }
+
     // check for processing
     if (m_pConsolePanel->TextEntryHasFocus())
     {
         // HACK: Allow F key bindings to operate even here
-        if (code >= KEY_F1 && code <= KEY_F12)
+        if ((code >= KEY_F1 && code <= KEY_F12))
         {
-            // See if there is a binding for the FKey
-            const char *binding = gameuifuncs->GetBindingForButtonCode(code);
-            if (binding && binding[0])
-            {
-                // submit the entry as a console command
-                char szCommand[256];
-                Q_strncpy(szCommand, binding, sizeof(szCommand));
-                engine->ClientCmd_Unrestricted(szCommand);
-            }
+            // submit the entry as a console command
+            char szCommand[256];
+            Q_strncpy(szCommand, binding, sizeof(szCommand));
+            engine->ClientCmd_Unrestricted(szCommand);
+            return;
         }
     }
 }
@@ -46,12 +58,3 @@ void CGameConsoleDialog::OnKeyCodeTyped(KeyCode code)
 // Submits a command
 //-----------------------------------------------------------------------------
 void CGameConsoleDialog::OnCommandSubmitted(const char *pCommand) { engine->ClientCmd_Unrestricted(pCommand); }
-
-void CGameConsoleDialog::OnClosedByHittingTilde()
-{
-    if (!GameUI().IsInLoading())
-    {
-        Hide();
-        GameUI().HideGameUI();
-    }
-}
