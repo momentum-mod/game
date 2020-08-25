@@ -2710,9 +2710,18 @@ int CMomentumGameMovement::TryPlayerMove(Vector *pFirstDest, trace_t *pFirstTrac
         //  and can return.
         if (CloseEnough(pm.fraction, 1.0f, FLT_EPSILON))
         {
-            if (bumpcount == 0 && m_pPlayer->m_bSurfing)
+            if (bumpcount == 0)
             {
-                m_pPlayer->SetRampLeaveVelocity(mv->m_vecVelocity);
+                if (m_pPlayer->m_bSurfing)
+                {
+                    m_pPlayer->SetRampLeaveVelocity(mv->m_vecVelocity);
+                }
+
+                // This was needed so filters that check for floor sliding or surfing can function properly
+                if (m_pPlayer->m_bSurfing || m_pPlayer->GetInteractionIndex(SurfInt::TYPE_FLOOR) == 0)
+                {
+                    m_pPlayer->SetLastInteraction(pm, mv->m_vecVelocity, SurfInt::TYPE_LEAVE);
+                }
             }
 
             break; // moved the entire distance
