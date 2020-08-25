@@ -332,8 +332,8 @@ public:
     CTriggerMomentumTeleport();
 
     // This void teleports the touching entity!
-    void OnStartTouch(CBaseEntity *) OVERRIDE;
     void OnEndTouch(CBaseEntity *) OVERRIDE;
+    void Touch(CBaseEntity* pOther) OVERRIDE;
     // Used by children classes to define what ent to teleport to (see CTriggerOneHop)
     void SetDestinationEnt(CBaseEntity *ent) { m_hDestinationEnt.Set(ent); }
     bool GetVelocityMode() const { return m_iMode; }
@@ -405,7 +405,7 @@ class CTriggerTeleportProgress : public CTriggerMomentumTeleport
     DECLARE_CLASS(CTriggerTeleportProgress, CTriggerMomentumTeleport);
 
   public:
-    void OnStartTouch(CBaseEntity *) OVERRIDE;
+    void Touch(CBaseEntity *) OVERRIDE;
 };
 
 // A trigger volume that allows multiple repeated entries (hops), but teleports the player

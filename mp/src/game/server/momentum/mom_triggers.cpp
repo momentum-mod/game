@@ -639,9 +639,10 @@ CTriggerMomentumTeleport::CTriggerMomentumTeleport()
     m_bResetAngles = true;
 }
 
-void CTriggerMomentumTeleport::OnStartTouch(CBaseEntity *pOther)
+void CTriggerMomentumTeleport::Touch(CBaseEntity* pOther)
 {
-    BaseClass::OnStartTouch(pOther);
+    if (!PassesTriggerFilters(pOther))
+        return;
 
     // SF_TELE_ONEXIT defaults to 0 so ents that inherit from this class and call this method DO fire the tp logic
     if (pOther && !HasSpawnFlags(SF_TELE_ONEXIT))
@@ -757,12 +758,12 @@ bool CFilterProgress::PassesFilterImpl(CBaseEntity *pCaller, CBaseEntity *pEntit
 //----------- CTriggerTeleportCheckpoint -------------------------------------------------------
 LINK_ENTITY_TO_CLASS(trigger_momentum_teleport_progress, CTriggerTeleportProgress);
 
-void CTriggerTeleportProgress::OnStartTouch(CBaseEntity *pOther)
+void CTriggerTeleportProgress::Touch(CBaseEntity *pOther)
 {
     CMomentumPlayer *pPlayer = ToCMOMPlayer(pOther);
     if (pPlayer)
         SetDestinationEnt(pPlayer->GetCurrentProgressTrigger());
-    BaseClass::OnStartTouch(pOther);
+    BaseClass::Touch(pOther);
 }
 
 //-----------------------------------------------------------------------------------------------
