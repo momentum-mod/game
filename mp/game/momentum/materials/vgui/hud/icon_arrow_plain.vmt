@@ -1,0 +1,10 @@
+SDK_UnlitGeneric
+{
+$baseTexture "vgui\hud\icon_arrow_plain"
+$translucent 1
+$alpha 1
+$vertexalpha 1
+$ignorez 1
+$no_fullbright 1
+$vertexcolor 1
+}
