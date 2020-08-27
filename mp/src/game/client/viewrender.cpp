@@ -1973,7 +1973,7 @@ void CViewRender::RenderView( const CViewSetup &viewSetup, int nClearFlags, int 
 		RenderPlayerSprites();
 
 		// Image-space motion blur
-		if ( !building_cubemaps.GetBool() && viewSetup.m_bDoBloomAndToneMapping ) // We probably should use a different view. variable here
+		if ( !building_cubemaps.GetBool() ) // We probably should use a different view. variable here
 		{
 			if ( ( mat_motion_blur_enabled.GetInt() ) && ( g_pMaterialSystemHardwareConfig->GetDXSupportLevel() >= 90 ) )
 			{
@@ -2011,7 +2011,7 @@ void CViewRender::RenderView( const CViewSetup &viewSetup, int nClearFlags, int 
 		// Prevent sound stutter if going slow
 		engine->Sound_ExtraUpdate();	
 	
-		if ( !building_cubemaps.GetBool() && viewSetup.m_bDoBloomAndToneMapping )
+		if ( !building_cubemaps.GetBool() )
 		{
 			pRenderContext.GetFrom( materials );
 			{
