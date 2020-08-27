@@ -1092,9 +1092,18 @@ PostProcessParameters_t s_LocalPostProcessParameters;
 static Vector4D s_viewFadeColor;
 static bool  s_bViewFadeModulate;
 
+static bool s_bOverridePostProcessParams = false;
+
 void SetPostProcessParams( const PostProcessParameters_t* pPostProcessParameters )
 {
-	s_LocalPostProcessParameters = *pPostProcessParameters;
+    if (!s_bOverridePostProcessParams)
+	    s_LocalPostProcessParameters = *pPostProcessParameters;
+}
+
+void SetPostProcessParams( const PostProcessParameters_t* pPostProcessParameters, bool bOverride )
+{
+    s_bOverridePostProcessParams = bOverride;
+    s_LocalPostProcessParameters = *pPostProcessParameters;
 }
 
 void SetViewFadeParams( byte r, byte g, byte b, byte a, bool bModulate )

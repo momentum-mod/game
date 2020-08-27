@@ -18,6 +18,7 @@ void DoImageSpaceMotionBlur( const CViewSetup &viewSetup );
 void DumpTGAofRenderTarget( const int width, const int height, const char *pFilename );
 
 void SetPostProcessParams( const PostProcessParameters_t* pPostProcessParameters );
+void SetPostProcessParams( const PostProcessParameters_t* pPostProcessParameters, bool override );
 
 void SetViewFadeParams( byte r, byte g, byte b, byte a, bool bModulate );
 
