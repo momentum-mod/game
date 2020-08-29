@@ -200,7 +200,7 @@ void CHudSpeedMeter::PerformLayout()
         SpeedometerLabel *pLabel = m_LabelOrderList[i];
         if (pLabel->IsVisible())
         {
-            pLabel->SetPos(pLabel->GetXPos(), iHeightAcc);
+            pLabel->SetYPos(iHeightAcc);
             iHeightAcc += pLabel->GetTall();
         }
     }

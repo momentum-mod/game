@@ -1,6 +1,6 @@
 #pragma once
 
-#include <vgui_controls/Label.h>
+#include "controls/DoubleLabel.h"
 #include "mom_shareddefs.h"
 
 // for ranged based coloring
@@ -13,16 +13,15 @@ struct Range_t
 };
 typedef CUtlVector<Range_t> RangeList;
 
-class SpeedometerLabel : public vgui::Label
+class SpeedometerLabel : public vgui::DoubleLabel
 {
-    DECLARE_CLASS_SIMPLE(SpeedometerLabel, vgui::Label);
+    DECLARE_CLASS_SIMPLE(SpeedometerLabel, vgui::DoubleLabel);
 
   public:
     SpeedometerLabel(Panel *parent, const char *panelName, SpeedometerColorize_t colorizeType);
 
     void ApplySchemeSettings(vgui::IScheme *pScheme) override;
     void OnThink() override; // for applying fadeout
-    void PerformLayout() override;
     
     void SetVisible(bool bVisible) override;
 
@@ -83,8 +82,6 @@ class SpeedometerLabel : public vgui::Label
     bool m_bDoneFading;
 
     Color m_NormalColor, m_IncreaseColor, m_DecreaseColor;
-
-    vgui::Label *m_pComparisonLabel;
 
     RangeList m_vecRangeList;
 
