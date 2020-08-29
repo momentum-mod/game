@@ -999,6 +999,13 @@
         16:"Start Silent": 1
         32:"Is NOT Looped": 1
     ]
+    soundflags(choices) :"Sound Flags" : 0 : "Additional options for your sound." =
+    [
+        0: "None"
+        128: "Pause when game is paused"
+        256: "Ignore phonemes (no lip-syncing)"
+        1024: "Don't overwrite existing sound on channel (untested)"
+    ]
     SourceEntityName(target_destination) : "SourceEntityName" : : "If an entity is specified, sound will come from this named entity instead of the location of ambient_generic."
 
     // Inputs
@@ -1009,6 +1016,9 @@
     input Volume(integer) : "Sets the sound volume, expressed as a range from 0 to 10, where 10 is the loudest."
     input FadeIn(integer) : "Fades the sound up to full volume over a specified number of seconds, with a range from 0 to 100 seconds."
     input FadeOut(integer) : "Fades the sound to silence over a specified number of seconds, with a range from 0 to 100 seconds."
+    input SetSound(string) : "Sets the sound this ambient_generic should play."
+    
+    output OnSoundFinished(void) : "Fires when the sound finishes playing. NOTE: This sound should be set to pause when the game is paused."
 ]
 
 @SolidClass base(Targetname) sphere(DisappearDist) = func_lod : 
