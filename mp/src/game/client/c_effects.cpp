@@ -1429,22 +1429,34 @@ CPrecipHack g_PrecipHack("CPrecipHack");
 
 // Receive datatables
 BEGIN_RECV_TABLE_NOBASE(CEnvWindShared, DT_EnvWindShared)
-RecvPropInt(RECVINFO(m_iMinWind)), RecvPropInt(RECVINFO(m_iMaxWind)), RecvPropInt(RECVINFO(m_iMinGust)),
-    RecvPropInt(RECVINFO(m_iMaxGust)), RecvPropFloat(RECVINFO(m_flMinGustDelay)),
-    RecvPropFloat(RECVINFO(m_flMaxGustDelay)), RecvPropInt(RECVINFO(m_iGustDirChange)),
-    RecvPropInt(RECVINFO(m_iWindSeed)), RecvPropInt(RECVINFO(m_iInitialWindDir)),
-    RecvPropFloat(RECVINFO(m_flInitialWindSpeed)), RecvPropFloat(RECVINFO(m_flStartTime)),
+    RecvPropInt(RECVINFO(m_iMinWind)),
+    RecvPropInt(RECVINFO(m_iMaxWind)),
+    RecvPropInt(RECVINFO(m_iMinGust)),
+    RecvPropInt(RECVINFO(m_iMaxGust)),
+    RecvPropFloat(RECVINFO(m_flMinGustDelay)),
+    RecvPropFloat(RECVINFO(m_flMaxGustDelay)),
+    RecvPropInt(RECVINFO(m_iGustDirChange)),
+    RecvPropInt(RECVINFO(m_iWindSeed)),
+    RecvPropInt(RECVINFO(m_iInitialWindDir)),
+    RecvPropFloat(RECVINFO(m_flInitialWindSpeed)),
+    RecvPropFloat(RECVINFO(m_flStartTime)),
     RecvPropFloat(RECVINFO(m_flGustDuration)),
-    //	RecvPropInt		(RECVINFO(m_iszGustSound)),
-    END_RECV_TABLE()
+//  RecvPropInt(RECVINFO(m_iszGustSound)),
+    RecvPropFloat(RECVINFO(m_windRadius)),
+    RecvPropFloat(RECVINFO(m_windRadiusInner)),
+    RecvPropVector(RECVINFO(m_location)),
+    RecvPropFloat(RECVINFO(m_flTreeSwayScale)),
+END_RECV_TABLE()
 
-        IMPLEMENT_CLIENTCLASS_DT(C_EnvWind, DT_EnvWind, CEnvWind)
-            RecvPropDataTable(RECVINFO_DT(m_EnvWindShared), 0, &REFERENCE_RECV_TABLE(DT_EnvWindShared)),
-    END_RECV_TABLE()
+IMPLEMENT_CLIENTCLASS_DT( C_EnvWind, DT_EnvWind, CEnvWind )
+	RecvPropDataTable(RECVINFO_DT(m_EnvWindShared), 0, &REFERENCE_RECV_TABLE(DT_EnvWindShared)),
+END_RECV_TABLE()
 
-        C_EnvWind::C_EnvWind()
+
+C_EnvWind::C_EnvWind()
 {
 }
+
 
 //-----------------------------------------------------------------------------
 // Post data update!
@@ -1562,15 +1574,17 @@ class C_Embers : public C_BaseEntity
 
 // Receive datatable
 IMPLEMENT_CLIENTCLASS_DT(C_Embers, DT_Embers, CEmbers)
-RecvPropInt(RECVINFO(m_nDensity)), RecvPropInt(RECVINFO(m_nLifetime)), RecvPropInt(RECVINFO(m_nSpeed)),
+    RecvPropInt(RECVINFO(m_nDensity)),
+    RecvPropInt(RECVINFO(m_nLifetime)),
+    RecvPropInt(RECVINFO(m_nSpeed)),
     RecvPropInt(RECVINFO(m_bEmit)),
-    END_RECV_TABLE()
+END_RECV_TABLE()
 
-    //-----------------------------------------------------------------------------
-    // Purpose:
-    // Input  : bnewentity -
-    //-----------------------------------------------------------------------------
-    C_Embers::C_Embers()
+//-----------------------------------------------------------------------------
+// Purpose:
+// Input  : bnewentity -
+//-----------------------------------------------------------------------------
+C_Embers::C_Embers()
 {
     m_pEmitter = CEmberEmitter::Create("C_Embers");
 }
@@ -1709,11 +1723,13 @@ class C_QuadraticBeam : public C_BaseEntity
 
 // Receive datatable
 IMPLEMENT_CLIENTCLASS_DT(C_QuadraticBeam, DT_QuadraticBeam, CEnvQuadraticBeam)
-RecvPropVector(RECVINFO(m_targetPosition)), RecvPropVector(RECVINFO(m_controlPosition)),
-    RecvPropFloat(RECVINFO(m_scrollRate)), RecvPropFloat(RECVINFO(m_flWidth)),
-    END_RECV_TABLE()
+    RecvPropVector(RECVINFO(m_targetPosition)),
+    RecvPropVector(RECVINFO(m_controlPosition)),
+    RecvPropFloat(RECVINFO(m_scrollRate)),
+    RecvPropFloat(RECVINFO(m_flWidth)),
+END_RECV_TABLE()
 
-        FORCEINLINE Vector Color32ToVector(const color32 &color)
+FORCEINLINE Vector Color32ToVector(const color32 &color)
 {
     return Vector(color.r * (1.f / 255.0f), color.g * (1.f / 255.0f), color.b * (1.f / 255.0f));
 }
@@ -1751,8 +1767,7 @@ class SnowFallEffect : public CSimpleEmitter
 
         pParticle->m_vecVelocity *= flSpeed;
 
-        Vector vecWindVelocity;
-        GetWindspeedAtTime(gpGlobals->curtime, vecWindVelocity);
+        Vector vecWindVelocity = GetWindspeedAtLocation( pParticle->m_Pos );
         pParticle->m_vecVelocity += (vecWindVelocity * r_SnowWindScale.GetFloat());
     }
 
