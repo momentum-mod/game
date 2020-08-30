@@ -6862,6 +6862,9 @@ void CRevertSaved::LoadThink( void )
 #define SF_SPEED_MOD_SUPPRESS_SPEED		(1<<5)
 #define SF_SPEED_MOD_SUPPRESS_ATTACK	(1<<6)
 #define SF_SPEED_MOD_SUPPRESS_ZOOM		(1<<7)
+// Needs to be inverse because suppressing the flashlight is already default behavior
+// and we don't want to break compatibility for existing speedmods
+#define SF_SPEED_MOD_DONT_SUPPRESS_FLASHLIGHT	(1<<8)
 
 class CMovementSpeedMod : public CPointEntity
 {
@@ -6869,8 +6872,15 @@ class CMovementSpeedMod : public CPointEntity
 public:
 	void InputSpeedMod(inputdata_t &data);
 
+	void InputEnable(inputdata_t &data);
+	void InputDisable(inputdata_t &data);
+
+	void InputSetAdditionalButtons(inputdata_t &data);
+
 private:
 	int GetDisabledButtonMask( void );
+
+	int m_iAdditionalButtons;
 
 	DECLARE_DATADESC();
 };
@@ -6879,6 +6889,11 @@ LINK_ENTITY_TO_CLASS( player_speedmod, CMovementSpeedMod );
 
 BEGIN_DATADESC( CMovementSpeedMod )
 	DEFINE_INPUTFUNC( FIELD_FLOAT, "ModifySpeed", InputSpeedMod ),
+	DEFINE_INPUTFUNC( FIELD_VOID, "Enable", InputEnable ),
+	DEFINE_INPUTFUNC( FIELD_VOID, "Disable", InputDisable ),
+
+	DEFINE_KEYFIELD( m_iAdditionalButtons, FIELD_INTEGER, "AdditionalButtons" ),
+	DEFINE_INPUTFUNC( FIELD_INTEGER, "SetAdditionalButtons", InputSetAdditionalButtons ),
 END_DATADESC()
 	
 int CMovementSpeedMod::GetDisabledButtonMask( void )
@@ -6915,6 +6930,11 @@ int CMovementSpeedMod::GetDisabledButtonMask( void )
 		nMask |= IN_ZOOM;
 	}
 
+	if ( m_iAdditionalButtons != 0 )
+	{
+		nMask |= m_iAdditionalButtons;
+	}
+
 	return nMask;
 }
 
@@ -6944,14 +6964,18 @@ void CMovementSpeedMod::InputSpeedMod(inputdata_t &data)
 				pPlayer->HideViewModels();
 			}
 
-			// Turn off the flashlight
-			if ( pPlayer->FlashlightIsOn() )
+			if ( !HasSpawnFlags(SF_SPEED_MOD_DONT_SUPPRESS_FLASHLIGHT) )
 			{
-				pPlayer->FlashlightTurnOff();
+				// Turn off the flashlight
+				if (pPlayer->FlashlightIsOn())
+				{
+				    pPlayer->FlashlightTurnOff();
+				}
+				
+				// Disable the flashlight's further use
+				pPlayer->SetFlashlightEnabled(false);
 			}
-			
-			// Disable the flashlight's further use
-			pPlayer->SetFlashlightEnabled( false );
+
 			pPlayer->DisableButtons( GetDisabledButtonMask() );
 
 			// Hide the HUD
@@ -6972,8 +6996,12 @@ void CMovementSpeedMod::InputSpeedMod(inputdata_t &data)
 				}
 			}
 
-			// Allow the flashlight again
-			pPlayer->SetFlashlightEnabled( true );
+			if ( !HasSpawnFlags( SF_SPEED_MOD_DONT_SUPPRESS_FLASHLIGHT ) )
+			{
+				// Allow the flashlight again
+				pPlayer->SetFlashlightEnabled( true );
+			}
+
 			pPlayer->EnableButtons( GetDisabledButtonMask() );
 
 			// Restore the HUD
@@ -6984,6 +7012,118 @@ void CMovementSpeedMod::InputSpeedMod(inputdata_t &data)
 		}
 
 		pPlayer->SetLaggedMovementValue( data.value.Float() );
+	}
+}
+
+void CMovementSpeedMod::InputEnable(inputdata_t &data)
+{
+	CBasePlayer *pPlayer = NULL;
+
+	if ( data.pActivator && data.pActivator->IsPlayer() )
+	{
+		pPlayer = (CBasePlayer *)data.pActivator;
+	}
+	else if ( !g_pGameRules->IsDeathmatch() )
+	{
+		pPlayer = UTIL_GetLocalPlayer();
+	}
+
+	if ( pPlayer )
+	{
+		// Holster weapon immediately, to allow it to cleanup
+		if ( HasSpawnFlags( SF_SPEED_MOD_SUPPRESS_WEAPONS ) )
+		{
+			if ( pPlayer->GetActiveWeapon() )
+			{
+				pPlayer->Weapon_SetLast( pPlayer->GetActiveWeapon() );
+				pPlayer->GetActiveWeapon()->Holster();
+				pPlayer->ClearActiveWeapon();
+			}
+			
+			pPlayer->HideViewModels();
+		}
+
+		// Turn off the flashlight
+		if ( pPlayer->FlashlightIsOn() )
+		{
+			pPlayer->FlashlightTurnOff();
+		}
+		
+		// Disable the flashlight's further use
+		pPlayer->SetFlashlightEnabled( false );
+		pPlayer->DisableButtons( GetDisabledButtonMask() );
+
+		// Hide the HUD
+		if ( HasSpawnFlags( SF_SPEED_MOD_SUPPRESS_HUD ) )
+		{
+			pPlayer->m_Local.m_iHideHUD |= HIDEHUD_ALL;
+		}
+	}
+}
+
+void CMovementSpeedMod::InputDisable(inputdata_t &data)
+{
+	CBasePlayer *pPlayer = NULL;
+
+	if ( data.pActivator && data.pActivator->IsPlayer() )
+	{
+		pPlayer = (CBasePlayer *)data.pActivator;
+	}
+	else if ( !g_pGameRules->IsDeathmatch() )
+	{
+		pPlayer = UTIL_GetLocalPlayer();
+	}
+
+	if ( pPlayer )
+	{
+		// Bring the weapon back
+		if  ( HasSpawnFlags( SF_SPEED_MOD_SUPPRESS_WEAPONS ) && pPlayer->GetActiveWeapon() == NULL )
+		{
+			pPlayer->SetActiveWeapon( pPlayer->GetLastWeapon() );
+			if ( pPlayer->GetActiveWeapon() )
+			{
+				pPlayer->GetActiveWeapon()->Deploy();
+			}
+		}
+
+		// Allow the flashlight again
+		pPlayer->SetFlashlightEnabled( true );
+		pPlayer->EnableButtons( GetDisabledButtonMask() );
+
+		// Restore the HUD
+		if ( HasSpawnFlags( SF_SPEED_MOD_SUPPRESS_HUD ) )
+		{
+			pPlayer->m_Local.m_iHideHUD &= ~HIDEHUD_ALL;
+		}
+	}
+}
+
+void CMovementSpeedMod::InputSetAdditionalButtons(inputdata_t &data)
+{
+	CBasePlayer *pPlayer = NULL;
+
+	if ( data.pActivator && data.pActivator->IsPlayer() )
+	{
+		pPlayer = (CBasePlayer *)data.pActivator;
+	}
+	else if ( !g_pGameRules->IsDeathmatch() )
+	{
+		pPlayer = UTIL_GetLocalPlayer();
+	}
+
+	bool bAlreadyDisabled = false;
+	if ( pPlayer )
+	{
+		bAlreadyDisabled = (pPlayer->m_afButtonDisabled & GetDisabledButtonMask()) != 0;
+	}
+
+	m_iAdditionalButtons = data.value.Int();
+
+	// If we were already disabling buttons, re-disable them
+	if ( bAlreadyDisabled )
+	{
+		// We should probably do something better than this.
+		pPlayer->m_afButtonForced = GetDisabledButtonMask();
 	}
 }
 
