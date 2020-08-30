@@ -160,6 +160,7 @@ public:
 	CNetworkVar( int, m_iMinWind );			// the slowest the wind can normally blow
 	CNetworkVar( int, m_iMaxWind );			// the fastest the wind can normally blow
     CNetworkVar(int, m_windRadius); // the radius this entity affects with its windiness, so a map can have multiple
+	CNetworkVar( float, m_windRadiusInner );		// the inner-radius for noticable distance fading
     CNetworkVar(int, m_iMinGust);   // the slowest that a gust can be
 	CNetworkVar( int, m_iMaxGust );			// the fastest that a gust can be
 
@@ -179,6 +180,8 @@ public:
                                 // a static vector.  Now we can have multiple env_wind, so we need this in here.
     Vector m_CurrentSwayVector;
     Vector m_PrevSwayVector;
+
+	CNetworkVar( float, m_flTreeSwayScale );
 
 	CNetworkVar( int, m_iInitialWindDir );
 	CNetworkVar( float, m_flInitialWindSpeed );
