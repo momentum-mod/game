@@ -7819,10 +7819,18 @@
         32: "Suppress sprint" : 0
         64: "Suppress attack" : 0
         128: "Suppress zoom" : 0
+        256: "Don't suppress flashlight" : 0
     ]
+    
+    AdditionalButtons(integer) : "Additional Buttons" : 0 : "Additional buttons to suppress, other than those listed in the spawnflags. Advanced users only."
 
     // Inputs
-    input ModifySpeed(float) : "Modifies player speed by X ammount."
+    input ModifySpeed(float) : "Modifies player speed by X ammount. Use 1.0 to reset."
+    
+    input Enable(void) : "Enables the spawnflag abilities without actually modifying the player's speed."
+    input Disable(void) : "Disables the spawnflag abilities without actually modifying the player's speed."
+    
+    input SetAdditionalButtons(integer) : "Sets the additional suppressed buttons."
 ]
 
 @PointClass base(Targetname) iconsprite("editor/postprocess_controller.vmt") color(255 255 255) = postprocess_controller : 
