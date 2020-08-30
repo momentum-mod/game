@@ -377,6 +377,8 @@ BEGIN_DATADESC( CBasePlayer )
 
 	DEFINE_FIELD( m_autoKickDisabled, FIELD_BOOLEAN ),
 
+	DEFINE_FIELD( m_bDrawPlayerModelExternally, FIELD_BOOLEAN ),
+
 	// Function Pointers
 	DEFINE_FUNCTION( PlayerDeathThink ),
 
@@ -7047,6 +7049,8 @@ void SendProxy_CropFlagsToPlayerFlagBitsLength( const SendProp *pProp, const voi
 
 		SendPropInt			( SENDINFO( m_nWaterLevel ), 2, SPROP_UNSIGNED ),
 		SendPropFloat		( SENDINFO( m_flLaggedMovementValue ), 0, SPROP_NOSCALE ),
+
+		SendPropBool		( SENDINFO( m_bDrawPlayerModelExternally ) ),
 
 	END_SEND_TABLE()
 

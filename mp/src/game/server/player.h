@@ -1048,6 +1048,8 @@ public:
 	float					m_flSideMove;
 	int						m_nNumCrateHudHints;
 
+	CNetworkVar( bool, m_bDrawPlayerModelExternally );
+
 private:
 
 	// Used in test code to teleport the player to random locations in the map.
