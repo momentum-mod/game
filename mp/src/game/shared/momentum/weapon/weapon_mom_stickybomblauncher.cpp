@@ -191,9 +191,12 @@ void CMomentumStickybombLauncher::ItemPostFrame()
             m_flChargeBeginTime = m_flNextPrimaryAttack;
         }
     }
-    else
+    else if (m_bEarlyPrimaryFire)
     {
+        // rare case:
+        // was just clicked inside buffer but charge begin time was not updated
         m_bEarlyPrimaryFire.Set(false);
+        m_flChargeBeginTime = m_flNextPrimaryAttack;
     }
 
     if (!bPressingM1 && m_flChargeBeginTime > 0.0f && m_flChargeBeginTime <= gpGlobals->curtime)
