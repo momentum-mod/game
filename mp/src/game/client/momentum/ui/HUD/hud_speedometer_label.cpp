@@ -88,9 +88,7 @@ void SpeedometerLabel::Reset()
 
 void SpeedometerLabel::SetText(int value)
 {
-    char szValue[BUFSIZELOCL];
-    Q_snprintf(szValue, sizeof(szValue), "%i", value);
-    SetPrimaryText(szValue);
+    SetPrimaryText(CFmtStr("%i", value).Get());
 }
 
 void SpeedometerLabel::Update(float value)
@@ -229,10 +227,8 @@ void SpeedometerLabel::ColorizeComparisonSeparate()
     g_pMOMRunCompare->GetDiffColor(m_flDiff, &compareColor, true);
 
     char diffChar = m_flDiff > 0.0f ? '+' : '-';
-    char szText[BUFSIZELOCL];
-    Q_snprintf(szText, BUFSIZELOCL, " (%c %i)", diffChar, RoundFloatToInt(fabs(m_flDiff)));
 
-    SetSecondaryText(szText);
+    SetSecondaryText(CFmtStr(" (%c %i)", diffChar, RoundFloatToInt(fabs(m_flDiff))).Get());
     SetSecondaryFgColor(compareColor);
 }
 
@@ -242,13 +238,11 @@ void SpeedometerLabel::SaveToKV(KeyValues* pOut)
     pOut->SetBool("visible", IsVisible());
     pOut->SetInt("colorize", GetColorizeType());
     KeyValues *pRangesKV = pOut->FindKey("ranges", true);
-    char tmp[BUFSIZELOCL];
 
     FOR_EACH_VEC(m_vecRangeList, i)
     {
         Range_t range = m_vecRangeList[i];
-        Q_snprintf(tmp, BUFSIZELOCL, "%i", i + 1);
-        KeyValues *rangeKV = pRangesKV->FindKey(tmp, true);
+        KeyValues *rangeKV = pRangesKV->FindKey(CFmtStr("%i", i + 1).Get(), true);
         rangeKV->SetInt("min", range.min);
         rangeKV->SetInt("max", range.max);
         rangeKV->SetColor("color", range.color);
