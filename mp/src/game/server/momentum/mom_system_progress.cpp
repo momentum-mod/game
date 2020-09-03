@@ -1,8 +1,6 @@
 #include "cbase.h"
 #include "filesystem.h"
 #include "mom_system_progress.h"
-#include "mom_player.h"
-#include "mom_triggers.h"
 #include "fmtstr.h"
 
 #include "tier0/memdbgon.h"
@@ -87,26 +85,6 @@ CON_COMMAND(mom_prog_reset, "Resets progress")
 {
     g_pMomentumProgress->Reset();
 }
-
-CON_COMMAND(mom_prog_tele, "Teleports player to the last progress trigger\n")
-{
-    CMomentumPlayer *pPlayer = CMomentumPlayer::GetLocalPlayer();
-
-    if (!pPlayer)
-        return;
-
-    CBaseMomentumTrigger *pTrigger = pPlayer->GetCurrentProgressTrigger();
-
-    if (pTrigger)
-    {
-        pPlayer->Teleport(&pTrigger->GetAbsOrigin(), nullptr, &vec3_origin);
-    }
-    else
-    {
-        DevWarning("mom_prog_tele cannot teleport, CurrentProgressTrigger is null!\n");
-    }
-}
-
 
 CMomentumProgress s_Progress;
 CMomentumProgress *g_pMomentumProgress = &s_Progress;

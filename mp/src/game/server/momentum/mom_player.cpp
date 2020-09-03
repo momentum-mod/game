@@ -105,6 +105,25 @@ CON_COMMAND(
     }
 }
 
+CON_COMMAND(mom_prog_tele, "Teleports player to the last progress trigger\n")
+{
+    CMomentumPlayer *pPlayer = CMomentumPlayer::GetLocalPlayer();
+
+    if (!pPlayer)
+        return;
+
+    CBaseMomentumTrigger *pTrigger = pPlayer->GetCurrentProgressTrigger();
+
+    if (pTrigger)
+    {
+        pPlayer->Teleport(&pTrigger->GetAbsOrigin(), nullptr, &vec3_origin);
+    }
+    else
+    {
+        DevWarning("mom_prog_tele cannot teleport, CurrentProgressTrigger is null!\n");
+    }
+}
+
 CON_COMMAND(mom_strafesync_reset, "Reset the strafe sync. (works only when timer is disabled)\n")
 {
     CMomentumPlayer *pPlayer = dynamic_cast<CMomentumPlayer *>(UTIL_GetLocalPlayer());

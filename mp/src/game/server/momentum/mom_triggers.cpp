@@ -22,7 +22,6 @@ static MAKE_TOGGLE_CONVAR(mom_triggers_overlay_bbox_enable, "0", FCVAR_DEVELOPME
 static MAKE_TOGGLE_CONVAR(mom_triggers_overlay_text_enable, "0", FCVAR_DEVELOPMENTONLY,
                           "Toggles showing the entity text for momentum triggers, needs map restart if changed!\n");
 
-
 // ------------- Base Trigger ------------------------------------
 BEGIN_DATADESC(CBaseMomentumTrigger)
     DEFINE_KEYFIELD(m_iTrackNumber, FIELD_INTEGER, "track_number")
