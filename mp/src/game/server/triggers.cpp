@@ -289,6 +289,13 @@ int CBaseTrigger::DrawDebugTextOverlays(void)
 		}
 		EntityText(text_offset,tempstr,0);
 		text_offset++;
+
+		if (m_iFilterName != NULL_STRING)
+		{
+			Q_snprintf(tempstr, sizeof(tempstr), "Filter: %s", m_iFilterName.ToCStr());
+			EntityText(text_offset, tempstr, 0);
+			text_offset++;
+		}
 	}
 	return text_offset;
 }
@@ -1208,7 +1215,7 @@ int CTriggerLook::DrawDebugTextOverlays(void)
 		// Print Look time
 		// ----------------
 		char tempstr[255];
-		Q_snprintf(tempstr,sizeof(tempstr),"Time:   %3.2f",m_flLookTime - MAX(0,m_flLookTimeTotal));
+		Q_snprintf(tempstr,sizeof(tempstr),"Time: %3.2f",m_flLookTime - MAX(0,m_flLookTimeTotal));
 		EntityText(text_offset,tempstr,0);
 		text_offset++;
 	}
@@ -2129,6 +2136,8 @@ public:
 	void Touch( CBaseEntity *pOther );
 	void Untouch( CBaseEntity *pOther );
 
+	int DrawDebugTextOverlays();
+
 	Vector m_vecPushDir;
 
 	DECLARE_DATADESC();
@@ -2168,6 +2177,21 @@ void CTriggerPush::Spawn()
 	}
 }
 
+//-----------------------------------------------------------------------------
+// Purpose: Draw any debug text overlays
+// Output : Current text offset from the top
+//-----------------------------------------------------------------------------
+int CTriggerPush::DrawDebugTextOverlays(void) 
+{
+	int text_offset = BaseClass::DrawDebugTextOverlays();
+
+	char tempstr[255];
+	Q_snprintf(tempstr, sizeof(tempstr), "Force: %.2f", m_flSpeed);
+	EntityText(text_offset,tempstr,0);
+	text_offset++;
+
+	return text_offset;
+}
 
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
@@ -2290,6 +2314,8 @@ public:
 	virtual void Spawn( void ) OVERRIDE;
 	virtual void Touch( CBaseEntity *pOther ) OVERRIDE;
 
+	int DrawDebugTextOverlays();
+
 	string_t m_iLandmark;
 	bool m_bReorientLandmark;
 
@@ -2393,6 +2419,33 @@ void CTriggerTeleport::Touch(CBaseEntity* pOther)
 
         pOther->Teleport(&vecNewActivatorOrigin, NULL, NULL);
     }
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: Draw any debug text overlays
+// Output : Current text offset from the top
+//-----------------------------------------------------------------------------
+int CTriggerTeleport::DrawDebugTextOverlays(void) 
+{
+	int text_offset = BaseClass::DrawDebugTextOverlays();
+
+	char tempstr[255];
+
+	if (m_target != NULL_STRING) 
+	{
+		Q_snprintf(tempstr, sizeof(tempstr), "Destination: %s", m_target.ToCStr());
+		EntityText(text_offset,tempstr,0);
+		text_offset++;
+	}
+
+	if (m_iLandmark != NULL_STRING) 
+	{
+		Q_snprintf(tempstr, sizeof(tempstr), "Landmark: %s", m_iLandmark.ToCStr());
+		EntityText(text_offset,tempstr,0);
+		text_offset++;
+	}
+
+	return text_offset;
 }
 
 
