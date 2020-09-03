@@ -59,6 +59,18 @@ bool CBaseMomentumTrigger::PassesTriggerFilters(CBaseEntity* pOther)
     return BaseClass::PassesTriggerFilters(pOther);
 }
 
+int CBaseMomentumTrigger::DrawDebugTextOverlays()
+{
+    int text_offset = BaseClass::DrawDebugTextOverlays();
+
+    char tempstr[255];
+    Q_snprintf(tempstr, sizeof(tempstr), "Track: %d", m_iTrackNumber.Get());
+    EntityText(text_offset, tempstr, 0);
+    text_offset++;
+
+    return text_offset;
+}
+
 // -------------- FilterTrackNumber --------------------------
 LINK_ENTITY_TO_CLASS(filter_momentum_track_number, CFilterTrackNumber);
 
@@ -276,6 +288,20 @@ const Vector& CBaseMomZoneTrigger::GetRestartPosition()
     return m_vecRestartPos;
 }
 
+int CBaseMomZoneTrigger::DrawDebugTextOverlays()
+{
+    int text_offset = BaseClass::DrawDebugTextOverlays();
+    
+    const char *szZoneType[ZONE_TYPE_COUNT] = {"start", "stop", "stage", "checkpoint"};
+
+    char tempstr[255];
+    Q_snprintf(tempstr, sizeof(tempstr), "Zone type: %s", szZoneType[GetZoneType()]);
+    EntityText(text_offset, tempstr, 0);
+    text_offset++;
+
+    return text_offset;
+}
+
 // --------- CTriggerZone ----------------------------------------------
 BEGIN_DATADESC(CTriggerZone)
     DEFINE_KEYFIELD(m_iZoneNumber, FIELD_INTEGER, "zone_number")
@@ -319,6 +345,17 @@ bool CTriggerZone::LoadFromKeyValues(KeyValues* kv)
     return false;
 }
 
+int CTriggerZone::DrawDebugTextOverlays()
+{
+    int text_offset = BaseClass::DrawDebugTextOverlays();
+
+    char tempstr[255];
+    Q_snprintf(tempstr, sizeof(tempstr), "Zone number: %d", m_iZoneNumber);
+    EntityText(text_offset, tempstr, 0);
+    text_offset++;
+
+    return text_offset;
+}
 
 //---------- CTriggerCheckpoint -----------------------------------------------------------
 LINK_ENTITY_TO_CLASS(trigger_momentum_timer_checkpoint, CTriggerCheckpoint);
@@ -691,6 +728,23 @@ void CTriggerMomentumTeleport::OnFailTeleport(CBaseEntity *pEntTeleported)
 
     pPlayer->m_nButtonsToggled = 0;
 }
+
+int CTriggerMomentumTeleport::DrawDebugTextOverlays(void) 
+{
+    int text_offset = BaseClass::DrawDebugTextOverlays();
+
+    char tempstr[255];
+
+    if (m_target != NULL_STRING) 
+    {
+        Q_snprintf(tempstr, sizeof(tempstr), "Destination: %s", m_target.ToCStr());
+        EntityText(text_offset, tempstr, 0);
+        text_offset++;
+    }
+
+    return text_offset;
+}
+
 //----------------------------------------------------------------------------------------------
 
 //---------- CEnvSurfaceTeleport ---------------------------------------------------------------
@@ -1016,8 +1070,12 @@ void CFuncShootBoost::Spawn()
     // Transform the vector into entity space
     VectorIRotate(vecAbsDir, EntityToWorldTransform(), m_vPushDir);
 
-    // temporary
-    m_debugOverlays |= (OVERLAY_BBOX_BIT | OVERLAY_TEXT_BIT);
+    // We don't need health here
+    SetMaxHealth(0);
+
+    m_debugOverlays |= ((OVERLAY_BBOX_BIT * mom_triggers_overlay_bbox_enable.GetBool()) |
+                        (OVERLAY_TEXT_BIT * mom_triggers_overlay_text_enable.GetBool()));
+
     if (m_target != NULL_STRING)
         m_hEntityCheck = gEntList.FindEntityByName(nullptr, m_target);
 }
@@ -1074,6 +1132,34 @@ int CFuncShootBoost::OnTakeDamage(const CTakeDamageInfo &info)
     // As we don't want to break it, we don't call BaseClass::OnTakeDamage(info);
     // OnTakeDamage returns the damage dealt
     return info.GetDamage();
+}
+
+int CFuncShootBoost::DrawDebugTextOverlays(void) 
+{
+    int text_offset = BaseClass::DrawDebugTextOverlays();
+
+    char tempstr[255];
+    const char *szBoostType[BOOST_COUNT] = { "set", "add", "set if lower", "add if lower", "basevelocity" };
+
+    if (m_iIncrease >= 0 && m_iIncrease < BOOST_COUNT)
+    {
+        Q_snprintf(tempstr, sizeof(tempstr), "Boost type: %s", szBoostType[m_iIncrease]);
+        EntityText(text_offset, tempstr, 0);
+        text_offset++;
+    }
+    
+    Q_snprintf(tempstr, sizeof(tempstr), "Force: %.2f", m_fPushForce);
+    EntityText(text_offset, tempstr, 0);
+    text_offset++;
+
+    if (m_target != NULL_STRING) 
+    {
+        Q_snprintf(tempstr, sizeof(tempstr), "Trigger: %s", m_target.ToCStr());
+        EntityText(text_offset, tempstr, 0);
+        text_offset++;
+    }
+
+    return text_offset;
 }
 //-----------------------------------------------------------------------------------------------
 
@@ -1157,6 +1243,27 @@ void CTriggerMomentumPush::OnSuccessfulTouch(CBaseEntity *pOther)
 
         pOther->SetAbsVelocity(finalVel);
     }
+}
+
+int CTriggerMomentumPush::DrawDebugTextOverlays(void) 
+{
+    int text_offset = BaseClass::DrawDebugTextOverlays();
+
+    char tempstr[255];
+    const char *szBoostType[BOOST_COUNT] = { "set", "add", "set if lower", "add if lower", "basevelocity" };
+
+    if (m_iIncrease >= 0 && m_iIncrease < BOOST_COUNT)
+    {
+        Q_snprintf(tempstr, sizeof(tempstr), "Boost type: %s", szBoostType[m_iIncrease]);
+        EntityText(text_offset, tempstr, 0);
+        text_offset++;
+    }
+    
+    Q_snprintf(tempstr, sizeof(tempstr), "Force: %.2f", m_fPushForce);
+    EntityText(text_offset, tempstr, 0);
+    text_offset++;
+
+    return text_offset;
 }
 //-----------------------------------------------------------------------------------------------
 
