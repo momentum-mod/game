@@ -40,17 +40,30 @@ public:
 	virtual void ApplySchemeSettings(IScheme *pScheme);
 	virtual void OnMousePressed(MouseCode code);
 
+	Color GetButtonBgColor() override;
+
 	void OpenColumnChoiceMenu();
+
+private:
+	bool m_bBgOverridden;
 };
 
 ColumnButton::ColumnButton(vgui::Panel *parent, const char *name, const char *text) : Button(parent, name, text)
 {
+	m_bBgOverridden = false;
 	SetBlockDragChaining( true );
 }
 
 void ColumnButton::ApplySchemeSettings(IScheme *pScheme)
 {
 	Button::ApplySchemeSettings(pScheme);
+
+	const auto pHeaderBgColor = pScheme->GetResourceString("ListPanelHeader.BgColor");
+	if (pHeaderBgColor && pHeaderBgColor[0])
+	{
+		m_bBgOverridden = true;
+		SetBgColor(GetSchemeColor("ListPanelHeader.BgColor", pScheme));
+	}
 
 	SetFont(GetSchemeFont(pScheme, nullptr, "ListPanelHeader.Font", "DefaultSmall"));
     const auto pBorder = pScheme->GetBorder("ListPanelColumnButtonBorder");
@@ -84,6 +97,14 @@ void ColumnButton::OnMousePressed(MouseCode code)
 		// lock mouse input to going to this button
 		input()->SetMouseCapture(GetVPanel());
 	}
+}
+
+Color ColumnButton::GetButtonBgColor()
+{
+	if (m_bBgOverridden)
+		return GetBgColor();
+
+	return Button::GetButtonBgColor();
 }
 
 void ColumnButton::OpenColumnChoiceMenu()
