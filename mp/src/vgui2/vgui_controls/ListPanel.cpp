@@ -414,6 +414,7 @@ DECLARE_BUILD_FACTORY( ListPanel );
 //-----------------------------------------------------------------------------
 ListPanel::ListPanel(Panel *parent, const char *panelName) : BaseClass(parent, panelName)
 {
+	m_bAlternatingColors = false;
 	m_bAutoTallHeaderToFont = false;
 	m_bIgnoreDoubleClick = false;
 	m_bMultiselectEnabled = true;
@@ -1499,6 +1500,14 @@ Panel *ListPanel::GetCellRenderer(int itemID, int col)
             bHasBg = true;
         }
 
+		if (!bHasBg && m_bAlternatingColors)
+		{
+			const auto bIsOddRow = GetItemCurrentRow(itemID) % 2 == 1;
+
+			m_pLabel->SetBgColor(bIsOddRow ? m_ListAlternationColor2 : m_ListAlternationColor1);
+
+			bHasBg = true;
+		}
     }
 
     m_pLabel->SetPaintBackgroundEnabled(bSelected || bHasBg);
@@ -2479,6 +2488,12 @@ void ListPanel::ApplySchemeSettings(IScheme *pScheme)
 	m_DisabledSelectionFgColor = GetSchemeColor("ListPanel.DisabledSelectedTextColor", m_LabelFgColor, pScheme);
     m_SelectionBgColor = GetSchemeColor("ListPanel.SelectedBgColor", pScheme);
     m_SelectionOutOfFocusBgColor = GetSchemeColor("ListPanel.SelectedOutOfFocusBgColor", pScheme);
+
+	const auto pAlternatingSetting = pScheme->GetResourceString("ListPanel.AlternatingColors");
+	m_bAlternatingColors = pAlternatingSetting[0] ? Q_atoi(pAlternatingSetting) : false;
+
+	m_ListAlternationColor1 = GetSchemeColor("ListPanel.AlternatingColor1", pScheme);
+	m_ListAlternationColor2 = GetSchemeColor("ListPanel.AlternatingColor2", Color(0, 0, 0, 255), pScheme);
 
 	m_pEmptyListText->SetFgColor(GetSchemeColor("ListPanel.EmptyListInfoTextColor", pScheme));
 

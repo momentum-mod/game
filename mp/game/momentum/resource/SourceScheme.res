@@ -156,6 +156,11 @@ Scheme
         ListPanel.SelectedOutOfFocusBgColor	"MomentumBlueHO"
         ListPanel.EmptyListInfoTextColor	"White"
 
+        ListPanel.BgColor "MomGreydientStep2"
+        ListPanel.AlternatingColors "1"
+        ListPanel.AlternatingColor1 "MomGreydientStep4"
+        ListPanel.AlternatingColor2 "MomGreydientStep3"
+
         Menu.TextColor					"White"
         Menu.BgColor					"MomGreydientStep5"
         Menu.ArmedTextColor				"White"

@@ -364,7 +364,9 @@ protected:
 	Color		m_DisabledColor;
 	Color 		m_SelectionFgColor, m_SelectionBgColor, m_SelectionOutOfFocusBgColor;
 	Color		m_DisabledSelectionFgColor;
+	Color		m_ListAlternationColor1, m_ListAlternationColor2;
 private:
+	bool		m_bAlternatingColors;
 	ImageList 	*m_pImageList;
 	Label 	*m_pEmptyListText;
 
