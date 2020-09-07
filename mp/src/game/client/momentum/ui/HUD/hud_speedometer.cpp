@@ -70,14 +70,15 @@ CHudSpeedMeter::CHudSpeedMeter(const char *pElementName)
     m_pStageEnterExitVelLabel = new SpeedometerLabel(this, "StageEnterExitVelocity", SPEEDOMETER_COLORIZE_COMPARISON_SEPARATE);
     m_pStageEnterExitVelLabel->SetFadeOutAnimation("FadeOutStageVel", &m_fStageVelAlpha);
 
-    m_Labels[0] = m_pAbsSpeedoLabel;
-    m_Labels[1] = m_pHorizSpeedoLabel;
-    m_Labels[2] = m_pVertSpeedoLabel;
-    m_Labels[3] = m_pExplosiveJumpVelLabel;
-    m_Labels[4] = m_pLastJumpVelLabel;
-    m_Labels[5] = m_pRampBoardVelLabel;
-    m_Labels[6] = m_pRampLeaveVelLabel;
-    m_Labels[7] = m_pStageEnterExitVelLabel;
+    m_Labels.EnsureCount(SPEEDOMETER_LABEL_TYPE_COUNT);
+    m_Labels[SPEEDOMETER_LABEL_TYPE_ABS] = m_pAbsSpeedoLabel;
+    m_Labels[SPEEDOMETER_LABEL_TYPE_HORIZ] = m_pHorizSpeedoLabel;
+    m_Labels[SPEEDOMETER_LABEL_TYPE_VERT] = m_pVertSpeedoLabel;
+    m_Labels[SPEEDOMETER_LABEL_TYPE_EXPLOSIVE] = m_pExplosiveJumpVelLabel;
+    m_Labels[SPEEDOMETER_LABEL_TYPE_LASTJUMP] = m_pLastJumpVelLabel;
+    m_Labels[SPEEDOMETER_LABEL_TYPE_RAMPBOARD] = m_pRampBoardVelLabel;
+    m_Labels[SPEEDOMETER_LABEL_TYPE_RAMPLEAVE] = m_pRampLeaveVelLabel;
+    m_Labels[SPEEDOMETER_LABEL_TYPE_STAGE] = m_pStageEnterExitVelLabel;
 
     ResetLabelOrder();
 
@@ -240,7 +241,7 @@ void CHudSpeedMeter::OnThink()
 void CHudSpeedMeter::ResetLabelOrder()
 {
     m_LabelOrderList.RemoveAll();
-    for (int i = 0; i < SPEEDOMETER_MAX_LABELS; i++)
+    for (int i = 0; i < SPEEDOMETER_LABEL_TYPE_COUNT; i++)
     {
         m_LabelOrderList.AddToTail(m_Labels[i]);
     }
