@@ -1597,11 +1597,14 @@ BEGIN_DATADESC(CTriggerMomentumCatapult)
     DEFINE_KEYFIELD(m_target, FIELD_STRING, "launchTarget"),
     DEFINE_KEYFIELD(m_bOnlyCheckVelocity, FIELD_INTEGER, "onlyCheckVelocity"),
     DEFINE_OUTPUT(m_OnCatapulted, "OnCatapulted"),
+    DEFINE_KEYFIELD(m_flInterval, FIELD_FLOAT, "Interval"),
+    DEFINE_KEYFIELD(m_bOnThink, FIELD_BOOLEAN, "OnThink"),
+    DEFINE_KEYFIELD(m_bEveryTick, FIELD_BOOLEAN, "EveryTick"),
 END_DATADESC()
 
 
 CTriggerMomentumCatapult::CTriggerMomentumCatapult()
-    : m_hLaunchTarget(nullptr)
+    : m_hLaunchTarget(nullptr), m_flInterval(1.0), m_bOnThink(false)
 {
 }
 
@@ -1753,73 +1756,102 @@ void CTriggerMomentumCatapult::LaunchAtTarget(CBaseEntity *pOther)
     m_OnCatapulted.FireOutput(pOther, this);
 }
 
-void CTriggerMomentumCatapult::OnStartTouch(CBaseEntity* pOther)
+void CTriggerMomentumCatapult::Launch(CBaseEntity *pOther)
 {
-    // Ignore vphys only allow players
-    if (pOther && pOther->IsPlayer())
+    bool bLaunch = true;
+
+    // Check threshold
+    if (m_bUseThresholdCheck)
     {
-        bool bLaunch = true;
+        Vector vecPlayerVelocity = pOther->GetAbsVelocity();
+        float flPlayerSpeed = vecPlayerVelocity.Length();
+        bLaunch = false;
 
-        // Check threshold
-        if (m_bUseThresholdCheck)
-        {
-            Vector vecPlayerVelocity = pOther->GetAbsVelocity();
-            float flPlayerSpeed = vecPlayerVelocity.Length();
-            bLaunch = false;
-
-            // From VDC
-            if (flPlayerSpeed > m_flPlayerSpeed - (m_flPlayerSpeed * m_flLowerThreshold) &&
-                flPlayerSpeed < m_flPlayerSpeed + (m_flPlayerSpeed * m_flUpperThreshold))
-            {
-                if (m_bUseLaunchTarget)
-                {
-                    Vector vecAbsDifference = m_hLaunchTarget->GetAbsOrigin() - pOther->GetAbsOrigin();                    
-
-                    float flPlayerEntryAng = DotProduct(vecAbsDifference.Normalized(), vecPlayerVelocity.Normalized());
-
-                    // VDC uses brackets so inclusive??
-                    if (flPlayerEntryAng >= m_flEntryAngleTolerance)
-                    {
-                        if (m_bOnlyCheckVelocity)
-                        {
-                            m_OnCatapulted.FireOutput(pOther, this);
-                            return;
-                        }
-                        bLaunch = true;
-                    }
-                }
-                else
-                {
-                    Vector vecLaunchDir = vec3_origin;
-                    AngleVectors(m_vLaunchDirection, &vecLaunchDir);
-                    float flPlayerEntryAng = DotProduct(vecLaunchDir.Normalized(), vecPlayerVelocity.Normalized());
-
-                    // VDC uses brackets so inclusive??
-                    if (flPlayerEntryAng >= m_flEntryAngleTolerance)
-                    {
-                        if (m_bOnlyCheckVelocity)
-                        {
-                            m_OnCatapulted.FireOutput(pOther, this);
-                            return;
-                        }
-                        bLaunch = true;
-                    }
-                }
-            }
-        }
-
-        if (bLaunch)
+        // From VDC
+        if (flPlayerSpeed > m_flPlayerSpeed - (m_flPlayerSpeed * m_flLowerThreshold) &&
+            flPlayerSpeed < m_flPlayerSpeed + (m_flPlayerSpeed * m_flUpperThreshold))
         {
             if (m_bUseLaunchTarget)
             {
-                LaunchAtTarget(pOther);
+                Vector vecAbsDifference = m_hLaunchTarget->GetAbsOrigin() - pOther->GetAbsOrigin();
+
+                float flPlayerEntryAng = DotProduct(vecAbsDifference.Normalized(), vecPlayerVelocity.Normalized());
+
+                // VDC uses brackets so inclusive??
+                if (flPlayerEntryAng >= m_flEntryAngleTolerance)
+                {
+                    if (m_bOnlyCheckVelocity)
+                    {
+                        m_OnCatapulted.FireOutput(pOther, this);
+                        return;
+                    }
+                    bLaunch = true;
+                }
             }
             else
             {
-                LaunchAtDirection(pOther);
+                Vector vecLaunchDir = vec3_origin;
+                AngleVectors(m_vLaunchDirection, &vecLaunchDir);
+                float flPlayerEntryAng = DotProduct(vecLaunchDir.Normalized(), vecPlayerVelocity.Normalized());
+
+                // VDC uses brackets so inclusive??
+                if (flPlayerEntryAng >= m_flEntryAngleTolerance)
+                {
+                    if (m_bOnlyCheckVelocity)
+                    {
+                        m_OnCatapulted.FireOutput(pOther, this);
+                        return;
+                    }
+                    bLaunch = true;
+                }
             }
         }
+    }
 
+    if (bLaunch)
+    {
+        if (m_bUseLaunchTarget)
+        {
+            LaunchAtTarget(pOther);
+        }
+        else
+        {
+            LaunchAtDirection(pOther);
+        }
+    }
+}
+
+void CTriggerMomentumCatapult::OnStartTouch(CBaseEntity* pOther)
+{
+    BaseClass::OnStartTouch(pOther);
+
+    // Ignore vphys only allow players
+    if (pOther && pOther->IsPlayer())
+    {
+        Launch(pOther);
+
+        if (m_bOnThink)
+            SetNextThink(gpGlobals->curtime + m_flInterval);
+    }
+}
+
+void CTriggerMomentumCatapult::Think()
+{
+    if (m_bOnThink)
+    {
+        FOR_EACH_VEC(m_hTouchingEntities, i)
+        {
+            const auto pEnt = m_hTouchingEntities[i].Get();
+            if (pEnt && pEnt->IsPlayer())
+            {
+                Launch(pEnt);
+                SetNextThink(gpGlobals->curtime + m_flInterval);
+            }
+        }
+    }
+    else
+    {
+        SetNextThink(TICK_NEVER_THINK);
     }
 }
 
