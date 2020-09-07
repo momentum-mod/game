@@ -1465,6 +1465,63 @@ IImage *ListPanel::GetCellImage(int itemID, int col) //, ImagePanel *&buffer)
 	return NULL;
 }
 
+void ListPanel::SetCellRendererBgColor(Panel *pRenderer, int itemID, int col, bool bSelected)
+{
+	KeyValues *item = GetItem(itemID);
+
+	bool bHasBg = false;
+	// Determine selection state or other bg color, if set
+	if (bSelected)
+	{
+		VPANEL focus = input()->GetFocus();
+		// if one of the children of the SectionedListPanel has focus, then 'we have focus' if we're selected
+		if (HasFocus() || (focus && ipanel()->HasParent(focus, GetVParent())))
+		{
+			pRenderer->SetBgColor(m_SelectionBgColor);
+		}
+		else
+		{
+			pRenderer->SetBgColor(m_SelectionOutOfFocusBgColor);
+		}
+	}
+	else
+	{
+		KeyValues *pCellBg = item->FindKey("cellbgcolor");
+		if (pCellBg && !pCellBg->IsEmpty())
+		{
+			// Check the type
+			if (pCellBg->GetDataType() == KeyValues::TYPE_NONE)
+			{
+				// It's an array of cells, try to find this cell in particular
+				char num[4];
+				V_snprintf(num, 4, "%i", col);
+				KeyValues *pThisCell = pCellBg->FindKey(num);
+				if (pThisCell)
+					pRenderer->SetBgColor(pThisCell->GetColor("color"));
+			}
+			else
+			{
+				// It's just a color, apply to all cells in the row
+				pRenderer->SetBgColor(item->GetColor("cellbgcolor"));
+			}
+
+			bHasBg = true;
+		}
+
+		if (!bHasBg && m_bAlternatingColors)
+		{
+			const auto bIsOddRow = GetItemCurrentRow(itemID) % 2 == 1;
+
+			pRenderer->SetBgColor(bIsOddRow ? m_ListAlternationColor2 : m_ListAlternationColor1);
+
+			bHasBg = true;
+		}
+	}
+
+	pRenderer->SetPaintBackgroundEnabled(bSelected || bHasBg);
+}
+
+
 //-----------------------------------------------------------------------------
 // Purpose: Returns the panel to use to render a cell
 //-----------------------------------------------------------------------------
@@ -1474,64 +1531,33 @@ Panel *ListPanel::GetCellRenderer(int itemID, int col)
 	Assert( m_pImagePanel );
 	
 	column_t &column = m_ColumnsData[ m_CurrentColumns[col] ];
-
+	
     KeyValues *item = GetItem(itemID);
+
+	bool bSelected = false;
+	if (m_SelectedItems.HasElement(itemID) && (!m_bCanSelectIndividualCells || col == m_iSelectedColumn))
+	{
+		bSelected = true;
+	}
+
+	if (item->GetInt("cellRenderOverrideCol", -1) == col)
+	{
+		const auto pPtr = item->GetPtr("cellRenderOverridePtr");
+		if (pPtr)
+		{
+	        const auto pRenderOverride = static_cast<Panel*>(pPtr);
+
+			SetCellRendererBgColor(pRenderOverride, itemID, col, bSelected);
+
+			return pRenderOverride;
+		}
+	}
 
 	m_pLabel->SetContentAlignment( (Label::Alignment)column.m_nContentAlignment );
     // Reset to normal bg color
     m_pLabel->SetBgColor(m_BgColor);
 
-    // Determine selection state or other bg color, if set
-    bool bSelected = false, bHasBg = false;
-    if (m_SelectedItems.HasElement(itemID) && (!m_bCanSelectIndividualCells || col == m_iSelectedColumn))
-    {
-        bSelected = true;
-        VPANEL focus = input()->GetFocus();
-        // if one of the children of the SectionedListPanel has focus, then 'we have focus' if we're selected
-        if (HasFocus() || (focus && ipanel()->HasParent(focus, GetVParent())))
-        {
-            m_pLabel->SetBgColor(m_SelectionBgColor);
-        }
-        else
-        {
-            m_pLabel->SetBgColor(m_SelectionOutOfFocusBgColor);
-        }
-    }
-    else
-    {
-        KeyValues *pCellBg = item->FindKey("cellbgcolor");
-        if (pCellBg && !pCellBg->IsEmpty())
-        {
-            // Check the type
-            if (pCellBg->GetDataType() == KeyValues::TYPE_NONE)
-            {
-                // It's an array of cells, try to find this cell in particular
-                char num[4];
-                V_snprintf(num, 4, "%i", col);
-                KeyValues *pThisCell = pCellBg->FindKey(num);
-                if (pThisCell)
-                    m_pLabel->SetBgColor(pThisCell->GetColor("color"));
-            }
-            else
-            {
-                // It's just a color, apply to all cells in the row
-                m_pLabel->SetBgColor(item->GetColor("cellbgcolor"));
-            }
-
-            bHasBg = true;
-        }
-
-		if (!bHasBg && m_bAlternatingColors)
-		{
-			const auto bIsOddRow = GetItemCurrentRow(itemID) % 2 == 1;
-
-			m_pLabel->SetBgColor(bIsOddRow ? m_ListAlternationColor2 : m_ListAlternationColor1);
-
-			bHasBg = true;
-		}
-    }
-
-    m_pLabel->SetPaintBackgroundEnabled(bSelected || bHasBg);
+	SetCellRendererBgColor(m_pLabel, itemID, col, bSelected);
 
 	if ( column.m_bTypeIsText ) 
 	{
