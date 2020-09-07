@@ -881,6 +881,9 @@ void CMomentumPlayer::HandleSprintAndWalkChanges()
             ToggleSprint(false);
         }
     }
+    
+    if (!m_bIsSprinting)
+        ResetToggledInput(IN_SPEED);
 
     if (g_pGameModeSystem->GameModeIs(GAMEMODE_AHOP))
     {
@@ -891,6 +894,8 @@ void CMomentumPlayer::HandleSprintAndWalkChanges()
         {
             ToggleWalk(bWantWalk);
         }
+        
+        ResetToggledInput(m_bIsWalking ? IN_SPEED : IN_WALK);
     }
 }
 
@@ -1253,6 +1258,10 @@ void CMomentumPlayer::PlayerRunCommand(CUserCmd* ucmd, IMoveHelper* moveHelper)
             ucmd->buttons |= IN_DUCK;
         if (m_nButtonsToggled & IN_JUMP)
             ucmd->buttons |= IN_JUMP;
+        if (m_nButtonsToggled & IN_SPEED)
+            ucmd->buttons |= IN_SPEED;
+        if (m_nButtonsToggled & IN_WALK)
+            ucmd->buttons |= IN_WALK;
     }
 
     BaseClass::PlayerRunCommand(ucmd, moveHelper);
@@ -2168,4 +2177,28 @@ CON_COMMAND(toggle_jump, "Toggles jump state of the player.\n")
         return;
 
     pPlayer->ToggleInput(IN_JUMP);
+}
+
+CON_COMMAND(toggle_speed, "Toggles sprint state of the player. Toggle resets when unable to sprint.\n")
+{
+    if (!g_pGameModeSystem->GetGameMode()->HasCapability(GameModeHUDCapability_t::CAP_HUD_KEYPRESS_SPRINT))
+        return;
+
+    const auto pPlayer = CMomentumPlayer::GetLocalPlayer();
+    if (!pPlayer || pPlayer->GetFlags() & FL_FROZEN)
+        return;
+
+    pPlayer->ToggleInput(IN_SPEED);
+}
+
+CON_COMMAND(toggle_walk, "Toggles walk state of the player. Toggle resets when unable to walk.\n")
+{
+    if (!g_pGameModeSystem->GetGameMode()->HasCapability(GameModeHUDCapability_t::CAP_HUD_KEYPRESS_WALK))
+        return;
+
+    const auto pPlayer = CMomentumPlayer::GetLocalPlayer();
+    if (!pPlayer || pPlayer->GetFlags() & FL_FROZEN)
+        return;
+
+    pPlayer->ToggleInput(IN_WALK);
 }
