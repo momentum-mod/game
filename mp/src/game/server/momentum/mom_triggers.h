@@ -702,10 +702,13 @@ class CTriggerMomentumCatapult : public CBaseMomentumTrigger
   public:
     void OnStartTouch(CBaseEntity *) OVERRIDE;
     void Spawn() OVERRIDE;
+    void Think() OVERRIDE;
+
 
   private:
     Vector CalculateLaunchVelocity(CBaseEntity *);
     Vector CalculateLaunchVelocityExact(CBaseEntity *);
+    void Launch(CBaseEntity *);
     void LaunchAtDirection(CBaseEntity *);
     void LaunchAtTarget(CBaseEntity *);
 
@@ -730,4 +733,7 @@ class CTriggerMomentumCatapult : public CBaseMomentumTrigger
     bool m_bOnlyCheckVelocity;
     float m_flEntryAngleTolerance;
     COutputEvent m_OnCatapulted;
+    float m_flInterval;
+    bool m_bOnThink;
+    bool m_bEveryTick;
 };
