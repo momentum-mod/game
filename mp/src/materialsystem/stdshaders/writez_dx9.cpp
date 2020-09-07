@@ -7,8 +7,8 @@
 
 #include "BaseVSShader.h"
 
-
 #include "writez_vs20.inc"
+#include "white_ps20b.inc"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -44,7 +44,12 @@ BEGIN_VS_SHADER_FLAGS( WriteZ_DX9, "Help for WriteZ", SHADER_NOT_EDITABLE )
 			DECLARE_STATIC_VERTEX_SHADER( writez_vs20 );
 			SET_STATIC_VERTEX_SHADER( writez_vs20 );
 
-			//No pixel shader, doubles fill rate.
+			// No pixel shader on Direct3D, doubles fill rate.
+			if ( g_pHardwareConfig->PlatformRequiresNonNullPixelShaders() )
+			{
+				DECLARE_STATIC_PIXEL_SHADER( white_ps20b );
+				SET_STATIC_PIXEL_SHADER( white_ps20b );
+			}
 
 			// Set stream format (note that this shader supports compression)
 			unsigned int flags = VERTEX_POSITION | VERTEX_FORMAT_COMPRESSED;
@@ -59,7 +64,12 @@ BEGIN_VS_SHADER_FLAGS( WriteZ_DX9, "Help for WriteZ", SHADER_NOT_EDITABLE )
 			SET_DYNAMIC_VERTEX_SHADER_COMBO( SKINNING, pShaderAPI->GetCurrentNumBones() > 0 );
 			SET_DYNAMIC_VERTEX_SHADER( writez_vs20 );
 
-			//No pixel shader, doubles fill rate.
+			// No pixel shader on Direct3D, doubles fill rate
+			if ( g_pHardwareConfig->PlatformRequiresNonNullPixelShaders() )
+			{
+				DECLARE_DYNAMIC_PIXEL_SHADER( white_ps20b );
+				SET_DYNAMIC_PIXEL_SHADER( white_ps20b );
+			}
 		}
 		Draw();
 	}
