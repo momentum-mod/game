@@ -66,6 +66,7 @@ class CHudKeyPressDisplay : public CHudElement, public Panel
     int GetTextCenter(HFont font, wchar_t *wstring);
 
     bool m_bIsDucked;
+    int m_nButtonsToggled;
     int m_nButtons, m_nDisabledButtons, m_nJumps;
     uint32 m_nStrafes;
     bool m_bShouldDrawCounts;
@@ -197,7 +198,7 @@ void CHudKeyPressDisplay::Paint()
     // reset text font for jump/duck
     surface()->DrawSetTextFont(m_hWordTextFont);
 
-    if (nButtons & IN_JUMP || gpGlobals->curtime < m_fJumpColorUntil)
+    if (nButtons & IN_JUMP || m_nButtonsToggled & IN_JUMP || gpGlobals->curtime < m_fJumpColorUntil)
     {
         if (nButtons & IN_JUMP)
         {
@@ -209,7 +210,7 @@ void CHudKeyPressDisplay::Paint()
         surface()->DrawPrintText(STR_JUMP, 4);
     }
 
-    if (nButtons & IN_DUCK || m_bIsDucked || gpGlobals->curtime < m_fDuckColorUntil)
+    if (nButtons & IN_DUCK || m_nButtonsToggled & IN_DUCK || m_bIsDucked || gpGlobals->curtime < m_fDuckColorUntil)
     {
         if (nButtons & IN_DUCK)
         {
@@ -290,6 +291,7 @@ void CHudKeyPressDisplay::OnThink()
     {
         const auto pUIEnt = pPlayer->GetCurrentUIEntity();
 
+        m_nButtonsToggled = pPlayer->m_nButtonsToggled;
         if (pUIEnt->GetEntType() >= RUN_ENT_GHOST)
         {
             const auto pGhost = static_cast<C_MomentumGhostBaseEntity *>(pUIEnt);
