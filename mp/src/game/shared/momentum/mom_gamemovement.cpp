@@ -1514,11 +1514,8 @@ bool CMomentumGameMovement::CheckJumpButton()
         player->m_Local.m_bInDuckJump = true;
 
 #ifdef GAME_DLL
-        if (player->GetToggledDuckState())
-        {
-            // Uncrouch while toggleducked and jumping
-            player->ToggleDuck();
-        }
+        // Reset toggle duck if it's toggled
+        m_pPlayer->ResetToggledInput(IN_DUCK);
 #endif
     }
     else if (g_pGameModeSystem->GameModeIs(GAMEMODE_PARKOUR))

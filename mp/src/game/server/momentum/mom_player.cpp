@@ -155,6 +155,7 @@ SendPropEHandle(SENDINFO(m_CurrentSlideTrigger)),
 SendPropBool(SENDINFO(m_bAutoBhop)),
 SendPropFloat(SENDINFO(m_fDuckTimer)),
 SendPropBool(SENDINFO(m_bSurfing)),
+SendPropInt(SENDINFO(m_nButtonsToggled)),
 SendPropVector(SENDINFO(m_vecRampBoardVel)),
 SendPropVector(SENDINFO(m_vecRampLeaveVel)),
 SendPropArray3(SENDINFO_ARRAY3(m_iZoneCount), SendPropInt(SENDINFO_ARRAY(m_iZoneCount), 7, SPROP_UNSIGNED)),
@@ -263,6 +264,8 @@ CMomentumPlayer::CMomentumPlayer()
 
     m_bIsPowerSliding = false;
     m_nWallRunState = WALLRUN_NOT;
+
+    m_nButtonsToggled = 0;
 }
 
 CMomentumPlayer::~CMomentumPlayer()
@@ -468,6 +471,8 @@ void CMomentumPlayer::Spawn()
     RemoveSolidFlags(FSOLID_NOT_SOLID);
 
     m_bAllowUserTeleports = true;
+
+    m_nButtonsToggled = 0;
 
     // Handle resetting only if we weren't spectating nor have practice mode
     if (m_bWasSpectating)
@@ -1238,6 +1243,33 @@ void CMomentumPlayer::PlayerThink()
 
     // think once per tick
     SetNextThink(gpGlobals->curtime + gpGlobals->interval_per_tick, "THINK_EVERY_TICK");
+}
+
+void CMomentumPlayer::PlayerRunCommand(CUserCmd* ucmd, IMoveHelper* moveHelper)
+{
+    if (!(GetFlags() & FL_FROZEN))
+    {
+        if (m_nButtonsToggled & IN_DUCK)
+            ucmd->buttons |= IN_DUCK;
+        if (m_nButtonsToggled & IN_JUMP)
+            ucmd->buttons |= IN_JUMP;
+    }
+
+    BaseClass::PlayerRunCommand(ucmd, moveHelper);
+}
+
+void CMomentumPlayer::ToggleInput(int nInput)
+{
+    if (m_nButtonsToggled & nInput)
+        m_nButtonsToggled &= ~nInput;
+    else
+        m_nButtonsToggled |= nInput;
+}
+
+void CMomentumPlayer::ResetToggledInput(int nInput)
+{
+    if (m_nButtonsToggled & nInput)
+        m_nButtonsToggled &= ~nInput;
 }
 
 void CMomentumPlayer::UpdateRunSync()
@@ -2121,13 +2153,22 @@ CON_COMMAND(toggle_duck, "Toggles duck state of the player. Only usable in the A
     if (!g_pGameModeSystem->GameModeIs(GAMEMODE_AHOP))
         return;
 
-    const auto pPlayer = UTIL_GetCommandClient();
-    if (!pPlayer)
+    const auto pPlayer = CMomentumPlayer::GetLocalPlayer();
+    if (!pPlayer || pPlayer->GetFlags() & FL_FROZEN)
         return;
 
-    if (pPlayer->GetFlags() & FL_FROZEN)
-        return;
-
-    pPlayer->ToggleDuck();
+    pPlayer->ToggleInput(IN_DUCK);
 }
 
+CON_COMMAND(toggle_jump, "Toggles jump state of the player.\n")
+{
+    // no point if gamemode doesn't have autohop
+    if (!g_pGameModeSystem->GetGameMode()->PlayerHasAutoBhop())
+        return;
+
+    const auto pPlayer = CMomentumPlayer::GetLocalPlayer();
+    if (!pPlayer || pPlayer->GetFlags() & FL_FROZEN)
+        return;
+
+    pPlayer->ToggleInput(IN_JUMP);
+}

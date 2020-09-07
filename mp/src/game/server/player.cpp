@@ -388,7 +388,6 @@ BEGIN_DATADESC( CBasePlayer )
 	DEFINE_INPUTFUNC( FIELD_STRING, "HandleMapEvent", InputHandleMapEvent ),
 
 	DEFINE_FIELD( m_nNumCrouches, FIELD_INTEGER ),
-	DEFINE_FIELD( m_bDuckToggled, FIELD_BOOLEAN ),
 	DEFINE_FIELD( m_flForwardMove, FIELD_FLOAT ),
 	DEFINE_FIELD( m_flSideMove, FIELD_FLOAT ),
 	DEFINE_FIELD( m_vecPreviouslyPredictedOrigin, FIELD_POSITION_VECTOR ), 
@@ -562,7 +561,6 @@ CBasePlayer::CBasePlayer( )
 	m_autoKickDisabled = false;
 
 	m_nNumCrouches = 0;
-	m_bDuckToggled = false;
 	m_bPhysicsWasFrozen = false;
 
 	// Used to mask off buttons
@@ -2039,12 +2037,6 @@ void CBasePlayer::PlayerDeathThink(void)
 	m_flPlaybackRate = 0.0;
 	
 	int fAnyButtonDown = (m_nButtons & ~IN_SCORE);
-	
-	// Strip out the duck key from this check if it's toggled
-	if ( (fAnyButtonDown & IN_DUCK) && GetToggledDuckState())
-	{
-		fAnyButtonDown &= ~IN_DUCK;
-	}
 
 	// wait for all buttons released
 	if (m_lifeState == LIFE_DEAD)
@@ -3589,10 +3581,6 @@ void CBasePlayer::PlayerRunCommand(CUserCmd *ucmd, IMoveHelper *moveHelper)
 		ucmd->buttons = 0;
 		ucmd->impulse = 0;
 		VectorCopy ( pl.v_angle.Get(), ucmd->viewangles );
-	}
-	else if ( GetToggledDuckState() )
-	{
-		ucmd->buttons |= IN_DUCK;
 	}
 	
 	PlayerMove()->RunCommand(this, ucmd, moveHelper);
@@ -7998,15 +7986,6 @@ CON_COMMAND( mp_disable_autokick, "Prevents a userid from being auto-kicked" )
 	int userID = atoi( args[1] );
 	DisableAutokick disable( userID );
 	ForEachPlayer( disable );
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: Toggle between the duck being on and off
-//-----------------------------------------------------------------------------
-void CBasePlayer::ToggleDuck( void )
-{
-	// Toggle the state
-	m_bDuckToggled = !m_bDuckToggled;
 }
 
 //-----------------------------------------------------------------------------

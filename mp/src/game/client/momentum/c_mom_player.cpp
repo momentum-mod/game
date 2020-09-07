@@ -23,6 +23,7 @@ RecvPropEHandle(RECVINFO(m_CurrentSlideTrigger)),
 RecvPropBool(RECVINFO(m_bAutoBhop)),
 RecvPropFloat(RECVINFO(m_fDuckTimer)),
 RecvPropBool(RECVINFO(m_bSurfing)),
+RecvPropInt(RECVINFO(m_nButtonsToggled)),
 RecvPropVector(RECVINFO(m_vecRampBoardVel)),
 RecvPropVector(RECVINFO(m_vecRampLeaveVel)),
 RecvPropArray3(RECVINFO_ARRAY(m_iZoneCount), RecvPropInt(RECVINFO(m_iZoneCount[0]), SPROP_UNSIGNED)),
@@ -68,6 +69,8 @@ C_MomentumPlayer::C_MomentumPlayer(): m_pSpecTarget(nullptr)
     m_bIsPowerSliding = false;
     m_nWallRunState = WALLRUN_NOT;
     m_bWasSprinting = false;
+
+    m_nButtonsToggled = 0;
 }
 
 C_MomentumPlayer::~C_MomentumPlayer()
