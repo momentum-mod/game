@@ -28,9 +28,9 @@ HUDSettingsPanel::HUDSettingsPanel(Panel *pParent, Button *pAssociate) : BaseCla
         m_pSpeedometerGameType->AddItem(g_szGameModes[i], nullptr);
     }
     m_pSpeedometerGameType->AddActionSignalTarget(this);
-    m_pSpeedometerGameType->SilentActivateItemByRow(0);
+    m_pSpeedometerGameType->SilentActivateItemByRow(GAMEMODE_UNKNOWN);
 
-    m_pSpeedometerType = new ComboBox(this, "SpeedoType", SPEEDOMETER_MAX_LABELS, false);
+    m_pSpeedometerType = new ComboBox(this, "SpeedoType", SPEEDOMETER_LABEL_TYPE_COUNT, false);
     m_pSpeedometerType->AddItem("#MOM_Settings_Speedometer_Type_Absolute", nullptr);
     m_pSpeedometerType->AddItem("#MOM_Settings_Speedometer_Type_Horiz", nullptr);
     m_pSpeedometerType->AddItem("#MOM_Settings_Speedometer_Type_Vert", nullptr);
@@ -40,7 +40,7 @@ HUDSettingsPanel::HUDSettingsPanel(Panel *pParent, Button *pAssociate) : BaseCla
     m_pSpeedometerType->AddItem("#MOM_Settings_Speedometer_Type_RampLeave", nullptr);
     m_pSpeedometerType->AddItem("#MOM_Settings_Speedometer_Type_StageEnterExit", nullptr);
     m_pSpeedometerType->AddActionSignalTarget(this);
-    m_pSpeedometerType->SilentActivateItemByRow(0);
+    m_pSpeedometerType->SilentActivateItemByRow(SPEEDOMETER_LABEL_TYPE_ABS);
 
     m_pSpeedometerShow = new CheckButton(this, "SpeedoShow", "#MOM_Settings_Speedometer_Show");
     m_pSpeedometerShow->AddActionSignalTarget(this);

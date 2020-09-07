@@ -125,7 +125,7 @@ void SpeedometerData::LoadGamemodeData(GameMode_t gametype)
         {
             auto pOrderList = g_pSpeedometer->GetLabelOrderListPtr();
             pOrderList->RemoveAll();
-            for (unsigned int i = 1; i <= SPEEDOMETER_MAX_LABELS; i++)
+            for (unsigned int i = 1; i <= SPEEDOMETER_LABEL_TYPE_COUNT; i++)
             {
                 const char *szSpeedo = pOrderKV->GetString(CFmtStr("%i", i).Get());
                 if (szSpeedo[0])
@@ -211,7 +211,7 @@ void SpeedometerData::SaveGamemodeData(GameMode_t gametype)
 
 SpeedometerLabel *SpeedometerData::GetLabelFromName(const char *name)
 {
-    for (int i = 0; i < SPEEDOMETER_MAX_LABELS; i++)
+    for (int i = 0; i < SPEEDOMETER_LABEL_TYPE_COUNT; i++)
     {
         const auto pSpeedoLabel = g_pSpeedometer->GetLabel(i);
         if (!Q_strcmp(pSpeedoLabel->GetName(), name))
