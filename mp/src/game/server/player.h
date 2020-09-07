@@ -1046,11 +1046,8 @@ private:
 	int						m_nDrownDmgRate;		// Drowning damage in points per second without air.
 
 	int						m_nNumCrouches;			// Number of times we've crouched (for hinting)
-	bool					m_bDuckToggled;		// If true, the player is crouching via a toggle
 
 public:
-	bool					GetToggledDuckState( void ) { return m_bDuckToggled; }
-	void					ToggleDuck( void );
 	float					GetStickDist( void );
 
 	float					m_flForwardMove;

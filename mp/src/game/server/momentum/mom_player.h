@@ -121,6 +121,7 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
     CNetworkVar(int, m_iDirection); // Used in kickback effects for player
     CNetworkVar(int, m_iLastZoomFOV); // Last FOV when zooming
     CNetworkVar(bool, m_bSurfing);
+    CNetworkVar(int, m_nButtonsToggled); // Used by keypress hud
     CNetworkVector(m_vecRampBoardVel);
     CNetworkVector(m_vecRampLeaveVel);
 
@@ -312,6 +313,12 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
     // Ramp stuff
     void SetRampBoardVelocity(const Vector &vecVel);
     void SetRampLeaveVelocity(const Vector &vecVel);
+
+    // allows us to add jump/duck/etc buttons if they're toggled
+    void PlayerRunCommand(CUserCmd *ucmd, IMoveHelper *moveHelper) override;
+
+    void ToggleInput(int nInput);
+    void ResetToggledInput(int nInput);
 
   private:
     // Replace wishdir to escape if we are stuck in a small corner 

@@ -52,6 +52,7 @@ public:
     CNetworkVar(int, m_iDirection); // Used in kickback effects for player
     CNetworkVar(int, m_iLastZoomFOV); // Last FOV when zooming
     CNetworkVar(bool, m_bSurfing);
+    CNetworkVar(int, m_nButtonsToggled); // Used by keypress hud
     CNetworkVector(m_vecRampBoardVel);
     CNetworkVector(m_vecRampLeaveVel);
 
