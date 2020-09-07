@@ -2148,11 +2148,8 @@ void CMomentumPlayer::DoPaint()
     m_flNextPaintTime = gpGlobals->curtime + PAINT_CYCLE_TIME;
 }
 
-CON_COMMAND(toggle_duck, "Toggles duck state of the player. Only usable in the Ahop gamemode!\n")
+CON_COMMAND(toggle_duck, "Toggles duck state of the player.\n")
 {
-    if (!g_pGameModeSystem->GameModeIs(GAMEMODE_AHOP))
-        return;
-
     const auto pPlayer = CMomentumPlayer::GetLocalPlayer();
     if (!pPlayer || pPlayer->GetFlags() & FL_FROZEN)
         return;
