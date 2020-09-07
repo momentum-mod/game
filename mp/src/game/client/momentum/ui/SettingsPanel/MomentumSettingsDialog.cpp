@@ -133,11 +133,17 @@ CMomentumSettingsDialog::CMomentumSettingsDialog() : BaseClass(nullptr, "Setting
     SetVisible(false);
 
     m_pInputPage = new InputSettingsPanel(m_pScrollableSettingsPanel, m_pInputButton);
+    AddActionSignalTarget(m_pInputPage);
     m_pAudioPage = new AudioSettingsPanel(m_pScrollableSettingsPanel, m_pAudioButton);
+    AddActionSignalTarget(m_pAudioPage);
     m_pVideoPage = new VideoSettingsPanel(m_pScrollableSettingsPanel, m_pVideoButton);
+    AddActionSignalTarget(m_pVideoPage);
     m_pOnlinePage = new OnlineSettingsPanel(m_pScrollableSettingsPanel, m_pOnlineButton);
+    AddActionSignalTarget(m_pOnlinePage);
     m_pGameplayPage = new GameplaySettingsPanel(m_pScrollableSettingsPanel, m_pGameplayButton);
+    AddActionSignalTarget(m_pGameplayPage);
     m_pHUDPage = new HUDSettingsPanel(m_pScrollableSettingsPanel, m_pHUDButton);
+    AddActionSignalTarget(m_pHUDPage);
 
     SetActivePanel(m_pInputPage);
 }
@@ -161,6 +167,8 @@ void CMomentumSettingsDialog::OnClose()
         g_pClientMode->GetViewportAnimationController()->CancelAllAnimations();
 
     engine->ClientCmd_Unrestricted("exec userconfig.cfg\nhost_writeconfig\n");
+
+    PostActionSignal(new KeyValues("MainDialogClosed"));
 
     BaseClass::OnClose();
 }
