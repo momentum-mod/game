@@ -156,8 +156,9 @@ void CHudSpeedMeter::FireGameEvent(IGameEvent *pEvent)
     if (!m_pRunEntData->m_bTimerRunning || (iCurrentZone <= m_iLastZone && bLinear))
         return;
 
-    // Logical XOR; equivalent to (bLinear && !bExit) || (!bLinear && bExit)
-    if (bLinear != bExit)
+    const auto bLinearStartExit = bLinear && bExit && iCurrentZone == 1;
+    // Logical XOR; shown on enter for linear maps, exits for staged maps
+    if (bLinear != bExit || bLinearStartExit) 
     {
         m_iLastZone = iCurrentZone;
 
