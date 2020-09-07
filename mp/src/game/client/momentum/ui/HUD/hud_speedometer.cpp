@@ -97,7 +97,7 @@ void CHudSpeedMeter::Reset()
     m_iLastZone = 0;
     m_pRunStats = nullptr;
     m_pRunEntData = nullptr;
-    g_pSpeedometerData->LoadGamemodeData();
+    g_pSpeedometerData->Load(true);
 }
 
 void CHudSpeedMeter::FireGameEvent(IGameEvent *pEvent)
@@ -186,7 +186,7 @@ void CHudSpeedMeter::ApplySchemeSettings(IScheme *pScheme)
 void CHudSpeedMeter::OnReloadControls()
 {
     // no need to call baseclass as controls are reloaded when loading speedo data
-    g_pSpeedometerData->LoadGamemodeData(g_pSpeedometerData->GetCurrentlyLoadedGameMode());
+    g_pSpeedometerData->Load(true);
 }
 
 void CHudSpeedMeter::PerformLayout()
