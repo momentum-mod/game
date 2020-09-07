@@ -266,6 +266,8 @@ public:
 	void SetAutoTallHeaderToFont(bool bTall) { m_bAutoTallHeaderToFont = bTall; }
 
 private:
+	void SetCellRendererBgColor(Panel *pRenderer, int itemID, int col, bool bSelected);
+
 	// Cleans up allocations associated with a particular item
 	void CleanupItem( FastSortListPanelItem *data );
 
