@@ -92,6 +92,7 @@
         "WordTextFont"  "HudNumbersVerySmall"
         "KeyPressedColor"   "MOM.Panel.Fg"
         "KeyOutlineColor"   "Dark Gray"
+        "bgcolor_override" "0 0 0 0"
     }
     
     CHudCompare

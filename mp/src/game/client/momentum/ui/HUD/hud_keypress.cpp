@@ -6,7 +6,6 @@
 #include "input.h"
 
 #include <vgui/ILocalize.h>
-#include <vgui/IScheme.h>
 #include <vgui/ISurface.h>
 #include <vgui_controls/Frame.h>
 #include <vgui_controls/Panel.h>
@@ -39,18 +38,12 @@ class CHudKeyPressDisplay : public CHudElement, public Panel
 
     CHudKeyPressDisplay(const char *pElementName);
 
-    bool ShouldDraw() OVERRIDE;
-    void OnThink() OVERRIDE;
-    void Paint() OVERRIDE;
-    void Init() OVERRIDE;
-    void Reset() OVERRIDE;
+    bool ShouldDraw() override;
+    void OnThink() override;
+    void Paint() override;
+    void Init() override;
+    void Reset() override;
     void DrawKeyTemplates();
-
-    void ApplySchemeSettings(IScheme *pScheme) OVERRIDE
-    {
-        Panel::ApplySchemeSettings(pScheme);
-        SetBgColor(Color(0, 0, 0, 1)); // empty background, 1 alpha (out of 255) so game text doesn't obscure our text
-    }
 
   protected:
     CPanelAnimationVar(HFont, m_hTextFont, "TextFont", "Default");
