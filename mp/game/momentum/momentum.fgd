@@ -365,7 +365,7 @@
 	launchTarget(target_destination) : "Launch target" : "" : "Entity to try to 'hit' when we're launched."
 	onlyVelocityCheck(integer) : "Only check velocity" : 0 : "Only check velocity of the touching object - don't actually catapult it.  Use in conjunction with OnCatapulted to create velocity checking triggers.  Only works when Use Threshhold Check is enabled."
 	//applyAngularImpulse(integer) : "Apply angular impulse" : 1 : "If a random angular impulse should be applied to physics objects being catapulted."
-    OnThink(integer) : "Update every intervals" : 0 : "If you want to make the trigger updating for each defined interval, set it to 1."
+    OnThink(integer) : "Update every interval" : 0 : "If you want to make the trigger updating for each defined interval, set it to 1."
     Interval(float) : "Interval" : "1.0" : "Set here in seconds how many time the trigger should update."
     EveryTick(integer) : "Every tick" : 0 : "If you want the trigger to update and fire every tick, set this to 1."
 	output OnCatapulted(void) : "The object has been launched."
