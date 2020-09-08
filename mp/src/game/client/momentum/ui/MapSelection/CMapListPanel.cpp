@@ -72,39 +72,6 @@ void CMapListPanel::OnMouseReleased(MouseCode code)
     }
 }
 
-Panel* CMapListPanel::GetCellRenderer(int itemID, int column)
-{
-    // Find the itemID
-    uint32 mapID = GetItemUserData(itemID);
-
-    MapDownloadProgress *pOverridePanel = g_pMapSelector->GetDownloadProgressPanel(mapID);
-
-    if (pOverridePanel && column == HEADER_MAP_NAME)
-    {
-        if (IsItemSelected(itemID))
-        {
-            pOverridePanel->SetPaintBackgroundEnabled(true);
-            VPANEL focus = input()->GetFocus();
-            // if one of the children of the SectionedListPanel has focus, then 'we have focus' if we're selected
-            if (HasFocus() || (focus && ipanel()->HasParent(focus, GetVParent())))
-            {
-                pOverridePanel->SetBgColor(m_SelectionBgColor);
-            }
-            else
-            {
-                pOverridePanel->SetBgColor(m_SelectionOutOfFocusBgColor);
-            }
-        }
-        else
-        {
-            pOverridePanel->SetPaintBackgroundEnabled(false);
-        }
-        return pOverridePanel;
-    }
-
-    return BaseClass::GetCellRenderer(itemID, column);
-}
-
 void CMapListPanel::ApplySchemeSettings(IScheme* pScheme)
 {
     BaseClass::ApplySchemeSettings(pScheme);

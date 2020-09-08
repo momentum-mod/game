@@ -20,8 +20,6 @@ public:
     void OnKeyCodeTyped(vgui::KeyCode code) OVERRIDE;
     void OnMouseReleased(vgui::MouseCode code) OVERRIDE;
 
-    Panel* GetCellRenderer(int itemID, int column) OVERRIDE;
-
     void ApplySchemeSettings(vgui::IScheme *pScheme) OVERRIDE;
 
 private:
