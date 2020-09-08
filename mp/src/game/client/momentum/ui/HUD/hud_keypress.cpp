@@ -222,7 +222,7 @@ void CHudKeyPressDisplay::Paint()
     }
 
     if (g_pGameModeSystem->GetGameMode()->HasCapability(GameModeHUDCapability_t::CAP_HUD_KEYPRESS_WALK)
-        && (nButtons & IN_WALK))
+        && (nButtons & IN_WALK || m_nButtonsToggled & IN_WALK))
     {
         CHECK_INPUT_P(IN_WALK);
         surface()->DrawSetTextPos(GetTextCenter(m_hWordTextFont, STR_WALK), walk_row_ypos);
@@ -230,7 +230,7 @@ void CHudKeyPressDisplay::Paint()
     }
 
     if (g_pGameModeSystem->GetGameMode()->HasCapability(GameModeHUDCapability_t::CAP_HUD_KEYPRESS_SPRINT)
-        && nButtons & IN_SPEED)
+        && (nButtons & IN_SPEED || m_nButtonsToggled & IN_SPEED))
     {
         CHECK_INPUT_P(IN_SPEED);
         surface()->DrawSetTextPos(GetTextCenter(m_hWordTextFont, STR_SPEED), sprint_row_ypos);
