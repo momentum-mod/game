@@ -16,6 +16,12 @@
         "MOM_Weapon_SwitchToSemiAuto" "Switched to Semi-Auto mode"
         "MOM_Weapon_SwitchToBurstFire" "Switched to Burst Fire mode"
 
+    //Movement
+        "MOM_Toggle_Jump"   "Toggle Jump"
+        "MOM_Toggle_Duck"   "Toggle Duck"
+        "MOM_Toggle_Sprint" "Toggle Sprint"
+        "MOM_Toggle_Walk"   "Toggle Walk"
+
     //Controls
         "MOM_Controls_Title" "MOMENTUM CONTROLS"
         "MOM_Controls_Restart" "Restart run"
