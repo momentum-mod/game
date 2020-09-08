@@ -2100,10 +2100,12 @@ void CViewRender::RenderView( const CViewSetup &viewSetup, int nClearFlags, int 
 		UpscaleRect.width = viewSetup.m_nUnscaledWidth;
 		UpscaleRect.height = viewSetup.m_nUnscaledHeight;
 
+		pRenderContext.GetFrom( materials );
 		pRenderContext->CopyRenderTargetToTextureEx( pFullFrameFB1, 0, &DownscaleRect, &DownscaleRect );
 		pRenderContext->DrawScreenSpaceRectangle( pCopyMaterial, UpscaleRect.x, UpscaleRect.y, UpscaleRect.width, UpscaleRect.height,
 			DownscaleRect.x, DownscaleRect.y, DownscaleRect.x+DownscaleRect.width-1, DownscaleRect.y+DownscaleRect.height-1, 
 			pFullFrameFB1->GetActualWidth(), pFullFrameFB1->GetActualHeight() );
+		pRenderContext.SafeRelease();
 
 		pCopyMaterial->DecrementReferenceCount();
 	}
