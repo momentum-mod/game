@@ -441,7 +441,15 @@ void CMapSelectorDialog::OnMapDownloadStart(KeyValues* pKv)
         return;
     }
 
-    m_mapMapDownloads.Insert(uID, new MapDownloadProgress(pKv->GetString("name")));
+    const auto pMapData = GetMapListDataByID(uID);
+    if (!pMapData)
+        return;
+
+    const auto pDownloadProgress = new MapDownloadProgress(pKv->GetString("name"));
+    pMapData->m_pKv->SetInt("cellRenderOverrideCol", HEADER_MAP_NAME);
+    pMapData->m_pKv->SetPtr("cellRenderOverridePtr", pDownloadProgress);
+
+    m_mapMapDownloads.Insert(uID, pDownloadProgress);
 
     UpdateMapInfoDialog(uID);
 }
@@ -474,6 +482,13 @@ void CMapSelectorDialog::OnMapDownloadEnd(KeyValues* pKv)
     const auto indx = m_mapMapDownloads.Find(uID);
     if (m_mapMapDownloads.IsValidIndex(indx))
     {
+        const auto pMapData = GetMapListDataByID(uID);
+        if (!pMapData)
+            return;
+
+        pMapData->m_pKv->SetInt("cellRenderOverrideCol", -1);
+        pMapData->m_pKv->SetPtr("cellRenderOverridePtr", nullptr);
+
         m_mapMapDownloads[indx]->DeletePanel();
 
         m_mapMapDownloads.RemoveAt(indx);
@@ -504,16 +519,6 @@ void CMapSelectorDialog::OnMapDownloadEnd(KeyValues* pKv)
 bool CMapSelectorDialog::IsMapDownloading(uint32 uMapID) const
 {
     return m_mapMapDownloads.IsValidIndex(m_mapMapDownloads.Find(uMapID));
-}
-
-MapDownloadProgress* CMapSelectorDialog::GetDownloadProgressPanel(uint32 uMapID)
-{
-    const auto indx = m_mapMapDownloads.Find(uMapID);
-    if (m_mapMapDownloads.IsValidIndex(indx))
-    {
-        return m_mapMapDownloads[indx];
-    }
-    return nullptr;
 }
 
 void CMapSelectorDialog::OnStartMapDownload(int id)
