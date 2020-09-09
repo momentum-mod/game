@@ -9,6 +9,8 @@
 #include "mom_system_gamemode.h"
 #include "weapon/weapon_mom_stickybomblauncher.h"
 
+#include "fmtstr.h"
+
 #include "tier0/memdbgon.h"
 
 using namespace vgui;
@@ -23,8 +25,8 @@ class CHudStickybombs : public CHudElement, public EditablePanel
   public:
     CHudStickybombs(const char *pElementName);
 
-    bool ShouldDraw() OVERRIDE;
-    void OnThink() OVERRIDE;
+    bool ShouldDraw() override;
+    void OnThink() override;
 
   private:
     Label *m_pStickyLabel;
@@ -44,12 +46,11 @@ CHudStickybombs::CHudStickybombs(const char *pElementName)
 
 bool CHudStickybombs::ShouldDraw()
 {
-    if (!mom_hud_sj_stickycount_enable.GetBool())
+    if (!mom_hud_sj_stickycount_enable.GetBool() || !g_pGameModeSystem->GameModeIs(GAMEMODE_SJ))
         return false;
 
     C_MomentumPlayer *pPlayer = C_MomentumPlayer::GetLocalMomPlayer();
-
-    if (!pPlayer || !g_pGameModeSystem->GameModeIs(GAMEMODE_SJ) || !pPlayer->IsAlive())
+    if (!pPlayer || !pPlayer->IsAlive())
         return false;
 
     return CHudElement::ShouldDraw();
@@ -58,7 +59,6 @@ bool CHudStickybombs::ShouldDraw()
 void CHudStickybombs::OnThink()
 {
     C_MomentumPlayer *pPlayer = C_MomentumPlayer::GetLocalMomPlayer();
-
     if (!pPlayer)
         return;
 
@@ -69,17 +69,7 @@ void CHudStickybombs::OnThink()
     const auto pStickylauncher = static_cast<CMomentumStickybombLauncher *>(pStickyPtr);
 
     const auto iStickybombs = pStickylauncher->GetStickybombCount();
-    if (mom_hud_sj_stickycount_autohide.GetBool())
-    {
-        m_pStickyLabel->SetVisible(iStickybombs > 0);
-    }
-    else
-    {
-        m_pStickyLabel->SetVisible(true);
-    }
 
-    char buf[64];
-    Q_snprintf(buf, sizeof(buf), "%u", iStickybombs);
-
-    m_pStickyLabel->SetText(buf);
+    m_pStickyLabel->SetVisible(mom_hud_sj_stickycount_autohide.GetBool() ? iStickybombs > 0 : true);
+    m_pStickyLabel->SetText(CFmtStr("%u", iStickybombs).Get());
 }
