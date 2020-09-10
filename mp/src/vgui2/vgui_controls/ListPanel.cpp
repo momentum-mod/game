@@ -1945,6 +1945,7 @@ void ListPanel::Paint()
   	GetSize( panelWide, tall );
 
 	m_iTableStartX = 0;
+	m_iTableStartY = GetNumColumnHeaders() ? m_ColumnsData[m_CurrentColumns[0]].m_pHeader->GetTall() : 0;
 
 	int nTotalRows = m_VisibleItems.Count();
 	int nRowsPerPage = GetRowsPerPage();
@@ -2041,13 +2042,15 @@ void ListPanel::Paint()
 		    m_pEmptyListText->SetPos(m_iTableStartX + 8, m_iTableStartY + 4);
         }
 
-        m_pEmptyListText->SetWide(panelWide - 8);
+        m_pEmptyListText->SetWide(panelWide - vbarInset);
 
         m_pEmptyListText->SetVisible(true);
 
 	}
     else
-        m_pEmptyListText->SetVisible(false);
+    {
+		m_pEmptyListText->SetVisible(false);
+    }
 
 //	endTime = system()->GetCurrentTime();
 //	ivgui()->DPrintf2("ListPanel::Paint() (%.3f sec)\n", (float)(endTime - startTime));
