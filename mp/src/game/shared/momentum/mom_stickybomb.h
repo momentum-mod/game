@@ -17,11 +17,14 @@ class CMomStickybomb : public CMomExplosive
 
     void SetChargeTime(float flChargeTime) { m_flChargeTime = flChargeTime; }
 
-    void UpdateOnRemove() OVERRIDE;
+    void UpdateOnRemove() override;
 
-    void Spawn() OVERRIDE;
+    void Spawn() override;
 
     bool IsArmed() const;
+
+    bool CanExplode() const { return m_bCanExplode.Get(); }
+    void SetCanExplode(bool bCanExplode) { m_bCanExplode.Set(bCanExplode); }
 #ifdef CLIENT_DLL
     float GetDrawDelayTime() override;
     void CreateTrailParticles() override;
@@ -39,13 +42,15 @@ class CMomStickybomb : public CMomExplosive
 
     void Fizzle();
     void Detonate();
-    void VPhysicsCollision(int index, gamevcollisionevent_t *pEvent) OVERRIDE;
+    void VPhysicsCollision(int index, gamevcollisionevent_t *pEvent) override;
 
     bool DidHitWorld() const { return m_bDidHitWorld; }
 #endif
 
   private:
     IMPLEMENT_NETWORK_VAR_FOR_DERIVED(m_fFlags);
+    CNetworkVar(bool, m_bCanExplode);
+
 #ifdef CLIENT_DLL
     bool m_bPulsed;
 #else

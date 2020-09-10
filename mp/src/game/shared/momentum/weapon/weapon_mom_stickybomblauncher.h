@@ -27,18 +27,18 @@ class CMomentumStickybombLauncher : public CWeaponBaseGun
     CMomentumStickybombLauncher();
     ~CMomentumStickybombLauncher();
 
-    WeaponID_t GetWeaponID() const OVERRIDE { return WEAPON_STICKYLAUNCHER; }
+    WeaponID_t GetWeaponID() const override { return WEAPON_STICKYLAUNCHER; }
 
-    void Precache() OVERRIDE;
+    void Precache() override;
 
-    void PrimaryAttack() OVERRIDE;
-    void SecondaryAttack() OVERRIDE;
+    void PrimaryAttack() override;
+    void SecondaryAttack() override;
 
-    bool Deploy() OVERRIDE;
-    bool Holster(CBaseCombatWeapon *pSwitchingTo) OVERRIDE;
-    void WeaponIdle() OVERRIDE;
-    void ItemBusyFrame() OVERRIDE;
-    void ItemPostFrame() OVERRIDE;
+    bool Deploy() override;
+    bool Holster(CBaseCombatWeapon *pSwitchingTo) override;
+    void WeaponIdle() override;
+    void ItemBusyFrame() override;
+    void ItemPostFrame() override;
 
     void AddStickybomb(CMomStickybomb *pBomb);
     int DetonateRemoteStickybombs(bool bFizzle);
@@ -48,15 +48,14 @@ class CMomentumStickybombLauncher : public CWeaponBaseGun
 
     bool IsChargeEnabled() { return m_bIsChargeEnabled.Get(); }
     bool SetChargeEnabled(bool state);
-
-    CMomStickybomb *GetStickyByCount(int count) { return m_Stickybombs[count]; }
+    CMomStickybomb *GetStickyByCount(int count) { return m_iStickybombCount == m_Stickybombs.Size() ? m_Stickybombs[count] : nullptr; }
     void SetChargeBeginTime(float value) { m_flChargeBeginTime = value; }
     float GetChargeBeginTime() { return m_flChargeBeginTime; }
     float GetChargeMaxTime();
 
   private:
     void LaunchGrenade();
-    bool DualFire() OVERRIDE { return true; }
+    bool DualFire() override { return true; }
     CMomStickybomb* FireStickybomb(CMomentumPlayer *pPlayer);
     CMomStickybomb* FireProjectile(CMomentumPlayer *pPlayer);
 

@@ -32,8 +32,10 @@ IMPLEMENT_NETWORKCLASS_ALIASED(MomStickybomb, DT_MomStickybomb)
 BEGIN_NETWORK_TABLE(CMomStickybomb, DT_MomStickybomb)
 #ifdef CLIENT_DLL
   RecvPropInt(RECVINFO(m_fFlags)),
+  RecvPropBool(RECVINFO(m_bCanExplode)),
 #else
   SendPropInt(SENDINFO(m_fFlags), -1, SPROP_UNSIGNED),
+  SendPropBool(SENDINFO(m_bCanExplode)),
 #endif
 END_NETWORK_TABLE();
 
@@ -52,6 +54,7 @@ static MAKE_TOGGLE_CONVAR(mom_sj_decals_enable, "1", FCVAR_ARCHIVE, "Toggles cre
 CMomStickybomb::CMomStickybomb()
 {
     m_flChargeTime = 0.0f;
+    m_bCanExplode = true;
 
 #ifdef GAME_DLL
     m_bFizzle = false;
@@ -325,4 +328,5 @@ void CMomStickybomb::VPhysicsCollision(int index, gamevcollisionevent_t *pEvent)
         m_vecImpactNormal.Negate();
     }
 }
+
 #endif

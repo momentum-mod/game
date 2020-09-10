@@ -680,6 +680,9 @@ public:
     void Spawn() override;
     void Precache() override;
 
+    void OnStartTouch(CBaseEntity *pOther) override;
+    void OnEndTouch(CBaseEntity *pOther) override;
+
     void InputDisable(inputdata_t &inputdata) override { m_bDisabled = true; }
     void InputEnable(inputdata_t &inputdata) override { m_bDisabled = false; }
     void InputToggle(inputdata_t &inputdata) override { m_bDisabled = !m_bDisabled; }
