@@ -326,8 +326,6 @@ CMomStickybomb *CMomentumStickybombLauncher::FireProjectile(CMomentumPlayer *pPl
         }
 
         AddStickybomb(pProjectile);
-
-        m_iStickybombCount = m_Stickybombs.Count();
     }
 #endif
     return pProjectile;
@@ -379,6 +377,8 @@ void CMomentumStickybombLauncher::AddStickybomb(CMomStickybomb *pBomb)
     pBomb->SetLauncher(this);
     StickybombHandle hHandle = pBomb;
     m_Stickybombs.AddToTail(hHandle);
+
+    m_iStickybombCount = m_Stickybombs.Count();
 }
 
 //-----------------------------------------------------------------------------
