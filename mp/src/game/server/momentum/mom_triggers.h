@@ -704,6 +704,7 @@ class CTriggerMomentumCatapult : public CBaseMomentumTrigger
     void Spawn() OVERRIDE;
     void Think() OVERRIDE;
 
+    int DrawDebugTextOverlays() OVERRIDE;
 
   private:
     Vector CalculateLaunchVelocity(CBaseEntity *);
@@ -735,5 +736,5 @@ class CTriggerMomentumCatapult : public CBaseMomentumTrigger
     COutputEvent m_OnCatapulted;
     float m_flInterval;
     bool m_bOnThink;
-    bool m_bEveryTick;
+    float m_flHeightOffset;
 };
