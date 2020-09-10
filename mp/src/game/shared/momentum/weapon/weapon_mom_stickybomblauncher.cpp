@@ -24,6 +24,9 @@ MAKE_TOGGLE_CONVAR(mom_sj_sound_detonate_fail_enable, "1", FCVAR_ARCHIVE | FCVAR
 MAKE_TOGGLE_CONVAR(mom_sj_sound_detonate_success_enable, "1", FCVAR_ARCHIVE | FCVAR_REPLICATED, "Toggle the sticky launcher detonate success sound. 0 = OFF, 1 = ON\n");
 MAKE_TOGGLE_CONVAR(mom_sj_sound_charge_enable, "1", FCVAR_ARCHIVE | FCVAR_REPLICATED, "Toggle the sticky launcher charging sound. 0 = OFF, 1 = ON\n");
 
+MAKE_TOGGLE_CONVAR(mom_sj_test_fizzle_furthest, "0", FCVAR_MAPPING, "Toggles which sticky is fizzled upon shooting too many stickies.\n"
+                                                                    "0 = Fizzle first shot sticky (normal), 1 = Fizzle sticky furthest from the player\n");
+
 IMPLEMENT_NETWORKCLASS_ALIASED(MomentumStickybombLauncher, DT_MomentumStickybombLauncher)
 
 BEGIN_NETWORK_TABLE(CMomentumStickybombLauncher, DT_MomentumStickybombLauncher)
@@ -309,27 +312,48 @@ bool CMomentumStickybombLauncher::SetChargeEnabled(bool state)
 CMomStickybomb *CMomentumStickybombLauncher::FireProjectile(CMomentumPlayer *pPlayer)
 {
     const auto pProjectile = FireStickybomb(pPlayer);
-#ifdef GAME_DLL
-    if (pProjectile)
-    {
-        // If we've gone over the max stickybomb count, fizzle the oldest
-        if (m_Stickybombs.Count() >= MOM_WEAPON_STICKYBOMB_COUNT)
-        {
-            CMomStickybomb *pTemp = m_Stickybombs[0];
-            if (pTemp)
-            {
-                pTemp->Destroy(true);
-            }
 
-            m_Stickybombs.Remove(0);
+#ifdef CLIENT_DLL
+    return pProjectile;
+#else
+    if (!pProjectile)
+        return pProjectile;
+
+    // If we've gone over the max stickybomb count, fizzle a sticky
+    if (m_Stickybombs.Count() >= MOM_WEAPON_STICKYBOMB_COUNT)
+    {
+        int iStickyToFizzleIndex = 0;
+        CMomStickybomb *pStickyToFizzle = m_Stickybombs[0];
+
+        if (mom_sj_test_fizzle_furthest.GetBool())
+        {
+            float flFarthest = 0;
+            FOR_EACH_VEC(m_Stickybombs, i)
+            {
+                CMomStickybomb *pTemp = m_Stickybombs[i];
+                if (!pTemp)
+                    continue;
+
+                float flRange = pTemp->CollisionProp()->CalcDistanceFromPoint(pPlayer->WorldSpaceCenter());
+                if (flRange > flFarthest)
+                {
+                    iStickyToFizzleIndex = i;
+                    flFarthest = flRange;
+                }
+            }
+            pStickyToFizzle = m_Stickybombs[iStickyToFizzleIndex];
         }
 
-        AddStickybomb(pProjectile);
-
-        m_iStickybombCount = m_Stickybombs.Count();
+        if (pStickyToFizzle)
+            pStickyToFizzle->Destroy(true);
+        m_Stickybombs.Remove(iStickyToFizzleIndex);
     }
-#endif
+
+    AddStickybomb(pProjectile);
+    m_iStickybombCount = m_Stickybombs.Count();
+
     return pProjectile;
+#endif
 }
 
 CMomStickybomb *CMomentumStickybombLauncher::FireStickybomb(CMomentumPlayer *pPlayer)
