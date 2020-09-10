@@ -996,12 +996,13 @@ void PropertySheet::PerformLayout()
 {
 	BaseClass::PerformLayout();
 
-	LayoutPage(_activePage);
+	FOR_EACH_VEC(m_Pages, i)
+	{
+	    LayoutPage(m_Pages[i].page);
+	}
 	
-	int xtab;
+	int xtab = m_iTabXIndent;
 	int limit = m_PageTabs.Count();
-
-	xtab = m_iTabXIndent;
 
 	// draw the visible tabs
 	if (_showTabs)
