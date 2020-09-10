@@ -16,6 +16,8 @@
     "$AllowVignette" "1"
     "$AllowNoise" "1"
     "$AllowLocalContrast" "1"
+	
+    "$DepthBlurEnable" "1"
     
     "$AAEnable" 1
     "$AAInternal1" "[0 0 0 0]"
