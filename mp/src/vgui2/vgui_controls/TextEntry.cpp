@@ -2678,6 +2678,9 @@ int TextEntry::GetWordLeft()
             break;
     }
 
+	if (ret < 0)
+		return 0;
+
     // search left until we hit a whitespace character
     while (--ret >= 0)
     {
