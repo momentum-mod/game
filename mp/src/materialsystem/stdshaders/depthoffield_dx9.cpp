@@ -12,8 +12,9 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-ConVar mat_dof_max_blur_radius( "mat_dof_max_blur_radius", "10" );
-ConVar mat_dof_quality( "mat_dof_quality", "0" );
+ConVar mat_dof_max_blur_radius( "mat_dof_max_blur_radius", "50" );
+ConVar mat_dof_quality( "mat_dof_quality", "3" );
+ConVar mat_dof_constant( "mat_dof_constant", "512" );
 
 // 8 samples
 static const float s_flPoissonConstsQuality0[16] = {
@@ -200,7 +201,7 @@ BEGIN_VS_SHADER_FLAGS( DepthOfField_dx9, "Depth of Field", SHADER_NOT_EDITABLE )
 			vConst[9] = params[FARPLANE]->GetFloatValue();
 			
 			// 8192 is the magic number for HDR mode 3 (see FLOAT_RENDERPARM_DEST_ALPHA_DEPTH_SCALE in shaderapidx8.cpp)
-			vConst[10] = 8192.0f * ( vConst[9] - vConst[8] ) / vConst[9]; 
+			vConst[10] = mat_dof_constant.GetFloat() * ( vConst[9] - vConst[8] ) / vConst[9]; 
 
 			vConst[12] = vConst[10] / ( vConst[0] - vConst[1] );
 			vConst[13] = ( vConst[8] - vConst[1] ) / ( vConst[0] - vConst[1] );

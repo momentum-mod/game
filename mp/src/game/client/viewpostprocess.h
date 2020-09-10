@@ -19,6 +19,9 @@ void DumpTGAofRenderTarget( const int width, const int height, const char *pFile
 
 void SetRenderTargetAndViewPort( ITexture *rt );
 
+bool IsDepthOfFieldEnabled();
+void DoDepthOfField( const CViewSetup &view );
+
 void SetPostProcessParams( const PostProcessParameters_t* pPostProcessParameters );
 void SetPostProcessParams( const PostProcessParameters_t* pPostProcessParameters, bool override );
 
