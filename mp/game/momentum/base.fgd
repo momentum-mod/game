@@ -6726,3 +6726,29 @@
         1 : "Master (Has priority if multiple postprocess_controllers exist)" : 0
     ]
 ]
+
+@PointClass base(Targetname) iconsprite("editor/env_dof_controller.vmt") = env_dof_controller : 
+    "An entity that controls the depth of field settings for the player. Depth of field simulates camera blur of out-of-focus regions of the scene."
+[
+    enabled(boolean) : "Enabled" : 0 : "Whether the effect should be active"
+    
+    near_blur(float) : "Near blur depth" : 20 : "Distance that the blurriness is at its peak near the viewpoint."
+    near_focus(float) : "Near focus depth" : 100 : "Distance that the focus is in full effect near the viewpoint."
+    near_radius(float) : "Near blur radius" : 8 : "Radius (in pixels) to blur the surrounding pixels."
+
+    far_blur(float) : "Far blur depth" : 1000 : "Distance where blurriness is at its peak far from the viewpoint."
+    far_focus(float) : "Far focus depth" : 500 : "Distance that the focus is in full effect far from the viewpoint."
+    far_radius(float) : "Far blur radius" : 8 : "Radius (in pixels) to blur the surrounding pixels."
+    focus_target(target_source) : "Focus target" : "" : "Entity to use as a focal point."
+    focus_range(float) : "Focus target range" : "200" : "Distance behind the focal plane to remain in focus."
+
+    // Inputs
+    input SetNearBlurDepth(float) : "Set the distance in front of the focus region at which the scene will be completely blurred using the near blur radius. Must be smaller than NearFocusDepth."
+    input SetNearFocusDepth(float) : "The area between the near focus and far focus distances is perfectly in focus. Must be smaller than FarFocusDepth."
+    input SetFarFocusDepth(float) : "The area between the near focus and far focus distances is perfectly in focus. Must be smaller than FarBlurDepth."
+    input SetFarBlurDepth(float) : "Set the distance beyond the focus region at which the scene will be completely blurred using the far blur radius. Must be larger than FarFocusDepth."
+    input SetNearBlurRadius(float) : "Set the blur radius (in pixels) to use at the near blur distance. Set to 0 to disable near blur."
+    input SetFarBlurRadius(float) : "Set the blur radius (in pixels) to use at the far blur distance. Set to 0 to disable far blur."
+    input SetFocusTarget(string) : "Set the focal target for the effect."
+    input SetFocusTargetRange(float) : "Set the distance behind the focal point that will remain in focus."
+]
