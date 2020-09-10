@@ -1585,6 +1585,9 @@ bool CNoGrenadesZone::IsInsideNoGrenadesZone(CBaseEntity *pOther)
 //--------- CTriggerMomentumCatapult -------------------------------------------------------------------
 LINK_ENTITY_TO_CLASS(trigger_momentum_catapult, CTriggerMomentumCatapult);
 
+// Alias tf2 trigger_catapult for backwards compat
+LINK_ENTITY_TO_CLASS(trigger_catapult, CTriggerMomentumCatapult);
+
 BEGIN_DATADESC(CTriggerMomentumCatapult)
     DEFINE_KEYFIELD(m_flPlayerSpeed, FIELD_FLOAT, "playerSpeed"),
     DEFINE_KEYFIELD(m_bUseThresholdCheck, FIELD_INTEGER, "useThresholdCheck"),
@@ -1599,13 +1602,16 @@ BEGIN_DATADESC(CTriggerMomentumCatapult)
     DEFINE_OUTPUT(m_OnCatapulted, "OnCatapulted"),
     DEFINE_KEYFIELD(m_flInterval, FIELD_FLOAT, "Interval"),
     DEFINE_KEYFIELD(m_bOnThink, FIELD_BOOLEAN, "OnThink"),
-    DEFINE_KEYFIELD(m_bEveryTick, FIELD_BOOLEAN, "EveryTick"),
+    DEFINE_KEYFIELD(m_flHeightOffset, FIELD_FLOAT, "heightOffset"),
 END_DATADESC()
 
 
 CTriggerMomentumCatapult::CTriggerMomentumCatapult()
-    : m_hLaunchTarget(nullptr), m_flInterval(1.0), m_bOnThink(false)
 {
+    m_hLaunchTarget = nullptr;
+    m_flInterval = 1.0;
+    m_bOnThink = false;
+    m_flHeightOffset = 32.0f;
 }
 
 void CTriggerMomentumCatapult::Spawn()
@@ -1639,8 +1645,7 @@ Vector CTriggerMomentumCatapult::CalculateLaunchVelocity(CBaseEntity *pOther)
 
     Vector vecPlayerOrigin = pOther->GetAbsOrigin();
 
-    // Is there something like this to compensate for eye-height? (this value seems to work 1:1)
-    vecPlayerOrigin.z += 32.0f;
+    vecPlayerOrigin.z += m_flHeightOffset;
 
     Vector vecAbsDifference = m_hLaunchTarget->GetAbsOrigin() - vecPlayerOrigin;
     float flSpeed2 = m_flPlayerSpeed * m_flPlayerSpeed;
@@ -1665,8 +1670,7 @@ Vector CTriggerMomentumCatapult::CalculateLaunchVelocityExact(CBaseEntity* pOthe
 
     Vector vecPlayerOrigin = pOther->GetAbsOrigin();
 
-    // Is there something like this to compensate for eye-height? (this value seems to work 1:1)
-    vecPlayerOrigin.z += 32.0f;
+    vecPlayerOrigin.z += m_flHeightOffset;
 
     Vector vecAbsDifference = m_hLaunchTarget->GetAbsOrigin() - vecPlayerOrigin;
     Vector vecAbsDifferenceXY = Vector(vecAbsDifference.x, vecAbsDifference.y, 0.0f);
@@ -1853,6 +1857,67 @@ void CTriggerMomentumCatapult::Think()
     {
         SetNextThink(TICK_NEVER_THINK);
     }
+}
+
+int CTriggerMomentumCatapult::DrawDebugTextOverlays()
+{
+    int text_offset = BaseClass::DrawDebugTextOverlays();
+
+
+    char tempstr[255];
+
+    Q_snprintf(tempstr, sizeof(tempstr), "Name: %s", GetDebugName());
+    EntityText(text_offset, tempstr, 0);
+    text_offset++;
+
+    Q_snprintf(tempstr, sizeof(tempstr), "Position: %f, %f, %f", GetAbsOrigin().x, GetAbsOrigin().y, GetAbsOrigin().z);
+    EntityText(text_offset, tempstr, 0);
+    text_offset++;
+
+    if (m_target != NULL_STRING)
+    {
+        Q_snprintf(tempstr, sizeof(tempstr), "Launch target: %s", m_target.ToCStr());
+        EntityText(text_offset, tempstr, 0);
+        text_offset++;
+    }
+
+
+    Q_snprintf(tempstr, sizeof(tempstr), "Player velocity: %f", m_flPlayerSpeed);
+    EntityText(text_offset, tempstr, 0);
+    text_offset++;
+
+    Vector vecLaunchVelocity = vec3_origin;
+    if (m_target != NULL_STRING)
+    {
+        // Create dummy velocity
+        Vector vecPlayerOrigin = this->GetAbsOrigin();
+
+        vecPlayerOrigin.z += m_flHeightOffset;
+
+        Vector vecAbsDifference = this->m_hLaunchTarget->GetAbsOrigin() - vecPlayerOrigin;
+
+        float flSpeed2 = m_flPlayerSpeed * m_flPlayerSpeed;
+        float flGravity = GetCurrentGravity();
+
+        float flDiscriminant = 4.0f * flSpeed2 * vecAbsDifference.Length() * vecAbsDifference.Length();
+
+        flDiscriminant = sqrtf(flDiscriminant);
+        float fTime = 0.5f * (flDiscriminant / flSpeed2);
+
+        vecLaunchVelocity = (vecAbsDifference / fTime);
+
+        Vector vecGravityComp = 0.5 * (flGravity * Vector(0, 0, -1)) * fTime;
+        vecLaunchVelocity -= vecGravityComp;
+    }
+
+
+
+    Q_snprintf(tempstr, sizeof(tempstr), "Adjusted player velocity: %f", m_iUseExactVelocity ? (float)vecLaunchVelocity.Length() : m_flPlayerSpeed);
+    EntityText(text_offset, tempstr, 0);
+    text_offset++;
+
+    return text_offset;
+
 }
 
 //-----------------------------------------------------------------------------------------------
