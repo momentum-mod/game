@@ -147,8 +147,8 @@ protected:
 	// disabled for now
 	// virtual bool ShouldFlushText();
 
-private:
 	void ForceSubPanelsToUpdateWithNewDialogVariables();
+private:
 
 	BuildGroup *_buildGroup;
 	FocusNavGroup m_NavGroup;
