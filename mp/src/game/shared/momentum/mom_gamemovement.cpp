@@ -1874,26 +1874,6 @@ void CMomentumGameMovement::CategorizePosition()
                 SetGroundEntity(&pm); // Otherwise, point to index of ent under us.
             }
         }
-
-#ifndef CLIENT_DLL
-
-        // If our gamematerial has changed, tell any player surface triggers that are watching
-        IPhysicsSurfaceProps *pPhysprops = MoveHelper()->GetSurfaceProps();
-        surfacedata_t *pSurfaceProp = pPhysprops->GetSurfaceData(pm.surface.surfaceProps);
-        char cCurrGameMaterial = pSurfaceProp->game.material;
-        if (!player->GetGroundEntity())
-        {
-            cCurrGameMaterial = 0;
-        }
-
-        // Changed?
-        if (player->m_chPreviousTextureType != cCurrGameMaterial)
-        {
-            CEnvPlayerSurfaceTrigger::SetPlayerSurface(player, cCurrGameMaterial);
-        }
-
-        player->m_chPreviousTextureType = cCurrGameMaterial;
-#endif
     }
 }
 

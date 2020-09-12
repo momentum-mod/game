@@ -750,7 +750,26 @@ int CTriggerMomentumTeleport::DrawDebugTextOverlays(void)
 //---------- CEnvSurfaceTeleport ---------------------------------------------------------------
 LINK_ENTITY_TO_CLASS(env_momentum_surface_teleport, CEnvSurfaceTeleport);
 
-void CEnvSurfaceTeleport::UpdateMaterialThink(void)
+void CEnvSurfaceTeleport::PlayerSurfaceChanged(CBasePlayer *pPlayer, char gameMaterial)
+{
+    if (m_bDisabled)
+        return;
+
+    // Do our thing only if it involves the target material
+    if ( gameMaterial != m_iCurrentGameMaterial &&
+         ( gameMaterial == m_iTargetGameMaterial || m_iCurrentGameMaterial == m_iTargetGameMaterial ) )
+    {
+        DevMsg(2, "Player changed material to %d (was %d)\n", gameMaterial, m_iCurrentGameMaterial);
+
+        m_iCurrentGameMaterial = gameMaterial;
+
+        // Teleporting the player while still processing movement isn't nice
+        SetThink(&CEnvPlayerSurfaceTrigger::UpdateMaterialThink);
+        SetNextThink(gpGlobals->curtime);
+    }
+}
+
+void CEnvSurfaceTeleport::UpdateMaterialThink()
 {
     if (m_iCurrentGameMaterial != m_iTargetGameMaterial)
         return;

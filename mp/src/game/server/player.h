@@ -1098,6 +1098,7 @@ protected:
 	friend class CDODGameMovement;
 	friend class CPortalGameMovement;
     friend class CMomentumGameMovement;
+    friend class CEnvPlayerSurfaceTrigger;
 	
 	// Accessors for gamemovement
 	bool IsDucked( void ) const { return m_Local.m_bDucked; }

@@ -5,6 +5,7 @@
 #include "effect_dispatch_data.h"
 #ifdef GAME_DLL
 #include "te_effect_dispatch.h"
+#include "env_player_surface_trigger.h"
 #else
 #include "c_te_effect_dispatch.h"
 #include "prediction.h"
@@ -405,6 +406,13 @@ bool CMomentumPlayer::SetLastInteraction(const trace_t &tr, const Vector &veloci
     {
         return false;
     }
+
+#ifndef CLIENT_DLL
+    if (type != SurfInt::TYPE_LEAVE)
+    {
+        CEnvPlayerSurfaceTrigger::SetPlayerSurface(this, tr);
+    }
+#endif
 
     SurfInt &surfInt = m_surfIntList[type];
     surfInt.tick = gpGlobals->tickcount;
