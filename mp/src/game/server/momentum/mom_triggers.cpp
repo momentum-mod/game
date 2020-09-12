@@ -1608,7 +1608,16 @@ END_DATADESC()
 
 CTriggerMomentumCatapult::CTriggerMomentumCatapult()
 {
+    m_flPlayerSpeed = 450.0f;
+    m_bUseThresholdCheck = 0;
+    m_flEntryAngleTolerance = 0.0f;
+    m_iUseExactVelocity = 0;
+    m_iExactVelocityChoiceType = BEST;
+    m_flLowerThreshold = 0.15f;
+    m_flUpperThreshold = 0.30f;
+    m_vLaunchDirection = vec3_angle;
     m_hLaunchTarget = nullptr;
+    m_bOnlyCheckVelocity = false;
     m_flInterval = 1.0;
     m_bOnThink = false;
     m_flHeightOffset = 32.0f;
@@ -1648,17 +1657,17 @@ Vector CTriggerMomentumCatapult::CalculateLaunchVelocity(CBaseEntity *pOther)
     vecPlayerOrigin.z += m_flHeightOffset;
 
     Vector vecAbsDifference = m_hLaunchTarget->GetAbsOrigin() - vecPlayerOrigin;
-    float flSpeed2 = m_flPlayerSpeed * m_flPlayerSpeed;
+    float flSpeedSquared = m_flPlayerSpeed * m_flPlayerSpeed;
     float flGravity = GetCurrentGravity();
 
-    float flDiscriminant = 4.0f * flSpeed2 * vecAbsDifference.Length() * vecAbsDifference.Length();
+    float flDiscriminant = 4.0f * flSpeedSquared * vecAbsDifference.Length() * vecAbsDifference.Length();
 
     flDiscriminant = sqrtf(flDiscriminant);
-    float fTime = 0.5f * (flDiscriminant / flSpeed2);
+    float fTime = 0.5f * (flDiscriminant / flSpeedSquared);
 
     Vector vecLaunchVelocity = (vecAbsDifference / fTime);
 
-    Vector vecGravityComp = 0.5 * (flGravity * Vector(0, 0, -1)) * fTime;
+    Vector vecGravityComp(0, 0, 0.5f * flGravity * fTime);
     vecLaunchVelocity -= vecGravityComp;
 
     return vecLaunchVelocity;
@@ -1675,13 +1684,13 @@ Vector CTriggerMomentumCatapult::CalculateLaunchVelocityExact(CBaseEntity* pOthe
     Vector vecAbsDifference = m_hLaunchTarget->GetAbsOrigin() - vecPlayerOrigin;
     Vector vecAbsDifferenceXY = Vector(vecAbsDifference.x, vecAbsDifference.y, 0.0f);
 
-    float flSpeed2 = m_flPlayerSpeed * m_flPlayerSpeed;
-    float flSpeed4 = m_flPlayerSpeed * m_flPlayerSpeed * m_flPlayerSpeed * m_flPlayerSpeed;
+    float flSpeedSquared = m_flPlayerSpeed * m_flPlayerSpeed;
+    float flSpeedQuad = m_flPlayerSpeed * m_flPlayerSpeed * m_flPlayerSpeed * m_flPlayerSpeed;
     float flAbsX = vecAbsDifferenceXY.Length();
     float flAbsZ = vecAbsDifference.z;
     float flGravity = GetCurrentGravity();
 
-    float flDiscriminant = flSpeed4 - flGravity * (flGravity * flAbsX * flAbsX + 2 * flAbsZ * flSpeed2);
+    float flDiscriminant = flSpeedQuad - flGravity * (flGravity * flAbsX * flAbsX + 2.0f * flAbsZ * flSpeedSquared);
 
     // Maybe not this but some sanity check ofc, then default to non exact case which should always have a solution
     if (m_flPlayerSpeed < sqrtf(flGravity * (flAbsZ + vecAbsDifference.Length())))
@@ -1694,7 +1703,7 @@ Vector CTriggerMomentumCatapult::CalculateLaunchVelocityExact(CBaseEntity* pOthe
         DevWarning("Not enough speed to reach target.\n");
         return CalculateLaunchVelocity(pOther);
     }
-    if (flAbsX == 0.0f)
+    if (CloseEnough(flAbsX, 0.0f))
     {
         DevWarning("Target position cannot be the same as catapult position?\n");
         return CalculateLaunchVelocity(pOther);
@@ -1702,12 +1711,12 @@ Vector CTriggerMomentumCatapult::CalculateLaunchVelocityExact(CBaseEntity* pOthe
 
     flDiscriminant = sqrtf(flDiscriminant);
 
-    float flLowAng = atanf((flSpeed2 - flDiscriminant) / (flGravity * flAbsX));
-    float flHighAng = atanf((flSpeed2 + flDiscriminant) / (flGravity * flAbsX));
+    float flLowAng = atanf((flSpeedSquared - flDiscriminant) / (flGravity * flAbsX));
+    float flHighAng = atanf((flSpeedSquared + flDiscriminant) / (flGravity * flAbsX));
 
     Vector fGroundDir = vecAbsDifferenceXY.Normalized();
-    Vector vecLowAngVelocity = m_flPlayerSpeed * (fGroundDir * cosf(flLowAng) + Vector(0, 0, 1) * sinf(flLowAng));
-    Vector vecHighAngVelocity = m_flPlayerSpeed * (fGroundDir * cosf(flHighAng) + Vector(0, 0, 1) * sinf(flHighAng));
+    Vector vecLowAngVelocity = m_flPlayerSpeed * (fGroundDir * cosf(flLowAng) + Vector(0, 0, sinf(flLowAng)));
+    Vector vecHighAngVelocity = m_flPlayerSpeed * (fGroundDir * cosf(flHighAng) + Vector(0, 0, sinf(flHighAng)));
     Vector vecLaunchVelocity = vec3_origin;
     Vector vecPlayerEntryVel = pOther->GetAbsVelocity();
 
@@ -1746,17 +1755,18 @@ void CTriggerMomentumCatapult::LaunchAtDirection(CBaseEntity *pOther)
 void CTriggerMomentumCatapult::LaunchAtTarget(CBaseEntity *pOther)
 {
     pOther->SetGroundEntity(nullptr);
+    Vector vecLaunchVelocity = vec3_origin;
+
     if (m_iUseExactVelocity)
     {
-        Vector vecLaunchVelocity = CalculateLaunchVelocityExact(pOther);
-        pOther->SetAbsVelocity(vecLaunchVelocity);      
+        vecLaunchVelocity = CalculateLaunchVelocityExact(pOther);
     }
     else
     {
-        Vector vecLaunchVelocity = CalculateLaunchVelocity(pOther);
-        pOther->SetAbsVelocity(vecLaunchVelocity);
+        vecLaunchVelocity = CalculateLaunchVelocity(pOther);
     }
 
+    pOther->SetAbsVelocity(vecLaunchVelocity);
     m_OnCatapulted.FireOutput(pOther, this);
 }
 
@@ -1775,53 +1785,46 @@ void CTriggerMomentumCatapult::Launch(CBaseEntity *pOther)
         if (flPlayerSpeed > m_flPlayerSpeed - (m_flPlayerSpeed * m_flLowerThreshold) &&
             flPlayerSpeed < m_flPlayerSpeed + (m_flPlayerSpeed * m_flUpperThreshold))
         {
+            float flPlayerEntryAng = 0.0f;
+
             if (m_bUseLaunchTarget)
             {
                 Vector vecAbsDifference = m_hLaunchTarget->GetAbsOrigin() - pOther->GetAbsOrigin();
+                flPlayerEntryAng = DotProduct(vecAbsDifference.Normalized(), vecPlayerVelocity.Normalized());
 
-                float flPlayerEntryAng = DotProduct(vecAbsDifference.Normalized(), vecPlayerVelocity.Normalized());
-
-                // VDC uses brackets so inclusive??
-                if (flPlayerEntryAng >= m_flEntryAngleTolerance)
-                {
-                    if (m_bOnlyCheckVelocity)
-                    {
-                        m_OnCatapulted.FireOutput(pOther, this);
-                        return;
-                    }
-                    bLaunch = true;
-                }
             }
             else
             {
                 Vector vecLaunchDir = vec3_origin;
                 AngleVectors(m_vLaunchDirection, &vecLaunchDir);
-                float flPlayerEntryAng = DotProduct(vecLaunchDir.Normalized(), vecPlayerVelocity.Normalized());
+                flPlayerEntryAng = DotProduct(vecLaunchDir.Normalized(), vecPlayerVelocity.Normalized());
+            }
 
-                // VDC uses brackets so inclusive??
-                if (flPlayerEntryAng >= m_flEntryAngleTolerance)
+            // VDC uses brackets so inclusive??
+            if (flPlayerEntryAng >= m_flEntryAngleTolerance)
+            {
+                if (m_bOnlyCheckVelocity)
                 {
-                    if (m_bOnlyCheckVelocity)
-                    {
-                        m_OnCatapulted.FireOutput(pOther, this);
-                        return;
-                    }
-                    bLaunch = true;
+                    m_OnCatapulted.FireOutput(pOther, this);
+                    return;
                 }
+                bLaunch = true;
             }
         }
     }
 
-    if (bLaunch)
+    if (!bLaunch)
     {
-        if (m_bUseLaunchTarget)
-        {
-            LaunchAtTarget(pOther);
-        }
-        else
-        {
-            LaunchAtDirection(pOther);
-        }
+        return;
+    }
+
+    if (m_bUseLaunchTarget)
+    {
+        LaunchAtTarget(pOther);
+    }
+    else
+    {
+        LaunchAtDirection(pOther);
     }
 }
 
@@ -1843,19 +1846,18 @@ void CTriggerMomentumCatapult::Think()
 {
     if (m_bOnThink)
     {
-        FOR_EACH_VEC(m_hTouchingEntities, i)
-        {
-            const auto pEnt = m_hTouchingEntities[i].Get();
-            if (pEnt && pEnt->IsPlayer())
-            {
-                Launch(pEnt);
-                SetNextThink(gpGlobals->curtime + m_flInterval);
-            }
-        }
-    }
-    else
-    {
         SetNextThink(TICK_NEVER_THINK);
+        return;
+    }
+    
+    FOR_EACH_VEC(m_hTouchingEntities, i)
+    {
+        const auto pEnt = m_hTouchingEntities[i].Get();
+        if (pEnt && pEnt->IsPlayer())
+        {
+            Launch(pEnt);
+            SetNextThink(gpGlobals->curtime + m_flInterval);
+        }
     }
 }
 
@@ -1881,7 +1883,6 @@ int CTriggerMomentumCatapult::DrawDebugTextOverlays()
         text_offset++;
     }
 
-
     Q_snprintf(tempstr, sizeof(tempstr), "Player velocity: %f", m_flPlayerSpeed);
     EntityText(text_offset, tempstr, 0);
     text_offset++;
@@ -1890,11 +1891,11 @@ int CTriggerMomentumCatapult::DrawDebugTextOverlays()
     if (m_target != NULL_STRING)
     {
         // Create dummy velocity
-        Vector vecPlayerOrigin = this->GetAbsOrigin();
+        Vector vecPlayerOrigin = GetAbsOrigin();
 
         vecPlayerOrigin.z += m_flHeightOffset;
 
-        Vector vecAbsDifference = this->m_hLaunchTarget->GetAbsOrigin() - vecPlayerOrigin;
+        Vector vecAbsDifference = m_hLaunchTarget->GetAbsOrigin() - vecPlayerOrigin;
 
         float flSpeed2 = m_flPlayerSpeed * m_flPlayerSpeed;
         float flGravity = GetCurrentGravity();
@@ -1910,14 +1911,11 @@ int CTriggerMomentumCatapult::DrawDebugTextOverlays()
         vecLaunchVelocity -= vecGravityComp;
     }
 
-
-
     Q_snprintf(tempstr, sizeof(tempstr), "Adjusted player velocity: %f", m_iUseExactVelocity ? (float)vecLaunchVelocity.Length() : m_flPlayerSpeed);
     EntityText(text_offset, tempstr, 0);
     text_offset++;
 
     return text_offset;
-
 }
 
 //-----------------------------------------------------------------------------------------------
