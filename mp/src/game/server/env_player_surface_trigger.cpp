@@ -67,18 +67,22 @@ void CEnvPlayerSurfaceTrigger::OnRestore( void )
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-void CEnvPlayerSurfaceTrigger::SetPlayerSurface( CBasePlayer *pPlayer, char gameMaterial )
+void CEnvPlayerSurfaceTrigger::SetPlayerSurface( CBasePlayer *pPlayer, const trace_t &tr )
 {
-	// Ignore players in the air (stops bunny hoppers escaping triggers)
-	if ( gameMaterial == 0 )
-		return;
+    int iCount = g_PlayerSurfaceTriggers.Count();
 
-	// Loop through the surface triggers and tell them all about the change
-	int iCount = g_PlayerSurfaceTriggers.Count();
-	for ( int i = 0; i < iCount; i++ )
-	{
-		g_PlayerSurfaceTriggers[i]->PlayerSurfaceChanged( pPlayer, gameMaterial );
-	}
+    if (iCount > 0)
+    {
+        IPhysicsSurfaceProps *pPhysprops = MoveHelper()->GetSurfaceProps();
+        surfacedata_t *pSurfaceProp = pPhysprops->GetSurfaceData(tr.surface.surfaceProps);
+        char cCurrGameMaterial = pSurfaceProp->game.material;
+
+        // Loop through the surface triggers and tell them all about the change
+        for (int i = 0; i < iCount; i++)
+        {
+            g_PlayerSurfaceTriggers[i]->PlayerSurfaceChanged(pPlayer, cCurrGameMaterial);
+        }
+    }
 }
 
 //-----------------------------------------------------------------------------
@@ -88,6 +92,11 @@ void CEnvPlayerSurfaceTrigger::PlayerSurfaceChanged( CBasePlayer *pPlayer, char 
 {
 	if ( m_bDisabled )
 		return;
+
+    if (pPlayer->m_chPreviousTextureType == gameMaterial)
+        return;
+
+    pPlayer->m_chPreviousTextureType = gameMaterial;
 
 	// Fire the output if we've changed, but only if it involves the target material
 	if ( gameMaterial != (char)m_iCurrentGameMaterial &&
