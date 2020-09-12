@@ -139,6 +139,28 @@ bool CFilterPlayerState::PassesFilterImpl(CBaseEntity* pCaller, CBaseEntity* pEn
     }
 }
 
+// -------------- FilterCollectibles --------------------------
+LINK_ENTITY_TO_CLASS(filter_momentum_collectibles, CFilterCollectibles);
+
+BEGIN_DATADESC(CFilterCollectibles)
+DEFINE_KEYFIELD(m_iCollectibleCount, FIELD_INTEGER, "player_collectibles"),
+END_DATADESC();
+
+CFilterCollectibles::CFilterCollectibles()
+{
+    m_iCollectibleCount = 0;
+}
+
+bool CFilterCollectibles::PassesFilterImpl(CBaseEntity* pCaller, CBaseEntity* pEntity)
+{
+    const auto pPlayer = static_cast<CMomentumPlayer*>(pEntity);
+
+    if (!pPlayer)
+        return false;
+
+    return pPlayer->m_Collectibles.GetCollectibleCount() >= m_iCollectibleCount;
+}
+
 // -------------- BaseMomZoneTrigger ------------------------------
 IMPLEMENT_SERVERCLASS_ST(CBaseMomZoneTrigger, DT_BaseMomZoneTrigger)
 SendPropInt(SENDINFO(m_iTrackNumber)),
