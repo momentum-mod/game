@@ -3,6 +3,7 @@
 #include "eventqueue.h"
 
 class CMomentumPlayer;
+class CMomentumPlayerCollectibles;
 class SavelocReqPacket;
 
 enum SavedLocationComponent_t
@@ -23,6 +24,7 @@ enum SavedLocationComponent_t
     SAVELOC_ZONE = 1 << 11,
     SAVELOC_TOGGLED_BTNS = 1 << 12,
     SAVELOC_TIME = 1 << 13,
+    SAVELOC_COLLECTIBLES = 1 << 14,
 
     SAVELOC_ALL = ~SAVELOC_NONE,
 };
@@ -49,10 +51,12 @@ struct SavedLocation_t
     int m_iTrack, m_iZone;
     int m_iTimerTickOffset; // What to offset from gpGlobals->tickcount
     CEventQueueState entEventsState;
+    CMomentumPlayerCollectibles *m_Collectibles;
 
     int m_savedComponents;
 
     SavedLocation_t();
+    ~SavedLocation_t();
 
     // Called when the player creates a checkpoint
     SavedLocation_t(CMomentumPlayer* pPlayer, int components = SAVELOC_ALL);

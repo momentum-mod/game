@@ -17,6 +17,8 @@ public:
 
     void AddCollectible(CBaseEntity*, CBaseEntity*, int);
     void ClearCollectibles();
+    void SaveToKeyValues(KeyValues *kv) const;
+    void LoadFromKeyValues(KeyValues *kv);
 
     bool HasCollectible(const char *);
 
@@ -37,6 +39,7 @@ struct SavedState_t
     Vector m_vecLastVelocity; // Saved velocity before the replay was played or practice mode.
     float m_fLastViewOffset;  // Saved viewoffset before the replay was played or practice mode.
     float m_fNextPrimaryAttack; // Saved next weapon shoot time
+    CMomentumPlayerCollectibles m_Collectibles; // Saved list of collected collectibles
     // Stats-related
     int m_nSavedPerfectSyncTicks;
     int m_nSavedStrafeTicks;

@@ -2028,6 +2028,7 @@ void CMomentumPlayer::SaveCurrentRunState(bool bFromPractice)
     {
         Q_strncpy(pState->m_pszTargetName, GetEntityName().ToCStr(), sizeof(pState->m_pszTargetName));
         Q_strncpy(pState->m_pszClassName, GetClassname(), sizeof(pState->m_pszClassName));
+        pState->m_Collectibles = m_Collectibles;
         m_iOldTrack = m_Data.m_iCurrentTrack;
         m_iOldZone = m_Data.m_iCurrentZone;
         pState->m_nSavedAccelTicks = m_nAccelTicks;
@@ -2064,6 +2065,7 @@ void CMomentumPlayer::RestoreRunState(bool bFromPractice)
     {
         SetName(MAKE_STRING(pState->m_pszTargetName));
         SetClassname(pState->m_pszClassName);
+        m_Collectibles = pState->m_Collectibles;
         m_Data.m_iCurrentTrack = m_iOldTrack;
         m_Data.m_iCurrentZone = m_iOldZone;
         m_nAccelTicks = pState->m_nSavedAccelTicks;
@@ -2330,4 +2332,50 @@ bool CMomentumPlayerCollectibles::HasCollectible(const char *pName)
     }
     
     return false;
+}
+
+void CMomentumPlayerCollectibles::SaveToKeyValues(KeyValues *kv) const
+{
+    if (m_CollectibleList.IsEmpty())
+    {
+        return;
+    }
+
+    KeyValues *collectibles = new KeyValues("collectibles");
+
+    FOR_EACH_VEC(m_CollectibleList, i)
+    {
+        char name[8];
+        Q_snprintf(name, sizeof(name), "%i", i);
+
+        KeyValues *collectiblekv = new KeyValues(name);
+        collectiblekv->SetString("targetname", m_CollectibleList[i]);
+        collectibles->AddSubKey(collectiblekv);
+    }
+
+    kv->SetInt("collectibleCount", m_iCollectibleCount);
+    kv->AddSubKey(collectibles);
+}
+
+void CMomentumPlayerCollectibles::LoadFromKeyValues(KeyValues *kv)
+{
+    ClearCollectibles();
+
+    m_iCollectibleCount = kv->GetInt("collectibleCount");
+
+    KeyValues *sub = kv->FindKey("collectibles");
+    if (!sub)
+        return;
+
+    KeyValues *s = sub->GetFirstSubKey();
+    if (!s)
+        return;
+
+    while (s)
+    {
+        m_CollectibleList.AddToTail();
+        m_CollectibleList.Tail() = s->GetString("targetname");
+
+        s = s->GetNextKey();
+    }
 }
