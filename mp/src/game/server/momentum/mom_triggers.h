@@ -113,6 +113,21 @@ private:
     };
 };
 
+// A filter that checks the player's collectible count
+class CFilterCollectibles : public CBaseFilter
+{
+public:
+    DECLARE_CLASS(CFilterCollectibles, CBaseFilter);
+    DECLARE_DATADESC();
+
+    CFilterCollectibles();
+
+    bool PassesFilterImpl(CBaseEntity* pCaller, CBaseEntity* pEntity) OVERRIDE;
+
+private:
+    int m_iCollectibleCount;
+};
+
 // Base class for all Zone trigger entities (can be created by zone tools)
 class CBaseMomZoneTrigger : public CBaseMomentumTrigger
 {
