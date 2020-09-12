@@ -689,8 +689,6 @@ public:
     bool m_bAirborneOnly;
 };
 
-
-// CTriggerMomentumCatapult
 class CTriggerMomentumCatapult : public CBaseMomentumTrigger
 {
   public:
@@ -700,11 +698,11 @@ class CTriggerMomentumCatapult : public CBaseMomentumTrigger
     CTriggerMomentumCatapult();
 
   public:
-    void OnStartTouch(CBaseEntity *) OVERRIDE;
-    void Spawn() OVERRIDE;
-    void Think() OVERRIDE;
+    void OnStartTouch(CBaseEntity *) override;
+    void Spawn() override;
+    void Think() override;
 
-    int DrawDebugTextOverlays() OVERRIDE;
+    int DrawDebugTextOverlays() override;
 
   private:
     Vector CalculateLaunchVelocity(CBaseEntity *);
@@ -715,9 +713,9 @@ class CTriggerMomentumCatapult : public CBaseMomentumTrigger
 
   private:
 
-    enum
+    enum ExactVelocityChoice_t
     {
-        BEST=0,
+        BEST = 0,
         SOLUTION_ONE,
         SOLUTION_TWO,
     };
