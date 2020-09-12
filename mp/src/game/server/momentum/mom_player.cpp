@@ -164,6 +164,8 @@ BEGIN_DATADESC(CMomentumPlayer)
     DEFINE_THINKFUNC(PlayerThink),
     DEFINE_THINKFUNC(CalculateAverageStats),
     /*DEFINE_THINKFUNC(LimitSpeedInStartZone),*/
+    DEFINE_INPUTFUNC(FIELD_STRING, "AddCollectible", InputAddCollectible),
+    DEFINE_INPUTFUNC(FIELD_VOID, "ClearCollectibles", InputClearCollectibles),
 END_DATADESC();
 
 LINK_ENTITY_TO_CLASS(player, CMomentumPlayer);
@@ -2237,4 +2239,95 @@ CON_COMMAND(toggle_walk, "Toggles walk state of the player. Toggle resets when u
         return;
 
     pPlayer->ToggleInput(IN_WALK);
+}
+
+// Add the caller entity as a collectible, optionally specifying a required collectible and/or weight
+void CMomentumPlayer::InputAddCollectible(inputdata_t& inputdata)
+{
+    if (!inputdata.pCaller)
+    {
+        DevWarning("Collectibles: Attempted to add a null collectible!\n");
+        return;
+    }
+
+    CBaseEntity *pRequiredEntity = nullptr;
+    int iWeight = 1;
+
+    char sParameter[MAX_PATH];
+    Q_strncpy(sParameter, inputdata.value.String(), sizeof(sParameter));
+
+    if (strlen(sParameter))
+    {
+        pRequiredEntity = gEntList.FindEntityByName(nullptr, inputdata.value.String(), this, inputdata.pActivator, inputdata.pCaller);
+
+        // By default, treat the parameter as a targetname for the required collectible
+        if (!pRequiredEntity)
+        {
+            if (strchr(sParameter, ':')) // <required>:<weight>
+            {
+                char *sToken = strtok(sParameter, ":");
+                pRequiredEntity = gEntList.FindEntityByName(nullptr, sToken, this, inputdata.pActivator, inputdata.pCaller);
+                sToken = strtok(nullptr, ":");
+                iWeight = V_isdigit(*sToken) ? atoi(sToken) : 1;
+            }
+            else if (V_isdigit(*sParameter)) // <weight>
+            {
+                iWeight = atoi(sParameter);
+            }
+            else
+            {
+                DevWarning("Collectibles: Invalid input parameter given, using default 1 weight and no required collectible.\n"
+                           "Format: \"<required>:<weight>\" OR \"<required>\" OR \"<weight>\" OR blank to use defaults.\n");
+            }
+        }
+    }
+
+    m_Collectibles.AddCollectible(inputdata.pCaller, pRequiredEntity, iWeight);
+}
+
+void CMomentumPlayer::InputClearCollectibles(inputdata_t& inputdata)
+{
+    m_Collectibles.ClearCollectibles();
+}
+
+void CMomentumPlayerCollectibles::AddCollectible(CBaseEntity *pCollectible, CBaseEntity *pRequiredEntity = nullptr, int iWeight = 1)
+{
+    const char *sCollectible = STRING(pCollectible->GetEntityName());
+
+    if (!Q_strlen(sCollectible))
+    {
+        DevWarning("Collectibles: Tried to add an unnamed entity as a collectible, rejecting.\n");
+    }
+    else if (HasCollectible(sCollectible))
+    {
+        DevMsg("Collectibles: %s is already collected\n", sCollectible);
+    }
+    else if (pRequiredEntity && !HasCollectible(STRING(pRequiredEntity->GetEntityName())))
+    {
+        DevMsg("Collectibles: %s is required to collect %s\n", STRING(pRequiredEntity->GetEntityName()), sCollectible);
+    }
+    else
+    {
+        m_CollectibleList.AddToTail(sCollectible);
+        m_iCollectibleCount += iWeight > 0 ? iWeight : 1;
+
+        DevMsg("Collectibles: %s with weight %d added, counter = %d\n", sCollectible, iWeight, m_iCollectibleCount);
+    }
+}
+
+void CMomentumPlayerCollectibles::ClearCollectibles()
+{
+    m_CollectibleList.RemoveAll();
+    m_iCollectibleCount = 0;
+}
+
+bool CMomentumPlayerCollectibles::HasCollectible(const char *pName)
+{
+    FOR_EACH_VEC(m_CollectibleList, i)
+    {
+        if (FStrEq(m_CollectibleList[i], pName))
+            return true;
+    }
+    
+    return false;
 }

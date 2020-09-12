@@ -10,6 +10,23 @@ class CTriggerProgress;
 class CTriggerSlide;
 class CMomentumGhostBaseEntity;
 
+class CMomentumPlayerCollectibles
+{
+public:
+    CMomentumPlayerCollectibles() { ClearCollectibles(); }
+
+    void AddCollectible(CBaseEntity*, CBaseEntity*, int);
+    void ClearCollectibles();
+
+    bool HasCollectible(const char *);
+
+    int GetCollectibleCount() { return m_iCollectibleCount; }
+    
+private:
+    CUtlVector<const char*> m_CollectibleList;
+    int m_iCollectibleCount;
+};
+
 struct SavedState_t
 {
     char m_pszTargetName[128];// Saved player targetname
@@ -314,6 +331,12 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
 
     void ToggleInput(int nInput);
     void ResetToggledInput(int nInput);
+
+    // Collectible stuff
+    void InputAddCollectible(inputdata_t &inputdata);
+    void InputClearCollectibles(inputdata_t &inputdata);
+
+    CMomentumPlayerCollectibles m_Collectibles;
 
   private:
     // Replace wishdir to escape if we are stuck in a small corner 
