@@ -160,6 +160,8 @@ public:
     void SetAutoTall(bool bTall);
     void InvalidateLayout(bool layoutNow = false, bool reloadScheme = false) OVERRIDE;
 
+	void SetAutoClearImages(bool bClear) { m_bAutoClearImageDar = bClear; }
+
 protected:
 	virtual void PerformLayout();
 	virtual wchar_t CalculateHotkey(const char *text);
@@ -199,6 +201,7 @@ private:
 		short width;
 	};
 	CUtlVector<TImageInfo> _imageDar;
+	bool m_bAutoClearImageDar;
 
 	int		   _textInset[2];
 	Color      _disabledFgColor1;
