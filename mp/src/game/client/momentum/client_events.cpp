@@ -14,6 +14,13 @@
 
 extern IFileSystem *filesystem;
 
+inline void UnloadConVarOrCommand(const char *pName)
+{
+    const auto pCmd = g_pCVar->FindCommandBase(pName);
+    if (pCmd)
+        g_pCVar->UnregisterConCommand(pCmd);
+}
+
 bool CMOMClientEvents::Init()
 {
     // Mount CSS content even if it's on a different drive than this game
@@ -33,6 +40,13 @@ bool CMOMClientEvents::Init()
             pCvar = pNext;
         }
     }
+
+    UnloadConVarOrCommand("retry");
+
+    static ConCommand retry("retry", []()
+    {
+        engine->ExecuteClientCmd("reload");
+    });
 
     return true;
 }
