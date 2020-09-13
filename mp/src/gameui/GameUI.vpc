@@ -37,7 +37,6 @@ $Project "GameUI"
         $File   "GameUI_Interface.cpp"
         $File   "MouseMessageForwardingPanel.cpp"
         $File   "PanelListPanel.cpp"
-        $File   "TextEntryBox.cpp"
         $File   "$SRCDIR\public\vgui_controls\vgui_controls.cpp"
         $File   "$SRCDIR\common\language.cpp"
     }
@@ -48,7 +47,6 @@ $Project "GameUI"
         $File   "GameUI_Interface.h"
         $File   "MouseMessageForwardingPanel.h"
         $File   "PanelListPanel.h"
-        $File   "TextEntryBox.h"
         $File   "$SRCDIR\game\shared\momentum\mom_shareddefs.h"
     }
 
