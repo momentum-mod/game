@@ -1576,7 +1576,7 @@ void Frame::PaintBackground()
 		else
 		{
 			int nTitleX = m_iTitleTextInsetXOverride ? m_iTitleTextInsetXOverride : m_iTitleTextInsetX;
-			int nTitleWidth = wide - 72;
+			int nTitleWidth = wide;
 			if (_menuButton && _menuButton->IsVisible())
 			{
 				int mw, mh;
@@ -1606,31 +1606,11 @@ void Frame::ApplySchemeSettings(IScheme *pScheme)
 	SetOverridableColor( &_titleBarDisabledFgColor, GetSchemeColor("FrameTitleBar.DisabledTextColor", pScheme) );
 	SetOverridableColor( &_titleBarDisabledBgColor, GetSchemeColor("FrameTitleBar.DisabledBgColor", pScheme) );
 
-	const char *font = nullptr;
-	if ( m_bSmallCaption )
-	{
-		font = pScheme->GetResourceString("FrameTitleBar.SmallFont");
-	}
-	else
-	{
-		font = pScheme->GetResourceString("FrameTitleBar.Font");
-	}
-
-	HFont titlefont;
-	if ( m_hCustomTitleFont )
-	{
-		titlefont = m_hCustomTitleFont;
-	}
-	else
-	{
-		titlefont = pScheme->GetFont((font && *font) ? font : "Default", IsProportional());
-	}
-
-	_title->SetFont(titlefont);
+	_title->SetFont(m_hCustomTitleFont ? m_hCustomTitleFont : (GetSchemeFont(pScheme, nullptr, m_bSmallCaption ? "FrameTitleBar.SmallFont" : "FrameTitleBar.Font")));
 	_title->ResizeImageToContent();
 
-	m_flTransitionEffectTime = atof(pScheme->GetResourceString("Frame.TransitionEffectTime"));
-	m_flFocusTransitionEffectTime = atof(pScheme->GetResourceString("Frame.FocusTransitionEffectTime"));
+	m_flTransitionEffectTime = Q_atof(pScheme->GetResourceString("Frame.TransitionEffectTime"));
+	m_flFocusTransitionEffectTime = Q_atof(pScheme->GetResourceString("Frame.FocusTransitionEffectTime"));
 
 	SetOverridableColor( &m_InFocusBgColor, pScheme->GetColor("Frame.BgColor", GetBgColor()) );
 	SetOverridableColor( &m_OutOfFocusBgColor, pScheme->GetColor("Frame.OutOfFocusBgColor", m_InFocusBgColor) );
@@ -1638,17 +1618,17 @@ void Frame::ApplySchemeSettings(IScheme *pScheme)
 	const char *resourceString = pScheme->GetResourceString("Frame.ClientInsetX");
 	if ( resourceString )
 	{
-		m_iClientInsetX = atoi(resourceString);
+		m_iClientInsetX = Q_atoi(resourceString);
 	}
 	resourceString = pScheme->GetResourceString("Frame.ClientInsetY");
 	if ( resourceString )
 	{
-		m_iClientInsetY = atoi(resourceString);
+		m_iClientInsetY = Q_atoi(resourceString);
 	}
 	resourceString = pScheme->GetResourceString("Frame.TitleTextInsetX");
 	if ( resourceString )
 	{
-		m_iTitleTextInsetX = atoi(resourceString);
+		m_iTitleTextInsetX = Q_atoi(resourceString);
 	}
 
 	SetBgColor(m_InFocusBgColor);
