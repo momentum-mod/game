@@ -1789,9 +1789,9 @@ void HTML::BrowserJSConfirm( HTML_JSConfirm_t *pCmd )
 {
     if (IsCurrentBrowser(pCmd->unBrowserHandle))
     {
-        QueryBox *pDlg = new QueryBox(m_sCurrentURL, (const char *) pCmd->pchMessage, this);
+        QueryBox *pDlg = new QueryBox(m_sCurrentURL, pCmd->pchMessage, this);
         pDlg->AddActionSignalTarget(this);
-        pDlg->SetOKCommand(new KeyValues("DismissJSDialog", "result", true));
+        pDlg->SetCommand(new KeyValues("DismissJSDialog", "result", true));
         pDlg->SetCancelCommand(new KeyValues("DismissJSDialog", "result", false));
         pDlg->DoModal();
     }

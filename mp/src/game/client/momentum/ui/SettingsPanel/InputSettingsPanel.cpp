@@ -167,7 +167,7 @@ void InputSettingsPanel::OnCommand(const char *command)
         // open a box asking if we want to restore defaults
         QueryBox *box = new QueryBox("#GameUI_KeyboardSettings", "#GameUI_KeyboardSettingsText");
         box->AddActionSignalTarget(this);
-        box->SetOKCommand(new KeyValues("Command", "command", "DefaultsOK"));
+        box->SetCommand(new KeyValues("Command", "command", "DefaultsOK"));
         box->DoModal();
     }
     else if (!stricmp(command, "DefaultsOK"))

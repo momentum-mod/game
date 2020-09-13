@@ -13,6 +13,7 @@
 #include <vgui_controls/Controls.h>
 #include <vgui_controls/Label.h>
 #include <vgui_controls/MessageBox.h>
+#include <vgui_controls/TextImage.h>
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include <tier0/memdbgon.h>
@@ -62,25 +63,27 @@ void MessageBox::Init()
 	m_pOkButton = new Button(this, "OkButton", "#MessageBox_OK");
 	m_pOkButton->SetCommand( "OnOk" );
 	m_pOkButton->AddActionSignalTarget(this);
+	m_pOkButton->SetContentAlignment(Label::a_center);
 
 	m_pCancelButton = new Button(this, "CancelButton", "#MessageBox_Cancel");
 	m_pCancelButton->SetCommand( "OnCancel" );
 	m_pCancelButton->AddActionSignalTarget(this);
 	m_pCancelButton->SetVisible( false );
+	m_pCancelButton->SetContentAlignment(Label::a_center);
 
-	m_OkCommand = m_CancelCommand = nullptr;
-	m_bNoAutoClose = false;
+	m_pOkCommand = m_pCancelCommand = nullptr;
+	m_bAutoClose = true;
 }
 
 MessageBox::~MessageBox()
 {
-	if ( m_OkCommand )
+	if ( m_pOkCommand )
 	{
-		m_OkCommand->deleteThis();
+		m_pOkCommand->deleteThis();
 	}
-	if ( m_CancelCommand )
+	if ( m_pCancelCommand )
 	{
-		m_CancelCommand->deleteThis();
+		m_pCancelCommand->deleteThis();
 	}
 }
 
@@ -98,20 +101,20 @@ void MessageBox::OnCommand( const char *pCommand )
 
 	if ( !Q_stricmp( pCommand, "OnOk" ) )
 	{
-		if ( m_OkCommand )
+		if ( m_pOkCommand )
 		{
-			PostActionSignal(m_OkCommand->MakeCopy());
+			PostActionSignal(m_pOkCommand->MakeCopy());
 		}
 	}
 	else if ( !Q_stricmp( pCommand, "OnCancel" ) || !Q_stricmp(pCommand, "Close") )
 	{
-		if ( m_CancelCommand )
+		if ( m_pCancelCommand )
 		{
-			PostActionSignal(m_CancelCommand->MakeCopy());
+			PostActionSignal(m_pCancelCommand->MakeCopy());
 		}
 	}
 
-	if ( !m_bNoAutoClose )
+	if ( m_bAutoClose )
 	{
 		OnShutdownRequest();
 	}
@@ -122,46 +125,14 @@ void MessageBox::OnCommand( const char *pCommand )
 // Purpose: Put the message box into a modal state
 //			Does not suspend execution - use addActionSignal to get return value
 //-----------------------------------------------------------------------------
-void MessageBox::DoModal(Frame* pFrameOver)
+void MessageBox::DoModal(Panel* pFrameOver)
 {
     ShowWindow(pFrameOver);
-/*
-	// move to the middle of the screen
-	// get the screen size
-	int wide, tall;
-	// get our dialog size
-	GetSize(wide, tall);
 
-	if (pFrameOver)
-	{
-		int frameX, frameY;
-		int frameWide, frameTall;
-		pFrameOver->GetPos(frameX, frameY);
-		pFrameOver->GetSize(frameWide, frameTall);
-
-		SetPos((frameWide - wide) / 2 + frameX, (frameTall - tall) / 2 + frameY);
-	}
-	else
-	{
-		int swide, stall;
-		surface()->GetScreenSize(swide, stall);
-		// put the dialog in the middle of the screen
-		SetPos((swide - wide) / 2, (stall - tall) / 2);
-	}
-
-	SetVisible( true );
-	SetEnabled( true );
-	MoveToFront();
-
-	if (m_pOkButton->IsVisible())
-		m_pOkButton->RequestFocus();
-	else	 // handle message boxes with no button
-		RequestFocus();
-*/
 	input()->SetAppModalSurface(GetVPanel());
 }
 
-void MessageBox::ShowWindow(Frame *pFrameOver)
+void MessageBox::ShowWindow(Panel *pFrameOver)
 {
 	m_pFrameOver = pFrameOver;
 
@@ -190,6 +161,12 @@ void MessageBox::PerformLayout()
 
 	int boxWidth, boxTall;
 	GetSize(boxWidth, boxTall);
+
+	const auto pTitle = GetTitle();
+	int titleWide, titleTall;
+	pTitle->GetContentSize(titleWide, titleTall);
+
+	boxWidth = max(boxWidth, titleWide);
 
 	int oldWide, oldTall;
 	m_pOkButton->GetSize(oldWide, oldTall);
@@ -256,28 +233,43 @@ void MessageBox::PerformLayout()
 	BaseClass::PerformLayout();
 }
 
+void MessageBox::OnKeyCodeTyped(KeyCode code)
+{
+	if (code == KEY_ENTER)
+	{
+		OnCommand("OnOk");
+	}
+	else if (code == KEY_ESCAPE)
+	{
+	    OnCommand("OnCancel");
+	}
+	else
+	{
+	    BaseClass::OnKeyCodeTyped(code);
+	}
+}
+
 void MessageBox::SetCommand(const char *command)
 {
-	if (m_OkCommand)
+	if (m_pOkCommand)
 	{
-		m_OkCommand->deleteThis();
+		m_pOkCommand->deleteThis();
 	}
-	m_OkCommand = new KeyValues("Command", "command", command);
+	m_pOkCommand = new KeyValues("Command", "command", command);
 }
 
 void MessageBox::SetCommand(KeyValues *command)
 {
-	if (m_OkCommand)
+	if (m_pOkCommand)
 	{
-		m_OkCommand->deleteThis();
+		m_pOkCommand->deleteThis();
 	}
-	m_OkCommand = command;
+	m_pOkCommand = command;
 }
 
 void MessageBox::OnShutdownRequest()
 {
-	// Shutdown the dialog
-	PostMessage(this, new KeyValues("Close"));
+	Close();
 }
 
 void MessageBox::SetOKButtonVisible(bool state)
@@ -317,15 +309,16 @@ void MessageBox::SetCancelButtonText(const wchar_t *wszButtonText)
 
 void MessageBox::SetCancelCommand( KeyValues *command )
 {
-	if (m_CancelCommand)
+	if (m_pCancelCommand)
 	{
-		m_CancelCommand->deleteThis();
+		m_pCancelCommand->deleteThis();
 	}
-	m_CancelCommand = command;
+	m_pCancelCommand = command;
 }
 
 void MessageBox::DisableCloseButton(bool state)
 {
 	BaseClass::SetCloseButtonVisible(state);
-	m_bNoAutoClose = true;
+
+	m_bAutoClose = false;
 }
