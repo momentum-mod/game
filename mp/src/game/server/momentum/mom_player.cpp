@@ -1808,6 +1808,8 @@ void CMomentumPlayer::TimerCommand_Restart(int track)
     g_pMomentumTimer->Stop(this);
     g_pMomentumTimer->SetCanStart(false);
 
+    m_nButtonsToggled = 0;
+
     DestroyExplosives();
 
     const auto pStart = g_pMomentumTimer->GetStartTrigger(track);
@@ -1849,6 +1851,8 @@ void CMomentumPlayer::TimerCommand_RestartStage(int stage, int track)
 
     if (!AllowUserTeleports())
         return;
+
+    m_nButtonsToggled = 0;
 
     if (g_pMomentumTimer->IsRunning() && track == m_Data.m_iCurrentTrack && stage == m_Data.m_iCurrentZone)
     {
