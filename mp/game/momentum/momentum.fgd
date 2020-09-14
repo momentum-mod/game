@@ -189,6 +189,39 @@
     player_collectibles(integer) : "Minimum req. collectible count" : 0 : "The minimum collectible count that the player needs to be at in order for the filter to accept them."
 ]
 
+@FilterClass base(BaseFilter) = filter_momentum_velocity : "Filter that checks the player's velocity"
+[
+    Mode(choices) : "Mode" : 0 : "Set which mode to use for velocity comparisons" =
+    [
+        0 : "Total Velocity"
+        1 : "Per-axis"
+    ]
+    Above(choices) : "Above/Below" : 1 : "Sets whether to check if the player goes above or below the given velocity." =
+    [
+        0 : "Below"
+        1 : "Above"
+    ]
+    EnableVertical(choices) : "Enable Vertical" : 0 : "Check vertical velocity (total velocity mode only)" =
+    [
+        0 : "No"
+        1 : "Yes"
+    ]
+    EnableHorizontal(choices) : "Enable Horizontal" : 0 : "Check horizontal velocity (total velocity mode only)" =
+    [
+        0 : "No"
+        1 : "Yes"
+    ]
+    VerticalVelocity(float) : "Vertical velocity" : 500 : "The amount of units per second for vertical (Z axis) speed."
+    HorizontalVelocity(float) : "Horizontal velocity" : 1000 : "The amount of units per second for horizontal (XY axis) speed."
+    IgnoreSign(choices) : "Use Absolute Value" : 0 : "Whether to check the absolute value of the velocity components (per-axis mode only)" =
+    [
+        0 : "No"
+        1 : "Yes"
+    ]
+    VelocityVector(vector) : "Per-axis Velocity" : "0 0 0" : "The velocity vector for per-axis mode"
+    VelocityAxes(vector) : "Per-axis Enable" : "0 0 0" : "Which axes to use when checking velocity, zero means the corresponding axis is ignored (per-axis mode only)"
+]
+
 @SolidClass base(TeleTrigger) = trigger_momentum_teleport_progress : "Trigger that teleports the player to their last touched trigger_momentum_progress." []
 
 @SolidClass base(MomentumTrigger) = trigger_momentum_resetonehop : "Trigger that resets all of the onehop triggers the player has touched." 
@@ -342,25 +375,6 @@
     WaterDist(float) : "Water distance" : 12 : "Vertical view fixup when eyes are near water plane."
     FootSteps(integer) : "Foot steps sound" : 1 : "Enable/Disable foot steps sounds."
     SwimSound(integer) : "Swim sound" : 1 : "Enable/Disable swimming sounds."
-]
-@SolidClass base(MomentumTrigger) = trigger_momentum_speedthreshold : "Trigger that fires an output when player speed is above/below a given threshold." 
-[    
-    AboveOrBelow(choices) : "Above/Below" : 0 : "Sets whether to fire if the player goes above or below the threshold." =
-    [
-        0 : "Above"
-        1 : "Below"
-    ]
-    Vertical(integer) : "Vertical" : 0 : "Activate the threshold for vertical speed."
-    Horizontal(integer) : "Horizontal" : 0 : "Activate the threshold for horizontal speed."
-    VerticalSpeed(float) : "Vertical speed threshold" : 500 : "The amount of units per second for vertical (Z axis) speed."
-    HorizontalSpeed(float) : "Horizontal speed threshold" : 1000 : "The amount of units per second for horizontal (XY axis) speed."
-    OnThink(choices) : "Check on set interval" : 0 : "If yes, this trigger will check at a given set interval while the player is in the trigger." =
-    [
-        0 : "No"
-        1 : "Yes"
-    ]
-    Interval(float) : "Interval" : "1.0" : "How many seconds between each check while the player is in the trigger."
-    output OnThreshold(void) : "Fires when the speed is above/below the given threshold."
 ]
 
 @BaseClass = Campaign
