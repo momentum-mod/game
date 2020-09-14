@@ -20,9 +20,12 @@
 #define MOM_STICKYBOMB_MAX_CHARGE_TIME 4.0f
 #define MOM_STICKYBOMB_BUFFER_WINDOW 0.05f
 
+MAKE_TOGGLE_CONVAR(mom_sj_sound_charge_enable, "1", FCVAR_ARCHIVE | FCVAR_REPLICATED, "Toggle the sticky launcher charging sound. 0 = OFF, 1 = ON\n");
 MAKE_TOGGLE_CONVAR(mom_sj_sound_detonate_fail_enable, "1", FCVAR_ARCHIVE | FCVAR_REPLICATED, "Toggle the sticky launcher detonate fail sound. 0 = OFF, 1 = ON\n");
 MAKE_TOGGLE_CONVAR(mom_sj_sound_detonate_success_enable, "1", FCVAR_ARCHIVE | FCVAR_REPLICATED, "Toggle the sticky launcher detonate success sound. 0 = OFF, 1 = ON\n");
-MAKE_TOGGLE_CONVAR(mom_sj_sound_charge_enable, "1", FCVAR_ARCHIVE | FCVAR_REPLICATED, "Toggle the sticky launcher charging sound. 0 = OFF, 1 = ON\n");
+MAKE_TOGGLE_CONVAR(mom_sj_sound_detonate_precedence, "0", FCVAR_ARCHIVE | FCVAR_REPLICATED, 
+                   "Changes the precedence of sticky launcher detonate success/fail sounds when detonation is both a fail and a success.\n"
+                   "0 = Default; Play fail sound instead of success sound, 1 = Play success sound instead of fail sound.\n");
 
 IMPLEMENT_NETWORKCLASS_ALIASED(MomentumStickybombLauncher, DT_MomentumStickybombLauncher)
 
@@ -53,7 +56,7 @@ PRECACHE_WEAPON_REGISTER(weapon_momentum_stickylauncher);
 CMomentumStickybombLauncher::CMomentumStickybombLauncher()
 {
     m_flTimeToIdleAfterFire = 0.6f;
-    m_flLastDenySoundTime = 0.0f;
+    m_flLastDetSoundTime = 0.0f;
     m_flChargeBeginTime = 0.0f;
     m_bIsChargeEnabled.Set(true);
     m_iStickybombCount.Set(0);
@@ -137,7 +140,7 @@ void CMomentumStickybombLauncher::LaunchGrenade()
 
     // Set next attack times.
     m_flNextPrimaryAttack = gpGlobals->curtime + 0.6f;
-    m_flLastDenySoundTime = gpGlobals->curtime;
+    m_flLastDetSoundTime = gpGlobals->curtime;
 
     SetWeaponIdleTime(gpGlobals->curtime + m_flTimeToIdleAfterFire);
     pPlayer->m_iShotsFired++;
@@ -254,33 +257,25 @@ void CMomentumStickybombLauncher::SecondaryAttack()
         return;
 
     const auto pPlayer = GetPlayerOwner();
-
     if (!pPlayer)
         return;
 
     const auto detStatus = DetonateRemoteStickybombs(false);
+    bool bDetSuccess = detStatus & DET_STATUS_SUCCESS && mom_sj_sound_detonate_success_enable.GetBool();
+    bool bDetFail = detStatus & DET_STATUS_FAIL && mom_sj_sound_detonate_fail_enable.GetBool() && m_flLastDetSoundTime <= gpGlobals->curtime;
 
-    bool bPlayedFail = false;
-    if (detStatus & DET_STATUS_FAIL)
+    if (bDetFail != bDetSuccess)
     {
-        if (m_flLastDenySoundTime <= gpGlobals->curtime)
+        WeaponSound(GetWeaponSound(bDetSuccess ? "detonate" : "deny"));
+        if (bDetFail)
         {
-            m_flLastDenySoundTime = gpGlobals->curtime + 1.0f;
-
-            if (mom_sj_sound_detonate_fail_enable.GetBool())
-            {
-                WeaponSound(GetWeaponSound("deny"));
-                bPlayedFail = true;
-            }
+            m_flLastDetSoundTime = gpGlobals->curtime + 1.0f;
         }
     }
-
-    if (!bPlayedFail && (detStatus & DET_STATUS_SUCCESS))
+    else if (bDetFail && bDetSuccess)
     {
-        if (mom_sj_sound_detonate_success_enable.GetBool())
-        {
-            WeaponSound(GetWeaponSound("detonate"));
-        }
+        WeaponSound(GetWeaponSound(mom_sj_sound_detonate_precedence.GetBool() ? "detonate" : "deny"));
+        m_flLastDetSoundTime = gpGlobals->curtime + 1.0f;
     }
 }
 

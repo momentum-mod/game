@@ -62,7 +62,7 @@ class CMomentumStickybombLauncher : public CWeaponBaseGun
 
     CNetworkVar(int, m_iStickybombCount);
     CNetworkVar(float, m_flChargeBeginTime);
-    float m_flLastDenySoundTime;
+    float m_flLastDetSoundTime;
 
     // This var mainly serves to disable the charge animation, sound and turn the charge meter red if set to false
     // Networked so hud code can check the state
