@@ -128,6 +128,42 @@ private:
     int m_iCollectibleCount;
 };
 
+// A filter that checks the player's velocity
+class CFilterVelocity : public CBaseFilter
+{
+public:
+    DECLARE_CLASS(CFilterVelocity, CBaseFilter);
+    DECLARE_DATADESC();
+
+    CFilterVelocity();
+
+    bool PassesFilterImpl(CBaseEntity *pCaller, CBaseEntity *pEntity) OVERRIDE;
+
+private:
+    bool CheckTotalVelocity(CBaseEntity *pEntity);
+    bool CheckTotalVelocityInternal(const float flToCheck, bool bIsHorizontal);
+
+    bool CheckPerAxisVelocity(CBaseEntity *pEntity);
+
+    int m_iMode;
+    bool m_bAbove;
+
+    bool m_bVertical;
+    bool m_bHorizontal;
+    float m_flVerticalVelocity;
+    float m_flHorizontalVelocity;
+
+    bool m_bIgnoreSign;
+    Vector m_vecVelocity;
+    Vector m_vecVelocityAxes;
+
+    enum
+    {
+        VELOCITYFILTER_TOTAL = 0,
+        VELOCITYFILTER_PER_AXIS
+    };
+};
+
 // Base class for all Zone trigger entities (can be created by zone tools)
 class CBaseMomZoneTrigger : public CBaseMomentumTrigger
 {
@@ -686,36 +722,6 @@ private:
     bool m_bKeepHorizontalSpeed, m_bKeepVerticalSpeed;
     float m_flInterval;
     bool m_bOnThink, m_bEveryTick;
-};
-
-class CTriggerSpeedThreshold : public CBaseMomentumTrigger
-{
-    enum
-    {
-        THRESHOLD_ABOVE = 0,
-        THRESHOLD_BELOW
-    };
-
-  public:
-    DECLARE_CLASS(CTriggerSpeedThreshold, CBaseMomentumTrigger);
-    DECLARE_DATADESC();
-
-    CTriggerSpeedThreshold();
-
-    void OnStartTouch(CBaseEntity *pOther) OVERRIDE;
-    void CheckSpeed(CBaseEntity *pOther);
-    void Think() OVERRIDE;
-
-  private:
-    bool CheckSpeedInternal(const float flToCheck, bool bIsHorizontal);
-
-    int m_iAboveOrBelow;
-    bool m_bHorizontal, m_bVertical;
-    float m_flHorizontalSpeed;
-    float m_flVerticalSpeed;
-    bool m_bOnThink;
-    float m_flInterval;
-    COutputEvent m_OnThresholdEvent;
 };
 
 class CFuncMomentumBrush : public CFuncBrush

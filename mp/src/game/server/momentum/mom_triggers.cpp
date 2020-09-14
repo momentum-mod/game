@@ -161,6 +161,93 @@ bool CFilterCollectibles::PassesFilterImpl(CBaseEntity* pCaller, CBaseEntity* pE
     return pPlayer->m_Collectibles.GetCollectibleCount() >= m_iCollectibleCount;
 }
 
+// -------------- FilterVelocity --------------------------
+LINK_ENTITY_TO_CLASS(filter_momentum_velocity, CFilterVelocity);
+
+BEGIN_DATADESC(CFilterVelocity)
+    DEFINE_KEYFIELD(m_iMode, FIELD_INTEGER, "Mode"),
+    DEFINE_KEYFIELD(m_bAbove, FIELD_BOOLEAN, "Above"),
+
+    DEFINE_KEYFIELD(m_bVertical, FIELD_BOOLEAN, "EnableVertical"),
+    DEFINE_KEYFIELD(m_bHorizontal, FIELD_BOOLEAN, "EnableHorizontal"),
+    DEFINE_KEYFIELD(m_flVerticalVelocity, FIELD_FLOAT, "VerticalVelocity"),
+    DEFINE_KEYFIELD(m_flHorizontalVelocity, FIELD_FLOAT, "HorizontalVelocity"),
+
+    DEFINE_KEYFIELD(m_bIgnoreSign, FIELD_INTEGER, "IgnoreSign"),
+    DEFINE_KEYFIELD(m_vecVelocity, FIELD_VECTOR, "VelocityVector"),
+    DEFINE_KEYFIELD(m_vecVelocityAxes, FIELD_VECTOR, "VelocityAxes"),
+END_DATADESC();
+
+CFilterVelocity::CFilterVelocity()
+{
+    m_iMode = VELOCITYFILTER_TOTAL;
+    m_bAbove = true;
+    m_bVertical = false;
+    m_bHorizontal = false;
+    m_flVerticalVelocity = 500.0f;
+    m_flHorizontalVelocity = 1000.0f;
+    m_bIgnoreSign = false;
+}
+
+bool CFilterVelocity::PassesFilterImpl(CBaseEntity *pCaller, CBaseEntity *pEntity)
+{
+    if (!pEntity->IsPlayer())
+        return false;
+
+    switch (m_iMode)
+    {
+    case VELOCITYFILTER_TOTAL:
+        return CheckTotalVelocity(pEntity);
+
+    case VELOCITYFILTER_PER_AXIS:
+        return CheckPerAxisVelocity(pEntity);
+
+    default:
+        return false;
+    }
+}
+
+bool CFilterVelocity::CheckTotalVelocity(CBaseEntity *pEntity)
+{
+    const auto vel = pEntity->GetAbsVelocity();
+
+    if (!m_bHorizontal && !m_bVertical)
+        DevWarning("filter_velocity: Both vertical and horizontal velocity are ignored!\n");
+
+    const bool bHorizontal = m_bHorizontal ? CheckTotalVelocityInternal(vel.Length2D(), true) : true;
+    const bool bVertical = m_bVertical ? CheckTotalVelocityInternal(fabsf(vel.z), false) : true;
+
+    return bHorizontal && bVertical;
+}
+
+inline bool CFilterVelocity::CheckTotalVelocityInternal(const float flToCheck, bool bIsHorizontal)
+{
+    const auto speed = bIsHorizontal ? m_flHorizontalVelocity : m_flVerticalVelocity;
+    return m_bAbove ? flToCheck > speed : flToCheck < speed;
+}
+
+bool CFilterVelocity::CheckPerAxisVelocity(CBaseEntity *pEntity)
+{
+    auto vel = pEntity->GetAbsVelocity();
+    bool check;
+
+    for (int i = 0; i < 3; i++)
+    {
+        if (m_bIgnoreSign)
+            vel[i] = fabsf(vel[i]);
+
+        if (m_vecVelocityAxes[i] == 0.0f)
+            continue;
+
+        check = m_bAbove ? vel[i] > m_vecVelocity[i] : vel[i] < m_vecVelocity[i];
+
+        if (!check)
+            return false;
+    }
+
+    return true;
+}
+
 // -------------- BaseMomZoneTrigger ------------------------------
 IMPLEMENT_SERVERCLASS_ST(CBaseMomZoneTrigger, DT_BaseMomZoneTrigger)
 SendPropInt(SENDINFO(m_iTrackNumber)),
@@ -1606,87 +1693,6 @@ void CTriggerSetSpeed::CalculateSpeed(CBaseEntity *pOther)
 
     pOther->SetAbsVelocity(vecNewFinalVelocity);
     m_mapCalculatedVelocities.InsertOrReplace(pOther->entindex(), vecNewFinalVelocity);
-}
-
-//-----------------------------------------------------------------------------------------------
-LINK_ENTITY_TO_CLASS(trigger_momentum_speedthreshold, CTriggerSpeedThreshold);
-
-BEGIN_DATADESC(CTriggerSpeedThreshold)
-    DEFINE_KEYFIELD(m_iAboveOrBelow, FIELD_INTEGER, "AboveOrBelow"),
-    DEFINE_KEYFIELD(m_bVertical, FIELD_BOOLEAN, "Vertical"),
-    DEFINE_KEYFIELD(m_bHorizontal, FIELD_BOOLEAN, "Horizontal"),
-    DEFINE_KEYFIELD(m_flVerticalSpeed, FIELD_FLOAT, "VerticalSpeed"),
-    DEFINE_KEYFIELD(m_flHorizontalSpeed, FIELD_FLOAT, "HorizontalSpeed"),
-    DEFINE_KEYFIELD(m_flInterval, FIELD_FLOAT, "Interval"),
-    DEFINE_KEYFIELD(m_bOnThink, FIELD_BOOLEAN, "OnThink"),
-    DEFINE_OUTPUT(m_OnThresholdEvent, "OnThreshold")
-END_DATADESC();
-
-CTriggerSpeedThreshold::CTriggerSpeedThreshold()
-{
-    m_iAboveOrBelow = THRESHOLD_ABOVE;
-    m_bVertical = false;
-    m_bHorizontal = false;
-    m_flVerticalSpeed = 500.0f;
-    m_flHorizontalSpeed = 1000.0f;
-    m_flInterval = 1.0f;
-    m_bOnThink = false;
-}
-
-void CTriggerSpeedThreshold::OnStartTouch(CBaseEntity *pOther)
-{
-    BaseClass::OnStartTouch(pOther);
-
-    if (pOther->IsPlayer())
-    {
-        CheckSpeed(pOther);
-
-        if (m_bOnThink)
-            SetNextThink(gpGlobals->curtime + m_flInterval);
-    }
-}
-
-void CTriggerSpeedThreshold::CheckSpeed(CBaseEntity *pOther)
-{
-    const auto vel = pOther->GetAbsVelocity();
-
-    if (m_bHorizontal)
-    {
-        if (CheckSpeedInternal(vel.Length2D(), true))
-            m_OnThresholdEvent.FireOutput(pOther, this);
-    }
-
-    if (m_bVertical)
-    {
-        if (CheckSpeedInternal(fabs(vel.z), false))
-            m_OnThresholdEvent.FireOutput(pOther, this);
-    }
-}
-
-void CTriggerSpeedThreshold::Think()
-{
-    if (m_bOnThink)
-    {
-        FOR_EACH_VEC(m_hTouchingEntities, i)
-        {
-            const auto pEnt = m_hTouchingEntities[i].Get();
-            if (pEnt && pEnt->IsPlayer())
-            {
-                CheckSpeed(pEnt);
-                SetNextThink(gpGlobals->curtime + m_flInterval);
-            }
-        }
-    }
-    else
-    {
-        SetNextThink(TICK_NEVER_THINK);
-    }
-}
-
-bool CTriggerSpeedThreshold::CheckSpeedInternal(const float flToCheck, bool bIsHorizontal)
-{
-    const auto speed = bIsHorizontal ? m_flHorizontalSpeed : m_flVerticalSpeed;
-    return m_iAboveOrBelow == THRESHOLD_ABOVE ? flToCheck > speed : flToCheck < speed;
 }
 
 // --------------------------------------------------------------------------------------
