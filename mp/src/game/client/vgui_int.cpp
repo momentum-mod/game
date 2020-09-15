@@ -30,7 +30,6 @@
 #include "gameui/BaseMenuPanel.h"
 #include "MessageboxPanel.h"
 #include "clientmode_mom_normal.h"
-#include "ChangelogPanel.h"
 #include "MapSelectorDialog.h"
 #include "MomentumSettingsDialog.h"
 #include "chat/ChatPanel.h"
@@ -189,7 +188,6 @@ static void VGui_OneTimeInit()
 	ChatPanel::Init();
 	CBaseMenuPanel::Init();
 	CMomentumSettingsDialog::Init();
-	CChangelogPanel::Init();
 	CMapSelectorDialog::Init();
 }
 
