@@ -29,6 +29,7 @@ public:
 
 	virtual void SetText(const char *text);
 	virtual const char *GetText();
+	virtual void SetText(const wchar_t *text);
 
 	virtual void ShowTooltip(Panel *currentPanel);
 	virtual void HideTooltip();
@@ -49,6 +50,7 @@ private:
 	Panel *m_pParent;
 	virtual void ApplySchemeSettings(HScheme hScheme) {};
 protected:
+	wchar_t *m_wText;
 	CUtlVector<char> m_Text;
 	int _delay;			// delay that counts down
 	int _tooltipDelay;	// delay before tooltip comes up.
@@ -66,6 +68,7 @@ public:
 	~TextTooltip();
 
 	virtual void SetText(const char *text);
+	virtual void SetText(const wchar_t *text) override;
 	virtual void ShowTooltip(Panel *currentPanel);
 	virtual void HideTooltip();
 	virtual void SizeTextWindow();

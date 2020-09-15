@@ -1,20 +1,10 @@
-//========= Copyright Valve Corporation, All rights reserved. ============//
-//
-// Purpose: 
-// This class is a message box that has two buttons, ok and cancel instead of
-// just the ok button of a message box. We use a message box class for the ok button
-// and implement another button here.
-//=============================================================================//
-
-#include <math.h>
-#define PROTECTED_THINGS_DISABLE
-
 #include <vgui/IInput.h>
 #include <vgui/ISystem.h>
 #include <vgui/ISurface.h>
 #include <vgui/IScheme.h>
 #include <vgui/IVGui.h>
 #include <vgui/IPanel.h>
+#include <vgui/ILocalize.h>
 
 #include <vgui_controls/Tooltip.h>
 #include <vgui_controls/TextEntry.h>
@@ -25,7 +15,6 @@
 
 using namespace vgui;
 
-
 //------------------------------------------------------------------------------------------------------
 //------------------------------------------------------------------------------------------------------
 static vgui::DHANDLE< TextEntry > s_TooltipWindow;
@@ -35,7 +24,7 @@ static int s_iTooltipWindowCount = 0;
 //-----------------------------------------------------------------------------
 // Purpose: Constructor
 //-----------------------------------------------------------------------------
-BaseTooltip::BaseTooltip(Panel *parent, const char *text) 
+BaseTooltip::BaseTooltip(Panel *parent, const char *text) : m_pParent(parent)
 {
 	SetText(text);
 
@@ -44,6 +33,7 @@ BaseTooltip::BaseTooltip(Panel *parent, const char *text)
     _visible = false;
 	_isDirty = false;
 	_enabled = true;
+	m_wText = nullptr;
 
 	_tooltipDelay = 0; // default delay for opening tooltips
 	_delay = 0;
@@ -173,6 +163,25 @@ const char *BaseTooltip::GetText()
 	return m_Text.Base();
 }
 
+void BaseTooltip::SetText(const wchar_t *text)
+{
+	delete[] m_wText;
+
+	if (!text)
+		text = L"";
+
+	const auto iLen = Q_wcslen(text);
+
+	m_wText = new wchar_t[iLen+1];
+
+	Q_wcsncpy(m_wText, text, sizeof(wchar_t) * (iLen+1));
+
+    if (s_TooltipWindow.Get() && m_pParent == s_TooltipWindow->GetParent())
+    {
+        s_TooltipWindow->SetText(m_wText);
+    }
+}
+
 //-----------------------------------------------------------------------------
 // Purpose: Position the tool tip
 //-----------------------------------------------------------------------------
@@ -262,7 +271,7 @@ TextTooltip::~TextTooltip()
 		{
 			s_TooltipWindow->MarkForDeletion();
 		}
-		s_TooltipWindow = NULL;
+		s_TooltipWindow = nullptr;
 	}
 }
 
@@ -277,6 +286,17 @@ void TextTooltip::SetText(const char *text)
 	{
 		s_TooltipWindow->SetText(m_Text.Base());
         SizeTextWindow();
+	}
+}
+
+void TextTooltip::SetText(const wchar_t *text)
+{
+	BaseTooltip::SetText(text);
+
+	if (s_TooltipWindow.Get())
+	{
+	    s_TooltipWindow->SetText(m_wText);
+		SizeTextWindow();
 	}
 }
 
@@ -315,7 +335,15 @@ void TextTooltip::ShowTooltip(Panel *currentPanel)
 		_isDirty = _isDirty || pCurrentParent != currentPanel;
 		s_TooltipWindow->SetParent(currentPanel);
         ApplySchemeSettings(currentPanel->GetScheme());
-		s_TooltipWindow->SetText( m_Text.Base() );
+
+		if (m_wText)
+		{
+		    s_TooltipWindow->SetText(m_wText);
+		}
+		else
+		{
+			s_TooltipWindow->SetText(m_Text.Base());
+		}
 	}
 	BaseTooltip::ShowTooltip( currentPanel );
 }
