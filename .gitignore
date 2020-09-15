@@ -86,6 +86,7 @@ voice_ban.dt
 *.zon
 *.mrf
 progress.dat
+localuser.dat
 savedlocs.txt
 game_shader_dx9.dll
 game_shader_dx9.so
