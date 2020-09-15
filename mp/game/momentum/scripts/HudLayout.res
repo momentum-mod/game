@@ -224,6 +224,11 @@
         "fieldName" "HudChat"
         "visible" "0"
         "enabled" "1"
+        "xpos"			"10"
+		"ypos"			"240"
+		"wide"	 		"300"
+		"tall"	 		"210"
+        "paintbackground" "0"
     }
 
     HudHistoryResource  [$WIN32]

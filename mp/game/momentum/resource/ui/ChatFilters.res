@@ -1,19 +1,19 @@
 "Resource/UI/ChatFilters.res"
 {
-	"HudChatFilterPanel"
+	"ChatFilterPanel"
 	{
 		"ControlName"		"EditablePanel"
-		"fieldName"		"HudChatFilterPanel"
-		"xpos"			"4"
-		"ypos"			"0"
+		"fieldName"		"ChatFilterPanel"
+		"xpos"			"-4"
+		"ypos"			"4"
 		"zpos"			"0"
 		"wide"			"110"
-		"tall"			"60"
+		"tall"			"80"
 		"visible"		"0"
 		"enabled"		"1"
-        "pin_to_sibling" "ChatFiltersButton"
-		"pin_corner_to_sibling"		"2"
-		"pin_to_sibling_corner"		"3"
+        "pin_to_sibling" "ChatEntry"
+		"pin_corner_to_sibling"		"3"
+		"pin_to_sibling_corner"		"1"
 	}
 
 	"joinleave_button"

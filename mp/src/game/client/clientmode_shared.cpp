@@ -37,6 +37,10 @@
 #include "ienginevgui.h"
 #include "viewpostprocess.h"
 
+#include "chat/ChatPanel.h"
+#include "chat/ChatFilterPanel.h"
+#include "chat/ChatEntry.h"
+
 #if defined USES_ECON_ITEMS
 #include "econ_item_view.h"
 #endif
@@ -663,7 +667,11 @@ bool ClientModeShared::DoPostScreenSpaceEffects( const CViewSetup *pSetup )
 //-----------------------------------------------------------------------------
 Panel *ClientModeShared::GetMessagePanel()
 {
+	const auto pChatInput = g_pChatPanel->GetChatInput();
+	if ( pChatInput->IsVisible() )
+		return pChatInput;
 
+	return g_pChatPanel;
 }
 
 //-----------------------------------------------------------------------------
@@ -671,6 +679,7 @@ Panel *ClientModeShared::GetMessagePanel()
 //-----------------------------------------------------------------------------
 void ClientModeShared::StartMessageMode( int iMessageModeType )
 {
+	g_pChatPanel->StartMessageMode( iMessageModeType );
 }
 
 //-----------------------------------------------------------------------------
@@ -869,6 +878,7 @@ void ClientModeShared::FireGameEvent( IGameEvent *event )
 			char szLocalized[100];
 			g_pVGuiLocalize->ConvertUnicodeToANSI( wszLocalized, szLocalized, sizeof(szLocalized) );
 
+			g_pChatPanel->Printf( CHAT_FILTER_JOINLEAVE, "%s", szLocalized );
 		}
 	}
 	else if ( Q_strcmp( "player_disconnect", eventname ) == 0 )
@@ -902,6 +912,7 @@ void ClientModeShared::FireGameEvent( IGameEvent *event )
 			char szLocalized[100];
 			g_pVGuiLocalize->ConvertUnicodeToANSI( wszLocalized, szLocalized, sizeof(szLocalized) );
 
+			g_pChatPanel->Printf( CHAT_FILTER_JOINLEAVE, "%s", szLocalized );
 		}
 	}
 	else if ( Q_strcmp( "player_team", eventname ) == 0 )
@@ -954,6 +965,7 @@ void ClientModeShared::FireGameEvent( IGameEvent *event )
 				char szLocalized[100];
 				g_pVGuiLocalize->ConvertUnicodeToANSI( wszLocalized, szLocalized, sizeof(szLocalized) );
 
+				g_pChatPanel->Printf( CHAT_FILTER_TEAMCHANGE, "%s", szLocalized );
 			}
 		}
 
@@ -981,6 +993,7 @@ void ClientModeShared::FireGameEvent( IGameEvent *event )
 		char szLocalized[100];
 		g_pVGuiLocalize->ConvertUnicodeToANSI( wszLocalized, szLocalized, sizeof(szLocalized) );
 
+		g_pChatPanel->Printf( CHAT_FILTER_NAMECHANGE, "%s", szLocalized );
 	}
 	else if (Q_strcmp( "teamplay_broadcast_audio", eventname ) == 0 )
 	{
@@ -1043,6 +1056,7 @@ void ClientModeShared::FireGameEvent( IGameEvent *event )
 			char szLocalized[256];
 			g_pVGuiLocalize->ConvertUnicodeToANSI( wszLocalized, szLocalized, sizeof(szLocalized) );
 
+			g_pChatPanel->Printf( CHAT_FILTER_SERVERMSG, "%s", szLocalized );
 		}
 	}
 	else if ( Q_strcmp( "achievement_earned", eventname ) == 0 )
@@ -1091,6 +1105,7 @@ void ClientModeShared::FireGameEvent( IGameEvent *event )
 						char szLocalized[128];
 						g_pVGuiLocalize->ConvertUnicodeToANSI( wszLocalizedString, szLocalized, sizeof( szLocalized ) );
 
+						g_pChatPanel->ChatPrintf( iPlayerIndex, CHAT_FILTER_SERVERMSG, "%s", szLocalized );
 					}
 				}
 			}

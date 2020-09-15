@@ -1055,7 +1055,7 @@
         "visible"		"1"
         "enabled"		"1"
         "tabPosition"		"0"
-        "labelText"		"#MOM_Settings_Run_Safeguard_Practice_Mode"
+        "labelText"		"#MOM_Settings_Run_Safeguard_Open_Chat"
         "textAlignment"		"east"
         "associate" "ChatOpenSafeguard"
         "dulltext"		"0"
