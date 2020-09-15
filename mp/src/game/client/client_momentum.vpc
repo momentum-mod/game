@@ -228,12 +228,6 @@ $Project "Client (Momentum)"
                     $File   "momentum\ui\leaderboards\ClientTimesDisplay.cpp"
                 }
                 
-                $Folder "Changelog"
-                {
-                    $File   "momentum\ui\ChangelogPanel.cpp"
-                    $File   "momentum\ui\ChangelogPanel.h"
-                }
-                
                 $Folder "Messagebox"
                 {
                     $File "momentum\ui\MessageboxPanel.cpp"
