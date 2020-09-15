@@ -145,6 +145,8 @@ $Project "Client (Momentum)"
                 
                 $Folder "Controls"
                 {
+                    $File "momentum\ui\controls\UserComponent.cpp"
+                    $File "momentum\ui\controls\UserComponent.h"
                     $File "momentum\ui\controls\PFrameButton.h"
                     $File "momentum\ui\controls\PFrameButton.cpp"
                     $File "momentum\ui\controls\ColorPicker.h"
