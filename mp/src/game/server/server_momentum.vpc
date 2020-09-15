@@ -57,6 +57,9 @@ $Project "Server (Momentum)"
                         }
                     }
                 }
+                
+                $File "$SRCDIR\game\shared\momentum\util\mom_system_xp.cpp"
+                $File "$SRCDIR\game\shared\momentum\util\mom_system_xp.h"
             }
             $Folder "Network"
             {

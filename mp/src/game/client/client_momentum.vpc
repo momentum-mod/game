@@ -263,6 +263,8 @@ $Project "Client (Momentum)"
 
             $Folder "Util"
             {
+                $File "$SRCDIR\game\shared\momentum\util\mom_system_xp.cpp"
+                $File "$SRCDIR\game\shared\momentum\util\mom_system_xp.h"
                 $File "$SRCDIR\game\shared\momentum\util\mom_util.cpp"
                 $File "$SRCDIR\game\shared\momentum\util\mom_util.h"
                 $File "$SRCDIR\game\shared\momentum\util\serialization.h"
