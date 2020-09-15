@@ -18,6 +18,8 @@ Scheme
         // base colors
         "White"				"255 255 255 255"
         "WhiteHO"           "255 255 255 127"
+        "WhiteMO"           "255 255 255 90"
+        "WhiteLO"           "255 255 255 30"
         "OffWhite"			"221 221 221 255"
         "DullWhite"			"190 190 190 255"
         "Light Gray"		"211 211 211 20"
@@ -149,7 +151,6 @@ Scheme
 
         ListPanel.TextColor					"White"
         ListPanel.TextBgColor				"Blank"
-        ListPanel.BgColor					"MomGreydientStep4"
         ListPanel.SelectedTextColor			"White"
         ListPanel.SelectedBgColor			"MomentumBlue"
         ListPanel.OutOfFocusSelectedTextColor	"Gray"
@@ -177,7 +178,7 @@ Scheme
 
         PropertyDialog.ButtonFont   "Default"
 
-        PropertySheet.TextColor			"MomGreydientStep8"
+        PropertySheet.TextColor			"WhiteLO"
         PropertySheet.SelectedTextColor	"White"
         PropertySheet.SelectedBgColor	"MomentumBlue"
         PropertySheet.TransitionEffectTime	"0.25"	// time to change from one tab to another
@@ -1088,7 +1089,6 @@ Scheme
         ButtonDepressedBorder FrameBorder
         CheckButtonBorder FrameBorder
         ListPanelColumnButtonBorder FrameBorder
-        PropertySheetBorder FrameBorder
 
         FrameBorder
         {
@@ -1466,7 +1466,7 @@ Scheme
             {
                 "1"
                 {
-                    "color" "Border.Bright"
+                    "color" "Border.DarkSolid"
                     "offset" "0 1"
                 }
             }
@@ -1475,17 +1475,8 @@ Scheme
             {
                 "1"
                 {
-                    "color" "Border.Dark"
+                    "color" "Border.DarkSolid"
                     "offset" "1 0"
-                }
-            }
-
-            Top
-            {
-                "1"
-                {
-                    "color" "Border.Bright"
-                    "offset" "0 0"
                 }
             }
         }
@@ -1497,7 +1488,7 @@ Scheme
             {
                 "1"
                 {
-                    "color" "MomentumBlue"
+                    "color" "Border.DarkSolid"
                     "offset" "0 0"
                 }
             }
@@ -1506,7 +1497,7 @@ Scheme
             {
                 "1"
                 {
-                    "color" "MomentumBlue"
+                    "color" "Border.DarkSolid"
                     "offset" "0 0"
                 }
             }
@@ -1515,11 +1506,10 @@ Scheme
             {
                 "1"
                 {
-                    "color" "MomentumBlue"
+                    "color" "Border.DarkSolid"
                     "offset" "0 0"
                 }
             }
-
         }
 
 
