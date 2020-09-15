@@ -175,27 +175,6 @@ void IN_TimesUp(const CCommand &args)
 static ConCommand startshowtimes("+showtimes", IN_TimesDown);
 static ConCommand endshowtimes("-showtimes", IN_TimesUp);
 
-void IN_LobbyMemsDown(const CCommand &args)
-{
-    KeyDown(&in_lobby_members, args[1]);
-    if (gViewPortInterface)
-    {
-        gViewPortInterface->ShowPanel(PANEL_LOBBY_MEMBERS, true);
-    }
-}
-
-void IN_LobbyMemsUp(const CCommand &args)
-{
-    KeyUp(&in_lobby_members, args[1]);
-    if (gViewPortInterface)
-    {
-        gViewPortInterface->ShowPanel(PANEL_LOBBY_MEMBERS, false);
-    }
-}
-
-static ConCommand startshowlobbymembers("+show_lobby_members", IN_LobbyMemsDown);
-static ConCommand end_show_lobby_mems("-show_lobby_members", IN_LobbyMemsUp);
-
 void IN_PaintDown(const CCommand &args)
 {
     KeyDown(&in_paint, args[1]);
