@@ -5,6 +5,8 @@
 
 class MainMenuButton;
 class CBaseMenuPanel;
+class UserComponent;
+class MenuDrawerPanel;
 
 enum SortFlags_t
 {
@@ -36,15 +38,14 @@ class MainMenu : public vgui::EditablePanel, public CGameEventListener
 
     void Activate();
 
+    MESSAGE_FUNC(OnUserComponentClicked, "UserComponentClicked");
     MESSAGE_FUNC_PARAMS(OnMenuButtonCommand, "MenuButtonCommand", pKv);
 
 private:
     CUtlVector<MainMenuButton *> m_pButtons;
 
-    // Our own buttons...
-    MainMenuButton *m_pButtonLobby;
-    MainMenuButton *m_pButtonInviteFriends;
-    MainMenuButton *m_pButtonSpectate;
+    UserComponent *m_pUserComponent;
+    MenuDrawerPanel *m_pMenuDrawer;
 
     char m_pszMenuOpenSound[MAX_PATH];
     char m_pszMenuCloseSound[MAX_PATH];
