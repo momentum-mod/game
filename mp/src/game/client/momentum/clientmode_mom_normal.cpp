@@ -6,7 +6,6 @@
 #include "cbase.h"
 
 #include "leaderboards/ClientTimesDisplay.h"
-#include "lobby/LobbyMembersPanel.h"
 #include "HUD/hud_menu_static.h"
 #include "HUD/hud_mapfinished.h"
 #include "spectate/mom_spectator_gui.h"
@@ -91,10 +90,6 @@ class CHudViewport : public CBaseViewport
         {
             return new CMOMSpectatorGUI(this);
         }
-        if (FStrEq(PANEL_LOBBY_MEMBERS, pzName))
-        {
-            return new LobbyMembersPanel(this);
-        }
 
         return BaseClass::CreatePanelByName(pzName);
     }
@@ -104,7 +99,6 @@ class CHudViewport : public CBaseViewport
         AddNewPanel(CreatePanelByName(PANEL_REPLAY), "PANEL_REPLAY");
         AddNewPanel(CreatePanelByName(PANEL_TIMES), "PANEL_TIMES");
         AddNewPanel(CreatePanelByName(PANEL_SPECGUI), "PANEL_SPECGUI");
-        AddNewPanel(CreatePanelByName(PANEL_LOBBY_MEMBERS), "PANEL_LOBBY_MEMBERS");
         // BaseClass::CreateDefaultPanels(); // MOM_TODO: do we want the other panels?
     }
 
@@ -179,16 +173,6 @@ int ClientModeMOMNormal::HudElementKeyInput(int down, ButtonCode_t keynum, const
         }
     }
 
-    // Detach for the lobby members panel as well
-    if (m_pLobbyMembers && m_pLobbyMembers->IsVisible())
-    {
-        if (keynum == MOUSE_RIGHT)
-        {
-            m_pLobbyMembers->SetMouseInputEnabled(true);
-            return 0;
-        }
-    }
-
     // Detach the mouse if the user right-clicked while the map finished dialog is open
     if (m_pHudMapFinished && m_pHudMapFinished->IsVisible())
     {
@@ -223,16 +207,13 @@ int ClientModeMOMNormal::HandleSpectatorKeyInput(int down, ButtonCode_t keynum, 
             m_pSpectatorGUI->SetMouseInputEnabled(!bMouseState);
             if (m_pHudMapFinished && m_pHudMapFinished->IsVisible())
                 m_pHudMapFinished->SetMouseInputEnabled(!bMouseState);
-            if (m_pLobbyMembers && m_pLobbyMembers->IsVisible())
-                m_pLobbyMembers->SetMouseInputEnabled(!bMouseState);
             // MOM_TODO: re-enable this in alpha+ when we add movie-style controls to the spectator menu!
             // m_pViewport->ShowPanel(PANEL_SPECMENU, true);
 
             return 0; // we handled it, don't handle twice or send to server
         }
 
-        bool shouldEatSpecInput = (m_pHudMapFinished && m_pHudMapFinished->IsVisible()) ||
-            (m_pLobbyMembers && m_pLobbyMembers->IsVisible()) || m_pSpectatorGUI->IsMouseInputEnabled();
+        bool shouldEatSpecInput = (m_pHudMapFinished && m_pHudMapFinished->IsVisible()) || m_pSpectatorGUI->IsMouseInputEnabled();
         if (down && pszCurrentBinding && FStrEq(pszCurrentBinding, "+attack") && !shouldEatSpecInput)
         {
             engine->ClientCmd("spec_next");
@@ -271,7 +252,6 @@ void ClientModeMOMNormal::SetupPointers()
     m_pHudMapFinished = GET_HUDELEMENT(CHudMapFinishedDialog);
     m_pLeaderboards = dynamic_cast<CClientTimesDisplay *>(m_pViewport->FindPanelByName(PANEL_TIMES));
     m_pSpectatorGUI = dynamic_cast<CMOMSpectatorGUI *>(m_pViewport->FindPanelByName(PANEL_SPECGUI));
-    m_pLobbyMembers = dynamic_cast<LobbyMembersPanel*>(m_pViewport->FindPanelByName(PANEL_LOBBY_MEMBERS));
 }
 
 int ClientModeMOMNormal::MovementDirection(const QAngle viewangles, const Vector velocity)

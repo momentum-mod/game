@@ -22,7 +22,6 @@
 "mom_restart_stage"	"#MOM_Controls_RestartStage"
 "mom_timer_stop" "#MOM_Controls_StopTimer"
 "+showtimes"    "#MOM_Controls_ToggleTimes"
-"+show_lobby_members" "#MOM_Controls_ToggleLobbyMembers"
 "mom_saveloc_show"	"#MOM_Controls_ToggleSavelocMenu"
 "mom_practice"  "#MOM_Controls_Practice"
 "showRuler"		"#MOM_Ruler_ToggleMenu"

@@ -215,14 +215,6 @@ $Project "Client (Momentum)"
                     $File "momentum\ui\controls\DoubleLabel.h"
                     $File "momentum\ui\controls\DoubleLabel.cpp"
                 }
-
-                $Folder "Lobby"
-                {
-                    $File "momentum\ui\lobby\SavelocRequestFrame.h"
-                    $File "momentum\ui\lobby\SavelocRequestFrame.cpp"
-                    $File "momentum\ui\lobby\LobbyMembersPanel.h"
-                    $File "momentum\ui\lobby\LobbyMembersPanel.cpp"
-                }
                 
                 $Folder "Leaderboards"
                 {
