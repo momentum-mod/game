@@ -52,6 +52,20 @@ $Project "Client (Momentum)"
                     }
                 }
 
+                $Folder "Chat"
+                {
+                    $File "momentum\ui\chat\ChatPanel.cpp"
+                    $File "momentum\ui\chat\ChatPanel.h"
+                    $File "momentum\ui\chat\ChatEntry.cpp"
+                    $File "momentum\ui\chat\ChatEntry.h"
+                    $File "momentum\ui\chat\ChatFilterPanel.cpp"
+                    $File "momentum\ui\chat\ChatFilterPanel.h"
+                    $File "momentum\ui\chat\ChatHistory.cpp"
+                    $File "momentum\ui\chat\ChatHistory.h"
+                    $File "momentum\ui\chat\ChatLine.cpp"
+                    $File "momentum\ui\chat\ChatLine.h"
+                }
+
                 $Folder "Zone Menu"
                 {
                     $File "momentum\ui\ZoneMenu\ZoneMenu.h"
