@@ -268,7 +268,7 @@ void CMomentumLobbySystem::HandleLobbyEnter(LobbyEnter_t* pEnter)
 
     FIRE_GAME_WIDE_EVENT("lobby_join");
 
-    SteamMatchmaking()->SetLobbyMemberData(m_sLobbyID, LOBBY_DATA_MAP, gpGlobals->mapname.ToCStr());
+    UpdateCurrentLobbyMap(gpGlobals->mapname.ToCStr());
 
     g_pSteamRichPresence->Update();
 
@@ -301,11 +301,11 @@ bool CMomentumLobbySystem::GetAppearanceFromMemberData(const CSteamID &member, A
     if (pAppearance && !FStrEq(pAppearance, ""))
     {
         KeyValuesAD pAppearanceKV("app");
-        pAppearanceKV->LoadFromBuffer(nullptr, pAppearance);
-
-        out.FromKV(pAppearanceKV);
-
-        return true;
+        if (pAppearanceKV->LoadFromBuffer(nullptr, pAppearance))
+        {
+            out.FromKV(pAppearanceKV);
+            return true;
+        }
     }
 
     return false;
@@ -447,6 +447,44 @@ bool CMomentumLobbySystem::IsUserBlocked(const CSteamID &other)
     return relationship == k_EFriendRelationshipIgnored || relationship == k_EFriendRelationshipIgnoredFriend;
 }
 
+void CMomentumLobbySystem::UpdateCurrentLobbyMap(const char *pMapName)
+{
+    if (!LobbyValid())
+        return;
+
+    CHECK_STEAM_API(SteamMatchmaking());
+    CHECK_STEAM_API(SteamUser());
+
+    SteamMatchmaking()->SetLobbyMemberData(m_sLobbyID, LOBBY_DATA_MAP, pMapName);
+
+    const auto hOwner = SteamMatchmaking()->GetLobbyOwner(m_sLobbyID);
+    if (hOwner == SteamUser()->GetSteamID())
+    {
+        SteamMatchmaking()->SetLobbyData(m_sLobbyID, LOBBY_DATA_OWNER_MAP, pMapName);
+    }
+}
+
+void CMomentumLobbySystem::UpdateLobbyOwner()
+{
+    if (!LobbyValid())
+        return;
+
+    CHECK_STEAM_API(SteamMatchmaking());
+    CHECK_STEAM_API(SteamUser());
+
+    const auto hOwnerData = Q_atoui64(SteamMatchmaking()->GetLobbyData(m_sLobbyID, LOBBY_DATA_OWNER));
+    const auto hOwner = SteamMatchmaking()->GetLobbyOwner(m_sLobbyID);
+    if (hOwner == SteamUser()->GetSteamID())
+    {
+        // We became the owner, update the owner and map if need be
+        if (hOwnerData != hOwner.ConvertToUint64())
+        {
+            SteamMatchmaking()->SetLobbyData(m_sLobbyID, LOBBY_DATA_OWNER, CFmtStr("%llu", hOwner.ConvertToUint64()).Get());
+            UpdateCurrentLobbyMap(gpGlobals->mapname.ToCStr());
+        }
+    }
+}
+
 void CMomentumLobbySystem::UpdateLobbyEntityFromMemberData(CMomentumOnlineGhostEntity *pEntity)
 {
     const auto steamID = CSteamID(pEntity->GetSteamID());
@@ -514,22 +552,30 @@ void CMomentumLobbySystem::OnLobbyMemberLeave(const CSteamID &member)
 
 void CMomentumLobbySystem::HandleLobbyDataUpdate(LobbyDataUpdate_t* pParam)
 {
-    CSteamID lobbyId = CSteamID(pParam->m_ulSteamIDLobby);
-    CSteamID memberChanged = CSteamID(pParam->m_ulSteamIDMember);
-    if (pParam->m_bSuccess)
+    if (!pParam->m_bSuccess)
+        return;
+
+    const auto lobbyId = CSteamID(pParam->m_ulSteamIDLobby);
+    const auto memberChanged = CSteamID(pParam->m_ulSteamIDMember);
+
+    if (lobbyId != m_sLobbyID)
+        return;
+
+    if (lobbyId.ConvertToUint64() == memberChanged.ConvertToUint64())
     {
-        if (lobbyId.ConvertToUint64() == memberChanged.ConvertToUint64())
-        {
-            // The lobby itself changed
-            // We could have a new owner
-            // Or new member limit
-            // Or new lobby type
-            g_pSteamRichPresence->Update();
-        }
-        else
-        {
-            OnLobbyMemberDataChanged(memberChanged);
-        }
+        // The lobby itself changed:
+        // We could have a new owner
+        // Or new member limit
+        // Or new lobby type
+
+        // Are we the new owner?
+        UpdateLobbyOwner();
+
+        g_pSteamRichPresence->Update();
+    }
+    else
+    {
+        OnLobbyMemberDataChanged(memberChanged);
     }
 }
 
@@ -581,12 +627,8 @@ void CMomentumLobbySystem::HandlePersonaCallback(PersonaStateChange_t* pParam)
 
 void CMomentumLobbySystem::LevelChange(const char* pMapName)
 {
-    if (!LobbyValid())
-        return;
+    UpdateCurrentLobbyMap(pMapName);
 
-    CHECK_STEAM_API(SteamMatchmaking());
-
-    SteamMatchmaking()->SetLobbyMemberData(m_sLobbyID, LOBBY_DATA_MAP, pMapName);
     m_flNextUpdateTime = -1.0f;
 
     const bool bValidMap = pMapName && !FStrEq(pMapName, "");

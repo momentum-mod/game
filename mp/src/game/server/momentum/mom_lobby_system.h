@@ -85,6 +85,9 @@ private:
     bool IsInLobby(const CSteamID &other);
     bool IsUserBlocked(const CSteamID &other);
 
+    void UpdateCurrentLobbyMap(const char *pMapName);
+    void UpdateLobbyOwner();
+
     void UpdateLobbyEntityFromMemberData(CMomentumOnlineGhostEntity *pEntity);
     void OnLobbyMemberDataChanged(const CSteamID &memberID);
 
