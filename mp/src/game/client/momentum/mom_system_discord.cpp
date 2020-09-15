@@ -202,11 +202,8 @@ void CMomentumDiscord::HandleLobbyEnter(LobbyEnter_t *pParam)
 
 void CMomentumDiscord::HandleLobbyDataUpdate(LobbyDataUpdate_t *pParam)
 {
-    if (CSteamID(pParam->m_ulSteamIDLobby) != m_sSteamLobbyID)
-    {
-        m_sSteamLobbyID = CSteamID(pParam->m_ulSteamIDLobby);
-        UpdateDiscordPartyIdFromSteam();
-    }
+    if (pParam->m_ulSteamIDLobby != m_sSteamLobbyID.ConvertToUint64())
+        return;
 
     OnSteamLobbyUpdate();
 }
@@ -214,10 +211,7 @@ void CMomentumDiscord::HandleLobbyDataUpdate(LobbyDataUpdate_t *pParam)
 void CMomentumDiscord::HandleLobbyChatUpdate(LobbyChatUpdate_t *pParam)
 {
     if (pParam->m_ulSteamIDLobby != m_sSteamLobbyID.ConvertToUint64())
-    {
-        m_sSteamLobbyID = CSteamID(pParam->m_ulSteamIDLobby);
-        UpdateDiscordPartyIdFromSteam();
-    }
+        return;
 
     OnSteamLobbyUpdate();
 }
