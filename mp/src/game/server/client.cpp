@@ -52,7 +52,8 @@ extern bool IsInCommentaryMode( void );
 
 ConVar  *sv_cheats = NULL;
 
-enum eAllowPointServerCommand {
+enum eAllowPointServerCommand
+{
 	eAllowNever,
 	eAllowOfficial,
     eAllowWhitelist,
@@ -700,114 +701,6 @@ void CC_DrawCross( const CCommand &args )
 static ConCommand drawcross("drawcross", CC_DrawCross, "Draws a cross at the given location\n\tArguments: x y z", FCVAR_CHEAT);
 
 
-//------------------------------------------------------------------------------
-// helper function for kill and explode
-//------------------------------------------------------------------------------
-void kill_helper( const CCommand &args, bool bExplode )
-{
-	if ( args.ArgC() > 1 && sv_cheats->GetBool() )
-	{
-		// Find the matching netname
-		for ( int i = 1; i <= gpGlobals->maxClients; i++ )
-		{
-			CBasePlayer *pPlayer = ToBasePlayer( UTIL_PlayerByIndex(i) );
-			if ( pPlayer )
-			{
-				if ( Q_strstr( pPlayer->GetPlayerName(), args[1] ) )
-				{
-					pPlayer->CommitSuicide( bExplode );
-				}
-			}
-		}
-	}
-	else
-	{
-		CBasePlayer *pPlayer = UTIL_GetCommandClient();
-		if ( pPlayer )
-		{
-			pPlayer->CommitSuicide( bExplode );
-		}
-	}
-}
-
-//------------------------------------------------------------------------------
-//------------------------------------------------------------------------------
-CON_COMMAND( kill, "Kills the player with generic damage" )
-{
-	kill_helper( args, false );
-}
-
-//------------------------------------------------------------------------------
-//------------------------------------------------------------------------------
-CON_COMMAND( explode, "Kills the player with explosive damage" )
-{
-	kill_helper( args, true );
-}
-
-//------------------------------------------------------------------------------
-// helper function for killvector and explodevector
-//------------------------------------------------------------------------------
-void killvector_helper( const CCommand &args, bool bExplode )
-{
-	CBasePlayer *pCmdPlayer = UTIL_GetCommandClient();
-	if ( pCmdPlayer && args.ArgC() == 5 )
-	{
-		// Find the matching netname.
-		for ( int iClient = 1; iClient <= gpGlobals->maxClients; iClient++ )
-		{
-			CBasePlayer *pPlayer = ToBasePlayer( UTIL_PlayerByIndex( iClient ) );
-			if ( pPlayer )
-			{
-				if ( Q_strstr( pPlayer->GetPlayerName(), args[1] ) )
-				{
-					// Build world-space force vector.
-					Vector vecForce;
-					vecForce.x = atof( args[2] );
-					vecForce.y = atof( args[3] );
-					vecForce.z = atof( args[4] );
-
-					ClientKill( pPlayer->edict(), vecForce, bExplode );
-				}
-			}
-		}
-	}
-}
-
-//------------------------------------------------------------------------------
-//------------------------------------------------------------------------------
-CON_COMMAND_F( killvector, "Kills a player applying force. Usage: killvector <player> <x value> <y value> <z value>", FCVAR_CHEAT )
-{
-	killvector_helper( args, false );
-}
-
-//------------------------------------------------------------------------------
-//------------------------------------------------------------------------------
-CON_COMMAND_F( explodevector, "Kills a player applying an explosive force. Usage: explodevector <player> <x value> <y value> <z value>", FCVAR_CHEAT )
-{
-	killvector_helper( args, false );
-}
-
-
-//------------------------------------------------------------------------------
-//------------------------------------------------------------------------------
-CON_COMMAND_F( buddha, "Toggle.  Player takes damage but won't die. (Shows red cross when health is zero)", FCVAR_CHEAT )
-{
-	CBasePlayer *pPlayer = ToBasePlayer( UTIL_GetCommandClient() ); 
-	if ( pPlayer )
-	{
-		if (pPlayer->m_debugOverlays & OVERLAY_BUDDHA_MODE)
-		{
-			pPlayer->m_debugOverlays &= ~OVERLAY_BUDDHA_MODE;
-			Msg("Buddha Mode off...\n");
-		}
-		else
-		{
-			pPlayer->m_debugOverlays |= OVERLAY_BUDDHA_MODE;
-			Msg("Buddha Mode on...\n");
-		}
-	}
-}
-
 
 #define TALK_INTERVAL 0.66 // min time between say commands from a client
 //------------------------------------------------------------------------------
@@ -952,7 +845,7 @@ void CC_Player_SetModel( const CCommand &args )
 		UTIL_SetSize(pPlayer, VEC_HULL_MIN, VEC_HULL_MAX);
 	}
 }
-static ConCommand setmodel("setmodel", CC_Player_SetModel, "Changes's player's model", FCVAR_CHEAT );
+static ConCommand setmodel("setmodel", CC_Player_SetModel, "Changes's player's model", FCVAR_MAPPING );
 
 //-----------------------------------------------------------------------------
 // Purpose: 
@@ -1066,37 +959,6 @@ void CC_Player_PhysSwap( void )
 static ConCommand physswap("phys_swap", CC_Player_PhysSwap, "Automatically swaps the current weapon for the physcannon and back again." );
 #endif
 
-//-----------------------------------------------------------------------------
-// Purpose: Quickly switch to the bug bait, or back to previous item
-//-----------------------------------------------------------------------------
-void CC_Player_BugBaitSwap( void )
-{
-	CBasePlayer *pPlayer = ToBasePlayer( UTIL_GetCommandClient() );
-	
-	if ( pPlayer )
-	{
-		CBaseCombatWeapon *pWeapon = pPlayer->GetActiveWeapon();
-
-		if ( pWeapon )
-		{
-			// Tell the client to stop selecting weapons
-			engine->ClientCommand( UTIL_GetCommandClient()->edict(), "cancelselect" );
-
-			const char *strWeaponName = pWeapon->GetName();
-
-			if ( !Q_stricmp( strWeaponName, "weapon_bugbait" ) )
-			{
-				pPlayer->SelectLastItem();
-			}
-			else
-			{
-				pPlayer->SelectItem( "weapon_bugbait" );
-			}
-		}
-	}
-}
-static ConCommand bugswap("bug_swap", CC_Player_BugBaitSwap, "Automatically swaps the current weapon for the bug bait and back again.", FCVAR_CHEAT );
-
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
 void CC_Player_Use( const CCommand &args )
@@ -1169,39 +1031,6 @@ void CC_Player_NoClip( void )
 }
 
 static ConCommand noclip("noclip", CC_Player_NoClip, "Toggle. Player becomes non-solid and flies.", FCVAR_CHEAT);
-
-
-//------------------------------------------------------------------------------
-// Sets client to godmode
-//------------------------------------------------------------------------------
-void CC_God_f (void)
-{
-	if ( !sv_cheats->GetBool() )
-		return;
-
-	CBasePlayer *pPlayer = ToBasePlayer( UTIL_GetCommandClient() ); 
-	if ( !pPlayer )
-		return;
-
-#ifdef TF_DLL
-   if ( TFGameRules() && ( TFGameRules()->IsPVEModeActive() == false ) )
-   {
-	   if ( gpGlobals->deathmatch )
-		   return;
-   }
-#else
-	if ( gpGlobals->deathmatch )
-		return;
-#endif
-
-	pPlayer->ToggleFlag( FL_GODMODE );
-	if (!(pPlayer->GetFlags() & FL_GODMODE ) )
-		ClientPrint( pPlayer, HUD_PRINTCONSOLE, "godmode OFF\n");
-	else
-		ClientPrint( pPlayer, HUD_PRINTCONSOLE, "godmode ON\n");
-}
-
-static ConCommand god("god", CC_God_f, "Toggle. Player becomes invulnerable.", FCVAR_CHEAT );
 
 
 //------------------------------------------------------------------------------
@@ -1315,7 +1144,7 @@ CON_COMMAND_F( setpos_exact, "Move player to an exact specified origin (must hav
 	}
 }
 
-CON_COMMAND_F( setang_exact, "Snap player eyes and orientation to specified pitch yaw <roll:optional> (must have sv_cheats).", FCVAR_CHEAT )
+CON_COMMAND_F( setang_exact, "Snap player eyes and orientation to specified pitch yaw <roll:optional> (must have sv_cheats).", FCVAR_MAPPING )
 {
 	if ( !sv_cheats->GetBool() )
 		return;
@@ -1369,29 +1198,6 @@ void CC_Notarget_f (void)
 }
 
 ConCommand notarget("notarget", CC_Notarget_f, "Toggle. Player becomes hidden to NPCs.", FCVAR_CHEAT);
-
-//------------------------------------------------------------------------------
-// Damage the client the specified amount
-//------------------------------------------------------------------------------
-void CC_HurtMe_f(const CCommand &args)
-{
-	if ( !sv_cheats->GetBool() )
-		return;
-
-	CBasePlayer *pPlayer = ToBasePlayer( UTIL_GetCommandClient() ); 
-	if ( !pPlayer )
-		return;
-
-	int iDamage = 10;
-	if ( args.ArgC() >= 2 )
-	{
-		iDamage = atoi( args[ 1 ] );
-	}
-
-	pPlayer->TakeDamage( CTakeDamageInfo( pPlayer, pPlayer, iDamage, DMG_PREVENT_PHYSICS_FORCE ) );
-}
-
-static ConCommand hurtme("hurtme", CC_HurtMe_f, "Hurts the player.\n\tArguments: <health to lose>", FCVAR_CHEAT);
 
 #ifdef DBGFLAG_ASSERT
 static bool IsInGroundList( CBaseEntity *ent, CBaseEntity *ground )
