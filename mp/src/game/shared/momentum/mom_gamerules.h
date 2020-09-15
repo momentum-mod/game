@@ -34,7 +34,6 @@ class CMomentumGameRules : public CSingleplayRules
     CBaseEntity *GetPlayerSpawnSpot(CBasePlayer *pPlayer) OVERRIDE;
 
     const char *GetGameDescription(void) OVERRIDE { return "Momentum"; }
-    const char *GetChatPrefix(bool bTeamOnly, CBasePlayer *pPlayer) OVERRIDE;
 
     // Ammo
     void PlayerThink(CBasePlayer *pPlayer) OVERRIDE {}

@@ -99,24 +99,6 @@ void CMomentumLobbySystem::HandleP2PConnectionFail(P2PSessionConnectFail_t* info
     SteamNetworking()->CloseP2PSessionWithUser(info->m_steamIDRemote);
 }
 
-void CMomentumLobbySystem::SendChatMessage(char* pMessage)
-{
-    if (LobbyValid())
-    {
-        CHECK_STEAM_API(SteamMatchmaking());
-        int len = Q_strlen(pMessage) + 1;
-        bool result = SteamMatchmaking()->SendLobbyChatMsg(m_sLobbyID, pMessage, len);
-        if (result)
-            DevLog("Sent chat message! Message: %s\n", pMessage);
-        else
-            DevLog("Did not send lobby message!\n");
-    }
-    else
-    {
-        DevLog("Could not send message because you are not connected!\n");
-    }
-}
-
 void CMomentumLobbySystem::ResetOtherAppearanceData()
 {
     if (LobbyValid())
@@ -291,19 +273,6 @@ void CMomentumLobbySystem::HandleLobbyEnter(LobbyEnter_t* pEnter)
     g_pSteamRichPresence->Update();
 
     CreateLobbyGhostEntities();
-}
-
-void CMomentumLobbySystem::HandleLobbyChatMsg(LobbyChatMsg_t* pParam)
-{
-    // MOM_TODO: Keep this for if we ever end up using binary messages 
-
-    char *message = new char[4096];
-    int written = SteamMatchmaking()->GetLobbyChatEntry(CSteamID(pParam->m_ulSteamIDLobby), pParam->m_iChatID, nullptr, message, 4096, nullptr);
-    time_t now = time(nullptr);
-    struct tm *tm = localtime(&now);
-    DevLog("SERVER: Got a chat message! Wrote %i byte(s) into buffer.\n", written);
-    Msg("SERVER: Chat message [%02d:%02d]: %s\n", tm->tm_hour, tm->tm_min, message);
-    delete[] message;
 }
 
 void CMomentumLobbySystem::SetAppearanceInMemberData(const AppearanceData_t &app)

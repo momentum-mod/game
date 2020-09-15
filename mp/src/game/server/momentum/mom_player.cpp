@@ -920,8 +920,6 @@ void CMomentumPlayer::ToggleDuckThisFrame(bool bState)
     }
 }
 
-void CMomentumPlayer::CheckChatText(char *p, int bufsize) { g_pMomentumGhostClient->SendChatMessage(p); }
-
 // Overrides Teleport() so we can take care of the trail
 void CMomentumPlayer::Teleport(const Vector *newPosition, const QAngle *newAngles, const Vector *newVelocity)
 {
