@@ -12,7 +12,7 @@
 
 #include "ClientTimesDisplay.h"
 #include "MessageboxPanel.h"
-#include "LeaderboardsContextMenu.h"
+#include "controls/ContextMenu.h"
 
 #include "hud_comparisons.h"
 #include "mom_shareddefs.h"
@@ -56,7 +56,7 @@ CLeaderboardsTimes::CLeaderboardsTimes(CClientTimesDisplay* pParent) : BaseClass
     m_pFilterPanel->AddActionSignalTarget(this);
     m_pFilterPanel->SetVisible(false);
 
-    m_pLeaderboardReplayCMenu = new CLeaderboardsContextMenu(this);
+    m_pLeaderboardReplayCMenu = new ContextMenu(this);
 
     m_pOnlineTimesStatus = new Label(this, "OnlineTimesStatus", "#MOM_API_WaitingForResponse");
     m_pTop10Leaderboards = new SectionedListPanel(this, "Top10Leaderboards");

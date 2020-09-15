@@ -2,17 +2,17 @@
 
 #include <vgui/ISurface.h>
 #include <vgui/IInput.h>
-#include "LeaderboardsContextMenu.h"
+#include "ContextMenu.h"
 
 #include "tier0/memdbgon.h"
 
 using namespace vgui;
 
-CLeaderboardsContextMenu::CLeaderboardsContextMenu(Panel *parent) : Menu(parent, "LeaderboardsContextMenu")
+ContextMenu::ContextMenu(Panel *parent) : Menu(parent, "ContextMenu")
 {
 }
 
-void CLeaderboardsContextMenu::ShowMenu()
+void ContextMenu::ShowMenu()
 {
     int x, y, gx, gy;
     input()->GetCursorPos(x, y);
