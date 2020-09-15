@@ -26,7 +26,7 @@
 "mom_saveloc_show"	"#MOM_Controls_ToggleSavelocMenu"
 "mom_practice"  "#MOM_Controls_Practice"
 "showRuler"		"#MOM_Ruler_ToggleMenu"
-"messagemode"   "#Valve_Chat_Message"
+"chat_open"   "#Valve_Chat_Message"
 "+paint"        "#MOM_Controls_Paint"
 "mom_start_mark_create" "#MOM_Controls_CreateStartMark"
 "mom_start_mark_clear" "#MOM_Controls_ClearStartMark"

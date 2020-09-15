@@ -33,6 +33,7 @@
 #include "ChangelogPanel.h"
 #include "MapSelectorDialog.h"
 #include "MomentumSettingsDialog.h"
+#include "chat/ChatPanel.h"
 
 #if defined( TF_CLIENT_DLL )
 #include "tf_gamerules.h"
@@ -185,6 +186,7 @@ static void VGui_OneTimeInit()
 
     g_pMaterialSystem->AddModeChangeCallBack( &VGui_VideoMode_AdjustForModeChange );
 
+	ChatPanel::Init();
 	CBaseMenuPanel::Init();
 	CMomentumSettingsDialog::Init();
 	CChangelogPanel::Init();
