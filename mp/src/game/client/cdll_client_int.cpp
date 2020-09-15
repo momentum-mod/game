@@ -29,7 +29,6 @@
 #include "c_rope.h"
 #include "engine/ishadowmgr.h"
 #include "engine/IStaticPropMgr.h"
-#include "hud_basechat.h"
 #include "hud_crosshair.h"
 #include "view_shared.h"
 #include "env_wind_shared.h"

@@ -22,14 +22,6 @@ namespace vgui
 	class AnimationController;
 }
 
-// Message mode types
-enum
-{
-	MM_NONE = 0,
-	MM_SAY,
-	MM_SAY_TEAM,
-};
-
 abstract_class IClientMode
 {
 // Misc.

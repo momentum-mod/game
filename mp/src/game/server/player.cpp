@@ -349,7 +349,6 @@ BEGIN_DATADESC( CBasePlayer )
 
 	DEFINE_FIELD( m_bitsDamageType, FIELD_INTEGER ),
 	DEFINE_AUTO_ARRAY( m_rgbTimeBasedDamage, FIELD_CHARACTER ),
-	DEFINE_FIELD( m_fLastPlayerTalkTime, FIELD_FLOAT ),
 	DEFINE_FIELD( m_hLastWeapon, FIELD_EHANDLE ),
 
 #if !defined( NO_ENTITY_PREDICTION )
@@ -542,7 +541,6 @@ CBasePlayer::CBasePlayer( )
 	m_flLaggedMovementValue = 1.0f;
 	m_StuckLast = 0;
 	m_impactEnergyScale = 1.0f;
-	m_fLastPlayerTalkTime = 0.0f;
 	m_PlayerInfo.SetParent( this );
 
 	ResetObserverMode();
@@ -3499,7 +3497,7 @@ void CBasePlayer::DumpPerfToRecipient( CBasePlayer *pRecipient, int nMaxRecords 
 
 		if ( curpos + len > 200 )
 		{
-			ClientPrint( pRecipient, HUD_PRINTCONSOLE, (char const *)buf );
+			ClientPrint( pRecipient, HUD_PRINTCONSOLE, buf );
 			buf[ 0 ] = 0;
 			curpos = 0;
 		}

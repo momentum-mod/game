@@ -109,12 +109,6 @@ void CMomentumGhostClient::ClearCurrentGhosts(bool bLeavingLobby)
     g_pMomentumLobbySystem->ClearCurrentGhosts(bLeavingLobby);
 }
 
-void CMomentumGhostClient::SendChatMessage(char* pMessage)
-{
-    // MOM_TODO: g_pMomentumServerSystem->SendChatMessage(pMessage)
-    g_pMomentumLobbySystem->SendChatMessage(pMessage);
-}
-
 void CMomentumGhostClient::ResetOtherAppearanceData()
 {
     // MOM_TODO: g_pMomentumServerSystem->ResetOtherAppearanceData();

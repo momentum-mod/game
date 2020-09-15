@@ -572,8 +572,6 @@ public:
 
 	const char *GetLastKnownPlaceName( void ) const	{ return m_szLastPlaceName; }	// return the last nav place name the player occupied
 
-	virtual void			CheckChatText( char *p, int bufsize ) {}
-
 	virtual void			CreateRagdollEntity( void ) { return; }
 
 	virtual void			HandleAnimEvent( animevent_t *pEvent );
@@ -717,10 +715,6 @@ public:
 	// Movement constraints
 	void	ActivateMovementConstraint( CBaseEntity *pEntity, const Vector &vecCenter, float flRadius, float flConstraintWidth, float flSpeedFactor );
 	void	DeactivateMovementConstraint( );
-
-	// talk control
-	void	NotePlayerTalked() { m_fLastPlayerTalkTime = gpGlobals->curtime; }
-	float	LastTimePlayerTalked() { return m_fLastPlayerTalkTime; }
 
 	void	DisableButtons( int nButtons );
 	void	EnableButtons( int nButtons );
@@ -1064,7 +1058,6 @@ private:
 	CNetworkVar( int, m_nTickBase );
 
 	bool					m_bGamePaused;
-	float					m_fLastPlayerTalkTime;
 	
 	CNetworkVar( CBaseCombatWeaponHandle, m_hLastWeapon );
 

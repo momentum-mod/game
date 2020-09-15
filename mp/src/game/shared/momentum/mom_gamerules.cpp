@@ -593,15 +593,4 @@ ConVar fov_desired("fov_desired", "90", FCVAR_ARCHIVE | FCVAR_USERINFO, "Sets th
     true, 179.0, FovChanged);
 
 int CMomentumGameRules::DefaultFOV() { return fov_desired.GetInt(); }
-
-// override so it we can control who is "spec" from hud_chat instead of the server ...
-const char *CMomentumGameRules::GetChatPrefix(bool bTeamOnly, CBasePlayer *pPlayer)
-{
-    if (pPlayer && pPlayer->IsAlive() == false)
-    {
-        return "*SPEC*";
-    }
-
-    return "";
-}
 #endif

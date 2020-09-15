@@ -12,8 +12,6 @@ void RegisterUserMessages(void)
     usermessages->Register("Geiger", 1);
     usermessages->Register("Train", 1);
     usermessages->Register("HudText", -1);
-    usermessages->Register("SayText", -1);
-    usermessages->Register("SayText2", -1);
     usermessages->Register("TextMsg", -1);
     usermessages->Register("HudMsg", -1);
     usermessages->Register("ResetHUD", 1);      // called every respawn

@@ -407,12 +407,6 @@ void UTIL_ClientPrintFilter( IRecipientFilter& filter, int msg_dest, const char 
 // prints messages through the HUD
 void ClientPrint( CBasePlayer *player, int msg_dest, const char *msg_name, const char *param1 = NULL, const char *param2 = NULL, const char *param3 = NULL, const char *param4 = NULL );
 
-// prints a message to the HUD say (chat)
-void		UTIL_SayText( const char *pText, CBasePlayer *pEntity );
-void		UTIL_SayTextAll( const char *pText, CBasePlayer *pEntity = NULL, bool bChat = false );
-void		UTIL_SayTextFilter( IRecipientFilter& filter, const char *pText, CBasePlayer *pEntity, bool bChat );
-void		UTIL_SayText2Filter( IRecipientFilter& filter, CBasePlayer *pEntity, bool bChat, const char *msg_name, const char *param1 = NULL, const char *param2 = NULL, const char *param3 = NULL, const char *param4 = NULL );
-
 byte		*UTIL_LoadFileForMe( const char *filename, int *pLength );
 void        UTIL_FreeFile( byte *buffer );
 

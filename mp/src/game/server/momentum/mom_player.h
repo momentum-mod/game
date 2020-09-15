@@ -207,9 +207,6 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
     bool KeyValue(const char *szKeyName, float flValue) OVERRIDE;
     bool KeyValue(const char *szKeyName, const Vector &vecValue) OVERRIDE;
 
-    // Catches any messages the player sends through "say"
-    void CheckChatText(char *p, int bufsize) OVERRIDE;
-
     // Adds the give Onehop to the hopped list.
     // Returns: Its new index.
     void AddOnehop(CTriggerOnehop *pTrigger);

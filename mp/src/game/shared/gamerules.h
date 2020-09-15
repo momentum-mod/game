@@ -185,8 +185,6 @@ public:
 
 	virtual bool IsLocalPlayer( int nEntIndex );
 
-	virtual void ModifySentChat( char *pBuf, int iBufSize ) { return; }
-
 	virtual bool ShouldWarnOfAbandonOnQuit() { return false; }
 	
 #else
@@ -330,7 +328,6 @@ public:
 	virtual const char *GetTeamID( CBaseEntity *pEntity ) = 0;// what team is this entity on?
 	virtual int PlayerRelationship( CBaseEntity *pPlayer, CBaseEntity *pTarget ) = 0;// What is the player's relationship with this entity?
 	virtual bool PlayerCanHearChat( CBasePlayer *pListener, CBasePlayer *pSpeaker ) = 0;
-	virtual void CheckChatText( CBasePlayer *pPlayer, char *pText ) { return; }
 
 	virtual int GetTeamIndex( const char *pTeamName ) { return -1; }
 	virtual const char *GetIndexedTeamName( int teamIndex ) { return ""; }
@@ -354,15 +351,6 @@ public:
 
 	// Setup g_pPlayerResource (some mods use a different entity type here).
 	virtual void CreateStandardEntities();
-
-	// Team name, etc shown in chat and dedicated server console
-	virtual const char *GetChatPrefix( bool bTeamOnly, CBasePlayer *pPlayer );
-
-	// Location name shown in chat
-	virtual const char *GetChatLocation( bool bTeamOnly, CBasePlayer *pPlayer ) { return NULL; }
-
-	// VGUI format string for chat, if desired
-	virtual const char *GetChatFormat( bool bTeamOnly, CBasePlayer *pPlayer ) { return NULL; }
 
 	// Whether props that are on fire should get a DLIGHT.
 	virtual bool ShouldBurningPropsEmitLight() { return false; }

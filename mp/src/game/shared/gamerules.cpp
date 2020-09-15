@@ -765,19 +765,6 @@ float CGameRules::GetAmmoDamage( CBaseEntity *pAttacker, CBaseEntity *pVictim, i
 
 
 #ifndef CLIENT_DLL
-const char *CGameRules::GetChatPrefix( bool bTeamOnly, CBasePlayer *pPlayer )
-{
-	if ( pPlayer && pPlayer->IsAlive() == false )
-	{
-		if ( bTeamOnly )
-			return "*DEAD*(TEAM)";
-		else
-			return "*DEAD*";
-	}
-	
-	return "";
-}
-
 void CGameRules::ClientSettingsChanged( CBasePlayer *pPlayer )
 {
 	const char *pszName = engine->GetClientConVarValue( pPlayer->entindex(), "name" );
