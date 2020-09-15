@@ -37,6 +37,42 @@ $Project "Client (Momentum)"
 
                     $Folder "MainMenu"
                     {
+                        $Folder "Drawer"
+                        {
+                            $File "momentum\ui\gameui\mainmenu\drawer\MenuDrawer.cpp"
+                            $File "momentum\ui\gameui\mainmenu\drawer\MenuDrawer.h"
+
+                            $Folder "Lobby"
+                            {
+                                $File "momentum\ui\gameui\mainmenu\drawer\lobby\DrawerPanel_Lobby.cpp"
+                                $File "momentum\ui\gameui\mainmenu\drawer\lobby\DrawerPanel_Lobby.h"
+                                $File "momentum\ui\gameui\mainmenu\drawer\lobby\LobbyInfoPanel.h"
+                                $File "momentum\ui\gameui\mainmenu\drawer\lobby\LobbyInfoPanel.cpp"
+                                $File "momentum\ui\gameui\mainmenu\drawer\lobby\SavelocRequestFrame.h"
+                                $File "momentum\ui\gameui\mainmenu\drawer\lobby\SavelocRequestFrame.cpp"
+                                $File "momentum\ui\gameui\mainmenu\drawer\lobby\LobbyMembersPanel.h"
+                                $File "momentum\ui\gameui\mainmenu\drawer\lobby\LobbyMembersPanel.cpp"
+                                $File "momentum\ui\gameui\mainmenu\drawer\lobby\LobbySearchPanel.h"
+                                $File "momentum\ui\gameui\mainmenu\drawer\lobby\LobbySearchPanel.cpp"
+                            }
+
+                            $Folder "Profile"
+                            {
+                                $File "momentum\ui\gameui\mainmenu\drawer\profile\DrawerPanel_Profile.cpp"
+                                $File "momentum\ui\gameui\mainmenu\drawer\profile\DrawerPanel_Profile.h"
+                                $File "momentum\ui\gameui\mainmenu\drawer\profile\ProfileActivityPage.cpp"
+                                $File "momentum\ui\gameui\mainmenu\drawer\profile\ProfileActivityPage.h"
+                                $File "momentum\ui\gameui\mainmenu\drawer\profile\ProfileStatsPage.cpp"
+                                $File "momentum\ui\gameui\mainmenu\drawer\profile\ProfileStatsPage.h"
+                            }
+
+                            $Folder "Changelog"
+                            {
+                                $File "momentum\ui\gameui\mainmenu\drawer\changelog\DrawerPanel_Changelog.cpp"
+                                $File "momentum\ui\gameui\mainmenu\drawer\changelog\DrawerPanel_Changelog.h"
+                            }
+                        }
+
                         $File "momentum\ui\gameui\mainmenu\MainMenu.cpp"
                         $File "momentum\ui\gameui\mainmenu\MainMenu.h"
                         $File "momentum\ui\gameui\mainmenu\MainMenuButton.cpp"
