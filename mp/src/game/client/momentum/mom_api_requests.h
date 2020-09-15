@@ -152,6 +152,7 @@ public:
      * @param func      The callback function
      */
     bool GetUserStatsAndMapRank(uint64 profileID, uint32 mapID, CallbackFunc func);
+    bool GetUserRunHistory(uint32 userID, CallbackFunc func, KeyValues *pKvFilters = nullptr);
 
     // ==== File Downloading ====
     /**

@@ -289,6 +289,26 @@ bool CAPIRequests::GetUserStatsAndMapRank(uint64 profileID, uint32 mapID, Callba
     return false;
 }
 
+bool CAPIRequests::GetUserRunHistory(uint32 userID, CallbackFunc func, KeyValues *pKvFilters /*= nullptr*/)
+{
+    const auto req = new APIRequest;
+    if (CreateAPIRequest(req, API_REQ(CFmtStr("users/%i/runs", userID).Get()), k_EHTTPMethodGET))
+    {
+        SteamHTTP()->SetHTTPRequestGetOrPostParameter(req->handle, "expand", "map");
+
+        if (pKvFilters)
+        {
+            FOR_EACH_VALUE(pKvFilters, pKvFilter)
+                SteamHTTP()->SetHTTPRequestGetOrPostParameter(req->handle, pKvFilter->GetName(), pKvFilter->GetString());
+        }
+
+        return SendAPIRequest(req, func, __FUNCTION__);
+    }
+
+    delete req;
+    return false;
+}
+
 HTTPRequestHandle CAPIRequests::DownloadFile(const char* pszURL, CallbackFunc size, CallbackFunc prog, CallbackFunc end, 
                                              const char *pFileName, const char *pFilePathID /* = "GAME"*/, bool bAuth /*= false*/)
 {
