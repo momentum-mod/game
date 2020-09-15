@@ -147,6 +147,8 @@ $Project "Client (Momentum)"
                 {
                     $File "momentum\ui\controls\UserComponent.cpp"
                     $File "momentum\ui\controls\UserComponent.h"
+                    $File "momentum\ui\controls\ContextMenu.h"
+                    $File "momentum\ui\controls\ContextMenu.cpp"
                     $File "momentum\ui\controls\PFrameButton.h"
                     $File "momentum\ui\controls\PFrameButton.cpp"
                     $File "momentum\ui\controls\ColorPicker.h"
@@ -182,8 +184,6 @@ $Project "Client (Momentum)"
                     $File   "momentum\ui\leaderboards\LeaderboardsTimes.cpp"
                     $File   "momentum\ui\leaderboards\ClientTimesDisplay.h"
                     $File   "momentum\ui\leaderboards\ClientTimesDisplay.cpp"
-                    $File   "momentum\ui\leaderboards\LeaderboardsContextMenu.h"
-                    $File   "momentum\ui\leaderboards\LeaderboardsContextMenu.cpp"
                 }
                 
                 $Folder "Changelog"

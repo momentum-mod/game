@@ -7,7 +7,7 @@
 class CClientTimesDisplay;
 class CMomReplayBase;
 class CUtlSortVectorTimeValue;
-class CLeaderboardsContextMenu;
+class ContextMenu;
 
 struct TimeOnline
 {
@@ -149,7 +149,7 @@ private:
 
     Panel *m_pCurrentLeaderboards;
     CClientTimesDisplay *m_pParentPanel;
-    CLeaderboardsContextMenu *m_pLeaderboardReplayCMenu;
+    ContextMenu *m_pLeaderboardReplayCMenu;
 
     vgui::ImageList *m_pImageList;
     vgui::Label *m_pOnlineTimesStatus;
