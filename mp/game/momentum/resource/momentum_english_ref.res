@@ -51,6 +51,12 @@
         "MOM_Saveloc_Frame" "Request Savelocs"
         "MOM_Saveloc_Frame_Request" "Request"
         "MOM_Saveloc_Frame_Toggle" "Toggle All"
+        "MOM_Saveloc_Frame_Obtaining" "Obtaining saveloc count..."
+        "MOM_Saveloc_Frame_Downloading" "Downloading savelocs..."
+        "MOM_Saveloc_Frame_Downloaded" "Savelocs downloaded."
+        "MOM_Saveloc_Frame_Select" "Select savelocs to request."
+        "MOM_Saveloc_Frame_Requester_Left" "The requester has left the lobby."
+
 
     //In-game leaderboards
         "MOM_Name" "Name"
@@ -507,8 +513,7 @@
         "MOM_ReplayGoto" "Goto:"
 
         //Other gameui tokens
-        "MOM_ChangeLog" "Changelog"
-        "MOM_LobbyMembers" "Lobby Members"
+        "MOM_Map" "Map"
         "MOM_NotApplicable" "N/A"
 
         // WEB/API/SERVER RESPONSES
@@ -516,6 +521,7 @@
         "MOM_API_Unavailable" "API is currently unavailable"
         "MOM_API_ServerError" "Server Error"
         "MOM_API_NoTimesReturned" "No runs found"
+        "MOM_API_NoActivityReturned" "No recent activity found. Go do some runs!"
         "MOM_API_NoPBSet" "Unable to get ranks around yours; do a run first!"
         "MOM_API_NoFriends" "You don't have any... :("
         "MOM_API_UnauthFriendsList" "Your friends list is private!"
@@ -580,6 +586,10 @@
         "MOM_Lobby_MakeOwner" "Make Lobby Owner"
         "MOM_Lobby_TeleportTo" "Teleport to Player"
 
+        "MOM_Lobby_Set_Limit" "Update lobby member limit"
+        "MOM_Lobby_Set_Limit_Label" "Limit (max 250):"
+
+        "MOM_Lobby_Set_Type" "Update lobby type"
         "MOM_Lobby_Type_Private" "Invite only"
         "MOM_Lobby_Type_FriendsOnly" "Friends only"
         "MOM_Lobby_Type_Public" "Public"
@@ -610,6 +620,31 @@
         "GameUI2_Quit2Menu" "QUIT TO MAIN MENU"
         "GameUI2_Credits" "CREDITS"
         "GameUI2_Quit" "QUIT"
+
+        "MOM_Drawer_Profile" "Profile"
+        "MOM_Drawer_Profile_Stats" "Stats"
+        "MOM_Drawer_Profile_Stats_MapsCompleted" "Maps completed: %MapsCompleted%"
+        "MOM_Drawer_Profile_Stats_RunsSubmitted" "Runs submitted: %RunsSubmitted%"
+        "MOM_Drawer_Profile_Stats_TotalJumps" "Total jumps: %TotalJumps%"
+        "MOM_Drawer_Profile_Stats_TotalStrafes" "Total strafes: %TotalStrafes%"
+
+        "MOM_Drawer_Profile_Activity" "Activity"
+        "MOM_Drawer_Lobby" "Lobby"
+        "MOM_Drawer_Lobby_Searching" "Browsing Public Lobbies"
+        "MOM_Drawer_Lobby_None" "No lobbies found."
+        "MOM_Drawer_Lobby_Searching_Public" "Public"
+        "MOM_Drawer_Lobby_Public_Fallback" "<A public lobby>"
+        "MOM_Drawer_Lobby_Searching_Friends" "Friends"
+        "MOM_Drawer_Lobby_Friend_Fallback" "<A friend's lobby>"
+        "MOM_Drawer_Lobby_Players" "Players"
+        "MOM_Drawer_Lobby_Members" "Players %status%"
+        "MOM_Drawer_Lobby_Owner" "%name%'s Lobby"
+        "MOM_Drawer_Changelog" "Changelog"
+        "MOM_Drawer_Changelog_Error" "Error loading changelog!\nCheck the game console for info."
+
+        // UserComponent
+        "MOM_UserComponent_Level" "Level %s1"
+        "MOM_UserComponent_XP_For_Next_Level" "%s1 XP to Level %s2"
 
         // Game tips
         // Specific
