@@ -231,7 +231,8 @@ $Project "Client (Momentum)"
             $File   "momentum\client_events.h"
             $File   "momentum\client_events.cpp"
 
-
+            $File   "momentum\mom_system_user_data.h"
+            $File   "momentum\mom_system_user_data.cpp"
 
             $Folder "Weapons"
             {
