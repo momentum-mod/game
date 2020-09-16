@@ -398,8 +398,6 @@
         "MOM_Settings_SJ_ChargeMeter_Units_Type_1" "Units per second (UPS)"
         "MOM_Settings_SJ_ChargeMeter_Units_Type_2" "Percentage of max (%)"
         "MOM_Settings_SJ_Enable_Sticky_Counter" "Draw stickybomb counter"
-        "MOM_Settings_SJ_Enable_Sticky_Counter_Autohide" "Autohide stickybomb counter"
-        "MOM_Settings_SJ_Enable_Sticky_Counter_Autohide_TT" "Autohide when sticky count is 0."
         "MOM_Settings_SJ_DrawDelayEntry_Label" "Delay before stickybombs are rendered"
         "MOM_Settings_SJ_DrawDelayEntry_TT" "In seconds. Default is 0, max 1."
 

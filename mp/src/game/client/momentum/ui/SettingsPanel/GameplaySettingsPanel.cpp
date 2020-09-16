@@ -105,7 +105,6 @@ GameplaySettingsPanel::GameplaySettingsPanel(Panel *pParent, Button *pAssociate)
     m_pSJEnableChargeMeter->AddActionSignalTarget(this);
     m_pSJEnableStickyCounter = new CvarToggleCheckButton(this, "EnableStickyCounter", "#MOM_Settings_SJ_Enable_Sticky_Counter", "mom_hud_sj_stickycount_enable");
     m_pSJEnableStickyCounter->AddActionSignalTarget(this);
-    m_pSJStickyCounterAutohide = new CvarToggleCheckButton(this, "EnableStickyCounterAutohide", "#MOM_Settings_SJ_Enable_Sticky_Counter_Autohide", "mom_hud_sj_stickycount_autohide");
 
     m_pSJChargeMeterUnits = new CvarComboBox(this, "ChargeMeterUnits", "mom_hud_sj_chargemeter_units");
     m_pSJChargeMeterUnits->AddItem("#MOM_Settings_SJ_ChargeMeter_Units_Type_None", nullptr);
@@ -124,8 +123,6 @@ void GameplaySettingsPanel::OnPageShow()
 {
     BaseClass::OnPageShow();
 
-    // Gamemode
-    m_pSJStickyCounterAutohide->SetEnabled(m_pSJEnableStickyCounter->IsSelected());
     m_pSJChargeMeterUnits->SetEnabled(m_pSJEnableChargeMeter->IsSelected());
 
     Color paintColor;
@@ -137,12 +134,7 @@ void GameplaySettingsPanel::OnPageShow()
 
 void GameplaySettingsPanel::OnCheckboxChecked(Panel *panel)
 {
-    // Gameplay
-    if (panel == m_pSJEnableStickyCounter)
-    {
-        m_pSJStickyCounterAutohide->SetEnabled(m_pSJEnableStickyCounter->IsSelected());
-    }
-    else if (panel == m_pSJEnableChargeMeter)
+    if (panel == m_pSJEnableChargeMeter)
     {
         m_pSJChargeMeterUnits->SetEnabled(m_pSJEnableChargeMeter->IsSelected());
     }
