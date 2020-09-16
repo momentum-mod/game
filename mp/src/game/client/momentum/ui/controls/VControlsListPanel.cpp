@@ -12,9 +12,6 @@
 
 using namespace vgui;
 
-//-----------------------------------------------------------------------------
-// Purpose: panel used for inline editing of key bindings
-//-----------------------------------------------------------------------------
 class CInlineEditPanel : public Panel
 {
 public:
@@ -49,7 +46,7 @@ public:
 		m_cInlineRectColor = GetSchemeColor("InlineEditPanel.Color", Color(0, 165, 255, 255), pScheme);
 	}
 
-	void OnMousePressed(vgui::MouseCode code) override
+	void OnMousePressed(MouseCode code) override
     {
 		// forward up mouse pressed messages to be handled by the key options
 		if (GetParent())
@@ -62,10 +59,7 @@ private:
 	Color m_cInlineRectColor;
 };
 
-//-----------------------------------------------------------------------------
-// Purpose: Construction
-//-----------------------------------------------------------------------------
-VControlsListPanel::VControlsListPanel( vgui::Panel *parent, const char *listName )	: vgui::SectionedListPanel( parent, listName )
+VControlsListPanel::VControlsListPanel(Panel *parent, const char *listName )	: SectionedListPanel( parent, listName )
 {
 	m_bCaptureMode	= false;
 	m_nClickRow		= 0;
@@ -74,25 +68,11 @@ VControlsListPanel::VControlsListPanel( vgui::Panel *parent, const char *listNam
 	m_iMouseY = 0;
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: Destructor
-//-----------------------------------------------------------------------------
 VControlsListPanel::~VControlsListPanel()
 {
 	m_pInlineEditPanel->MarkForDeletion();
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
-void VControlsListPanel::ApplySchemeSettings(IScheme *pScheme )
-{
-	BaseClass::ApplySchemeSettings( pScheme );
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: Start capture prompt display
-//-----------------------------------------------------------------------------
 void VControlsListPanel::StartCaptureMode( HCursor hCursor )
 {
 	m_bCaptureMode = true;
@@ -107,13 +87,10 @@ void VControlsListPanel::StartCaptureMode( HCursor hCursor )
 		m_pInlineEditPanel->SetCursor(hCursor);
 
 		// save off the cursor position so we can restore it
-		vgui::input()->GetCursorPos( m_iMouseX, m_iMouseY );
+        input()->GetCursorPos( m_iMouseX, m_iMouseY );
 	}
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: Finish capture prompt display
-//-----------------------------------------------------------------------------
 void VControlsListPanel::EndCaptureMode( HCursor hCursor )
 {
 	m_bCaptureMode = false;
@@ -127,39 +104,27 @@ void VControlsListPanel::EndCaptureMode( HCursor hCursor )
 		surface()->SetCursor(hCursor);	
 		if ( hCursor != dc_none )
 		{
-			vgui::input()->SetCursorPos ( m_iMouseX, m_iMouseY );	
+            input()->SetCursorPos ( m_iMouseX, m_iMouseY );	
 		}
 	}
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: Set active row column
-//-----------------------------------------------------------------------------
 void VControlsListPanel::SetItemOfInterest(int itemID)
 {
 	m_nClickRow	= itemID;
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: Retrieve row, column of interest
-//-----------------------------------------------------------------------------
 int VControlsListPanel::GetItemOfInterest()
 {
 	return m_nClickRow;
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: returns true if we're currently waiting to capture a key
-//-----------------------------------------------------------------------------
 bool VControlsListPanel::IsCapturing( void )
 {
 	return m_bCaptureMode;
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: Forwards mouse pressed message up to keyboard page when in capture
-//-----------------------------------------------------------------------------
-void VControlsListPanel::OnMousePressed(vgui::MouseCode code)
+void VControlsListPanel::OnMousePressed(MouseCode code)
 {
 	if (IsCapturing())
 	{
@@ -175,19 +140,26 @@ void VControlsListPanel::OnMousePressed(vgui::MouseCode code)
 	}
 }
 
-
-//-----------------------------------------------------------------------------
-// Purpose: input handler
-//-----------------------------------------------------------------------------
-void VControlsListPanel::OnMouseDoublePressed( vgui::MouseCode code )
+void VControlsListPanel::OnMouseDoublePressed(MouseCode code )
 {
 	if (IsItemIDValid(GetSelectedItem()))
 	{
-		// enter capture mode
 		OnKeyCodePressed(KEY_ENTER);
 	}
 	else
 	{
 		BaseClass::OnMouseDoublePressed(code);
+	}
+}
+
+void VControlsListPanel::OnKeyCodeTyped(KeyCode code)
+{
+    if (code == KEY_ENTER)
+    {
+		StartCaptureMode(dc_blank);
+    }
+	else
+	{
+	    BaseClass::OnKeyCodeTyped(code);
 	}
 }
