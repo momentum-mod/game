@@ -20,18 +20,20 @@ namespace vgui
         MESSAGE_FUNC(OnTextChanged, "TextChanged");
         MESSAGE_FUNC(OnApplyChanges, "ApplyChanges");
         void ApplyChanges();
-        void ApplySchemeSettings(IScheme *pScheme) OVERRIDE;
-        void ApplySettings(KeyValues* inResourceData) OVERRIDE;
-        void GetSettings(KeyValues* outResourceData) OVERRIDE;
-        void SetText(const char *text) OVERRIDE;
-        void InitSettings() OVERRIDE;
         void Reset();
-        void OnThink() OVERRIDE;
-        void OnKillFocus() OVERRIDE;
         bool HasBeenModified();
         bool HasBeenModifiedExternally() const;
         void SetPrecision(int precision);
         int GetPrecision() const { return m_iPrecision; }
+
+    protected:
+        void ApplySchemeSettings(IScheme *pScheme) override;
+        void ApplySettings(KeyValues* inResourceData) override;
+        void GetSettings(KeyValues* outResourceData) override;
+        void SetText(const char *text) override;
+        void InitSettings() override;
+        void OnThink() override;
+        void OnKillFocus() override;
 
     private:
         bool ShouldUpdate(const char *szText);
