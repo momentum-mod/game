@@ -20,7 +20,6 @@ class InputSettingsPanel : public SettingsPanel
 
 protected:
     void OnKeyCodePressed(vgui::KeyCode code) override;
-    void OnKeyCodeTyped(vgui::KeyCode code) override;
     void OnThink() override;
     void OnCommand(const char *command) override;
 
