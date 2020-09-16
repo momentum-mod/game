@@ -1025,6 +1025,8 @@ CConsoleDialog::CConsoleDialog( vgui::Panel *pParent, const char *pName ) : Base
 	m_pConsolePanel->AddActionSignalTarget( this );
 
 	LoadControlSettings("resource/ui/ConsoleDialog.res");
+
+	SetClipToParent(true);
 }
 
 void CConsoleDialog::SizeToScreen()
