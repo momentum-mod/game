@@ -22,6 +22,7 @@ CvarTextEntry::CvarTextEntry(Panel *parent, const char *panelName, char const *c
     : TextEntry(parent, panelName), m_cvarRef(cvarname, true)
 {
     InitSettings();
+    SetCatchEnterKey(true);
     SetPrecision(precision);
     m_pszStartValue[0] = 0;
 
