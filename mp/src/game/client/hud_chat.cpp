@@ -56,6 +56,11 @@ void CHudChat::StartMessageMode()
     m_pChatContainer->StartMessageMode(MESSAGE_MODE_HUD);
 }
 
+void CHudChat::Reset()
+{
+    g_pChatPanel->Reset();
+}
+
 void CHudChat::PerformLayout()
 {
     BaseClass::PerformLayout();

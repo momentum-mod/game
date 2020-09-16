@@ -383,7 +383,6 @@ void ChatPanel::SpectatorUpdate(const CSteamID& personID, const CSteamID& target
 
 void ChatPanel::Reset()
 {
-    Clear();
     m_flHistoryFadeTime = gpGlobals->curtime;
 }
 

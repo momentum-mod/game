@@ -14,6 +14,7 @@ class CHudChat : public CHudElement, public vgui::EditablePanel
 
     void StartMessageMode();
 
+    void Reset() override;
     void PerformLayout() override;
 
     MESSAGE_FUNC(OnStopMessageMode, "StopMessageMode");
