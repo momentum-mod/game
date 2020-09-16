@@ -69,7 +69,7 @@ private:
 
     vgui::CvarComboBox *m_pSJChargeMeterUnits;
 
-    vgui::CvarTextEntry *m_pSJStickyDrawDelayEntry;
+    vgui::CvarTextEntry *m_pSJStickyDrawDelayEntry, *m_pSJChargedShotSoundThreshold;
 
     // paint cvars
     ConVarRef m_cvarPaintColor;
