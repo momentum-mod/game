@@ -16,7 +16,6 @@
 using namespace vgui;
 
 static MAKE_TOGGLE_CONVAR(mom_hud_sj_stickycount_enable, "1", FCVAR_ARCHIVE, "Toggles the stickybomb counter.\n");
-static MAKE_TOGGLE_CONVAR(mom_hud_sj_stickycount_autohide, "0", FCVAR_ARCHIVE, "Toggles automatically hiding the stickybomb counter at 0 stickies. 0 = OFF, 1 = ON\n");
 
 class CHudStickybombs : public CHudElement, public EditablePanel
 {

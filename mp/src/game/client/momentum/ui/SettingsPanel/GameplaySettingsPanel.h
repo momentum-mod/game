@@ -65,7 +65,7 @@ private:
 
     vgui::CvarToggleCheckButton *m_pSJEnableTrailParticle, *m_pSJEnableExplosionParticle, *m_pSJToggleStickybombDecals,
                                 *m_pSJEnableExplosionSound, *m_pSJEnableDetonateSuccessSound, *m_pSJEnableDetonateFailSound,
-                                *m_pSJEnableChargeSound, *m_pSJEnableChargeMeter, *m_pSJEnableStickyCounter, *m_pSJStickyCounterAutohide;
+                                *m_pSJEnableChargeSound, *m_pSJEnableChargeMeter, *m_pSJEnableStickyCounter;
 
     vgui::CvarComboBox *m_pSJChargeMeterUnits;
 
