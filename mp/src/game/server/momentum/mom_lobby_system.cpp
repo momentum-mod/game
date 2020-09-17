@@ -12,7 +12,7 @@
 #include "mom_modulecomms.h"
 #include "mom_timer.h"
 #include "mom_system_steam_richpresence.h"
-#include "time.h"
+#include "steam/isteamnetworkingmessages.h"
 
 #include "tier0/memdbgon.h"
 
@@ -65,38 +65,94 @@ static void LobbyTypeChanged(IConVar *pVar, const char *pVal, float oldVal)
 static MAKE_CONVAR_C(mom_lobby_max_players, "16", FCVAR_REPLICATED | FCVAR_ARCHIVE, "Sets the maximum number of players allowed in lobbies you create.\n", 2, 250, LobbyMaxPlayersChanged);
 static MAKE_CONVAR_C(mom_lobby_type, "1", FCVAR_REPLICATED | FCVAR_ARCHIVE, "Sets the type of the lobby. 0 = Invite only, 1 = Friends Only, 2 = Public\n", 0, 2, LobbyTypeChanged);
 
-void CMomentumLobbySystem::HandleNewP2PRequest(P2PSessionRequest_t* info)
+void CMomentumLobbySystem::HandleNewP2PRequest(SteamNetworkingMessagesSessionRequest_t *pParam)
 {
-    if (!IsInLobby(info->m_steamIDRemote))
-        return;
+    DevLog("%s called\n", __FUNCTION__);
 
-    if (IsUserBlocked(info->m_steamIDRemote) && !m_vecBlocked.HasElement(info->m_steamIDRemote))
-    {
-        m_vecBlocked.AddToTail(info->m_steamIDRemote);
-    }
-
-    // MOM_TODO: Make a (temp) block list that only refreshes on game restart?
-
-    if (m_vecBlocked.HasElement(info->m_steamIDRemote))
-    {
-        const char *pName = SteamFriends()->GetFriendPersonaName(info->m_steamIDRemote);
-        DevLog("Not allowing %s to talk with us, we've marked them as blocked!\n", pName);
-        return;
-    }
-
-    // Needs to be done to open the connection with them
-    SteamNetworking()->AcceptP2PSessionWithUser(info->m_steamIDRemote);
+    HandleNewP2PRequestInternal(pParam->m_identityRemote);
 }
 
-void CMomentumLobbySystem::HandleP2PConnectionFail(P2PSessionConnectFail_t* info)
+void CMomentumLobbySystem::HandleP2PConnectionFail(SteamNetworkingMessagesSessionFailed_t *pParam)
 {
+    DevLog("%s called\n", __FUNCTION__);
+
+    const auto iEndReason = pParam->m_info.m_eEndReason;
+    DevLog("P2P Connection fail with end reason: %i\n", iEndReason);
+
+    if (iEndReason > k_ESteamNetConnectionEnd_AppException_Min && iEndReason < k_ESteamNetConnectionEnd_AppException_Max)
+    {
+        Warning("P2P Connection failed due to an application problem! Error code: %i\n", iEndReason);
+    }
+    else if (iEndReason > k_ESteamNetConnectionEnd_Local_Min && iEndReason < k_ESteamNetConnectionEnd_Local_Max)
+    {
+        Warning("P2P Connection failed due to a local problem! Error code: %i\n", iEndReason);
+    }
+    else if (iEndReason > k_ESteamNetConnectionEnd_Remote_Min && iEndReason < k_ESteamNetConnectionEnd_Remote_Max)
+    {
+        Warning("P2P Connection failed due to a remote problem! Error code: %i\n", iEndReason);
+    }
+    else if (iEndReason > k_ESteamNetConnectionEnd_Misc_Min && iEndReason < k_ESteamNetConnectionEnd_Misc_Max)
+    {
+        Warning("P2P Connection failed due to a miscellaneous problem! Error code: %i\n", iEndReason);
+    }
+
+    HandleP2PConnectionFailInternal(pParam->m_info.m_identityRemote);
+}
+
+void CMomentumLobbySystem::HandleNewP2PRequest_OLD(P2PSessionRequest_t* info)
+{
+    DevLog("%s called\n", __FUNCTION__);
+
+    SteamNetworkingIdentity identity;
+    identity.SetSteamID(info->m_steamIDRemote);
+    HandleNewP2PRequestInternal(identity);
+}
+
+void CMomentumLobbySystem::HandleP2PConnectionFail_OLD(P2PSessionConnectFail_t* info)
+{
+    DevLog("%s called\n", __FUNCTION__);
     const char *pName = SteamFriends()->GetFriendPersonaName(info->m_steamIDRemote);
     if (info->m_eP2PSessionError == k_EP2PSessionErrorTimeout)
         DevLog("Dropping connection with %s due to timing out! (They probably left/disconnected)\n", pName);
     else
         Warning("Steam P2P failed with user %s because of the error: %i\n", pName, info->m_eP2PSessionError);
-    
-    SteamNetworking()->CloseP2PSessionWithUser(info->m_steamIDRemote);
+
+    SteamNetworkingIdentity identity;
+    identity.SetSteamID(info->m_steamIDRemote);
+    HandleP2PConnectionFailInternal(identity);
+}
+
+void CMomentumLobbySystem::HandleNewP2PRequestInternal(const SteamNetworkingIdentity &identity)
+{
+    DevLog("%s called\n", __FUNCTION__);
+
+    const auto hUserID = identity.GetSteamID();
+
+    if (!IsInLobby(hUserID))
+        return;
+
+    if (IsUserBlocked(hUserID) && !m_vecBlocked.HasElement(hUserID))
+    {
+        m_vecBlocked.AddToTail(hUserID);
+    }
+
+    // MOM_TODO: Make a (temp) block list that only refreshes on game restart?
+
+    if (m_vecBlocked.HasElement(hUserID))
+    {
+        const char *pName = SteamFriends()->GetFriendPersonaName(hUserID);
+        DevLog("Not allowing %s to talk with us, we've marked them as blocked!\n", pName);
+        return;
+    }
+
+    SteamNetworkingMessages()->AcceptSessionWithUser(identity);
+}
+
+void CMomentumLobbySystem::HandleP2PConnectionFailInternal(const SteamNetworkingIdentity &identity)
+{
+    DevLog("%s called\n", __FUNCTION__);
+
+    SteamNetworkingMessages()->CloseSessionWithUser(identity);
 }
 
 void CMomentumLobbySystem::ResetOtherAppearanceData()
@@ -117,7 +173,7 @@ void CMomentumLobbySystem::ResetOtherAppearanceData()
 
 bool CMomentumLobbySystem::SendSavelocReqPacket(CSteamID& target, SavelocReqPacket* p)
 {
-    return LobbyValid() && SendPacket(p, target, k_EP2PSendReliable);
+    return LobbyValid() && SendPacket(p, target, k_nSteamNetworkingSend_Reliable);
 }
 
 void CMomentumLobbySystem::TeleportToLobbyMember(const char *pIDStr)
@@ -342,30 +398,29 @@ void CMomentumLobbySystem::ClearCurrentGhosts(bool bLeavingLobby)
     m_mapLobbyGhosts.RemoveAll();
 }
 
-bool CMomentumLobbySystem::SendPacket(MomentumPacket *packet, const CSteamID &target, EP2PSend sendType /* = k_EP2PSendUnreliable*/) const
+bool CMomentumLobbySystem::SendPacket(MomentumPacket *packet, const CSteamID &target, int sendType /*= k_nSteamNetworkingSend_Unreliable*/) const
 {
-    CHECK_STEAM_API_B(SteamNetworking());
-
     if (m_mapLobbyGhosts.Count() == 0)
         return false;
+
+    CHECK_STEAM_API_B(SteamNetworkingMessages());
 
     CUtlBuffer buf;
     packet->Write(buf);
 
-    if (SteamNetworking()->SendP2PPacket(target, buf.Base(), buf.TellPut(), sendType))
-    {
-        return true;
-    }
+    SteamNetworkingIdentity identity;
+    identity.SetSteamID(target);
+    const auto eResult = SteamNetworkingMessages()->SendMessageToUser(identity, buf.Base(), buf.TellPut(), sendType, 0);
 
-    return false;
+    return eResult == k_EResultOK;
 }
 
-bool CMomentumLobbySystem::SendPacketToEveryone(MomentumPacket *pPacket, EP2PSend sendType /* = k_EP2PSendUnreliable*/)
+bool CMomentumLobbySystem::SendPacketToEveryone(MomentumPacket *pPacket, int sendType /*= k_nSteamNetworkingSend_Unreliable*/)
 {
-    CHECK_STEAM_API_B(SteamNetworking());
-
     if (m_mapLobbyGhosts.Count() == 0)
         return false;
+
+    CHECK_STEAM_API_B(SteamNetworkingMessages());
 
     CUtlBuffer buf;
     pPacket->Write(buf);
@@ -375,7 +430,12 @@ bool CMomentumLobbySystem::SendPacketToEveryone(MomentumPacket *pPacket, EP2PSen
     {
         const auto ghostID = m_mapLobbyGhosts.Key(index);
 
-        if (!SteamNetworking()->SendP2PPacket(CSteamID(ghostID), buf.Base(), buf.TellPut(), sendType))
+        SteamNetworkingIdentity identity;
+        identity.SetSteamID64(ghostID);
+
+        const auto eResult = SteamNetworkingMessages()->SendMessageToUser(identity, buf.Base(), buf.TellPut(), sendType, 0);
+
+        if (eResult != k_EResultOK)
         {
             DevWarning("Failed to send the packet to %s!\n", SteamFriends()->GetFriendPersonaName(ghostID));
         }
@@ -663,7 +723,7 @@ void CMomentumLobbySystem::CreateLobbyGhostEntity(const CSteamID &lobbyMember)
 
     if (!bValidGhost && IsInSameMapAs(lobbyMember))
     {
-        const auto pNewPlayer = static_cast<CMomentumOnlineGhostEntity *>(CreateEntityByName("mom_online_ghost"));
+        const auto pNewPlayer = dynamic_cast<CMomentumOnlineGhostEntity *>(CreateEntityByName("mom_online_ghost"));
         pNewPlayer->SetSteamID(lobbyMemberID);
         pNewPlayer->SetGhostName(pName);
         pNewPlayer->Spawn();
@@ -750,126 +810,128 @@ void CMomentumLobbySystem::SendAndReceiveP2PPackets()
     if (m_mapLobbyGhosts.Count() == 0)
         return;
 
-    uint32 size;
-    while (SteamNetworking()->IsP2PPacketAvailable(&size))
-    {
-        uint8 *bytes = new uint8[size];
-        uint32 bytesRead;
-        CSteamID fromWho;
-        SteamNetworking()->ReadP2PPacket(bytes, size, &bytesRead, &fromWho);
+    CHECK_STEAM_API(SteamNetworkingMessages());
 
-        CUtlBuffer buf(bytes, size, CUtlBuffer::READ_ONLY);
+    SteamNetworkingMessage_t *messages[64];
+    int read = SteamNetworkingMessages()->ReceiveMessagesOnChannel(0, messages, 64);
+
+    for (int i = 0; i < read; i++)
+    {
+        const auto pMessage = messages[i];
+
+        CSteamID fromWho = pMessage->m_identityPeer.GetSteamID();
+
+        CUtlBuffer buf(pMessage->m_pData, pMessage->m_cbSize, CUtlBuffer::READ_ONLY);
         buf.SetBigEndian(false);
 
         const auto type = buf.GetUnsignedChar();
         switch (type)
         {
         case PACKET_TYPE_POSITION:
-            {
-                PositionPacket frame(buf);
-                CMomentumOnlineGhostEntity *pEntity = GetLobbyMemberEntity(fromWho);
-                if (pEntity)
-                    pEntity->AddPositionFrame(frame);
-            }
-            break;
+        {
+            PositionPacket frame(buf);
+            CMomentumOnlineGhostEntity *pEntity = GetLobbyMemberEntity(fromWho);
+            if (pEntity)
+                pEntity->AddPositionFrame(frame);
+        }
+        break;
         case PACKET_TYPE_DECAL:
-            {
-                DecalPacket decals(buf);
-                if (decals.decal_type == DECAL_INVALID)
-                    break;
+        {
+            DecalPacket decals(buf);
+            if (decals.decal_type == DECAL_INVALID)
+                break;
 
-                const auto pEntity = GetLobbyMemberEntity(fromWho);
-                if (pEntity)
-                {
-                    pEntity->AddDecalFrame(decals);
-                }
+            const auto pEntity = GetLobbyMemberEntity(fromWho);
+            if (pEntity)
+            {
+                pEntity->AddDecalFrame(decals);
             }
-            break;
+        }
+        break;
         case PACKET_TYPE_SAVELOC_REQ:
+        {
+            SavelocReqPacket saveloc(buf);
+
+            // Done/fail states:
+            // 1. They hit "cancel" (most common)
+            // 2. They leave the map (same as 1, just accidental maybe)
+            // 3. They leave the lobby/server (manually, due to power outage, etc)
+            // 4. We leave the map
+            // 5. We leave the lobby/server
+            // 6. They get the savelocs they need
+
+            // Of the above, 1 and 6 are the ones that are manually sent.
+            // 2<->5 can be automatically detected with lobby/server hooks
+
+            // Fail requirements:
+            // Requester: set "requesting" to false, close the request UI
+            // Requestee: remove requester from requesters vector
+
+            DevLog(2, "Received a stage %i saveloc request packet!\n", saveloc.stage);
+
+            switch (saveloc.stage)
             {
-                SavelocReqPacket saveloc(buf);
+            case SAVELOC_REQ_STAGE_COUNT_REQ:
+            {
+                if (!g_pSavelocSystem->AddSavelocRequester(fromWho.ConvertToUint64()))
+                    break;
 
-                // Done/fail states:
-                // 1. They hit "cancel" (most common)
-                // 2. They leave the map (same as 1, just accidental maybe)
-                // 3. They leave the lobby/server (manually, due to power outage, etc)
-                // 4. We leave the map
-                // 5. We leave the lobby/server
-                // 6. They get the savelocs they need
+                SavelocReqPacket response;
+                response.stage = SAVELOC_REQ_STAGE_COUNT_ACK;
+                response.saveloc_count = g_pSavelocSystem->GetSavelocCount();
 
-                // Of the above, 1 and 6 are the ones that are manually sent.
-                // 2<->5 can be automatically detected with lobby/server hooks
+                SendPacket(&response, fromWho, k_nSteamNetworkingSend_Reliable);
+            }
+            break;
+            case SAVELOC_REQ_STAGE_COUNT_ACK:
+            {
+                KeyValues *pKV = new KeyValues("req_savelocs");
+                pKV->SetInt("stage", SAVELOC_REQ_STAGE_COUNT_ACK);
+                pKV->SetInt("count", saveloc.saveloc_count);
+                g_pModuleComms->FireEvent(pKV);
+            }
+            break;
+            case SAVELOC_REQ_STAGE_SAVELOC_REQ:
+            {
+                SavelocReqPacket response;
+                response.stage = SAVELOC_REQ_STAGE_SAVELOC_ACK;
 
-                // Fail requirements:
-                // Requester: set "requesting" to false, close the request UI
-                // Requestee: remove requester from requesters vector
-
-                DevLog(2, "Received a stage %i saveloc request packet!\n", saveloc.stage);
-
-                switch (saveloc.stage)
+                if (g_pSavelocSystem->WriteRequestedSavelocs(&saveloc, &response, fromWho.ConvertToUint64()))
+                    SendPacket(&response, fromWho, k_nSteamNetworkingSend_Reliable);
+            }
+            break;
+            case SAVELOC_REQ_STAGE_SAVELOC_ACK:
+            {
+                if (g_pSavelocSystem->ReadReceivedSavelocs(&saveloc, fromWho.ConvertToUint64()))
                 {
-                case SAVELOC_REQ_STAGE_COUNT_REQ:
+                    SavelocReqPacket response;
+                    response.stage = SAVELOC_REQ_STAGE_DONE;
+                    if (SendPacket(&response, fromWho, k_nSteamNetworkingSend_Reliable))
                     {
-                        if (!g_pSavelocSystem->AddSavelocRequester(fromWho.ConvertToUint64()))
-                            break;
-
-                        SavelocReqPacket response;
-                        response.stage = SAVELOC_REQ_STAGE_COUNT_ACK;
-                        response.saveloc_count = g_pSavelocSystem->GetSavelocCount();
-
-                        SendPacket(&response, fromWho, k_EP2PSendReliable);
+                        KeyValues *pKv = new KeyValues("req_savelocs");
+                        pKv->SetInt("stage", SAVELOC_REQ_STAGE_DONE);
+                        g_pModuleComms->FireEvent(pKv);
                     }
-                    break;
-                case SAVELOC_REQ_STAGE_COUNT_ACK:
-                    {
-                        KeyValues *pKV = new KeyValues("req_savelocs");
-                        pKV->SetInt("stage", SAVELOC_REQ_STAGE_COUNT_ACK);
-                        pKV->SetInt("count", saveloc.saveloc_count);
-                        g_pModuleComms->FireEvent(pKV);
-                    }
-                    break;
-                case SAVELOC_REQ_STAGE_SAVELOC_REQ:
-                    {
-                        SavelocReqPacket response;
-                        response.stage = SAVELOC_REQ_STAGE_SAVELOC_ACK;
-
-                        if (g_pSavelocSystem->WriteRequestedSavelocs(&saveloc, &response, fromWho.ConvertToUint64()))
-                            SendPacket(&response, fromWho, k_EP2PSendReliable);
-                    }
-                    break;
-                case SAVELOC_REQ_STAGE_SAVELOC_ACK:
-                    {
-                        if (g_pSavelocSystem->ReadReceivedSavelocs(&saveloc, fromWho.ConvertToUint64()))
-                        {
-                            SavelocReqPacket response;
-                            response.stage = SAVELOC_REQ_STAGE_DONE;
-                            if (SendPacket(&response, fromWho, k_EP2PSendReliable))
-                            {
-                                KeyValues *pKv = new KeyValues("req_savelocs");
-                                pKv->SetInt("stage", SAVELOC_REQ_STAGE_DONE);
-                                g_pModuleComms->FireEvent(pKv);
-                            }
-                        }
-                    }
-                    break;
-                case SAVELOC_REQ_STAGE_DONE:
-                    {
-                        g_pSavelocSystem->RequesterLeft(fromWho.ConvertToUint64());
-                    }
-                    break;
-                case SAVELOC_REQ_STAGE_INVALID:
-                default:
-                    DevWarning(2, "Invalid stage for the saveloc request packet!\n");
-                    break;
                 }
             }
             break;
+            case SAVELOC_REQ_STAGE_DONE:
+            {
+                g_pSavelocSystem->RequesterLeft(fromWho.ConvertToUint64());
+            }
+            break;
+            case SAVELOC_REQ_STAGE_INVALID:
+            default:
+                DevWarning(2, "Invalid stage for the saveloc request packet!\n");
+                break;
+            }
+        }
+        break;
         default:
             break;
         }
 
-        buf.Purge();
-        delete[] bytes;
+        pMessage->Release();
     }
 
     if (m_flNextUpdateTime > 0.0f && gpGlobals->curtime > m_flNextUpdateTime)

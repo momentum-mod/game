@@ -30,9 +30,13 @@ public:
     STEAM_CALLBACK(CMomentumLobbySystem, HandleLobbyChatUpdate, LobbyChatUpdate_t); // Lobby chat room status has changed. This can be owner being changed, or somebody joining or leaving
     STEAM_CALLBACK(CMomentumLobbySystem, HandleLobbyDataUpdate, LobbyDataUpdate_t); // Something was updated for the lobby's data
     STEAM_CALLBACK(CMomentumLobbySystem, HandleLobbyJoin, GameLobbyJoinRequested_t); // We are trying to join a lobby
-    STEAM_CALLBACK(CMomentumLobbySystem, HandleNewP2PRequest, P2PSessionRequest_t); // Somebody is trying to talk to us
-    STEAM_CALLBACK(CMomentumLobbySystem, HandleP2PConnectionFail, P2PSessionConnectFail_t); // Talking/connecting to somebody failed
+    STEAM_CALLBACK(CMomentumLobbySystem, HandleNewP2PRequest, SteamNetworkingMessagesSessionRequest_t); // Somebody is trying to talk to us
+    STEAM_CALLBACK(CMomentumLobbySystem, HandleP2PConnectionFail, SteamNetworkingMessagesSessionFailed_t); // Talking/connecting to somebody failed
     STEAM_CALLBACK(CMomentumLobbySystem, HandlePersonaCallback, PersonaStateChange_t); // Called when we get their avatar and name from steam
+
+    // Deprecated??
+    STEAM_CALLBACK(CMomentumLobbySystem, HandleNewP2PRequest_OLD, P2PSessionRequest_t); // Somebody is trying to talk to us
+    STEAM_CALLBACK(CMomentumLobbySystem, HandleP2PConnectionFail_OLD, P2PSessionConnectFail_t); // Talking/connecting to somebody failed
 
     static CSteamID m_sLobbyID;
     static float m_flNextUpdateTime;
@@ -74,9 +78,12 @@ private:
 
     bool m_bHostingLobby;
 
+    void HandleNewP2PRequestInternal(const SteamNetworkingIdentity &identity);
+    void HandleP2PConnectionFailInternal(const SteamNetworkingIdentity &identity);
+
     // Sends a packet to a specific person
-    bool SendPacket(MomentumPacket *packet, const CSteamID &target, EP2PSend sendType = k_EP2PSendUnreliable) const;
-    bool SendPacketToEveryone(MomentumPacket *pPacket, EP2PSend sendType = k_EP2PSendUnreliable);
+    bool SendPacket(MomentumPacket *packet, const CSteamID &target, int sendType = k_nSteamNetworkingSend_Unreliable) const;
+    bool SendPacketToEveryone(MomentumPacket *pPacket, int sendType = k_nSteamNetworkingSend_Unreliable);
 
     void WriteLobbyMessage(LobbyMessageType_t type, uint64 id);
     void WriteSpecMessage(SpectateMessageType_t type, uint64 playerID, uint64 targetID);
