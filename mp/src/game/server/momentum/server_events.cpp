@@ -22,6 +22,9 @@ inline void UnloadConVarOrCommand(const char *pName)
 
 bool CMomServerEvents::Init()
 {
+    if (SteamNetworkingUtils())
+        SteamNetworkingUtils()->InitRelayNetworkAccess();
+
     MomUtil::MountGameFiles();
 
     if (!CommandLine()->FindParm("-mapping"))
