@@ -346,7 +346,7 @@ BEGIN_VS_SHADER(PBR, "PBR shader")
             }
 
             int useParallax = params[info.useParallax]->GetIntValue();
-            if (!mat_pbr_parallaxmap.GetBool() || bIsWVT)
+            if (!mat_pbr_parallaxmap.GetBool())
             {
                 useParallax = 0;
             }
