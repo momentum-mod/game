@@ -699,6 +699,7 @@ class CTriggerMomentumCatapult : public CBaseMomentumTrigger
 
   public:
     void OnStartTouch(CBaseEntity *) override;
+    void Touch(CBaseEntity *) override;
     void Spawn() override;
     void Think() override;
 
@@ -734,5 +735,6 @@ class CTriggerMomentumCatapult : public CBaseMomentumTrigger
     COutputEvent m_OnCatapulted;
     float m_flInterval;
     bool m_bOnThink;
+    bool m_bEveryTick;
     float m_flHeightOffset;
 };

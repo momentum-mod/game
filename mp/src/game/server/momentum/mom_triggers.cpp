@@ -1602,6 +1602,7 @@ BEGIN_DATADESC(CTriggerMomentumCatapult)
     DEFINE_OUTPUT(m_OnCatapulted, "OnCatapulted"),
     DEFINE_KEYFIELD(m_flInterval, FIELD_FLOAT, "Interval"),
     DEFINE_KEYFIELD(m_bOnThink, FIELD_BOOLEAN, "OnThink"),
+    DEFINE_KEYFIELD(m_bEveryTick, FIELD_BOOLEAN, "EveryTick"),
     DEFINE_KEYFIELD(m_flHeightOffset, FIELD_FLOAT, "heightOffset"),
 END_DATADESC()
 
@@ -1620,6 +1621,7 @@ CTriggerMomentumCatapult::CTriggerMomentumCatapult()
     m_bOnlyCheckVelocity = false;
     m_flInterval = 1.0;
     m_bOnThink = false;
+    m_bEveryTick = false;
     m_flHeightOffset = 32.0f;
 }
 
@@ -1842,9 +1844,22 @@ void CTriggerMomentumCatapult::OnStartTouch(CBaseEntity* pOther)
     }
 }
 
+void CTriggerMomentumCatapult::Touch(CBaseEntity *pOther)
+{
+    BaseClass::Touch(pOther);
+
+    if (m_bEveryTick)
+    {
+        if (pOther && pOther->IsPlayer())
+        {
+            Launch(pOther);
+        }
+    }
+}
+
 void CTriggerMomentumCatapult::Think()
 {
-    if (m_bOnThink)
+    if (!m_bOnThink)
     {
         SetNextThink(TICK_NEVER_THINK);
         return;
