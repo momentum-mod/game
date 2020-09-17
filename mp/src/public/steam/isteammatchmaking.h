@@ -23,6 +23,8 @@ enum ELobbyType
 	k_ELobbyTypeInvisible = 3,		// returned by search, but not visible to other friends 
 									//    useful if you want a user in two lobbies, for example matching groups together
 									//	  a user can be in only one regular lobby, and up to two invisible lobbies
+	k_ELobbyTypePrivateUnique = 4,	// private, unique and does not delete when empty - only one of these may exist per unique keypair set
+									// can only create from webapi
 };
 
 // lobby search filter tools
@@ -254,7 +256,6 @@ public:
 	// after completion, the local user will no longer be the owner
 	virtual void CheckForPSNGameBootInvite( unsigned int iGameBootAttributes  ) = 0;
 #endif
-	STEAM_CALL_BACK( LobbyChatUpdate_t )
 };
 #define STEAMMATCHMAKING_INTERFACE_VERSION "SteamMatchMaking009"
 
@@ -598,7 +599,7 @@ public:
 	// accept no lobbies with playercount greater than nMaxTeamSize
 	// the set of lobbies returned must be partitionable into teams of no more than nMaxTeamSize
 	// RequestPlayersForGameNotificationCallback_t callback will be sent when the search has started
-	// multiple RequestPlayersForGameResultCallback_t callbacks will follow when players are found
+	// multple RequestPlayersForGameResultCallback_t callbacks will follow when players are found
 	virtual EGameSearchErrorCode_t RequestPlayersForGame( int nPlayerMin, int nPlayerMax, int nMaxTeamSize ) = 0;
 
 	// accept the player list and release connection details to players

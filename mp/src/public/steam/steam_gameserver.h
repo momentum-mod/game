@@ -1,4 +1,4 @@
-//====== Copyright Â© 1996-2008, Valve Corporation, All rights reserved. =======
+//====== Copyright © 1996-2008, Valve Corporation, All rights reserved. =======
 //
 // Purpose: 
 //
@@ -28,7 +28,7 @@ enum EServerMode
 // call ISteamGameServer::LogOnAnonymous() or ISteamGameServer::LogOn()
 //
 // - usSteamPort is the local port used to communicate with the steam servers.
-//   NOTE: unless you are using very old Steam client binaries, this parameter is ignored, and
+//   NOTE: unless you are using ver old Steam client binaries, this parameter is ignored, and
 //         you should pass 0.  Gameservers now always use WebSockets to talk to Steam.
 //         This protocol is TCP-based and thus always uses an ephemeral local port.
 //         Older steam client binaries used UDP to talk to Steam, and this argument was useful.
