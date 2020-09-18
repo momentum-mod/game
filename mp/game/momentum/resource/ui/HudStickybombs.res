@@ -6,13 +6,10 @@
         "fieldName"   "CHudStickybombs"
         "visible" "1"
         "enabled" "1"
-        "xpos" "0"
-        "ypos" "0"
-        "wide" "20"
-        "tall" "22"
-        "pin_to_sibling" "HudStickyCharge"
-        "pin_to_sibling_corner" "6" //bottom center
-        "pin_corner_to_sibling" "4" //top center
+        "xpos" "c-20"
+        "ypos" "c+107"
+        "wide" "40"
+        "tall" "20"
         "fgcolor_override" "0 0 0 0"
         "bgcolor_override" "0 0 0 0"
     }
