@@ -392,6 +392,7 @@
         "MOM_Settings_SJ_Enable_Detonation_Fail_Sound_TT" "Note: if this is disabled and success sound is enabled, success sound will play if partial detonation happens."
         "MOM_Settings_SJ_Enable_Detonation_Success_Sound" "Stickybomb detonation success sound"
         "MOM_Settings_SJ_Enable_Charge_Sound" "Sticky launcher charging sound"
+        "MOM_Settings_SJ_Enable_Shoot_Sound" "Sticky launcher firing sound"
         "MOM_Settings_SJ_ChargedShotSoundTheshold_Label" "Powerful stickybomb shot sound threshold"
         "MOM_Settings_SJ_ChargedShotSoundTheshold_TT" "In seconds. Sets the amount of time a stickybomb needs to be charged before playing a more powerful version of the sticky shot sound. Default is 2, max of 4."
         "MOM_Settings_SJ_Enable_ChargeMeter" "Draw stickybomb charge meter"
