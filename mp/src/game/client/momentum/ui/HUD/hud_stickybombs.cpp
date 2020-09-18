@@ -1,5 +1,6 @@
 #include "cbase.h"
 
+#include <vgui_controls/AnimationController.h>
 #include <vgui_controls/EditablePanel.h>
 #include <vgui_controls/Label.h>
 
@@ -13,9 +14,53 @@
 
 #include "tier0/memdbgon.h"
 
+#define STICKY_COUNT_ARM_ANIM_NAME "FadeInStickyArm"
+
 using namespace vgui;
 
 static MAKE_TOGGLE_CONVAR(mom_hud_sj_stickycount_enable, "1", FCVAR_ARCHIVE, "Toggles the stickybomb counter.\n");
+
+class Stickybox : public Panel
+{
+    DECLARE_CLASS_SIMPLE(Stickybox, Panel);
+
+  public:
+    Stickybox(Panel *pParent);
+
+    bool HasAnimationStarted() const { return m_bAnimationStarted; }
+
+    void StartAnimation(Color startColor);
+    void StopAnimation();
+
+    void OnThink() override;
+
+  private:
+    CPanelAnimationVar(Color, m_StickyColor, "StickyColor", "BlackHO");
+
+    bool m_bAnimationStarted;
+};
+
+Stickybox::Stickybox(Panel *pParent) : BaseClass(pParent, "Stickybox"), m_bAnimationStarted(false)
+{}
+
+void Stickybox::StartAnimation(Color startColor)
+{
+    m_StickyColor = startColor;
+    GetAnimationController()->StartAnimationSequenceForPanel(this, STICKY_COUNT_ARM_ANIM_NAME);
+    m_bAnimationStarted = true;
+}
+
+void Stickybox::StopAnimation()
+{
+    GetAnimationController()->StopAnimationSequenceForPanel(this, STICKY_COUNT_ARM_ANIM_NAME);
+    m_bAnimationStarted = false;
+}
+
+void Stickybox::OnThink()
+{
+    if (m_bAnimationStarted)
+        SetBgColor(m_StickyColor);
+}
 
 class CHudStickybombs : public CHudElement, public EditablePanel
 {
