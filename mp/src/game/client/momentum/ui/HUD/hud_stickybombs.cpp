@@ -2,15 +2,13 @@
 
 #include <vgui_controls/AnimationController.h>
 #include <vgui_controls/EditablePanel.h>
-#include <vgui_controls/Label.h>
 
 #include "c_mom_player.h"
 #include "hudelement.h"
 #include "iclientmode.h"
 #include "mom_system_gamemode.h"
 #include "weapon/weapon_mom_stickybomblauncher.h"
-
-#include "fmtstr.h"
+#include "weapon/weapon_shareddefs.h"
 
 #include "tier0/memdbgon.h"
 
@@ -71,9 +69,16 @@ class CHudStickybombs : public CHudElement, public EditablePanel
 
     bool ShouldDraw() override;
     void OnThink() override;
+    void ApplySchemeSettings(IScheme *pScheme) override;
+    void PerformLayout() override;
 
   private:
-    Label *m_pStickyLabel;
+    CUtlVector<Stickybox *> m_Stickyboxes;
+
+    CPanelAnimationVar(int, m_iBoxDimension, "BoxDimension", "8");
+    CPanelAnimationVar(Color, m_BgColor, "BgColor", "Blank");
+    CPanelAnimationVar(Color, m_PreArmColor, "PreArmColor", "BlackHO");
+    CPanelAnimationVar(Color, m_NoStickyColor, "NoStickyColor", "BlackHO");
 };
 
 DECLARE_HUDELEMENT(CHudStickybombs);
@@ -81,9 +86,13 @@ DECLARE_HUDELEMENT(CHudStickybombs);
 CHudStickybombs::CHudStickybombs(const char *pElementName)
     : CHudElement(pElementName), BaseClass(g_pClientMode->GetViewport(), "CHudStickybombs")
 {
-    m_pStickyLabel = new Label(this, "StickybombsLabel", "");
-
     SetHiddenBits(HIDEHUD_LEADERBOARDS);
+
+    m_Stickyboxes.EnsureCount(MOM_WEAPON_STICKYBOMB_COUNT);
+    for (int i = 0; i < MOM_WEAPON_STICKYBOMB_COUNT; i++)
+    {
+        m_Stickyboxes[i] = new Stickybox(this);
+    }
 
     LoadControlSettings("resource/ui/HudStickybombs.res");
 }
@@ -111,9 +120,59 @@ void CHudStickybombs::OnThink()
         return;
 
     const auto pStickylauncher = static_cast<CMomentumStickybombLauncher *>(pStickyPtr);
-
     const auto iStickybombs = pStickylauncher->GetStickybombCount();
 
-    m_pStickyLabel->SetVisible(mom_hud_sj_stickycount_autohide.GetBool() ? iStickybombs > 0 : true);
-    m_pStickyLabel->SetText(CFmtStr("%u", iStickybombs).Get());
+    for (int i = 0; i < MOM_WEAPON_STICKYBOMB_COUNT; i++)
+    {
+        if (i < iStickybombs)
+        {
+            if (!m_Stickyboxes[i]->HasAnimationStarted())
+            {
+                m_Stickyboxes[i]->StartAnimation(m_PreArmColor);
+            }
+        }
+        else if (m_Stickyboxes[i]->HasAnimationStarted())
+        {
+            if (i > 0 && i >= iStickybombs)
+            {
+                // moving into left-most box, so swap positions
+                V_swap(m_Stickyboxes[i], m_Stickyboxes[0]);
+                InvalidateLayout();
+            }
+
+            m_Stickyboxes[i]->StopAnimation();
+            m_Stickyboxes[i]->SetBgColor(m_NoStickyColor);
+        }
+    }
+}
+
+void CHudStickybombs::ApplySchemeSettings(IScheme *pScheme)
+{
+    BaseClass::ApplySchemeSettings(pScheme);
+    SetBgColor(m_BgColor);
+
+    for (int i = 0; i < MOM_WEAPON_STICKYBOMB_COUNT; i++)
+    {
+        m_Stickyboxes[i]->SetBgColor(m_NoStickyColor);
+        m_Stickyboxes[i]->SetBorder(pScheme->GetBorder("StickyboxBorder"));
+    }
+}
+
+void CHudStickybombs::PerformLayout()
+{
+    BaseClass::PerformLayout();
+
+    int iSpacePerBox = GetWide() / MOM_WEAPON_STICKYBOMB_COUNT;
+    int iXPosAcc = 0;
+    for (int i = 0; i < MOM_WEAPON_STICKYBOMB_COUNT; i++)
+    {
+        int iScaledBoxDimension = GetScaledVal(m_iBoxDimension);
+
+        m_Stickyboxes[i]->SetWide(iScaledBoxDimension);
+        m_Stickyboxes[i]->SetTall(iScaledBoxDimension);
+        m_Stickyboxes[i]->SetPos(iXPosAcc + (iSpacePerBox - iScaledBoxDimension) / 2,
+                                 GetTall() / 2 - iScaledBoxDimension / 2);
+
+        iXPosAcc += iSpacePerBox;
+    }
 }

@@ -411,7 +411,7 @@ Scheme
 	// describes all the border types
 	Borders
 	{
-		
+        StickyboxBorder FrameBorder
 	}
 
 	

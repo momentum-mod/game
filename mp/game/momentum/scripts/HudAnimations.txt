@@ -113,6 +113,11 @@ event FadeOutStageVel
     Animate HudSpeedMeter StageVelAlpha "0" Accel 5.0 0.75
 }
 
+event FadeInStickyArm
+{
+    Animate Stickybox StickyColor "MomentumBlue" Accel 0.0 0.8
+}
+
 event PulseComparePanel
 {
     Animate BogusComparisonsPanel BogusAlpha "0" Linear 0.0 1.5
