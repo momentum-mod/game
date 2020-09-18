@@ -102,6 +102,7 @@ GameplaySettingsPanel::GameplaySettingsPanel(Panel *pParent, Button *pAssociate)
     m_pSJEnableDetonateFailSound = new CvarToggleCheckButton(this, "SJEnableDetonateFailSound", "#MOM_Settings_SJ_Enable_Detonation_Fail_Sound", "mom_sj_sound_detonate_fail_enable");
     m_pSJEnableDetonateSuccessSound = new CvarToggleCheckButton(this, "SJEnableDetonateSuccessSound", "#MOM_Settings_SJ_Enable_Detonation_Success_Sound", "mom_sj_sound_detonate_success_enable");
     m_pSJEnableChargeSound = new CvarToggleCheckButton(this, "SJEnableChargeSound", "#MOM_Settings_SJ_Enable_Charge_Sound", "mom_sj_sound_charge_enable");
+    m_pSJEnableShootSound = new CvarToggleCheckButton(this, "SJEnableShootSound", "#MOM_Settings_SJ_Enable_Shoot_Sound", "mom_sj_sound_shot_enable");
     m_pSJChargedShotSoundThreshold = new CvarTextEntry(this, "SJChargedShotSoundThreshold", "mom_sj_sound_shot_charged_threshold", 2);
     m_pSJChargedShotSoundThreshold->SetAllowNumericInputOnly(true);
 
