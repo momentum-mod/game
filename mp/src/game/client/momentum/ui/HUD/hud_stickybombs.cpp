@@ -56,7 +56,7 @@ void Stickybox::StopAnimation()
 
 void Stickybox::OnThink()
 {
-    if (m_bAnimationStarted)
+    if (m_bAnimationStarted && IsEnabled())
         SetBgColor(m_StickyColor);
 }
 
@@ -79,6 +79,7 @@ class CHudStickybombs : public CHudElement, public EditablePanel
     CPanelAnimationVar(Color, m_BgColor, "BgColor", "Blank");
     CPanelAnimationVar(Color, m_PreArmColor, "PreArmColor", "BlackHO");
     CPanelAnimationVar(Color, m_NoStickyColor, "NoStickyColor", "BlackHO");
+    CPanelAnimationVar(Color, m_DisabledColor, "DisabledColor", "MomentumRed");
 };
 
 DECLARE_HUDELEMENT(CHudStickybombs);
@@ -130,6 +131,13 @@ void CHudStickybombs::OnThink()
             {
                 m_Stickyboxes[i]->StartAnimation(m_PreArmColor);
             }
+
+            const auto pSticky = pStickylauncher->GetStickyByCount(i);
+            bool bCanExplode = !pSticky || pSticky->CanExplode();
+
+            m_Stickyboxes[i]->SetEnabled(bCanExplode);
+            if (!bCanExplode)
+                m_Stickyboxes[i]->SetBgColor(m_DisabledColor);
         }
         else if (m_Stickyboxes[i]->HasAnimationStarted())
         {

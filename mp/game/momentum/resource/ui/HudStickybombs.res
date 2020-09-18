@@ -14,5 +14,6 @@
         "BgColor" "Blank"
         "PreArmColor"   "BlackHO"
         "NoStickyColor" "BlackHO"
+        "DisabledColor" "MomentumRed"
     }
 }
