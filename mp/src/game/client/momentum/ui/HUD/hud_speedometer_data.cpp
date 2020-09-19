@@ -15,6 +15,9 @@
 #define SPEEDOMETER_KEY_VISIBLE "visible"
 #define SPEEDOMETER_KEY_COLORIZE "colorize"
 #define SPEEDOMETER_KEY_UNITS "units"
+#define SPEEDOMETER_KEY_LAYOUT "layout"
+#define SPEEDOMETER_KEY_AUTOLAYOUT "autolayout"
+#define SPEEDOMETER_KEY_ORDER "order"
 
 CON_COMMAND_F(mom_hud_speedometer_loadcfg, "Loads the speedometer setup for the current gamemode from file.\n",
               FLAG_HUD_CVAR | FCVAR_CLIENTCMD_CAN_EXECUTE)
@@ -85,15 +88,15 @@ void SpeedometerData::Apply()
     }
 
     // get autolayout. if no custom layout specified, set autolayout on
-    KeyValues *pLayoutKV = pGamemodeKV->FindKey("layout");
-    bool bAutoLayout = pGamemodeKV->GetBool("autolayout", true) || !pLayoutKV;
+    auto pLayoutKV = pGamemodeKV->FindKey(SPEEDOMETER_KEY_LAYOUT);
+    bool bAutoLayout = pGamemodeKV->GetBool(SPEEDOMETER_KEY_AUTOLAYOUT, true) || !pLayoutKV;
     g_pSpeedometer->SetAutoLayout(bAutoLayout);
 
     if (bAutoLayout)
     {
         g_pSpeedometer->LoadControlSettings(g_pSpeedometer->GetResFile());
         // get ordering
-        KeyValues *pOrderKV = pGamemodeKV->FindKey("order");
+        auto pOrderKV = pGamemodeKV->FindKey(SPEEDOMETER_KEY_ORDER);
         if (pOrderKV)
         {
             auto pOrderList = g_pSpeedometer->GetLabelOrderListPtr();
