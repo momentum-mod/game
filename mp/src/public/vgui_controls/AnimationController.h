@@ -51,9 +51,12 @@ public:
 	// starts an animation sequence script
 	bool StartAnimationSequence(const char *sequenceName);
 	bool StartAnimationSequence(Panel *pWithinParent, const char *sequenceName);
+    bool StartAnimationSequenceForPanel(Panel *pPanel, const char *sequenceName);
 
 	bool StopAnimationSequence( Panel *pWithinParent, const char *sequenceName );
-	void CancelAnimationsForPanel( Panel *pWithinParent );
+	bool StopAnimationSequenceForPanel(Panel *pPanel, const char *sequenceName);
+	void CancelAnimations(Panel *pWithinParent);
+	void CancelAnimationsForPanel(Panel *pPanel);
 
 	// gets the length of an animation sequence, in seconds
 	float GetAnimationSequenceLength(const char *sequenceName);
@@ -236,8 +239,12 @@ private:
 
 	// runs a single line of the script
 	void ExecAnimationCommand(UtlSymId_t seqName, AnimCommand_t &animCommand, Panel *pWithinParent);
+    // runs a single line of the script for the specified panel
+	void ExecAnimationCommandForPanel(UtlSymId_t seqName, AnimCommand_t &animCommand, Panel *pPanel);
 	// removes all commands belonging to a script
 	void RemoveQueuedAnimationCommands(UtlSymId_t seqName, vgui::Panel *panel = NULL);
+    // removes all commands belonging to a script for the specified panel
+	void RemoveQueuedAnimationCommandsForPanel(UtlSymId_t seqName, vgui::Panel *panel = NULL);
 	// removes an existing instance of a command
 	void RemoveQueuedAnimationByType(vgui::Panel *panel, UtlSymId_t variable, UtlSymId_t sequenceToIgnore);
 

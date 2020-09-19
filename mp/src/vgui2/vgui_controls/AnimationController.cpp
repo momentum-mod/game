@@ -1006,6 +1006,46 @@ bool AnimationController::StartAnimationSequence(Panel *pWithinParent, const cha
 }
 
 //-----------------------------------------------------------------------------
+// Purpose: starts an animation sequence script on the specified panel
+//-----------------------------------------------------------------------------
+bool AnimationController::StartAnimationSequenceForPanel(Panel *pPanel, const char *sequenceName)
+{
+    Assert(pPanel);
+
+    if (m_bAutoReloadScript)
+    {
+        // Reload the script files
+        ReloadScriptFile();
+    }
+
+	// lookup the symbol for the name
+    UtlSymId_t seqName = g_ScriptSymbols.Find(sequenceName);
+    if (seqName == UTL_INVAL_SYMBOL)
+        return false;
+
+    // remove the existing command from the queue
+    RemoveQueuedAnimationCommandsForPanel(seqName, pPanel);
+
+    // look through for the sequence
+    int i;
+    for (i = 0; i < m_Sequences.Count(); i++)
+    {
+        if (m_Sequences[i].name == seqName)
+            break;
+    }
+    if (i >= m_Sequences.Count())
+        return false;
+
+    // execute the sequence
+    for (int cmdIndex = 0; cmdIndex < m_Sequences[i].cmdList.Count(); cmdIndex++)
+    {
+        ExecAnimationCommandForPanel(seqName, m_Sequences[i].cmdList[cmdIndex], pPanel);
+    }
+
+    return true;
+}
+
+//-----------------------------------------------------------------------------
 // Purpose: stops an animation sequence script
 //-----------------------------------------------------------------------------
 bool AnimationController::StopAnimationSequence( Panel *pWithinParent, const char *sequenceName )
@@ -1023,10 +1063,25 @@ bool AnimationController::StopAnimationSequence( Panel *pWithinParent, const cha
 	return true;
 }
 
+bool AnimationController::StopAnimationSequenceForPanel(Panel *pPanel, const char *sequenceName)
+{
+    Assert(pPanel);
+
+    // lookup the symbol for the name
+    UtlSymId_t seqName = g_ScriptSymbols.Find(sequenceName);
+    if (seqName == UTL_INVAL_SYMBOL)
+        return false;
+
+    // remove the existing command from the queue
+    RemoveQueuedAnimationCommandsForPanel(seqName, pPanel);
+
+    return true;
+}
+
 //-----------------------------------------------------------------------------
 // Purpose: Runs a custom command from code, not from a script file
 //-----------------------------------------------------------------------------
-void AnimationController::CancelAnimationsForPanel( Panel *pWithinParent )
+void AnimationController::CancelAnimations( Panel *pWithinParent )
 {
 	// Msg("Removing queued anims for sequence %s\n", g_ScriptSymbols.String(seqName));
 
@@ -1060,6 +1115,28 @@ void AnimationController::CancelAnimationsForPanel( Panel *pWithinParent )
 		m_ActiveAnimations.Remove(i);
 		--i;
 	}
+}
+
+void AnimationController::CancelAnimationsForPanel(Panel *pPanel)
+{
+    // remove messages posted for this panel
+    for (int i = 0; i < m_PostedMessages.Count(); i++)
+    {
+        if (m_PostedMessages[i].parent == pPanel)
+        {
+            m_PostedMessages.Remove(i--);
+        }
+    }
+
+    // remove all animations for the specified panel
+    for (int i = 0; i < m_ActiveAnimations.Count(); i++)
+    {
+        Panel *animPanel = m_ActiveAnimations[i].panel;
+        if (animPanel && animPanel == pPanel)
+        {
+            m_ActiveAnimations.Remove(i--);
+        }
+    }
 }
 
 //-----------------------------------------------------------------------------
@@ -1183,6 +1260,37 @@ void AnimationController::RemoveQueuedAnimationCommands(UtlSymId_t seqName, Pane
 }
 
 //-----------------------------------------------------------------------------
+// Purpose: removes an existing set of commands from the queue for the specified panel
+//-----------------------------------------------------------------------------
+void AnimationController::RemoveQueuedAnimationCommandsForPanel(UtlSymId_t seqName, Panel *pPanel)
+{
+    // remove messages posted by this sequence for the specified panel
+    for (int i = 0; i < m_PostedMessages.Count(); i++)
+    {
+        if (m_PostedMessages[i].seqName != seqName)
+            continue;
+
+        if (pPanel && m_PostedMessages[i].parent != pPanel)
+            continue;
+
+        m_PostedMessages.Remove(i--);
+    }
+
+    // remove all animations of this sequence for the specified panel
+    for (int i = 0; i < m_ActiveAnimations.Count(); i++)
+    {
+        if (m_ActiveAnimations[i].seqName != seqName)
+            continue;
+
+        Panel *animPanel = m_ActiveAnimations[i].panel;
+        if (!animPanel || animPanel != pPanel)
+            continue;
+
+        m_ActiveAnimations.Remove(i--);
+    }
+}
+
+//-----------------------------------------------------------------------------
 // Purpose: removes the specified queued animation
 //-----------------------------------------------------------------------------
 void AnimationController::RemoveQueuedAnimationByType(vgui::Panel *panel, UtlSymId_t variable, UtlSymId_t sequenceToIgnore)
@@ -1219,6 +1327,29 @@ void AnimationController::ExecAnimationCommand(UtlSymId_t seqName, AnimCommand_t
 		msg.startTime = m_flCurrentTime + animCommand.cmdData.runEvent.timeDelay;
 		msg.parent = pWithinParent;
 	}
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: runs a single line of the script on the specified panel
+//-----------------------------------------------------------------------------
+void AnimationController::ExecAnimationCommandForPanel(UtlSymId_t seqName, AnimCommand_t &animCommand, Panel *pPanel)
+{
+    if (animCommand.commandType == CMD_ANIMATE)
+    {
+        StartCmd_Animate(pPanel, seqName, animCommand.cmdData.animate);
+    }
+    else
+    {
+        // post the command to happen at the specified time
+        PostedMessage_t &msg = m_PostedMessages[m_PostedMessages.AddToTail()];
+        msg.seqName = seqName;
+        msg.commandType = animCommand.commandType;
+        msg.event = animCommand.cmdData.runEvent.event;
+        msg.variable = animCommand.cmdData.runEvent.variable;
+        msg.variable2 = animCommand.cmdData.runEvent.variable2;
+        msg.startTime = m_flCurrentTime + animCommand.cmdData.runEvent.timeDelay;
+        msg.parent = pPanel;
+    }
 }
 
 //-----------------------------------------------------------------------------
