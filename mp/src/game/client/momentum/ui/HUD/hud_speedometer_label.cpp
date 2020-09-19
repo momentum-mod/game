@@ -252,6 +252,9 @@ void SpeedometerLabel::SaveToKV(KeyValues* pOut)
 
 void SpeedometerLabel::LoadFromKV(KeyValues* pIn)
 {
+    if (!pIn)
+        return;
+
     SetVisible(pIn->GetBool("visible", false));
     if (!IsVisible())
         return;
