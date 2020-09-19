@@ -25,7 +25,7 @@ class SpeedometerData
     SpeedometerUnits_t GetUnits(GameMode_t gametype, SpeedometerLabel_t speedometerLabelType) const;
 
   private:
-    SpeedometerLabel *GetLabelFromName(const char *name) const;
+    bool LoadDefaultSubKeyData(KeyValues *pGamemodeKV, KeyValues *pDefaultGamemodeKV, const char *pszKeyName);
 
     KeyValues *GetSpeedoKVs(GameMode_t gametype, SpeedometerLabel_t speedometerLabelType) const;
 
