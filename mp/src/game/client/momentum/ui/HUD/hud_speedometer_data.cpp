@@ -178,7 +178,7 @@ void SpeedometerData::Apply()
             bShouldSave = true;
         }
 
-        pSpeedoLabel->LoadFromKV(pSpeedoKV);
+        pSpeedoLabel->ApplyKV(pSpeedoKV);
     }
 
     if (bShouldSave)

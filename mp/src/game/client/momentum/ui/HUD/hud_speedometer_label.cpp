@@ -232,25 +232,7 @@ void SpeedometerLabel::ColorizeComparisonSeparate()
     SetSecondaryFgColor(compareColor);
 }
 
-void SpeedometerLabel::SaveToKV(KeyValues* pOut)
-{
-    pOut->Clear();
-    pOut->SetBool("visible", IsVisible());
-    pOut->SetInt("colorize", GetColorizeType());
-    KeyValues *pRangesKV = pOut->FindKey("ranges", true);
-
-    FOR_EACH_VEC(m_vecRangeList, i)
-    {
-        Range_t range = m_vecRangeList[i];
-        KeyValues *rangeKV = pRangesKV->FindKey(CFmtStr("%i", i + 1).Get(), true);
-        rangeKV->SetInt("min", range.min);
-        rangeKV->SetInt("max", range.max);
-        rangeKV->SetColor("color", range.color);
-    }
-    pOut->SetInt("units", GetUnitType());
-}
-
-void SpeedometerLabel::LoadFromKV(KeyValues* pIn)
+void SpeedometerLabel::ApplyKV(KeyValues *pIn)
 {
     if (!pIn)
         return;
