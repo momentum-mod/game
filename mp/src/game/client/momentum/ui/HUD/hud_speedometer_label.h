@@ -53,9 +53,8 @@ class SpeedometerLabel : public vgui::DoubleLabel
 
     bool GetSupportsSeparateComparison() { return m_bSupportsSeparateComparison; }
     void SetSupportsSeparateComparison(bool bSupportsSeparateComparison) { m_bSupportsSeparateComparison = bSupportsSeparateComparison; }
-
-    void SaveToKV(KeyValues *pOut);
-    void LoadFromKV(KeyValues *pIn);
+    
+    void ApplyKV(KeyValues *pIn);
 
   private:
     void ConvertUnits();
