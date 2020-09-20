@@ -75,14 +75,20 @@
         "HorizSpeedometer"
         {
             "visible"  "0"
+            "colorize" "2"
+            "units"    "0"
         }
         "VertSpeedometer"
         {
             "visible"  "0"
+            "colorize" "2"
+            "units"    "0"
         }
         "ExplosiveJumpVelocity"
         {
             "visible"  "0"
+            "colorize" "0"
+            "units"    "0"
         }
         "LastJumpVelocity"
         {
@@ -138,14 +144,20 @@
         "HorizSpeedometer"
         {
             "visible"  "0"
+            "colorize" "2"
+            "units"    "0"
         }
         "VertSpeedometer"
         {
             "visible"  "0"
+            "colorize" "2"
+            "units"    "0"
         }
         "ExplosiveJumpVelocity"
         {
             "visible"  "0"
+            "colorize" "0"
+            "units"    "0"
         }
         "LastJumpVelocity"
         {
@@ -201,14 +213,20 @@
         "HorizSpeedometer"
         {
             "visible"  "0"
+            "colorize" "2"
+            "units"    "0"
         }
         "VertSpeedometer"
         {
             "visible"  "0"
+            "colorize" "2"
+            "units"    "0"
         }
         "ExplosiveJumpVelocity"
         {
             "visible"  "0"
+            "colorize" "0"
+            "units"    "0"
         }
         "LastJumpVelocity"
         {
@@ -219,10 +237,14 @@
         "RampBoardVelocity"
         {
             "visible"  "0"
+            "colorize" "0"
+            "units"    "0"
         }
         "RampLeaveVelocity"
         {
             "visible"  "0"
+            "colorize" "0"
+            "units"    "0"
         }
         "StageEnterExitVelocity"
         {
@@ -253,7 +275,9 @@
         }
         "AbsSpeedometer"
         {
-            "visible" "0"
+            "visible"  "0"
+            "colorize" "2"
+            "units"    "0"
         }
         "HorizSpeedometer"
         {
@@ -285,6 +309,8 @@
         "VertSpeedometer"
         {
             "visible"  "0"
+            "colorize" "2"
+            "units"    "0"
         }
         "ExplosiveJumpVelocity"
         {
@@ -295,14 +321,20 @@
         "LastJumpVelocity"
         {
             "visible"  "0"
+            "colorize" "2"
+            "units"    "0"
         }
         "RampBoardVelocity"
         {
             "visible"  "0"
+            "colorize" "0"
+            "units"    "0"
         }
         "RampLeaveVelocity"
         {
             "visible"  "0"
+            "colorize" "0"
+            "units"    "0"
         }
         "StageEnterExitVelocity"
         {
@@ -333,7 +365,9 @@
         }
         "AbsSpeedometer"
         {
-            "visible" "0"
+            "visible"  "0"
+            "colorize" "2"
+            "units"    "0"
         }
         "HorizSpeedometer"
         {
@@ -398,14 +432,20 @@
         "LastJumpVelocity"
         {
             "visible"  "0"
+            "colorize" "0"
+            "units"    "0"
         }
         "RampBoardVelocity"
         {
             "visible"  "0"
+            "colorize" "0"
+            "units"    "0"
         }
         "RampLeaveVelocity"
         {
             "visible"  "0"
+            "colorize" "0"
+            "units"    "0"
         }
         "StageEnterExitVelocity"
         {
@@ -443,14 +483,20 @@
         "HorizSpeedometer"
         {
             "visible"  "0"
+            "colorize" "2"
+            "units"    "0"
         }
         "VertSpeedometer"
         {
             "visible"  "0"
+            "colorize" "2"
+            "units"    "0"
         }
         "ExplosiveJumpVelocity"
         {
             "visible"  "0"
+            "colorize" "0"
+            "units"    "0"
         }
         "LastJumpVelocity"
         {
@@ -461,10 +507,14 @@
         "RampBoardVelocity"
         {
             "visible"  "0"
+            "colorize" "0"
+            "units"    "0"
         }
         "RampLeaveVelocity"
         {
             "visible"  "0"
+            "colorize" "0"
+            "units"    "0"
         }
         "StageEnterExitVelocity"
         {
@@ -502,14 +552,20 @@
         "HorizSpeedometer"
         {
             "visible"  "0"
+            "colorize" "2"
+            "units"    "0"
         }
         "VertSpeedometer"
         {
             "visible"  "0"
+            "colorize" "2"
+            "units"    "0"
         }
         "ExplosiveJumpVelocity"
         {
             "visible"  "0"
+            "colorize" "0"
+            "units"    "0"
         }
         "LastJumpVelocity"
         {
@@ -520,10 +576,14 @@
         "RampBoardVelocity"
         {
             "visible"  "0"
+            "colorize" "0"
+            "units"    "0"
         }
         "RampLeaveVelocity"
         {
             "visible"  "0"
+            "colorize" "0"
+            "units"    "0"
         }
         "StageEnterExitVelocity"
         {
