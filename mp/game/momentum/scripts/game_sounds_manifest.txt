@@ -1,5 +1,15 @@
 game_sounds_manifest
 {
+    // Music Tracks
+	"precache_file"		"scripts/level_sounds_music.txt"
+
+	// Momentum specific
+	"precache_file"		"scripts/game_sounds_momentum.txt"
+	"precache_file"		"scripts/game_sounds_momentum_weapons.txt"
+	"precache_file"		"scripts/game_sounds_momentum_music.txt"
+	"precache_file"		"scripts/game_sounds_momentum_player.txt"
+    
+    
 	"precache_file"		"scripts/game_sounds.txt"
 	"precache_file"		"scripts/game_sounds_ui.txt"
 	"precache_file"		"scripts/game_sounds_player.txt"
@@ -13,15 +23,6 @@ game_sounds_manifest
 	"precache_file"		"scripts/game_sounds_items.txt"
 	"precache_file"		"scripts/game_sounds_physics.txt"
 	"precache_file"		"scripts/game_sounds_vehicles.txt"
-
-	// Music Tracks
-	"precache_file"		"scripts/level_sounds_music.txt"
-
-	// Momentum specific
-	"precache_file"		"scripts/game_sounds_momentum.txt"
-	"precache_file"		"scripts/game_sounds_momentum_weapons.txt"
-	"precache_file"		"scripts/game_sounds_momentum_music.txt"
-	"precache_file"		"scripts/game_sounds_momentum_player.txt"
 
 	 // Level sounds
 	"preload_file"		"scripts/level_sounds_general.txt"
