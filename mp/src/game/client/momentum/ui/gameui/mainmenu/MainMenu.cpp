@@ -315,10 +315,10 @@ void MainMenu::DrawMainMenu()
         }
     }
 
-    SetPostProcessParams(&m_PostProcessParameters, true);
-
     if (GameUIUtil::IsInLevel())
     {
+        SetPostProcessParams(&m_PostProcessParameters, true);
+
         m_nSortFlags &= ~FL_SORT_MENU;
 
         m_bNeedSort = (!m_bNeedSort && !(m_nSortFlags & FL_SORT_INGAME));
