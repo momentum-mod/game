@@ -22,18 +22,18 @@ class MainMenu : public vgui::EditablePanel, public CGameEventListener
     MainMenu(CBaseMenuPanel *pParent);
     ~MainMenu();
 
-    void OnThink() OVERRIDE;
-    bool IsVisible() OVERRIDE;
-    void OnCommand(char const *cmd) OVERRIDE;
+    void OnThink() override;
+    bool IsVisible() override;
+    void OnCommand(char const *cmd) override;
 
-    void FireGameEvent(IGameEvent* event) OVERRIDE;
+    void FireGameEvent(IGameEvent* event) override;
 
-    void ApplySchemeSettings(vgui::IScheme *pScheme) OVERRIDE;
+    void ApplySchemeSettings(vgui::IScheme *pScheme) override;
     void CreateMenu();
     void DrawMainMenu();
     void DrawLogo();
     void CheckVersion();
-    void Paint() OVERRIDE;
+    void Paint() override;
     void PerformLayout() override;
     void SetVisible(bool state) override;
 
