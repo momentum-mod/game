@@ -491,6 +491,8 @@ public:
 
 	// Object bodygroup
 	int								m_nBody;
+	int m_nBodyGroup;
+	int m_nBodyGroupValue;
 
 	// Hitbox set to use (default 0)
 	int								m_nHitboxSet;

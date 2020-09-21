@@ -747,6 +747,9 @@ C_BaseAnimating::C_BaseAnimating() :
     m_pGlowEffect = NULL;
     m_bGlowEnabled = false;
     m_bOldGlowEnabled = false;
+
+	m_nBodyGroup = -1;
+	m_nBodyGroupValue = -1;
 }
 
 //-----------------------------------------------------------------------------
@@ -1167,6 +1170,11 @@ CStudioHdr *C_BaseAnimating::OnNewModel()
 		AddEFlags( EFL_USE_PARTITION_WHEN_NOT_SOLID );
 	}
 
+	// Set bodygroup stuff if buffered
+	if (m_nBodyGroup != -1 && m_nBodyGroupValue != -1)
+	{
+	    SetBodygroup(m_nBodyGroup, m_nBodyGroupValue);
+	}
 
 	// Most entities clear out their sequences when they change models on the server, but 
 	// not all entities network down their m_nSequence (like multiplayer game player entities), 
@@ -5488,10 +5496,14 @@ int C_BaseAnimating::FindTransitionSequence( int iCurrentSequence, int iGoalSequ
 
 void C_BaseAnimating::SetBodygroup( int iGroup, int iValue )
 {
-	// SetBodygroup is not supported on pending dynamic models. Wait for it to load!
-	// XXX TODO we could buffer up the group and value if we really needed to. -henryg
-	Assert( GetModelPtr() );
-	::SetBodygroup( GetModelPtr( ), m_nBody, iGroup, iValue );
+	m_nBodyGroup = iGroup;
+	m_nBodyGroupValue = iValue;
+
+	if ( !IsDynamicModelLoading() )
+	{
+        Assert(GetModelPtr());
+        ::SetBodygroup(GetModelPtr(), m_nBody, iGroup, iValue);
+    }
 }
 
 int C_BaseAnimating::GetBodygroup( int iGroup )
