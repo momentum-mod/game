@@ -313,7 +313,10 @@ bool CMomentumStickybombLauncher::SetChargeEnabled(bool state)
         if (m_flChargeBeginTime > 0) // was charging when disabled
         {
             SendWeaponAnim(ACT_VM_IDLE);
-            WeaponSound(GetWeaponSound(MOM_STICKYLAUNCHER_SOUND_CHARGE_STOP));
+            if (mom_sj_sound_charge_enable.GetBool())
+            {
+                WeaponSound(GetWeaponSound(MOM_STICKYLAUNCHER_SOUND_CHARGE_STOP));
+            }
         }
     }
     return m_bIsChargeEnabled.Set(state); 
