@@ -48,104 +48,185 @@
 //	SNDLVL_140dB	= 140,	// 0.2
 //	SNDLVL_150dB	= 150,	// 0.2
 
+"Weapon_RPG.Draw"
+{
+	"channel"	    "CHAN_STATIC"
+	"soundlevel"	"SNDLVL_74dB"
+	"volume"	    ".2"
+	"wave"		    "weapons/draw_primary.wav"
+}
+
 "Weapon_RL.Single"
 {
-    "channel" "CHAN_WEAPON"
-    "volume" "1.0"
-    "soundlevel" "SNDLVL_GUNFIRE"
-    "pitch" "PITCH_NORM"
+    "channel"       "CHAN_WEAPON"
+    "volume"        ".3"
+    "soundlevel"    "SNDLVL_GUNFIRE"
+    "pitch"         "PITCH_NORM"
     
-    "wave" ")weapons/rl/rocket_shoot.wav"
+    "wave"          ")weapons/mom_rocketlauncher/mom_rocketlauncher-Fire.wav"
 }
 
 "Rocket.Trail"
 {
     "channel"       "CHAN_WEAPON"
-    "volume"        "VOL_NORM"
+    "volume"        ".9"
     "pitch"         "PITCH_NORM"
     "soundlevel"    "SNDLVL_90dB"
 
-    "wave"          "weapons/rl/rocket_trail.wav"
+    "wave"          "weapons/mom_rocketlauncher/mom_rocketlauncher-RocketTrail.wav"
 }
 
 "Weapon_RL.Explosion"
 {
-    "channel" "CHAN_WEAPON"
-    "volume" "1.0"
-    "soundlevel" "SNDLVL_95dB"
-    "pitch" "PITCH_NORM"
+    "channel"       "CHAN_STATIC"
+    "volume"        ".5"
+    "soundlevel"    "SNDLVL_120dB"
+    "pitch"         "PITCH_NORM"
 
-    "rndwave"
-    {
-        "wave" ")weapons/rl/explode1.wav"
-        "wave" ")weapons/rl/explode2.wav"
-    }
+    "wave"		    "^weapons/mom_rocketlauncher/mom_rocketlauncher-Explosion.wav"
 }
 
 "BaseExplosionEffect.SoundTF2"
 {
-    "channel" "CHAN_WEAPON"
-    "volume" "1.0"
-    "soundlevel" "SNDLVL_95dB"
-    "pitch" "PITCH_NORM"
+    "channel"       "CHAN_STATIC"
+    "volume"        ".3"
+    "soundlevel"    "SNDLVL_95dB"
+    "pitch"         "PITCH_NORM"
 
     "rndwave"
     {
-        "wave" ")weapons/explode2.wav"
-        "wave" ")weapons/explode1.wav"
+        "wave"      ")weapons/explode2.wav"
+        "wave"      ")weapons/explode1.wav"
     }
 }
 
 "StickybombLauncher.Single"
 {
-    "channel"	"CHAN_WEAPON"
-    "volume"	"1.0"
-    "soundlevel"	"SNDLVL_94dB"
-    "wave"		"weapons/stickybomblauncher_shoot.wav"
+    "channel"	    "CHAN_WEAPON"
+    "volume"	    ".3"
+    "soundlevel"	"SNDLVL_105"
+    
+    "wave"          ")weapons/mom_stickylauncher/mom_stickylauncher-Fire01.wav"
+
+}
+
+"StickybombLauncher.ChargedShot"
+{
+    "channel"	    "CHAN_WEAPON"
+    "volume"	    ".3"
+    "soundlevel"	"SNDLVL_105"
+    
+    "wave"          ")weapons/mom_stickylauncher/mom_stickylauncher-Fire02.wav"
+
 }
 
 "StickybombLauncher.Detonate"
 {
-    "channel"	"CHAN_AUTO"
-    "volume"	"1.0"
-    "soundlevel"	"SNDLVL_94dB"
-    "wave"		"weapons/stickybomblauncher_det.wav"
+    "channel"	    "CHAN_STATIC"
+    "volume"	    ".24"
+    "soundlevel"	"SNDLVL_NONE"
+    "pitch"         "PITCH_NORM"
+    
+    "wave"		    "weapons/mom_stickylauncher/mom_stickylauncher-Det01.wav"
 }
 
 "StickybombLauncher.Deny"
 {
-    "channel"	"CHAN_AUTO"
-    "volume"	"1.0"
-    "soundlevel"	"SNDLVL_94dB"
-    "wave"		"weapons/stickylauncher/stickybomblauncher_deny.wav"
+    "channel"	    "CHAN_AUTO"
+    "volume"	    ".22"
+    "soundlevel"	"SNDLVL_NONE"
+    "pitch"         "90"
+    
+    "wave"		"weapons/mom_stickylauncher/mom_stickylauncher-Det01.wav"
 }
 
 "StickybombLauncher.Charge"
 {
-    "channel"	"CHAN_AUTO"
-    "volume"	"1.0"
-    "soundlevel"	"SNDLVL_94dB"
-    "wave"		"weapons/stickybomblauncher_charge_up.wav"
+    "channel"	    "CHAN_WEAPON"
+    "volume"	    "1.0"
+    "soundlevel"	"SNDLVL_NONE"
+    
+    "wave"		    "weapons/mom_stickylauncher/mom_stickylauncher-ChargeUp.wav"
 }
 
 "StickybombLauncher.ChargeStop"
 {
-    "channel"	"CHAN_AUTO"
-    "volume"	"1.0"
-    "soundlevel"	"SNDLVL_94dB"
-    "wave"		"common/wpn_denyselect.wav"
+    "channel"	    "CHAN_WEAPON"
+    "volume"	    "1.0"
+    "soundlevel"	"SNDLVL_NONE"
+    
+    "wave"		    "weapons/mom_stickylauncher/mom_stickylauncher-ChargeFail.wav"
 }
 
 "StickybombLauncher.Explosion"
 {
-    "channel" "CHAN_WEAPON"
-    "volume" "1.0"
-    "soundlevel" "SNDLVL_95dB"
-    "pitch" "PITCH_NORM"
+    "channel"       "CHAN_STATIC"
+    "volume"        ".3"
+    "soundlevel"    "SNDLVL_100dB"
+    "pitch"         "PITCH_NORM"
+    
+    "wave"		    "^weapons/mom_stickylauncher/mom_stickylauncher-Explosion.wav"
+   
+}
 
-    "rndwave"
+"Weapon_Pistol.Single"
+{
+	"channel"		"CHAN_WEAPON"
+	"volume"		"0.3"
+	"soundlevel"	"SNDLVL_GUNFIRE"
+	"pitch"			"PITCH_NORM"
+
+	"wave"		    ")weapons/mom_pistol/mom_pistol-fire01.wav"
+}
+
+"Weapon_Scout.Single"
+{
+	"channel"		"CHAN_WEAPON"
+	"volume"		"0.3"
+	"soundlevel"	"SNDLVL_GUNFIRE"
+	"pitch"			"PITCH_NORM"
+
+	"wave"		    ")weapons/mom_sniper/mom_sniper-fire01.wav"
+}
+
+"Weapon_SMG1.Single"
+{
+	"channel"		"CHAN_WEAPON"
+	"volume"		"0.3"
+	"soundlevel"	"SNDLVL_GUNFIRE"
+	"pitch"			"PITCH_NORM"
+
+	"wave"			")weapons/mom_machinegun/mom_smg-fire01.wav"
+}
+
+"Weapon_Shotgun.Special1"
+{
+	"channel"		"CHAN_STATIC"
+	"volume"		"0.13"
+	"soundlevel"	"SNDLVL_NORM"
+
+	"wave"		    "weapons/mom_shotgun/mom_shotgun-cock.wav"
+}
+
+"Weapon_Shotgun.Single"
+{
+	"channel"		"CHAN_WEAPON"
+	"volume"		"0.3"
+	"soundlevel"	"SNDLVL_NORM"
+
+	"wave"		    "weapons/mom_shotgun/mom_shotgun-fire01.wav"
+}
+
+"Grenade.Bounce"
+{
+	"channel"	    "CHAN_AUTO"
+	"volume"	    "0.4"
+	"soundlevel"	"SNDLVL_NORM"
+    
+    rndwave
     {
-        "wave" ")weapons/rl/explode1.wav"
-        "wave" ")weapons/rl/explode2.wav"
+        "wave"		")weapons/mom_conc/mom_frag-bounce01.wav"
+        "wave"      ")weapons/mom_conc/mom_frag-bounce02.wav"
+        "wave"      ")weapons/mom_conc/mom_frag-bounce03.wav"
     }
 }
