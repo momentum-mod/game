@@ -1,0 +1,21 @@
+PBR
+{
+	$basetexture 		models/weapons/mom_stickylauncher/mom_sl_classic_C
+    $mraoTexture        models/weapons/mom_stickylauncher/mom_sl_classic_MRAO
+    $mraoScale          "[1.3 1 1]"
+	$bumpmap 			dev/flat_normal
+    $emissiontexture    models/weapons/mom_stickylauncher/mom_sl_classic_E
+    $emissionScale      "[0 0 0]"
+    $envmap             env_cubemap
+    
+    $model              1
+	$surfaceprop        "weapon"
+	Proxies
+	{        
+		PlayerSpeed
+		{
+			scale		0.003
+			resultvar	$emissionScale
+		}
+	}
+}
