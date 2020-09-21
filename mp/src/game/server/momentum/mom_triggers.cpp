@@ -1850,6 +1850,9 @@ void CTriggerMomentumCatapult::Touch(CBaseEntity *pOther)
 
     if (m_bEveryTick)
     {
+        if (!PassesTriggerFilters(pOther))
+            return;
+
         if (pOther && pOther->IsPlayer())
         {
             Launch(pOther);
