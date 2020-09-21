@@ -1,0 +1,80 @@
+WeaponData
+{
+    "CrosshairMinDistance"      "4"
+    "CrosshairDeltaDistance"    "4"
+    "BuiltRightHanded"          "1"
+    "PlayerAnimationExtension"  "ak"
+    
+    // Weapon data is loaded by both the Game and Client DLLs.
+    "printname"         "#MOM_Weapon_RocketLauncher"
+    
+    "anim_prefix"      "anim"
+    "bucket"            "0"
+    "bucket_position"   "0"
+
+    "clip_size"         "4"
+
+    "weight"            "25"
+
+    "ModelData"
+    {
+        "view"  "models/weapons/mom_rocketlauncher/v_mom_rocketlauncher_c.mdl"
+        "world" "models/weapons/mom_rocketlauncher/w_mom_rocketlauncher.mdl"
+
+        "rocket"    "models/weapons/mom_rocketlauncher/w_missile.mdl"
+        "surprise"  "models/custom_props/yee_rider.mdl"
+    }
+
+    // Sounds for the weapon
+    SoundData
+    {
+        "single_shot"       "Weapon_RL.Single"
+        "explosion"         "Weapon_RL.Explosion"
+        "RocketTrail"       "Rocket.Trail"
+    }
+
+    // Weapon particles
+    ParticleData
+    {
+        "ExplosionEffect"          "mom_rocket_explosion_c"
+        "ExplosionMidAirEffect"    "mom_rocket_explosion_b"
+        "ExplosionWaterEffect"     "mom_rocket_explosion_b_"
+
+        // Trail
+        "RocketTrail"              "mom_rocket_trail_a" // mom_rocket_trail_b
+    }
+
+    // Weapon Sprite data is loaded by the Client DLL.
+    TextureData
+    {
+        //Weapon Select Images
+        "weapon"
+        {
+            "font"		"WeaponIcons"
+            "character"	"i"
+        }
+        "weapon_s"
+        {	
+            "font"		"WeaponIconsSelected"
+            "character"	"i"
+        }
+        "weapon_small"
+        {
+            "font"		"WeaponIconsSmall"
+            "character"	"i"
+        }
+        "ammo"
+        {
+            "font"		"WeaponIconsSmall"
+            "character"	"x"
+        }
+        "crosshair"
+        {
+            "file"      "sprites/crosshairs"
+            "x"         "0"
+            "y"         "48"
+            "width"     "24"
+            "height"    "24"
+        }
+    }
+}
