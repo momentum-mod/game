@@ -19,6 +19,7 @@
 #include "vgui_controls/ImagePanel.h"
 #include "vgui_controls/AnimationController.h"
 
+#include "controls/ModelPanel.h"
 #include "controls/UserComponent.h"
 #include "drawer/MenuDrawer.h"
 
@@ -41,6 +42,21 @@ CON_COMMAND(reload_menu_controls, "Reloads controls for the menu\n")
     g_pMainMenu->PostMessage(g_pMainMenu, new KeyValues("ReloadControls"));
     g_pMainMenu->InvalidateLayout();
 }
+
+static ConVar mom_menu_model_path("mom_menu_model_path", "models/custom_props/hd_logo.mdl", FCVAR_ARCHIVE, "Changes the model used in the main menu model panel.\n", [](IConVar *pVar, const char *pOldVal, float fOldVal)
+{
+   g_pMainMenu->SetModelPanelModel(ConVarRef(pVar).GetString()); 
+});
+
+static MAKE_TOGGLE_CONVAR_C(mom_menu_model_enable, "1", FCVAR_ARCHIVE, "Toggles the visibility of the main menu model panel. 0 = OFF, 1 = ON\n", [](IConVar *pVar, const char *pOldVal, float fOldVal)
+{
+   g_pMainMenu->SetModelPanelEnabled(ConVarRef(pVar).GetBool());
+});
+
+static MAKE_CONVAR_C(mom_menu_model_rotation_speed, "10", FCVAR_ARCHIVE, "Controls how fast the main menu model spins.\n", -1000, 1000, [](IConVar *pVar, const char *pOldVal, float fOldVal)
+{
+   g_pMainMenu->SetModelPanelRotationSpeed(ConVarRef(pVar).GetInt()); 
+});
 
 MainMenu::MainMenu(CBaseMenuPanel *pParent) : BaseClass(pParent, "MainMenu")
 {
@@ -99,6 +115,19 @@ MainMenu::MainMenu(CBaseMenuPanel *pParent) : BaseClass(pParent, "MainMenu")
     m_pVersionLabel->SetPaintBorderEnabled(false);
     m_pVersionLabel->SetAutoWide(true);
     m_pVersionLabel->SetAutoTall(true);
+    
+    m_pModelPanel = new CRenderPanel(this, "MainMenuModel");
+    m_pModelPanel->SetVisible(mom_menu_model_enable.GetBool());
+    m_pModelPanel->SetPaintBackgroundEnabled(false);
+    m_pModelPanel->SetPaintBorderEnabled(true);
+    m_pModelPanel->SetShouldAutoRotateModel(true);
+    m_pModelPanel->SetZPos(-50);
+    m_pModelPanel->SetAllowedDragModes(RDRAG_ROTATE);
+    m_pModelPanel->SetAllowedRotateModes(ROTATE_YAW);
+    m_pModelPanel->SetCameraDefaults(40, 0.0f, 180.0f, 200);
+    m_pModelPanel->SetAutoModelRotationSpeed(QAngle(0, mom_menu_model_rotation_speed.GetInt(), 0));
+    m_pModelPanel->LoadModel(mom_menu_model_path.GetString());
+
     // MOM_TODO: LoadControlSettings("resource/ui/MainMenuLayout.res");
 
     m_PostProcessParameters.m_flParameters[PPPN_VIGNETTE_START] = 0.0f;
@@ -450,6 +479,24 @@ void MainMenu::PerformLayout()
                                 screenTall - m_pUserComponent->GetTall() - m_iButtonsOffsetY,
                                 GetScaledVal(200),
                                 GetScaledVal(50));
+
+    m_pModelPanel->SetBounds((screenWide - m_pMenuDrawer->GetDrawerButtonWidth() - m_iButtonsOffsetX) / 2, 0, 
+                             (screenWide - m_pMenuDrawer->GetDrawerButtonWidth() + m_iButtonsOffsetX) / 2, screenTall);
+}
+
+void MainMenu::SetModelPanelEnabled(bool bEnabled)
+{
+    m_pModelPanel->SetVisible(bEnabled);
+}
+
+void MainMenu::SetModelPanelModel(const char *pModel)
+{
+    m_pModelPanel->LoadModel(pModel);
+}
+
+void MainMenu::SetModelPanelRotationSpeed(int iSpeed)
+{
+    m_pModelPanel->SetAutoModelRotationSpeed(QAngle(0, iSpeed, 0));
 }
 
 void MainMenu::SetVisible(bool state)
@@ -458,11 +505,4 @@ void MainMenu::SetVisible(bool state)
         SetPostProcessParams(&m_PostProcessParameters, false);
 
     BaseClass::SetVisible(state);
-}
-
-void MainMenu::Activate()
-{
-    MoveToFront();
-    SetVisible(true);
-    SetEnabled(true);
 }
