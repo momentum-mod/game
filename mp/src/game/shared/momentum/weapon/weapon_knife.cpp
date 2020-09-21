@@ -122,7 +122,14 @@ bool CKnife::SwingOrStab(bool bStab)
     }
 
     // Send stab or swing anim
-    SendWeaponAnim(bDidHit ? ACT_VM_HITCENTER : ACT_VM_MISSCENTER);
+    if (bStab)
+    {
+        SendWeaponAnim(bDidHit ? ACT_VM_HITCENTER : ACT_VM_MISSCENTER);
+    }
+    else
+    {
+        SendWeaponAnim(bDidHit ? ACT_VM_SWINGHIT : ACT_VM_SWINGMISS);
+    }
 
     m_flNextPrimaryAttack = gpGlobals->curtime + fPrimDelay;
     m_flNextSecondaryAttack = gpGlobals->curtime + fSecDelay;
