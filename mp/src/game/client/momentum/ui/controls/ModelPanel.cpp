@@ -12,6 +12,9 @@ using namespace vgui;
 
 #define DEFAULT_FOV 70
 
+IMPLEMENT_CLIENTCLASS_DT(C_ModelPanelModel, DT_ModelPanelModel, CModelPanelModel)
+END_RECV_TABLE();
+
 CRenderPanel::CRenderPanel(Panel *parent, const char *pElementName) : BaseClass(parent, pElementName)
 {
     render_ang.Init();
@@ -20,12 +23,20 @@ CRenderPanel::CRenderPanel(Panel *parent, const char *pElementName) : BaseClass(
     render_offset_modelBase.Init();
     m_pModelInstance = nullptr;
     m_bSizeToParent = false;
+    m_bShouldAutoRotateModel = false;
+    m_angAutoRotation = QAngle(0, 10, 0);
+
+    SetCameraDefaults(70, 45.0f, 180.0f, 100.0f);
+    SetDefaultLightAngle(QAngle(45, -135, 0));
 
     ResetView();
 
     m_iDragMode = RDRAG_NONE;
     m_iCachedMpos_x = 0;
     m_iCachedMpos_y = 0;
+    m_nAllowedDragModes = RDRAG_ALL;
+    m_flLastDragTime = 0.0f;
+    m_nAllowedRotateModes = ROTATE_ALL;
 
     m_nFOV = DEFAULT_FOV;
 
@@ -60,15 +71,21 @@ void CRenderPanel::OnThink()
     if (m_bSizeToParent)
         SizePanelToParent();
 
-    if (m_iDragMode)
+    if (m_pModelInstance && m_iDragMode == RDRAG_NONE)
     {
-        int mdelta_x, mdelta_y;
-        input()->GetCursorPosition(mdelta_x, mdelta_y);
-        mdelta_x -= m_iCachedMpos_x;
-        mdelta_y -= m_iCachedMpos_y;
-        input()->SetCursorPos(m_iCachedMpos_x, m_iCachedMpos_y);
-        switch (m_iDragMode)
-        {
+        m_pModelInstance->SimulateAngles(gpGlobals->frametime);
+    }
+
+    if (m_iDragMode == RDRAG_NONE)
+        return;
+
+    int mdelta_x, mdelta_y;
+    input()->GetCursorPosition(mdelta_x, mdelta_y);
+    mdelta_x -= m_iCachedMpos_x;
+    mdelta_y -= m_iCachedMpos_y;
+    input()->SetCursorPos(m_iCachedMpos_x, m_iCachedMpos_y);
+    switch (m_iDragMode)
+    {
         case RDRAG_LIGHT:
         {
             VMatrix viewInv;
@@ -90,14 +107,22 @@ void CRenderPanel::OnThink()
         break;
         case RDRAG_ROTATE:
         {
-            m_flPitch -= mdelta_y * 0.5f;
-            m_flYaw += mdelta_x * 0.5f;
+            if (m_nAllowedRotateModes & ROTATE_PITCH)
+            {
 
-            m_flPitch = clamp(m_flPitch, -89, 89);
-            if (m_flYaw > 180.0f)
-                m_flYaw -= 360.0f;
-            if (m_flYaw < -180.0f)
-                m_flYaw += 360.0f;
+                m_flPitch -= mdelta_y * 0.5f;
+                m_flPitch = clamp(m_flPitch, -89, 89);
+            }
+
+            if (m_nAllowedRotateModes & ROTATE_YAW)
+            {
+                m_flYaw += mdelta_x * 0.5f;
+
+                if (m_flYaw > 180.0f)
+                    m_flYaw -= 360.0f;
+                if (m_flYaw < -180.0f)
+                    m_flYaw += 360.0f;
+            }
         }
         break;
         case RDRAG_POS:
@@ -111,16 +136,15 @@ void CRenderPanel::OnThink()
         break;
         default:
             break;
-        }
     }
 }
 void CRenderPanel::ResetView()
 {
-    m_flDist = 100;
-    m_flPitch = 45;
-    m_flYaw = 180;
-    lightAng.Init(45, -135, 0);
-    m_nFOV = DEFAULT_FOV;
+    m_flDist = m_flDefaultDist;
+    m_flPitch = m_flDefaultPitch;
+    m_flYaw = m_flDefaultYaw;
+    lightAng = m_angLightDefault;
+    m_nFOV = m_nDefaultFOV;
 
     GetModelCenter(render_offset_modelBase);
 
@@ -173,6 +197,16 @@ bool CRenderPanel::IsModelReady()
     return bValid;
 }
 
+void CRenderPanel::ReloadModel()
+{
+    if (!m_pModelInstance)
+        return;
+
+    char szModelPathCopy[MAX_PATH];
+    Q_strncpy(szModelPathCopy, m_szModelPath, MAX_PATH);
+    LoadModel(szModelPathCopy);
+}
+
 void CRenderPanel::ResetModel()
 {
     if (!IsModelReady())
@@ -207,10 +241,20 @@ void CRenderPanel::OnMouseWheeled(int delta)
 void CRenderPanel::DestroyModel()
 {
     if (m_pModelInstance)
+    {
         m_pModelInstance->Remove();
+    }
 
     m_pModelInstance = nullptr;
     m_szModelPath[0] = '\0';
+}
+
+void CRenderPanel::SetCameraDefaults(int nFOV, float fPitch, float fYaw, float fDist)
+{
+    m_nDefaultFOV = nFOV;
+    m_flDefaultPitch = fPitch;
+    m_flDefaultYaw = fYaw;
+    m_flDefaultDist = fDist;
 }
 
 bool CRenderPanel::LoadModel(const char *localPath)
@@ -219,27 +263,29 @@ bool CRenderPanel::LoadModel(const char *localPath)
 
     DestroyModel();
 
-    const model_t *mdl = engine->LoadModel(localPath);
-    if (!mdl)
+    const auto iMdlIndex = modelinfo->RegisterDynamicModel(localPath, true);
+    if (iMdlIndex == -1)
         return false;
 
     Q_strcpy(m_szModelPath, localPath);
 
-    CModelPanelModel *pEnt = new CModelPanelModel();
+    auto pEnt = new C_ModelPanelModel;
     if (!pEnt->InitializeAsClientEntity(nullptr, RENDER_GROUP_OPAQUE_ENTITY))
     {
         pEnt->Remove();
         return false;
     }
 
+    pEnt->RemoveFromClientSideAnimationList();
     pEnt->DontRecordInTools();
-    pEnt->SetModelPointer(mdl);
+    pEnt->SetModelByIndex(iMdlIndex);
     pEnt->Spawn();
 
     pEnt->SetAbsAngles(vec3_angle);
     pEnt->SetAbsOrigin(vec3_origin);
 
     pEnt->AddEffects(EF_NODRAW | EF_NOINTERP);
+    
     pEnt->m_EntClientFlags |= ENTCLIENTFLAG_DONTUSEIK;
 
     // leave it alone.
@@ -253,6 +299,11 @@ bool CRenderPanel::LoadModel(const char *localPath)
     // So we listen for the "invalid_mdl_cache" event (see constructor) to be able to manually call it,
     // while manually saving our entity from the perils of start/end map.
 
+    if (m_bShouldAutoRotateModel)
+    {
+        pEnt->SetLocalAngularVelocity(m_angAutoRotation);
+    }
+
     m_pModelInstance = pEnt;
     ResetView();
 
@@ -262,25 +313,41 @@ bool CRenderPanel::LoadModel(const char *localPath)
 void CRenderPanel::OnMousePressed(MouseCode code)
 {
     BaseClass::OnMousePressed(code);
-    if (m_iDragMode)
+
+    if (m_iDragMode != RDRAG_NONE)
         return;
 
-    if (code == MOUSE_LEFT)
+    if (code == MOUSE_LEFT && (m_nAllowedDragModes & RDRAG_ROTATE))
+    {
         m_iDragMode = RDRAG_ROTATE;
-    else if (code == MOUSE_RIGHT)
+    }
+    else if (code == MOUSE_RIGHT && (m_nAllowedDragModes & RDRAG_POS))
+    {
         m_iDragMode = RDRAG_POS; // Note: These were swapped
-    else
+    }
+    else if (code == MOUSE_MIDDLE && (m_nAllowedDragModes & RDRAG_LIGHT))
+    {
         m_iDragMode = RDRAG_LIGHT;
+    }
 
-    input()->GetCursorPosition(m_iCachedMpos_x, m_iCachedMpos_y);
-    input()->SetCursorOveride(dc_none);
-    input()->SetMouseCapture(GetVPanel());
+    if (m_iDragMode != RDRAG_NONE)
+    {
+        m_flLastDragTime = engine->Time();
+
+        input()->GetCursorPosition(m_iCachedMpos_x, m_iCachedMpos_y);
+        input()->SetCursorOveride(dc_none);
+        input()->SetMouseCapture(GetVPanel());
+    }
 }
+
 void CRenderPanel::OnMouseReleased(MouseCode code)
 {
     BaseClass::OnMouseReleased(code);
-    if (!m_iDragMode)
+
+    if (m_iDragMode == RDRAG_NONE)
         return;
+
+    m_flLastDragTime = engine->Time();
 
     input()->SetCursorOveride(NULL);
     input()->SetMouseCapture(NULL);
@@ -293,9 +360,8 @@ void CRenderPanel::SetupView(CViewSetup &setup)
 {
     UpdateRenderPosition();
 
-    int x, y, w, t;
+    int x = 0, y = 0, w, t;
     GetSize(w, t);
-    x = y = 0;
     LocalToScreen(x, y);
     if (x < 0)
         w += x;
@@ -391,6 +457,28 @@ void CRenderPanel::SetRenderColors(C_BaseEntity* pEnt)
 
 void CRenderPanel::FireGameEvent(IGameEvent* event)
 {
+    if (!m_pModelInstance)
+        return;
+
+    m_pModelInstance->InvalidateMdlCache();
+}
+
+void CRenderPanel::SetShouldAutoRotateModel(bool bRotate)
+{
+    m_bShouldAutoRotateModel = bRotate;
+
     if (m_pModelInstance)
-        m_pModelInstance->InvalidateMdlCache();
+    {
+        m_pModelInstance->SetLocalAngularVelocity(m_bShouldAutoRotateModel ? m_angAutoRotation : vec3_angle);
+    }
+}
+
+void CRenderPanel::SetAutoModelRotationSpeed(const QAngle &angle)
+{
+    m_angAutoRotation = angle;
+
+    if (m_pModelInstance)
+    {
+        m_pModelInstance->SetLocalAngularVelocity(m_angAutoRotation);
+    }
 }
