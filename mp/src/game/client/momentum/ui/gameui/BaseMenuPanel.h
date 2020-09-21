@@ -75,8 +75,6 @@ private:
     float m_flTransitionStartTime;
     float m_flTransitionEndTime;
 
-    PostProcessParameters_t m_PostProcessParameters;
-
     // background fill transition
     bool m_bHaveDarkenedBackground;
     float m_flFrameFadeInTime;

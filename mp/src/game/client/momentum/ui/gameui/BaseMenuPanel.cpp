@@ -9,8 +9,6 @@
 #include "vgui/ISurface.h"
 #include "tier0/icommandline.h"
 #include "ienginevgui.h"
-#include "viewpostprocess.h"
-
 #include "vgui_controls/AnimationController.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
@@ -62,10 +60,6 @@ CBaseMenuPanel::CBaseMenuPanel() : BaseClass(nullptr, "BaseGameUIPanel")
     m_bEverActivated = false;
     m_bHaveDarkenedBackground = false;
     m_BackdropColor = Color(0, 0, 0, 128);
-
-    m_PostProcessParameters.m_flParameters[PPPN_VIGNETTE_START] = 0.0f;
-    m_PostProcessParameters.m_flParameters[PPPN_VIGNETTE_END] = 0.0f;
-    m_PostProcessParameters.m_flParameters[PPPN_VIGNETTE_BLUR_STRENGTH] = 1.0f;
 
     SetZPos(-100);
     m_pMainMenu = new MainMenu(this);
@@ -139,8 +133,6 @@ void CBaseMenuPanel::OnGameUIActivated()
 
 void CBaseMenuPanel::OnGameUIHidden()
 {
-    SetPostProcessParams(&m_PostProcessParameters, false);
-
     m_pMainMenu->SetVisible(false);
 }
 
@@ -158,7 +150,6 @@ void CBaseMenuPanel::UpdateBackgroundState()
 {
     if (GameUIUtil::IsInLevel())
     {
-        SetPostProcessParams(&m_PostProcessParameters, true);
         SetBackgroundRenderState(BACKGROUND_LEVEL);
     }
     else if (GameUIUtil::IsInBackgroundLevel() && !m_bLevelLoading)

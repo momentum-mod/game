@@ -35,6 +35,7 @@ class MainMenu : public vgui::EditablePanel, public CGameEventListener
     void CheckVersion();
     void Paint() OVERRIDE;
     void PerformLayout() override;
+    void SetVisible(bool state) override;
 
     void Activate();
 
@@ -76,4 +77,6 @@ private:
     vgui::Label *m_pVersionLabel;
 
     CBaseMenuPanel *m_pBasePanel;
+
+    PostProcessParameters_t m_PostProcessParameters;
 };
