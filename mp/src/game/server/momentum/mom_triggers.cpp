@@ -1697,7 +1697,7 @@ Vector CTriggerMomentumCatapult::CalculateLaunchVelocity(CBaseEntity *pOther)
 
     Vector vecLaunchVelocity = (vecAbsDifference / fTime);
 
-    Vector vecGravityComp(0, 0, 0.5f * flGravity * fTime);
+    Vector vecGravityComp(0, 0, 0.5f * -flGravity * fTime);
     vecLaunchVelocity -= vecGravityComp;
 
     return vecLaunchVelocity;
