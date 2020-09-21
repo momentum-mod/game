@@ -22,6 +22,8 @@
 #include "controls/UserComponent.h"
 #include "drawer/MenuDrawer.h"
 
+#include "viewpostprocess.h"
+
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
@@ -98,6 +100,10 @@ MainMenu::MainMenu(CBaseMenuPanel *pParent) : BaseClass(pParent, "MainMenu")
     m_pVersionLabel->SetAutoWide(true);
     m_pVersionLabel->SetAutoTall(true);
     // MOM_TODO: LoadControlSettings("resource/ui/MainMenuLayout.res");
+
+    m_PostProcessParameters.m_flParameters[PPPN_VIGNETTE_START] = 0.0f;
+    m_PostProcessParameters.m_flParameters[PPPN_VIGNETTE_END] = 0.0f;
+    m_PostProcessParameters.m_flParameters[PPPN_VIGNETTE_BLUR_STRENGTH] = 1.0f;
 
     CheckVersion();
 
@@ -309,6 +315,8 @@ void MainMenu::DrawMainMenu()
         }
     }
 
+    SetPostProcessParams(&m_PostProcessParameters, true);
+
     if (GameUIUtil::IsInLevel())
     {
         m_nSortFlags &= ~FL_SORT_MENU;
@@ -442,6 +450,14 @@ void MainMenu::PerformLayout()
                                 screenTall - m_pUserComponent->GetTall() - m_iButtonsOffsetY,
                                 GetScaledVal(200),
                                 GetScaledVal(50));
+}
+
+void MainMenu::SetVisible(bool state)
+{
+    if (!state)
+        SetPostProcessParams(&m_PostProcessParameters, false);
+
+    BaseClass::SetVisible(state);
 }
 
 void MainMenu::Activate()
