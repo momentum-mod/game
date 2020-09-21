@@ -1934,32 +1934,19 @@ int CTriggerMomentumCatapult::DrawDebugTextOverlays()
     text_offset++;
 
     Vector vecLaunchVelocity = vec3_origin;
+    Vector vecLaunchVelocityExact = vec3_origin;
     if (m_target != NULL_STRING)
     {
-        // Create dummy velocity
-        Vector vecPlayerOrigin = GetAbsOrigin();
+        vecLaunchVelocity = CalculateLaunchVelocity(this);
+        vecLaunchVelocityExact = CalculateLaunchVelocityExact(this);
 
-        vecPlayerOrigin.z += m_flHeightOffset;
+        Q_snprintf(tempstr, sizeof(tempstr), "Adjusted player velocity: %f",
+                   m_iUseExactVelocity ? (float)vecLaunchVelocity.Length() : (float)vecLaunchVelocityExact.Length());
 
-        Vector vecAbsDifference = m_hLaunchTarget->GetAbsOrigin() - vecPlayerOrigin;
-
-        float flSpeed2 = m_flPlayerSpeed * m_flPlayerSpeed;
-        float flGravity = GetCurrentGravity();
-
-        float flDiscriminant = 4.0f * flSpeed2 * vecAbsDifference.Length() * vecAbsDifference.Length();
-
-        flDiscriminant = sqrtf(flDiscriminant);
-        float fTime = 0.5f * (flDiscriminant / flSpeed2);
-
-        vecLaunchVelocity = (vecAbsDifference / fTime);
-
-        Vector vecGravityComp = 0.5 * (flGravity * Vector(0, 0, -1)) * fTime;
-        vecLaunchVelocity -= vecGravityComp;
+        EntityText(text_offset, tempstr, 0);
+        text_offset++;
     }
 
-    Q_snprintf(tempstr, sizeof(tempstr), "Adjusted player velocity: %f", m_iUseExactVelocity ? (float)vecLaunchVelocity.Length() : m_flPlayerSpeed);
-    EntityText(text_offset, tempstr, 0);
-    text_offset++;
 
     return text_offset;
 }
