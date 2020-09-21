@@ -28,6 +28,8 @@ OnlineSettingsPanel::OnlineSettingsPanel(Panel *pParent, Button *pAssociate) : B
     SetSize(20, 20);
     // ============ Appearance settings
     m_pModelPreview = new CRenderPanel(this, "ModelPreview");
+    m_pModelPreview->SetShouldAutoRotateModel(true);
+    m_pModelPreview->SetCameraDefaults(60, 25.0f);
 
     m_pEnableTrail = new CvarToggleCheckButton(this, "EnableTrail", "#MOM_Settings_Enable_Trail", "mom_trail_enable");
     m_pPickTrailColorButton = new Button(this, "PickTrailColorButton", "", this, "picker_trail");
@@ -188,7 +190,7 @@ void OnlineSettingsPanel::SetButtonColors()
 void OnlineSettingsPanel::UpdateModelSettings()
 {
     MDLCACHE_CRITICAL_SECTION();
-    CModelPanelModel *pModel = m_pModelPreview->GetModel();
+    const auto pModel = m_pModelPreview->GetModel();
     if (!pModel)
         return;
 
