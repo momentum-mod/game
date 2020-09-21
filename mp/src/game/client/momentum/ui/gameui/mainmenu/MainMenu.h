@@ -7,6 +7,7 @@ class MainMenuButton;
 class CBaseMenuPanel;
 class UserComponent;
 class MenuDrawerPanel;
+class CRenderPanel;
 
 enum SortFlags_t
 {
@@ -37,7 +38,9 @@ class MainMenu : public vgui::EditablePanel, public CGameEventListener
     void PerformLayout() override;
     void SetVisible(bool state) override;
 
-    void Activate();
+    void SetModelPanelEnabled(bool bEnabled);
+    void SetModelPanelModel(const char *pModel);
+    void SetModelPanelRotationSpeed(int iSpeed);
 
     MESSAGE_FUNC(OnUserComponentClicked, "UserComponentClicked");
     MESSAGE_FUNC_PARAMS(OnMenuButtonCommand, "MenuButtonCommand", pKv);
@@ -79,4 +82,5 @@ private:
     CBaseMenuPanel *m_pBasePanel;
 
     PostProcessParameters_t m_PostProcessParameters;
+    CRenderPanel *m_pModelPanel;
 };
