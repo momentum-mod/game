@@ -1103,7 +1103,7 @@ void SetPostProcessParams( const PostProcessParameters_t* pPostProcessParameters
 void SetPostProcessParams( const PostProcessParameters_t* pPostProcessParameters, bool bOverride )
 {
     s_bOverridePostProcessParams = bOverride;
-    SetPostProcessParams(pPostProcessParameters);
+    s_LocalPostProcessParameters = *pPostProcessParameters;
 }
 
 void SetViewFadeParams( byte r, byte g, byte b, byte a, bool bModulate )
