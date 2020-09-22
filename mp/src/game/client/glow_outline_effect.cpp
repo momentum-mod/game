@@ -12,6 +12,7 @@
 #include "materialsystem/itexture.h"
 #include "view_shared.h"
 #include "viewpostprocess.h"
+#include "clienteffectprecachesystem.h"
 
 #define FULL_FRAME_TEXTURE "_rt_FullFrameFB"
 
@@ -54,6 +55,14 @@ struct ShaderStencilState_t
 		pRenderContext->SetStencilWriteMask( m_nWriteMask );
 	}
 };
+
+CLIENTEFFECT_REGISTER_BEGIN(PrecachePostProcessingEffectsGlow)
+CLIENTEFFECT_MATERIAL("dev/glow_color")
+CLIENTEFFECT_MATERIAL("dev/glow_downsample")
+CLIENTEFFECT_MATERIAL("dev/glow_blur_x")
+CLIENTEFFECT_MATERIAL("dev/glow_blur_y")
+CLIENTEFFECT_MATERIAL("dev/halo_add_to_screen")
+CLIENTEFFECT_REGISTER_END()
 
 void CGlowObjectManager::RenderGlowEffects( const CViewSetup *pSetup, int nSplitScreenSlot )
 {
