@@ -32,6 +32,8 @@ BEGIN_VS_SHADER_FLAGS( screenspace_general_dx9, "Help for screenspace_general", 
 		SHADER_PARAM( PIXSHADER, SHADER_PARAM_TYPE_STRING, "", "Name of the pixel shader to use" )
 		SHADER_PARAM( DISABLE_COLOR_WRITES,SHADER_PARAM_TYPE_INTEGER,"0","")
 		SHADER_PARAM( ALPHATESTED,SHADER_PARAM_TYPE_FLOAT,"0","")
+		SHADER_PARAM( ALPHA_BLEND_COLOR_OVERLAY, SHADER_PARAM_TYPE_INTEGER, "0", "")
+		SHADER_PARAM( ALPHA_BLEND, SHADER_PARAM_TYPE_INTEGER, "0", "")
 		SHADER_PARAM( TEXTURE1, SHADER_PARAM_TYPE_TEXTURE, "", "" )
 		SHADER_PARAM( TEXTURE2, SHADER_PARAM_TYPE_TEXTURE, "", "" )
 		SHADER_PARAM( TEXTURE3, SHADER_PARAM_TYPE_TEXTURE, "", "" )
@@ -138,6 +140,17 @@ BEGIN_VS_SHADER_FLAGS( screenspace_general_dx9, "Help for screenspace_general", 
 			DECLARE_STATIC_VERTEX_SHADER( screenspaceeffect_vs20 );
 			SET_STATIC_VERTEX_SHADER_COMBO( X360APPCHOOSER, 0 );
 			SET_STATIC_VERTEX_SHADER( screenspaceeffect_vs20 );
+
+			if ( params[ ALPHA_BLEND_COLOR_OVERLAY ]->GetIntValue() )
+			{
+				// Used for adding L4D halos
+				EnableAlphaBlending( SHADER_BLEND_ONE, SHADER_BLEND_ONE_MINUS_SRC_ALPHA );
+			}
+			if ( params[ ALPHA_BLEND ]->GetIntValue() )
+			{
+				// Used for adding L4D halos
+				EnableAlphaBlending( SHADER_BLEND_SRC_ALPHA, SHADER_BLEND_ONE_MINUS_SRC_ALPHA );
+			}
 
 			if (params[DISABLE_COLOR_WRITES]->GetIntValue())
 			{
