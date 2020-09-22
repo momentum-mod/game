@@ -17,7 +17,7 @@
 #define FULL_FRAME_TEXTURE "_rt_FullFrameFB"
 
 ConVar mat_glow_outline_enable( "mat_glow_outline_enable", "1", FCVAR_ARCHIVE, "Enable entity outline glow effects." );
-ConVar mat_glow_outline_width( "mat_glow_outline_width", "3.0f", FCVAR_CHEAT, "Width of glow outline effect in screen space." );
+ConVar mat_glow_outline_width( "mat_glow_outline_width", "6.0f", FCVAR_CHEAT, "Width of glow outline effect in screen space." );
 
 extern bool g_bDumpRenderTargets; // in viewpostprocess.cpp
 
@@ -159,6 +159,113 @@ void CGlowObjectManager::RenderGlowModels( const CViewSetup *pSetup, int nSplitS
 	pRenderContext->PopRenderTargetAndViewport();
 }
 
+void CGlowObjectManager::DownSampleAndBlurRT( const CViewSetup *pSetup, IMatRenderContext *pRenderContext, float flBloomScale, ITexture *pRtFullFrame, ITexture *pRtQuarterSize0, ITexture *pRtQuarterSize1 )
+{
+	static bool s_bFirstPass = true;
+
+	//===================================
+	// Setup state for downsample/bloom
+	//===================================
+
+	pRenderContext->PushRenderTargetAndViewport();
+
+	// Get viewport
+	int nSrcWidth = pSetup->width;
+	int nSrcHeight = pSetup->height;
+	int nViewportX, nViewportY, nViewportWidth, nViewportHeight;
+	pRenderContext->GetViewport( nViewportX, nViewportY, nViewportWidth, nViewportHeight );
+
+	// Get material and texture pointers
+	IMaterial *pMatDownsample = materials->FindMaterial( "dev/glow_downsample", TEXTURE_GROUP_OTHER, true);
+	IMaterial *pMatBlurX = materials->FindMaterial( "dev/glow_blur_x", TEXTURE_GROUP_OTHER, true );
+	IMaterial *pMatBlurY = materials->FindMaterial( "dev/glow_blur_y", TEXTURE_GROUP_OTHER, true );
+
+	//============================================
+	// Downsample _rt_FullFrameFB to _rt_SmallFB0
+	//============================================
+
+	// First clear the full target to black if we're not going to touch every pixel
+	if ( ( pRtQuarterSize0->GetActualWidth() != ( pSetup->width / 4 ) ) || ( pRtQuarterSize0->GetActualHeight() != ( pSetup->height / 4 ) ) )
+	{
+		SetRenderTargetAndViewPort( pRtQuarterSize0, pRtQuarterSize0->GetActualWidth(), pRtQuarterSize0->GetActualHeight() );
+		pRenderContext->ClearColor3ub( 0, 0, 0 );
+		pRenderContext->ClearBuffers( true, false, false );
+	}
+
+	// Set the viewport
+	SetRenderTargetAndViewPort( pRtQuarterSize0, pRtQuarterSize0->GetActualWidth(), pRtQuarterSize0->GetActualHeight() );
+
+	IMaterialVar *pbloomexpvar = pMatDownsample->FindVar( "$bloomexp", 0 );
+	if ( pbloomexpvar != NULL )
+	{
+		pbloomexpvar->SetFloatValue( 2.5f );
+	}
+
+	IMaterialVar *pbloomsaturationvar = pMatDownsample->FindVar( "$bloomsaturation", 0 );
+	if ( pbloomsaturationvar != NULL )
+	{
+		pbloomsaturationvar->SetFloatValue( 1.0f );
+	}
+
+	// note the -2's below. Thats because we are downsampling on each axis and the shader
+	// accesses pixels on both sides of the source coord
+	int nFullFbWidth = nSrcWidth;
+	int nFullFbHeight = nSrcHeight;
+
+	pRenderContext->DrawScreenSpaceRectangle( pMatDownsample, 0, 0, nSrcWidth/4, nSrcHeight/4,
+		0, 0, nFullFbWidth - 4, nFullFbHeight - 4,
+		pRtFullFrame->GetActualWidth(), pRtFullFrame->GetActualHeight() );
+
+	if ( g_bDumpRenderTargets )
+	{
+		DumpTGAofRenderTarget( nSrcWidth/4, nSrcHeight/4, "QuarterSizeFB" );
+	}
+
+	//============================//
+	// Guassian blur x rt0 to rt1 //
+	//============================//
+
+	// First clear the full target to black if we're not going to touch every pixel
+	if ( s_bFirstPass || ( pRtQuarterSize1->GetActualWidth() != ( pSetup->width / 4 ) ) || ( pRtQuarterSize1->GetActualHeight() != ( pSetup->height / 4 ) ) )
+	{
+		// On the first render, this viewport may require clearing
+		s_bFirstPass = false;
+		SetRenderTargetAndViewPort( pRtQuarterSize1, pRtQuarterSize1->GetActualWidth(), pRtQuarterSize1->GetActualHeight() );
+		pRenderContext->ClearColor3ub( 0, 0, 0 );
+		pRenderContext->ClearBuffers( true, false, false );
+	}
+
+	// Set the viewport
+	SetRenderTargetAndViewPort( pRtQuarterSize1, pRtQuarterSize1->GetActualWidth(), pRtQuarterSize1->GetActualHeight() );
+
+	pRenderContext->DrawScreenSpaceRectangle( pMatBlurX, 0, 0, nSrcWidth/4, nSrcHeight/4,
+		0, 0, nSrcWidth/4-1, nSrcHeight/4-1,
+		pRtQuarterSize0->GetActualWidth(), pRtQuarterSize0->GetActualHeight() );
+
+	if ( g_bDumpRenderTargets )
+	{
+		DumpTGAofRenderTarget( nSrcWidth/4, nSrcHeight/4, "GlowX" );
+	}
+
+	//============================//
+	// Gaussian blur y rt1 to rt0 //
+	//============================//
+	SetRenderTargetAndViewPort( pRtQuarterSize0, pSetup->width / 4, pSetup->height / 4 );
+	IMaterialVar *pBloomAmountVar = pMatBlurY->FindVar( "$bloomamount", NULL );
+	pBloomAmountVar->SetFloatValue( flBloomScale );
+	pRenderContext->DrawScreenSpaceRectangle( pMatBlurY, 0, 0, nSrcWidth / 4, nSrcHeight / 4,
+		0, 0, nSrcWidth / 4 - 1, nSrcHeight / 4 - 1,
+		pRtQuarterSize1->GetActualWidth(), pRtQuarterSize1->GetActualHeight() );
+
+	if ( g_bDumpRenderTargets )
+	{
+		DumpTGAofRenderTarget( nSrcWidth/4, nSrcHeight/4, "GlowYAndBloom" );
+	}
+
+	// Pop RT
+	pRenderContext->PopRenderTargetAndViewport();
+}
+
 void CGlowObjectManager::ApplyEntityGlowEffects( const CViewSetup *pSetup, int nSplitScreenSlot, CMatRenderContextPtr &pRenderContext, float flGlowWidth, int x, int y, int w, int h )
 {
 	//=======================================================//
@@ -281,7 +388,11 @@ void CGlowObjectManager::ApplyEntityGlowEffects( const CViewSetup *pSetup, int n
 	pRenderContext->GetViewport( nViewportX, nViewportY, nViewportWidth, nViewportHeight );
 
 	// Get material and texture pointers
+	ITexture *pRtFullFrame = materials->FindTexture( FULL_FRAME_TEXTURE, TEXTURE_GROUP_RENDER_TARGET );
+	ITexture *pRtQuarterSize0 = materials->FindTexture( "_rt_SmallFB0", TEXTURE_GROUP_RENDER_TARGET );
 	ITexture *pRtQuarterSize1 = materials->FindTexture( "_rt_SmallFB1", TEXTURE_GROUP_RENDER_TARGET );
+	
+	DownSampleAndBlurRT( pSetup, pRenderContext, flGlowWidth, pRtFullFrame, pRtQuarterSize0, pRtQuarterSize1 );
 
 	{
 		//=======================================================================================================//

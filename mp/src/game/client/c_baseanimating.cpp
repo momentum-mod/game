@@ -4913,7 +4913,7 @@ void C_BaseAnimating::UpdateGlowEffect(void)
 
     m_pGlowEffect->SetColor(GetGlowEffectColor());
     m_pGlowEffect->SetAlpha(flAlpha);
-    m_pGlowEffect->SetRenderFlags(true, false);
+    m_pGlowEffect->SetRenderFlags(true, true);
 
     SetNextClientThink(gpGlobals->curtime + 0.1f);
 }

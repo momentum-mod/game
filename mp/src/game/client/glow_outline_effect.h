@@ -116,6 +116,7 @@ public:
 private:
 
 	void RenderGlowModels( const CViewSetup *pSetup, int nSplitScreenSlot, CMatRenderContextPtr &pRenderContext );
+	void DownSampleAndBlurRT( const CViewSetup *pSetup, IMatRenderContext *pRenderContext, float flBloomScale, ITexture *pRtFullFrame, ITexture *pRtQuarterSize0, ITexture *pRtQuarterSize1 );
 	void ApplyEntityGlowEffects( const CViewSetup *pSetup, int nSplitScreenSlot, CMatRenderContextPtr &pRenderContext, float flGlowWidth, int x, int y, int w, int h );
 
 	struct GlowObjectDefinition_t
