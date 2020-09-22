@@ -717,7 +717,7 @@
         "MOM_Tip_RJ_4" "Tip: Unlike other game modes, crouching in Rocket Jump does not affect air-strafing." // Mac
         "MOM_Tip_RJ_5" "Tip: Looking back up towards rockets previously fired for sync jumps may help with your final rocket's timing." // porkie
         "MOM_Tip_RJ_6" "Tip: Rocket jumping out of shallow water launches you farther." // porkie
-        "MOM_Tip_RJ_7" "Tip: Having trouble hitting a tele-sync? Use the paint gun (or your +paint bind) to mark your spawn location."
+        "MOM_Tip_RJ_7" "Tip: Having trouble hitting a tele-sync? Use +paint to mark your spawn location."
         "MOM_Tip_RJ_8" "Tip: Tapping your backwards key while airborne can help you slow down and gain more control." // yi yi
         "MOM_Tip_RJ_9" "Tip: Sometimes there is more than one way to beat a jump. Get creative!" // porkie
 
