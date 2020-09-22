@@ -679,11 +679,13 @@ void CBaseAnimating::InputSetGlowDistance(inputdata_t& inputdata)
 void CBaseAnimating::AddGlowEffect(void)
 {
     m_bGlowEnabled.Set(true);
+    SetTransmitState(FL_EDICT_ALWAYS);
 }
 
 void CBaseAnimating::RemoveGlowEffect(void)
 {
     m_bGlowEnabled.Set(false);
+    DispatchUpdateTransmitState();
 }
 
 bool CBaseAnimating::IsGlowEffectActive(void)
