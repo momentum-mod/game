@@ -516,3 +516,8 @@ void MainMenu::OnConfirmMapChange()
 {
     engine->ClientCmd_Unrestricted("__map_change_ok 1\n");
 }
+
+void MainMenu::OnConfirmQuit()
+{
+    engine->ClientCmd_Unrestricted("__game_quit_ok 1; quit\n");
+}
