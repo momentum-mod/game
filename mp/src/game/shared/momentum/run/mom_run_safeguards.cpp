@@ -50,7 +50,7 @@ static MAKE_CONVAR(mom_run_safeguard_restart_stage, "1", FCVAR_ARCHIVE | FCVAR_R
     "2 - Enable on double press.\n",
     RUN_SAFEGUARD_MODE_NONE, RUN_SAFEGUARD_MODE_DOUBLEPRESS);
 
-CRunSafeguard::CRunSafeguard(const char *szAction) : m_flLastTimePressed(0.0f), m_bDoublePressSafeguard(true)
+CRunSafeguard::CRunSafeguard(const char *szAction) : m_flLastTimePressed(0.0f), m_bDoublePressSafeguard(true), m_pRelatedVar(nullptr)
 {
     Q_strncpy(m_szAction, szAction, sizeof(m_szAction));
 }

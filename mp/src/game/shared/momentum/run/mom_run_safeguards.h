@@ -31,6 +31,8 @@ class CRunSafeguard
 
     bool IsSafeguarded(RunSafeguardMode_t mode);
 
+    void SetRelevantCVar(ConVar *pVarRef) { m_pRelatedVar = pVarRef; }
+
   private:
     bool IsMovementKeysSafeguarded(int nButtons);
     bool IsDoublePressSafeguarded();
@@ -40,6 +42,7 @@ class CRunSafeguard
     float m_flLastTimePressed;
 
     bool m_bDoublePressSafeguard;
+    ConVar *m_pRelatedVar;
 };
 
 class MomRunSafeguards
