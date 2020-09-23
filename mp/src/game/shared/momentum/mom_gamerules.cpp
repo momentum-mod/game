@@ -7,6 +7,7 @@
 #include "filesystem.h"
 #include "movevars_shared.h"
 #include "mom_system_gamemode.h"
+#include "run/mom_run_safeguards.h"
 
 #ifndef CLIENT_DLL
 #include "momentum/mapzones.h"
@@ -130,6 +131,28 @@ LINK_ENTITY_TO_CLASS(info_player_terrorist, CPointEntity);
 LINK_ENTITY_TO_CLASS(info_player_counterterrorist, CPointEntity);
 LINK_ENTITY_TO_CLASS(info_player_logo, CPointEntity);
 LINK_ENTITY_TO_CLASS(info_player_teamspawn, CPointEntity);
+
+static MAKE_TOGGLE_CONVAR(__map_change_ok, "0", FCVAR_HIDDEN | FCVAR_CLIENTCMD_CAN_EXECUTE, "");
+
+bool CMomentumGameRules::IsManualMapChangeOkay(const char **pszReason)
+{
+    if (g_pRunSafeguards->IsSafeguarded(RUN_SAFEGUARD_MAP_CHANGE) && !__map_change_ok.GetBool())
+    {
+        CSingleUserRecipientFilter filter(UTIL_GetLocalPlayer());
+        filter.MakeReliable();
+
+        UserMessageBegin(filter, "MB_Safeguard_Map_Change");
+        MessageEnd();
+
+        *pszReason = "You currently safeguard against changing maps while the timer is running.";
+
+        return false;
+    }
+
+    __map_change_ok.SetValue(0);
+
+    return true;
+}
 
 Vector CMomentumGameRules::DropToGround(CBaseEntity *pMainEnt, const Vector &vPos, const Vector &vMins,
                                         const Vector &vMaxs)

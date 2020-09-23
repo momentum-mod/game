@@ -54,6 +54,8 @@ class CMomentumGameRules : public CSingleplayRules
 
     bool FAllowNPCs() OVERRIDE { return false; }
 
+    bool IsManualMapChangeOkay(const char **pszReason) override;
+
   private:
     // void AdjustPlayerDamageTaken(CTakeDamageInfo *pInfo);
     // float AdjustPlayerDamageInflicted(float damage);
