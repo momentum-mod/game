@@ -50,6 +50,10 @@ static MAKE_CONVAR(mom_run_safeguard_restart_stage, "1", FCVAR_ARCHIVE | FCVAR_R
     "2 - Enable on double press.\n",
     RUN_SAFEGUARD_MODE_NONE, RUN_SAFEGUARD_MODE_DOUBLEPRESS);
 
+static MAKE_TOGGLE_CONVAR(mom_run_safeguard_change_map, "1", FCVAR_ARCHIVE | FCVAR_REPLICATED, "Changes the safeguard setting for preventing changing map while in a run. 0 = OFF, 1 = ON\n");
+static MAKE_TOGGLE_CONVAR(mom_run_safeguard_quit_map, "1", FCVAR_ARCHIVE | FCVAR_REPLICATED, "Changes the safeguard setting for preventing quitting/disconnecting while in a run. 0 = OFF, 1 = ON\n");
+static MAKE_TOGGLE_CONVAR(mom_run_safeguard_quit_game, "1", FCVAR_ARCHIVE | FCVAR_REPLICATED, "Changes the safeguard setting for preventing quitting the game while in a run. 0 = OFF, 1 = ON\n");
+
 CRunSafeguard::CRunSafeguard(const char *szAction) : m_flLastTimePressed(0.0f), m_bDoublePressSafeguard(true), m_pRelatedVar(nullptr)
 {
     Q_strncpy(m_szAction, szAction, sizeof(m_szAction));
@@ -87,6 +91,8 @@ bool CRunSafeguard::IsSafeguarded(RunSafeguardMode_t mode)
         return IsMovementKeysSafeguarded(nButtons);
     case RUN_SAFEGUARD_MODE_DOUBLEPRESS:
         return IsDoublePressSafeguarded();
+    case RUN_SAFEGUARD_MODE_POPUP_CONFIRM:
+        return m_pRelatedVar && m_pRelatedVar->GetBool();
     default:
         return false;
     } 
@@ -128,6 +134,15 @@ MomRunSafeguards::MomRunSafeguards()
     m_pSafeguards[RUN_SAFEGUARD_SAVELOC_TELE] = new CRunSafeguard("teleport to saveloc");
     m_pSafeguards[RUN_SAFEGUARD_CHAT_OPEN] = new CRunSafeguard("open chat");
     m_pSafeguards[RUN_SAFEGUARD_RESTART_STAGE] = new CRunSafeguard("teleport to a stage");
+
+    m_pSafeguards[RUN_SAFEGUARD_MAP_CHANGE] = new CRunSafeguard("changing map");
+    m_pSafeguards[RUN_SAFEGUARD_MAP_CHANGE]->SetRelevantCVar(&mom_run_safeguard_change_map);
+
+    m_pSafeguards[RUN_SAFEGUARD_QUIT_TO_MENU] = new CRunSafeguard("quitting to menu");
+    m_pSafeguards[RUN_SAFEGUARD_QUIT_TO_MENU]->SetRelevantCVar(&mom_run_safeguard_quit_map);
+
+    m_pSafeguards[RUN_SAFEGUARD_QUIT_GAME] = new CRunSafeguard("quitting the game");
+    m_pSafeguards[RUN_SAFEGUARD_QUIT_GAME]->SetRelevantCVar(&mom_run_safeguard_quit_game);
 }
 
 bool MomRunSafeguards::IsSafeguarded(RunSafeguardType_t type)
@@ -161,6 +176,10 @@ RunSafeguardMode_t MomRunSafeguards::GetModeFromType(RunSafeguardType_t type)
         return RunSafeguardMode_t(mom_run_safeguard_chat_open.GetInt());
     case RUN_SAFEGUARD_RESTART_STAGE:
         return RunSafeguardMode_t(mom_run_safeguard_restart_stage.GetInt());
+    case RUN_SAFEGUARD_QUIT_GAME:
+    case RUN_SAFEGUARD_QUIT_TO_MENU:
+    case RUN_SAFEGUARD_MAP_CHANGE:
+        return RUN_SAFEGUARD_MODE_POPUP_CONFIRM;
     default:
         return RUN_SAFEGUARD_MODE_INVALID;
     }
