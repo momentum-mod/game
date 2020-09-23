@@ -56,6 +56,9 @@ CRenderPanel::~CRenderPanel()
 
 void CRenderPanel::UpdateRenderPosition()
 {
+    if (render_offset_modelBase.IsZero())
+        GetModelCenter(render_offset_modelBase);
+
     QAngle out(m_flPitch, m_flYaw, 0);
     Vector fwd;
     AngleVectors(out, &fwd);
@@ -181,20 +184,8 @@ bool CRenderPanel::IsModelReady()
         return false;
 
     MDLCACHE_CRITICAL_SECTION();
-    bool bValid = !!m_pModelInstance->GetModel();
 
-    if (!bValid && Q_strlen(m_szModelPath))
-    {
-        const model_t *pMdl = modelinfo ? engine->LoadModel(m_szModelPath) : nullptr;
-        if (pMdl)
-            m_pModelInstance->SetModelPointer(pMdl);
-        bValid = !!pMdl;
-    }
-
-    if (!bValid)
-        DestroyModel();
-
-    return bValid;
+    return !modelinfo->IsDynamicModelLoading(m_pModelInstance->GetModelIndex());
 }
 
 void CRenderPanel::ReloadModel()
@@ -218,17 +209,15 @@ void CRenderPanel::ResetModel()
 
 void CRenderPanel::GetModelCenter(Vector &vecInto)
 {
+    if (!IsModelReady())
+        return;
+
     vecInto.Init();
-    if (IsModelReady())
-    {
-        MDLCACHE_CRITICAL_SECTION();
-        if (m_pModelInstance->GetModel())
-        {
-            Vector mins, maxs;
-            modelinfo->GetModelRenderBounds(m_pModelInstance->GetModel(), mins, maxs);
-            VectorLerp(mins, maxs, 0.5f, vecInto);
-        }
-    }
+
+    MDLCACHE_CRITICAL_SECTION();
+    Vector mins, maxs;
+    modelinfo->GetModelRenderBounds(m_pModelInstance->GetModel(), mins, maxs);
+    VectorLerp(mins, maxs, 0.5f, vecInto);
 }
 
 void CRenderPanel::OnMouseWheeled(int delta)
@@ -242,6 +231,7 @@ void CRenderPanel::DestroyModel()
 {
     if (m_pModelInstance)
     {
+        modelinfo->ReleaseDynamicModel(m_pModelInstance->GetModelIndex());
         m_pModelInstance->Remove();
     }
 
