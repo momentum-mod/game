@@ -66,12 +66,8 @@ bool CRunSafeguard::IsSafeguarded(RunSafeguardMode_t mode)
     if (!pPlayer)
         return false;
 
-    CMomRunEntityData *pEntData;
-#ifdef CLIENT_DLL
-    pEntData = pPlayer->GetCurrentUIEntData();
-#else
-    pEntData = pPlayer->GetRunEntData();
-#endif
+    CMomRunEntityData *pEntData = pPlayer->GetRunEntData();
+
     if (!pEntData)
         return false;
 
