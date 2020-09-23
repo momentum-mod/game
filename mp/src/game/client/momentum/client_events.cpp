@@ -9,16 +9,38 @@
 #include "util/mom_util.h"
 
 #include "icommandline.h"
+#include "toolframework/ienginetool.h"
+#include "client_factorylist.h"
+#include "run/mom_run_safeguards.h"
+#include "gameui/BaseMenuPanel.h"
 
 #include "tier0/memdbgon.h"
 
-extern IFileSystem *filesystem;
+#undef nullptr
 
 inline void UnloadConVarOrCommand(const char *pName)
 {
     const auto pCmd = g_pCVar->FindCommandBase(pName);
     if (pCmd)
         g_pCVar->UnregisterConCommand(pCmd);
+}
+
+static MAKE_TOGGLE_CONVAR(__game_quit_ok, "0", FCVAR_HIDDEN | FCVAR_CLIENTCMD_CAN_EXECUTE, "");
+
+bool CanQuit(void *pUnused)
+{
+    NOTE_UNUSED(pUnused);
+
+    if (g_pRunSafeguards->IsSafeguarded(RUN_SAFEGUARD_QUIT_GAME) && !__game_quit_ok.GetBool())
+    {
+        g_pMessageBox->CreateConfirmationBox(g_pBasePanel->GetMainMenu(), "#MOM_MB_Safeguard_Map_Quit_Game_Title", "#MOM_MB_Safeguard_Map_Quit_Game_Msg", new KeyValues("ConfirmQuit"), nullptr, "#GameUI2_Quit", "#GameUI_Cancel");
+
+        return false;
+    }
+
+    g_pBasePanel->OnShutdownFromQuit();
+
+    return true;
 }
 
 bool CMOMClientEvents::Init()
@@ -47,6 +69,16 @@ bool CMOMClientEvents::Init()
     {
         engine->ExecuteClientCmd("reload");
     });
+
+    factorylist_t list;
+    FactoryList_Retrieve(list);
+
+    const auto pTool = static_cast<IEngineTool*>(list.appSystemFactory(VENGINETOOL_INTERFACE_VERSION, NULL));
+
+    if (!pTool)
+        return false;
+
+    pTool->InstallQuitHandler(nullptr, &CanQuit);
 
     return true;
 }

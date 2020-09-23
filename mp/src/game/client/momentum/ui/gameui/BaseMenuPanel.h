@@ -27,6 +27,8 @@ class CBaseMenuPanel : public vgui::EditablePanel
 
     Panel* GetMainMenu();
 
+    void OnShutdownFromQuit();
+
     // fading to game
     MESSAGE_FUNC_CHARPTR(RunEngineCommand, "RunEngineCommand", command);
     MESSAGE_FUNC_CHARPTR(RunMenuCommand, "RunMenuCommand", command);

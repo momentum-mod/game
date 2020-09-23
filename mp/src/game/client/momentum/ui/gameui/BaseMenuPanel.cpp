@@ -141,6 +141,12 @@ Panel* CBaseMenuPanel::GetMainMenu()
     return m_pMainMenu;
 }
 
+void CBaseMenuPanel::OnShutdownFromQuit()
+{
+    SetVisible(false);
+    surface()->RestrictPaintToSinglePanel(GetVPanel());
+}
+
 void CBaseMenuPanel::SetMenuAlpha(int alpha)
 {
     m_pMainMenu->SetAlpha(alpha);
@@ -358,9 +364,6 @@ void CBaseMenuPanel::RunMenuCommand(const char* command)
     }
     else if (FStrEq(command, "Quit") || FStrEq(command, "QuitNoConfirm"))
     {
-        // hide everything while we quit
-        SetVisible(false);
-        surface()->RestrictPaintToSinglePanel(GetVPanel());
         engine->ClientCmd_Unrestricted("quit\n");
     }
     else if (FStrEq(command, "ResumeGame"))
