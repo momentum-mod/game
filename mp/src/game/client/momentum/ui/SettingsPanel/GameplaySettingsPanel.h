@@ -55,6 +55,9 @@ private:
     vgui::CvarComboBox *m_pSavelocTeleSafeguards;
     vgui::CvarComboBox *m_pChatOpenSafeguards;
     vgui::CvarComboBox *m_pRestartStageSafeguards;
+    vgui::CvarToggleCheckButton *m_pSafeguardQuitToMenuToggle;
+    vgui::CvarToggleCheckButton *m_pSafeguardQuitGameToggle;
+    vgui::CvarToggleCheckButton *m_pSafeguardChangeMapToggle;
 
     // Gamemode
     vgui::CvarToggleCheckButton *m_pRJEnableTrailParticle, *m_pRJEnableExplosionParticle, *m_pRJEnableShootSound,

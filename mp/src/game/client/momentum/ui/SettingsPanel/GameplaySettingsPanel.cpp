@@ -81,6 +81,10 @@ GameplaySettingsPanel::GameplaySettingsPanel(Panel *pParent, Button *pAssociate)
     m_pRestartStageSafeguards->AddItem("#MOM_Settings_Run_Safeguard_Modes_1", nullptr);
     m_pRestartStageSafeguards->AddItem("#MOM_Settings_Run_Safeguard_Modes_2", nullptr);
 
+    m_pSafeguardChangeMapToggle = new CvarToggleCheckButton(this, "SafeguardChangeMapToggle", "#MOM_Settings_Run_Safeguard_Change_Map", "mom_run_safeguard_change_map");
+    m_pSafeguardQuitToMenuToggle = new CvarToggleCheckButton(this, "SafeguardQuitToMenuToggle", "#MOM_Settings_Run_Safeguard_Quit_Map", "mom_run_safeguard_quit_map");
+    m_pSafeguardQuitGameToggle = new CvarToggleCheckButton(this, "SafeguardQuitGameToggle", "#MOM_Settings_Run_Safeguard_Quit_Game", "mom_run_safeguard_quit_game");
+
     // Gamemode specific settings
     // Rocket Jump controls
     m_pRJEnableTrailParticle = new CvarToggleCheckButton(this, "RJEnableTrailParticle", "#MOM_Settings_RJ_Enable_Trail_Particle", "mom_rj_particle_trail_enable");
