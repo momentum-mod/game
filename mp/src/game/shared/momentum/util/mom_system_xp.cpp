@@ -18,7 +18,9 @@ MomentumXPSystem::MomentumXPSystem()
     // Looping to MaxLvl + 1 because we're filling the "for" array. See header for clarification on why "for" needs it but "in" does not.
     for (auto i = 1; i < COSXP_MAX_LEVEL + 1; i++)
     {
-        m_arrXPInLevels[i] = GetCosmeticXPInLevel(i);
+        if (i < COSXP_MAX_LEVEL)
+            m_arrXPInLevels[i] = GetCosmeticXPInLevel(i);
+
         if (i > 1)
             m_arrXPForLevels[i] = m_arrXPForLevels[i - 1] + m_arrXPInLevels[i - 1];
     }
