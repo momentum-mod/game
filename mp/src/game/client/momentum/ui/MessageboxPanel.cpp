@@ -5,6 +5,7 @@
 #include "mom_shareddefs.h"
 #include <vgui_controls/CvarToggleCheckButton.h>
 #include "hud_macros.h"
+#include "gameui/BaseMenuPanel.h"
 
 #include "tier0/memdbgon.h"
 
@@ -15,6 +16,11 @@ using namespace vgui;
 void __MsgFunc_MB_PlayerTriedSaveOrLoad(bf_read &msg)
 {
     g_pMessageBox->CreateMessagebox("#MOM_MB_TrySaveLoad_Title", "#MOM_MB_TrySaveLoad");
+}
+
+void __MsgFunc_MB_Safeguard_Map_Change(bf_read &msg)
+{
+    g_pMessageBox->CreateConfirmationBox(g_pBasePanel->GetMainMenu(), "#MOM_MB_Safeguard_Map_Change_Title", "#MOM_MB_Safeguard_Map_Change_Msg", new KeyValues("ConfirmMapChange"), nullptr, "#MOM_IUnderstand", nullptr);
 }
 
 MessageBoxVarRef::MessageBoxVarRef(const char* title, const char* msg, const char* cvarName) : MessageBox(title, msg)
@@ -48,6 +54,7 @@ void MessageBoxVarRef::PerformLayout()
 CMessageboxInterface::CMessageboxInterface()
 {
     HOOK_MESSAGE(MB_PlayerTriedSaveOrLoad);
+    HOOK_MESSAGE(MB_Safeguard_Map_Change);
 }
 
 Panel *CMessageboxInterface::CreateMessagebox(const char *pTitle, const char *pMessage, const char *pAccept /*= nullptr*/)
