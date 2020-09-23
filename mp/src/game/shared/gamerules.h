@@ -186,6 +186,8 @@ public:
 	virtual bool IsLocalPlayer( int nEntIndex );
 
 	virtual bool ShouldWarnOfAbandonOnQuit() { return false; }
+
+	virtual bool PreventDisconnectAttempt() { return false; }
 	
 #else
 

@@ -2430,13 +2430,7 @@ const char* CHLClient::TranslateEffectForVisionFilter( const char *pchEffectType
 
 bool CHLClient::DisconnectAttempt( void )
 {
-	bool bRet = false;
-
-#if defined( TF_CLIENT_DLL )
-	bRet = HandleDisconnectAttempt();
-#endif
-
-	return bRet;
+	return GameRules()->PreventDisconnectAttempt();
 }
 
 bool CHLClient::IsConnectedUserInfoChangeAllowed( IConVar *pCvar )
