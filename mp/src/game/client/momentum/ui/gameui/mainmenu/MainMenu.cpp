@@ -506,6 +506,12 @@ void MainMenu::SetVisible(bool state)
 
     BaseClass::SetVisible(state);
 }
+
+void MainMenu::OnConfirmDisconnect()
+{
+    engine->DisconnectInternal();
+}
+
 void MainMenu::OnConfirmMapChange()
 {
     engine->ClientCmd_Unrestricted("__map_change_ok 1\n");

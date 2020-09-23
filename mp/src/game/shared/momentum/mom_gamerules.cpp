@@ -9,7 +9,10 @@
 #include "mom_system_gamemode.h"
 #include "run/mom_run_safeguards.h"
 
-#ifndef CLIENT_DLL
+#ifdef CLIENT_DLL
+#include "MessageboxPanel.h"
+#include "gameui/BaseMenuPanel.h"
+#else
 #include "momentum/mapzones.h"
 #include "momentum/mom_player.h"
 #endif
@@ -126,7 +129,21 @@ bool CMomentumGameRules::ShouldCollide(int collisionGroup0, int collisionGroup1)
     return BaseClass::ShouldCollide(collisionGroup0, collisionGroup1);
 }
 
-#ifndef CLIENT_DLL
+#ifdef CLIENT_DLL
+
+bool CMomentumGameRules::PreventDisconnectAttempt()
+{
+    if (g_pRunSafeguards->IsSafeguarded(RUN_SAFEGUARD_QUIT_TO_MENU))
+    {
+        g_pMessageBox->CreateConfirmationBox(g_pBasePanel->GetMainMenu(), "#MOM_MB_Safeguard_Map_Quit_ToMenu_Title", "#MOM_MB_Safeguard_Map_Quit_ToMenu_Msg", new KeyValues("ConfirmDisconnect"), nullptr, "#GameUI_Disconnect", "#GameUI_Cancel");
+
+        return true;
+    }
+
+    return false;
+}
+
+#else
 LINK_ENTITY_TO_CLASS(info_player_terrorist, CPointEntity);
 LINK_ENTITY_TO_CLASS(info_player_counterterrorist, CPointEntity);
 LINK_ENTITY_TO_CLASS(info_player_logo, CPointEntity);

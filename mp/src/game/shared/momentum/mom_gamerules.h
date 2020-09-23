@@ -22,6 +22,8 @@ class CMomentumGameRules : public CSingleplayRules
 
     DECLARE_CLIENTCLASS_NOBASE(); // This makes datatables able to access our private vars.
 
+    bool PreventDisconnectAttempt() override;
+
 #else
     DECLARE_SERVERCLASS_NOBASE();
 
