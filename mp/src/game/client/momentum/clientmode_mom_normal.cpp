@@ -92,7 +92,7 @@ class CHudViewport : public CBaseViewport
         return BaseClass::CreatePanelByName(pzName);
     }
 
-    void CreateDefaultPanels(void) OVERRIDE
+    void CreateDefaultPanels() OVERRIDE
     {
         AddNewPanel(CreatePanelByName(PANEL_REPLAY), "PANEL_REPLAY");
         AddNewPanel(CreatePanelByName(PANEL_TIMES), "PANEL_TIMES");

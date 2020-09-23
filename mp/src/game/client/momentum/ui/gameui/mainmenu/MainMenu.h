@@ -46,6 +46,7 @@ class MainMenu : public vgui::EditablePanel, public CGameEventListener
     MESSAGE_FUNC_PARAMS(OnMenuButtonCommand, "MenuButtonCommand", pKv);
 
     // Messagebox forwards
+    MESSAGE_FUNC(OnConfirmDisconnect, "ConfirmDisconnect");
     MESSAGE_FUNC(OnConfirmMapChange, "ConfirmMapChange");
 private:
     CUtlVector<MainMenuButton *> m_pButtons;
