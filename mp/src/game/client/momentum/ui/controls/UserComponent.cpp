@@ -8,6 +8,7 @@
 #include "vgui_controls/ProgressBar.h"
 #include "vgui_controls/Tooltip.h"
 #include "vgui_avatarimage.h"
+#include "vgui/ILocalize.h"
 
 #include "fmtstr.h"
 #include "ilocalize.h"
@@ -16,7 +17,6 @@
 #include "util/mom_system_xp.h"
 
 #include "tier0/memdbgon.h"
-#include "vgui/ILocalize.h"
 
 using namespace vgui;
 
@@ -73,6 +73,7 @@ void UserComponent::SetUser(uint64 uID)
     else
     {
         Warning("UserComponent::SetUser MOM_TODO: Implement me!!\n");
+        Assert(0);
     }
 
     InvalidateLayout();
@@ -89,11 +90,13 @@ void UserComponent::FillControlsWithUserData(const UserData &userData)
 
     int curLvl = userData.m_iCurrentLevel;
     int curXP = userData.m_iCurrentXP;
-    int xpForLvl = g_pXPSystem->GetCosmeticXPForLevel(curLvl + 1);
-    float progress = static_cast<float>(curXP) / static_cast<float>(xpForLvl);
+    int xpForNextLvl = g_pXPSystem->GetCosmeticXPForLevel(curLvl + 1);
+    int xpForCurrentLvl = g_pXPSystem->GetCosmeticXPForLevel(curLvl);
+    int xpInCurrentLvl = g_pXPSystem->GetCosmeticXPInLevel(curLvl);
+    float progress = static_cast<float>(curXP - xpForCurrentLvl) / static_cast<float>(xpInCurrentLvl);
 
     m_pXPProgressBar->SetProgress(progress);
-    m_pXPProgressBar->GetTooltip()->SetText(CConstructLocalizedString(g_pVGuiLocalize->FindSafe("#MOM_UserComponent_XP_For_Next_Level"), xpForLvl - curXP, curLvl + 1));
+    m_pXPProgressBar->GetTooltip()->SetText(CConstructLocalizedString(g_pVGuiLocalize->FindSafe("#MOM_UserComponent_XP_For_Next_Level"), xpForNextLvl - curXP, curLvl + 1));
 
     m_pUserRank->SetVisible(true);
     m_pUserRank->SetText(CConstructLocalizedString(g_pVGuiLocalize->FindSafe("#MOM_UserComponent_Level"), curLvl));
