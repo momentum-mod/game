@@ -357,11 +357,14 @@
 
         // Gameplay - run safeguards
         "MOM_Settings_Title_Gameplay_Run_Safeguards" "Run Safeguards"
-        "MOM_Settings_Run_Safeguard_Practice_Mode" "Practice Mode Enable"
-        "MOM_Settings_Run_Safeguard_Restart_Map" "Run Restart"
-        "MOM_Settings_Run_Safeguard_Restart_Stage" "Stage Restart/Teleport"
-        "MOM_Settings_Run_Safeguard_Saveloc_Tele" "Saveloc Teleport"
-        "MOM_Settings_Run_Safeguard_Open_Chat" "Opening Chat"
+        "MOM_Settings_Run_Safeguard_Practice_Mode" "Practice mode enable"
+        "MOM_Settings_Run_Safeguard_Restart_Map" "Run restart"
+        "MOM_Settings_Run_Safeguard_Restart_Stage" "Stage restart/teleport"
+        "MOM_Settings_Run_Safeguard_Saveloc_Tele" "Saveloc teleport"
+        "MOM_Settings_Run_Safeguard_Open_Chat" "Opening chat"
+        "MOM_Settings_Run_Safeguard_Change_Map" "Changing map"
+        "MOM_Settings_Run_Safeguard_Quit_Map" "Quitting to menu / disconnecting"
+        "MOM_Settings_Run_Safeguard_Quit_Game" "Quitting the game"
         "MOM_Settings_Run_Safeguard_Modes_None" "None"
         "MOM_Settings_Run_Safeguard_Modes_1" "When no movement keys held"
         "MOM_Settings_Run_Safeguard_Modes_2" "On double press only"
@@ -578,6 +581,15 @@
         "MOM_MB_EditingZone" "PLEASE NOTE: The current implementation of zone editing is in a very prealpha state.\nExpect bugs, errors, glitches and features straight up broken, but note that we're working hard to implement a better, much easier version."
 
         "MOM_MB_DeleteRunConfirmation" "NOTE: If you delete a local run, keep in mind that there's currently no way to get it back!"
+
+        "MOM_MB_Safeguard_Map_Change_Title" "Change Map Safeguard"
+        "MOM_MB_Safeguard_Map_Change_Msg" "You are trying to change map while your timer is running!\nStop your timer or try changing map again to actually change the map.\n(You can go to Settings -> Gameplay -> Safeguards to turn this off!)"
+
+        "MOM_MB_Safeguard_Map_Quit_Game_Title" "Quit Game Safeguard"
+        "MOM_MB_Safeguard_Map_Quit_Game_Msg" "You are trying to quit the game while your timer is running!\nAre you sure you want to quit?\n(You can go to Settings -> Gameplay -> Safeguards to turn this off!)"
+
+        "MOM_MB_Safeguard_Map_Quit_ToMenu_Title" "Quit To Menu Safeguard"
+        "MOM_MB_Safeguard_Map_Quit_ToMenu_Msg" "You are trying to quit to menu while your timer is running!\nAre you sure you want to quit?\n(You can go to Settings -> Gameplay -> Safeguards to turn this off!)"
 
         "MOM_Momentum" "Momentum"
         
