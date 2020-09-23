@@ -332,7 +332,7 @@ PostProcessingPass HDRSimulate_NonHDR[] =
 	PPP_END
 };
 
-static void SetRenderTargetAndViewPort(ITexture *rt)
+void SetRenderTargetAndViewPort(ITexture *rt)
 {
 	tmZone( TELEMETRY_LEVEL0, TMZF_NONE, "%s", __FUNCTION__ );
 
