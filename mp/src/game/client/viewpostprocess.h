@@ -17,6 +17,8 @@ void DoEnginePostProcessing( int x, int y, int w, int h, bool bFlashlightIsOn, b
 void DoImageSpaceMotionBlur( const CViewSetup &viewSetup );
 void DumpTGAofRenderTarget( const int width, const int height, const char *pFilename );
 
+void SetRenderTargetAndViewPort( ITexture *rt );
+
 void SetPostProcessParams( const PostProcessParameters_t* pPostProcessParameters );
 void SetPostProcessParams( const PostProcessParameters_t* pPostProcessParameters, bool override );
 
