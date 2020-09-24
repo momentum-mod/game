@@ -37,12 +37,12 @@ float g_flCustomBloomScaleMinimum = 0.0f;
 
 // mapmaker controlled depth of field
 bool  g_bDOFEnabled = false;
-float g_flDOFNearBlurDepth = 50.0f;
-float g_flDOFNearFocusDepth = 200.0f;
+float g_flDOFNearBlurDepth = 20.0f;
+float g_flDOFNearFocusDepth = 100.0f;
 float g_flDOFFarFocusDepth = 250.0f;
 float g_flDOFFarBlurDepth = 1000.0f;
 float g_flDOFNearBlurRadius = 0.0f;
-float g_flDOFFarBlurRadius = 5.0f;
+float g_flDOFFarBlurRadius = 10.0f;
 
 bool g_bFlashlightIsOn = false;
 
@@ -3143,8 +3143,8 @@ ConVar mat_dof_near_blur_depth( "mat_dof_near_blur_depth", "20.0" );
 ConVar mat_dof_near_focus_depth( "mat_dof_near_focus_depth", "100.0" );
 ConVar mat_dof_far_focus_depth( "mat_dof_far_focus_depth", "250.0" );
 ConVar mat_dof_far_blur_depth( "mat_dof_far_blur_depth", "1000.0" );
-ConVar mat_dof_near_blur_radius( "mat_dof_near_blur_radius", "10.0" );
-ConVar mat_dof_far_blur_radius( "mat_dof_far_blur_radius", "5.0" );
+ConVar mat_dof_near_blur_radius( "mat_dof_near_blur_radius", "0.0" );
+ConVar mat_dof_far_blur_radius( "mat_dof_far_blur_radius", "10.0" );
 ConVar mat_dof_quality( "mat_dof_quality", "3" );
 
 static float GetNearBlurDepth()
