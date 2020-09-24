@@ -1,9 +1,4 @@
-
-#if !defined ( ENV_DOF_CONTROLLER_H )
-#define ENV_DOF_CONTROLLER_H
-#ifdef _WIN32
 #pragma once
-#endif
 
 struct DOFControlSettings_t
 {
@@ -27,12 +22,12 @@ public:
 	DECLARE_DATADESC();
 	DECLARE_SERVERCLASS();
 
-	virtual void	Spawn( void );
-	virtual void	Activate( void );
-	virtual int		UpdateTransmitState( void );
+	virtual void	Spawn();
+	virtual void	Activate();
+	virtual int		UpdateTransmitState();
 	void			SetControllerState( DOFControlSettings_t setting );
 
-	void	UpdateParamBlend( void );
+	void	UpdateParamBlend();
 
 	// Inputs
 	void	InputSetNearBlurDepth( inputdata_t &inputdata );
@@ -41,7 +36,6 @@ public:
 	void	InputSetFarBlurDepth( inputdata_t &inputdata );
 	void	InputSetNearBlurRadius( inputdata_t &inputdata );
 	void	InputSetFarBlurRadius( inputdata_t &inputdata );
-	void	InputBlendDOFScale( inputdata_t &inputdata );
 	
 	void	InputSetFocusTarget( inputdata_t &inputdata );
 	void	InputSetFocusTargetRange( inputdata_t &inputdata );
@@ -60,5 +54,3 @@ private:
 	CNetworkVar( float, m_flNearBlurRadius );
 	CNetworkVar( float, m_flFarBlurRadius );
 };
-
-#endif//  ENV_DOF_CONTROLLER_H

@@ -1630,21 +1630,6 @@ static void DownsampleFBQuarterSize( IMatRenderContext *pRenderContext, int nSrc
 	// *Everything* in here relies on the small RTs being exactly 1/4 the full FB res
 	Assert( pDest->GetActualWidth()  == nSrcWidth  / 4 );
 	Assert( pDest->GetActualHeight() == nSrcHeight / 4 );
-		
-	/*
-	bool bFound;
-	IMaterialVar *pbloomexpvar = downsample_mat->FindVar( "$bloomexp", &bFound, false );
-	if ( bFound )
-	{
-		pbloomexpvar->SetFloatValue( g_flBloomExponent );
-	}
-
-	IMaterialVar *pbloomsaturationvar = downsample_mat->FindVar( "$bloomsaturation", &bFound, false );
-	if ( bFound )
-	{
-		pbloomsaturationvar->SetFloatValue( g_flBloomSaturation );
-	}
-	*/
 
 	// downsample fb to rt0
 	SetRenderTargetAndViewPort( pDest );

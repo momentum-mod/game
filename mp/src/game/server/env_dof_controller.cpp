@@ -1,13 +1,12 @@
 //====== Copyright © 1996-2004, Valve Corporation, All rights reserved. =======
 //
-// Purpose: 
+// Purpose: Depth of field controller entity
 //
 //=============================================================================
 
 #include "cbase.h"
 #include "baseentity.h"
 #include "entityoutput.h"
-//#include "convar.h"
 #include "env_dof_controller.h"
 #include "ai_utils.h"
 
@@ -54,19 +53,13 @@ IMPLEMENT_SERVERCLASS_ST( CEnvDOFController, DT_EnvDOFController )
 	SendPropFloat( SENDINFO(m_flFarBlurRadius), 0, SPROP_NOSCALE),
 END_SEND_TABLE()
 
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
-void CEnvDOFController::Spawn( void )
+void CEnvDOFController::Spawn()
 {
 	SetSolid( SOLID_NONE );
 	SetMoveType( MOVETYPE_NONE );
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
-void CEnvDOFController::Activate( void )
+void CEnvDOFController::Activate()
 {
 	BaseClass::Activate();
 
@@ -81,67 +74,43 @@ void CEnvDOFController::Activate( void )
 	}
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
 int CEnvDOFController::UpdateTransmitState()
 {
 	return SetTransmitState( FL_EDICT_ALWAYS );
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
 void CEnvDOFController::InputSetNearBlurDepth( inputdata_t &inputdata )
 {
 	m_flNearBlurDepth = inputdata.value.Float();
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
 void CEnvDOFController::InputSetNearFocusDepth( inputdata_t &inputdata )
 {
 	m_flNearFocusDepth = inputdata.value.Float();
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
 void CEnvDOFController::InputSetFarFocusDepth( inputdata_t &inputdata )
 {
 	m_flFarFocusDepth = inputdata.value.Float();
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
 void CEnvDOFController::InputSetFarBlurDepth( inputdata_t &inputdata )
 {
 	m_flFarBlurDepth = inputdata.value.Float();
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
 void CEnvDOFController::InputSetNearBlurRadius( inputdata_t &inputdata )
 {
 	m_flNearBlurRadius = inputdata.value.Float();
 	m_bDOFEnabled = ( m_flNearBlurRadius > 0.0f ) || ( m_flFarBlurRadius > 0.0f );
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
 void CEnvDOFController::InputSetFarBlurRadius( inputdata_t &inputdata )
 {
 	m_flFarBlurRadius = inputdata.value.Float();
 	m_bDOFEnabled = ( m_flNearBlurRadius > 0.0f ) || ( m_flFarBlurRadius > 0.0f );
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
 void CEnvDOFController::SetControllerState( DOFControlSettings_t setting )
 {
 	m_flNearBlurDepth = setting.flNearBlurDepth;
@@ -155,12 +124,12 @@ void CEnvDOFController::SetControllerState( DOFControlSettings_t setting )
 	m_bDOFEnabled = ( m_flNearBlurRadius > 0.0f ) || ( m_flFarBlurRadius > 0.0f );
 }
 
-const float BLUR_DEPTH = 500.0f;
+#define BLUR_DEPTH 500.0f
 
 //-----------------------------------------------------------------------------
 // Purpose: Blend the parameters to the specified value
 //-----------------------------------------------------------------------------
-void CEnvDOFController::UpdateParamBlend( void )
+void CEnvDOFController::UpdateParamBlend()
 { 
 	// Update our focal target if we have one
 	if ( m_hFocusTarget )
