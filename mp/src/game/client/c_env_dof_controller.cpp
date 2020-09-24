@@ -1,6 +1,6 @@
 //====== Copyright © 1996-2005, Valve Corporation, All rights reserved. =======
 //
-// Purpose: 
+// Purpose: Depth of field controller entity
 //
 //=============================================================================
 
@@ -20,9 +20,6 @@ extern float g_flDOFFarBlurRadius;
 
 EHANDLE g_hDOFControllerInUse = NULL;
 
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
 class C_EnvDOFController : public C_BaseEntity
 {
 	DECLARE_CLASS( C_EnvDOFController, C_BaseEntity );
@@ -56,10 +53,7 @@ IMPLEMENT_CLIENTCLASS_DT( C_EnvDOFController, DT_EnvDOFController, CEnvDOFContro
 	RecvPropFloat( RECVINFO(m_flFarBlurRadius) )
 END_RECV_TABLE()
 
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
-C_EnvDOFController::C_EnvDOFController( void )
+C_EnvDOFController::C_EnvDOFController()
 :	m_bDOFEnabled( true ),
 	m_flNearBlurDepth( 20.0f ),
 	m_flNearFocusDepth( 100.0f ),
@@ -70,10 +64,7 @@ C_EnvDOFController::C_EnvDOFController( void )
 {
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
-C_EnvDOFController::~C_EnvDOFController( void )
+C_EnvDOFController::~C_EnvDOFController()
 {
 	if ( g_hDOFControllerInUse == this )
 	{
@@ -81,9 +72,6 @@ C_EnvDOFController::~C_EnvDOFController( void )
 	}
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
 void C_EnvDOFController::OnDataChanged( DataUpdateType_t updateType )
 {
 	BaseClass::OnDataChanged( updateType );
