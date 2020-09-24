@@ -61,7 +61,7 @@ END_RECV_TABLE()
 //-----------------------------------------------------------------------------
 C_EnvDOFController::C_EnvDOFController( void )
 :	m_bDOFEnabled( true ),
-	m_flNearBlurDepth( 50.0f ),
+	m_flNearBlurDepth( 20.0f ),
 	m_flNearFocusDepth( 100.0f ),
 	m_flFarFocusDepth( 250.0f ),
 	m_flFarBlurDepth( 1000.0f ),
