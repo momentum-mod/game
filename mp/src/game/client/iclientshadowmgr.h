@@ -97,6 +97,11 @@ public:
 	// Set flashlight light world flag
 	virtual void SetFlashlightLightWorld( ClientShadowHandle_t shadowHandle, bool bLightWorld ) = 0;
 
+	virtual void GetFrustumExtents( ClientShadowHandle_t handle, Vector &vecMin, Vector &vecMax ) = 0;
+
+	// Toggle shadow casting from world light sources
+	virtual void SetShadowFromWorldLightsEnabled( bool bEnable ) = 0;
+
 	virtual void SetShadowsDisabled( bool bDisabled ) = 0;
 
 	virtual void ComputeShadowDepthTextures( const CViewSetup &pView ) = 0;

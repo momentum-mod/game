@@ -302,6 +302,7 @@ $Project
 		$File	"env_player_surface_trigger.cpp"
 		$File	"env_player_surface_trigger.h"
 		$File	"env_projectedtexture.cpp"
+		$File	"env_projectedtexture.h"
 		$File	"env_screenoverlay.cpp"
 		$File	"env_texturetoggle.cpp"
 		$File	"env_tonemap_controller.cpp"
