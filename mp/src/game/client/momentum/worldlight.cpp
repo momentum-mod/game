@@ -148,6 +148,14 @@ void CWorldLights::LevelInitPreEntity()
     // Grab the light lump and seek to it
     lump_t &lightLump = hdr.lumps[LUMP_WORLDLIGHTS];
 
+	// INSOLENCE: If the worldlights lump is empty, that means theres no normal, LDR lights to extract
+	//			  This can happen when, for example, the map is compiled in HDR mode only
+	//			  So move on to the HDR worldlights lump
+    if (lightLump.filelen == 0)
+    {
+        lightLump = hdr.lumps[LUMP_WORLDLIGHTS_HDR];
+    }
+
     // If we can't divide the lump data into a whole number of worldlights,
     // then the BSP format changed and we're unaware
     if (lightLump.filelen % sizeof(dworldlight_t))
