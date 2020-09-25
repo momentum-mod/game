@@ -7524,20 +7524,29 @@
 ]
 
 // lightprop("models/editor/spot.mdl") <---- use this once the orientation is unfucked
-@PointClass base(Targetname, Parentname, Angles) size(-2 -2 -2, 2 2 2) frustum(lightfov,nearz,farz,lightcolor,-1) = env_projectedtexture : 
+@PointClass base(Targetname, Parentname, Angles) studio("models/editor/cone_projected_helper.mdl") frustum(lightfov,nearz,farz,lightcolor,-1) = env_projectedtexture : 
     "Projected texture entity."
 [
     spawnflags(flags) =
     [
         1  : "Enabled"                : 1
+        2  : "Always Update (moving light)"    : 0
     ]
 
-    target(target_destination)    : "target" : : "target"    
-    lightfov(float)                : "FOV" : "90.0" : "FOV"
-    nearz(float)                : "NearZ" : "4.0" : "Near Z for projected texture"
-    farz(float)                    : "FarZ" : "750.0" : "Far Z for projected texture"    
+    target(target_destination)    : "Target" : : "The entity will rotate to point at this target. Make sure you check the 'Always Update' flag if you set this."    
     
-    enableshadows(Choices) : "Enable Shadows" : 0 : "Enables/disables shadows from this projected texture." =
+    dontfollowtarget(Choices) : "Don't Follow Target" : 0 : "Prevents this entity from trying to point at its target, if it has one. Intended for when you want to use 'Light Only Target' without the entity trying to point to it." =
+    [
+        0 : "No"
+        1 : "Yes"
+    ]
+    
+    lightfov(float)                : "FOV" : "90.0" : "The field of view cone/pyramid at which the texture is projected. Can also be interpreted as 'size'."
+    lighthorfov(float)                : "Horizontal FOV" : "0" : "The horizontal FOV value. This allows the projected texture to use rectangular dimensions, but it causes shadow glitches and is usually not preferable unless shadows are disabled. Leave this at 0 if you want to keep this the same as the regular FOV value."
+    nearz(float)                : "NearZ" : "4.0" : "Objects closer than this will not receive the light from the projection. (Warning: Hard falloff, model lighting inconsistent)"
+    farz(float)                    : "FarZ" : "750.0" : "Objects beyond this distance will not receive the light from the projection. The projection fades out as it approaches this distance."    
+    
+    enableshadows(Choices) : "Enable Shadows" : 1 : "Enables/disables shadows from this projected texture." =
     [
         0 : "No"
         1 : "Yes"
@@ -7547,6 +7556,8 @@
         0 : "Low"
         1 : "High"
     ]
+    shadowatten(float)            : "Shadow Atten" : "0.0" : "The attenuation of the shadows, or how much the shadows should fade into the light of the projected texture, if at all. The player's flashlight uses 0.35 by default, although higher values may be needed for a visible effect."
+    
     lightonlytarget(Choices) : "Light Only Target" : 0 : "Limit flashlight effect to only effect target entity." =
     [
         0 : "No"
@@ -7557,15 +7568,57 @@
         0 : "No"
         1 : "Yes"
     ]
-    lightcolor(color255)        : "Light Color" : "255 255 255 200" : "Light Color RGB-Intensity"
-    cameraspace(integer)        : "Camera Space" : 0 : "Angles are interpreted as being relative to camera."
+    
+    brightnessscale(float)        : "Brightness Scale" : "1.0" : "The light color's brightness scale."    
+
+    lightcolor(color255)        : "Light Color" : "255 255 255 200" : "The color of the projected texture. Format is RGB-Intensity, like a light entity. Intensity can only range from 0 to 255, so use the Brightness Scale keyvalue to make the projected texture brighter than 255."
+    colortransitiontime(float)    : "Color Transition Time" : "0" : "Amount of time it takes for a color or brightness change to occur. 0 = instant"
+    constant_attn(string)    : "Constant" : "0" : "The light's constant attenuation, giving the light no falloff. (This value is internally corrected with x*0.5)"
+    linear_attn(string)    : "Linear" : "1" : "The light's linear attenuation, giving the light linear decline. This is the most common attenuation for projected textures. (This value is internally corrected with x*100)"
+    quadratic_attn(string)    : "Quadratic" : "0" : "The light's quadratic attenuation, giving the light exponentially decreasing falloff. (This value is internally corrected with x*10000)"
+    
+    cameraspace(Choices)        : "Camera Space" : 0 : "Angles are interpreted as being relative to camera." =
+    [
+        0 : "No"
+        1 : "Yes"
+    ]
+
+    texturename(material) : "Texture Name" : "effects/flashlight001" : "The texture which should be used. Please note that env_projectedtexture uses .vtf files directly and does not use .vmt files. The material browser is only available here to assist with finding textures since materials typically have the same name as their textures."
+    textureframe(integer) : "Texture Frame" : 0 : "Sets the frame of the projected texture. Only relevant if the texture is animated/has multiple frames."
+    
+    alwaysdraw(Choices)        : "Always Draw" : 0 : "Always draws the projected texture, regardless of whether the player can see its frustum. Use this for projected textures that can be seen on monitors or in the skybox." =
+    [
+        0 : "No"
+        1 : "Yes"
+    ]
+    
+    ProjectedTextureVersion(integer)    readonly    : "Projected Texture Version"      : 1  : "(Don't change). Differentiates between projected textures built before/outside of Mapbase and projected textures using new features."
 
     // Inputs
-    input TurnOn(void)        : "Turn on the texture"
-    input TurnOff(void)        : "Turn off the texture"
-    input SetFOV(float)        : "Set FOV"
+    input TurnOn(void)        : "Turns on the texture"
+    input TurnOff(void)        : "Turns off the texture"
+    input AlwaysUpdateOn(void)    : "Turns on per frame updating (for moving lights)"
+    input AlwaysUpdateOff(void)    : "Turns off per frame updating (for moving lights)"
+    input FOV(float)        : "Sets the FOV."
+    input VerFOV(float)        : "Sets the vertical FOV."
+    input HorFOV(float)        : "Sets the horizontal FOV."
+    input SpotlightTexture(string)        : "Sets the spotlight texture"
+    input SetSpotlightFrame(string)        : "Sets the spotlight texture frame"
+    input EnableShadows(bool)        : "Set the if shadows are enabled"
+    input LightColor(color255)        : "Change the light color"
+    input SetBrightness(float)        : "Sets brightness."
+    input SetColorTransitionTime(float)        : "Sets the color transition time."
+    input SetConstant(float)        : "Sets the constant attenuation."
+    input SetLinear(float)        : "Sets the linear attenuation."
+    input SetQuadratic(float)        : "Sets the quadratic attenuation."
+    input SetShadowAtten(float)        : "Sets the shadow attenuation."
+    input SetNearZ(float)        : "Sets NearZ."
+    input SetFarZ(float)        : "Sets FarZ."
+    input AlwaysDrawOn(void)    : "Turns off BBox culling (for skybox or monitor lights)"
+    input AlwaysDrawOff(void)    : "Turns on BBox culling if it was off before"
+    input StopFollowingTarget(void)    : "Causes this entity to stop following the target, if it has one"
+    input StartFollowingTarget(void)    : "Causes this entity to start following the target if it was set to not follow it before"
 ]
-
 
 @SolidClass base(func_brush) = func_reflective_glass :
     "Used to produce perfectly reflective glass that renders world + entities. " +

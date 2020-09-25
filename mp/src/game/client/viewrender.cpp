@@ -72,9 +72,6 @@
 #include "c_point_camera.h"
 #endif // USE_MONITORS
 
-// Projective textures
-#include "C_Env_Projected_Texture.h"
-
 // GameUI
 #include "GameUI_Interface.h"
 

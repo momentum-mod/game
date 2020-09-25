@@ -555,6 +555,7 @@ $Project
 		$File	"c_effects.h"
 		$File	"c_entitydissolve.h"
 		$File	"c_env_fog_controller.h"
+		$File	"c_env_projectedtexture.h"
 		$File	"c_fire_smoke.h"
 		$File	"c_func_dust.h"
 		$File	"c_func_reflective_glass.h"
