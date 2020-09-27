@@ -2925,6 +2925,7 @@
     // Inputs
     input Start(void) : "Tell the particle system to start emitting."
     input Stop(void) : "Tell the particle system to stop emitting."
+    input DestroyImmediately(void) : "Makes the particle system stop emitting and remove its existing particles immediately."
 ]
 
 
