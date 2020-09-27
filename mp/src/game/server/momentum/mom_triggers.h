@@ -687,9 +687,16 @@ public:
     void InputEnable(inputdata_t &inputdata) override { m_bDisabled = false; }
     void InputToggle(inputdata_t &inputdata) override { m_bDisabled = !m_bDisabled; }
 
-    static bool IsInsideNoGrenadesZone(CBaseEntity *pOther);
+    static CNoGrenadesZone* IsInsideNoGrenadesZone(CBaseEntity *pOther);
 
-    bool m_bAirborneOnly;
+    int m_iExplosivePreventionType;
+    enum ExplosivePreventionType_t
+    {
+        FIZZLE_ON_DET,
+        FIZZLE_ON_DET_AIRBORNE_ONLY,
+        FIZZLE_ON_LAND,
+        FIZZLE_ON_ENTRANCE
+    };
 };
 
 class CTriggerMomentumCatapult : public CBaseMomentumTrigger
