@@ -254,7 +254,13 @@ void CMomStickybomb::Detonate()
 
 void CMomStickybomb::Explode(trace_t *pTrace, CBaseEntity *pOther)
 {
-    if (CNoGrenadesZone::IsInsideNoGrenadesZone(this) || m_bFizzle)
+    const auto *pGrenadesZone = CNoGrenadesZone::IsInsideNoGrenadesZone(this);
+
+    if (m_bFizzle || pGrenadesZone
+        &&
+        (pGrenadesZone->m_iExplosivePreventionType == CNoGrenadesZone::FIZZLE_ON_DET
+        ||
+        pGrenadesZone->m_iExplosivePreventionType == CNoGrenadesZone::FIZZLE_ON_DET_AIRBORNE_ONLY && !m_bDidHitWorld))
     {
         Destroy(true);
         return;
@@ -321,6 +327,21 @@ void CMomStickybomb::VPhysicsCollision(int index, gamevcollisionevent_t *pEvent)
     if (pHitEntity && (pHitEntity->IsWorld() || bIsDynamicProp))
     {
         g_PostSimulationQueue.QueueCall(VPhysicsGetObject(), &IPhysicsObject::EnableMotion, false);
+
+        const auto *pGrenadesZone = CNoGrenadesZone::IsInsideNoGrenadesZone(this);
+
+        if (pGrenadesZone)
+        {
+            if (pGrenadesZone->m_iExplosivePreventionType == CNoGrenadesZone::FIZZLE_ON_DET_AIRBORNE_ONLY)
+            {
+                SetCanExplode(true);
+            }
+            else if (pGrenadesZone->m_iExplosivePreventionType == CNoGrenadesZone::FIZZLE_ON_LAND)
+            {
+                Destroy(true);
+                return;
+            }
+        }
 
         // Save impact data for explosions.
         m_bDidHitWorld = true;

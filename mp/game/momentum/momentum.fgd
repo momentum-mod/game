@@ -14,10 +14,12 @@
 
 @SolidClass base(Targetname, EnableDisable, Toggle) = func_nogrenades : "Rockets and grenades will not detonate inside this area." 
 [
-    airborne_only(choices) : "Prevent airborne explosions only" : 0 = 
+    explosion_prevention_type(choices) : "Explosive prevention method" : 0 =
     [
-        0 : "False"
-        1 : "True"
+        0 : "[Default] Prevent explosive from detonating inside this trigger."
+        1 : "Prevent explosive detonation only if explosive is airborne."
+        2 : "Destroy stickybombs upon them landing (instead of on attempted det)."
+        3 : "Destroy explosive upon it entering the trigger."
     ]
 ]
 

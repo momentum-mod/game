@@ -1533,7 +1533,7 @@ static CUtlVector<CNoGrenadesZone *> s_vecNoGrenadeZones;
 LINK_ENTITY_TO_CLASS(func_nogrenades, CNoGrenadesZone);
 
 BEGIN_DATADESC(CNoGrenadesZone)
-DEFINE_KEYFIELD(m_bAirborneOnly, FIELD_BOOLEAN, "airborne_only")
+    DEFINE_KEYFIELD(m_iExplosivePreventionType, FIELD_INTEGER, "explosion_prevention_type")
 END_DATADESC();
 
 CNoGrenadesZone::~CNoGrenadesZone()
@@ -1565,11 +1565,19 @@ void CNoGrenadesZone::OnStartTouch(CBaseEntity* pOther)
     if (!pOther)
         return;
 
-    const auto pSticky = dynamic_cast<CMomStickybomb *>(pOther);
-    if (!pSticky)
+    const auto pExplosive = dynamic_cast<CMomExplosive *>(pOther);
+    if (!pExplosive)
         return;
 
-    pSticky->SetCanExplode(false);
+    if (m_iExplosivePreventionType == FIZZLE_ON_ENTRANCE)
+    {
+        pExplosive->Destroy(true);
+        return;
+    }
+
+    const auto pSticky = dynamic_cast<CMomStickybomb *>(pExplosive);
+    if (pSticky && m_iExplosivePreventionType != FIZZLE_ON_LAND)
+        pSticky->SetCanExplode(false);
 }
 
 void CNoGrenadesZone::OnEndTouch(CBaseEntity* pOther)
@@ -1586,26 +1594,22 @@ void CNoGrenadesZone::OnEndTouch(CBaseEntity* pOther)
     pSticky->SetCanExplode(true);
 }
 
-bool CNoGrenadesZone::IsInsideNoGrenadesZone(CBaseEntity *pOther)
+CNoGrenadesZone* CNoGrenadesZone::IsInsideNoGrenadesZone(CBaseEntity *pOther)
 {
-    if ( pOther )
+    if (!pOther)
+        return nullptr;
+
+    FOR_EACH_VEC(s_vecNoGrenadeZones, i)
     {
-        const auto pSticky = dynamic_cast<CMomStickybomb*>(pOther);
-        FOR_EACH_VEC(s_vecNoGrenadeZones, i)
-        {
-            const auto pNoGrenadeZone = s_vecNoGrenadeZones[i];
+        const auto pNoGrenadeZone = s_vecNoGrenadeZones[i];
 
-            if (pNoGrenadeZone->m_bDisabled || !pNoGrenadeZone->PointIsWithin(pOther->GetAbsOrigin()))
-                continue;
+        if (pNoGrenadeZone->m_bDisabled || !pNoGrenadeZone->PointIsWithin(pOther->GetAbsOrigin()))
+            continue;
 
-            if (!pSticky)
-                return true; // This is a rocket in a nonade zone and should fizzle
-
-            return !pNoGrenadeZone->m_bAirborneOnly || !pSticky->DidHitWorld();
-        }
+        return pNoGrenadeZone;
     }
 
-    return false;
+    return nullptr;
 }
 
 //-----------------------------------------------------------------------------------------------
