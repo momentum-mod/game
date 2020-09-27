@@ -74,6 +74,9 @@ void CHudStickyCharge::FireGameEvent(IGameEvent* pEvent)
     if (!pLocal)
         return; 
 
+    if (pEvent->GetInt("ent") != pLocal->GetCurrentUIEntity()->GetEntIndex())
+        return;
+
     if (pEvent->GetInt("num") != 1)
         return;
 
