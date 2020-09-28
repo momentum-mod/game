@@ -39,6 +39,7 @@ DEFINE_FIELD(m_currentSound, FIELD_SOUNDNAME),
 DEFINE_KEYFIELD(m_flBlockDamage, FIELD_FLOAT, "BlockDamage"),
 DEFINE_KEYFIELD(m_flStartPosition, FIELD_FLOAT, "StartPosition"),
 DEFINE_KEYFIELD(m_flMoveDistance, FIELD_FLOAT, "MoveDistance"),
+DEFINE_KEYFIELD(m_bSolidBsp, FIELD_BOOLEAN, "solidbsp"),
 //	DEFINE_PHYSPTR( m_pFluidController ),
 
 // Inputs
@@ -99,7 +100,14 @@ void CFuncMoveLinear::Spawn(void)
 	Precache();
 
 	// It is solid?
-	SetSolid(SOLID_VPHYSICS);
+	if (m_bSolidBsp)
+	{
+		SetSolid(SOLID_BSP);
+	}
+	else
+	{
+		SetSolid(SOLID_VPHYSICS);
+	}
 
 	if (FClassnameIs(this, "func_water_analog"))
 	{
