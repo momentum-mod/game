@@ -20,9 +20,6 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-static ConVar mat_slopescaledepthbias_shadowmap( "mat_slopescaledepthbias_shadowmap", "3", FCVAR_CHEAT );
-static ConVar mat_depthbias_shadowmap(	"mat_depthbias_shadowmap", "0.000025", FCVAR_CHEAT  );
-
 float C_EnvProjectedTexture::m_flVisibleBBoxMinHeight = -FLT_MAX;
 
 IMPLEMENT_CLIENTCLASS_DT( C_EnvProjectedTexture, DT_EnvProjectedTexture, CEnvProjectedTexture )
@@ -340,6 +337,9 @@ void C_EnvProjectedTexture::UpdateLight( void )
 		}
 
 		float flAlpha = m_flCurrentLinearFloatLightAlpha * ( 1.0f / 255.0f );
+
+		static ConVarRef mat_slopescaledepthbias_shadowmap( "mat_slopescaledepthbias_shadowmap" );
+		static ConVarRef mat_depthbias_shadowmap( "mat_depthbias_shadowmap" );
 
 		state.m_fConstantAtten = m_flConstantAtten;
 		state.m_fLinearAtten = m_flLinearAtten;
