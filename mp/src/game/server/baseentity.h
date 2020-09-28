@@ -715,6 +715,7 @@ public:
 	void InputRemoveEFlags( inputdata_t &inputdata );
 	void InputAddSolidFlags( inputdata_t &inputdata );
 	void InputRemoveSolidFlags( inputdata_t &inputdata );
+	void InputSetSolidType( inputdata_t &inputdata );
 	void InputSetMoveType( inputdata_t &inputdata );
 	void InputSetCollisionGroup( inputdata_t &inputdata );
 

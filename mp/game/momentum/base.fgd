@@ -105,6 +105,8 @@
     input AddSolidFlags(integer) : "Adds solid flags to this entity."
     input RemoveSolidFlags(integer) : "Removes solid flags from this entity."
     
+    input SetSolidType(integer) : "Sets the solid type (0 = none, 1 = BSP, 2 = Bounding Box, 6 = VPhysics)"
+	
     input SetHealth(integer) : "Sets this entity's health."
     input AddHealth(integer) : "Adds to this entity's health."
     input RemoveHealth(integer) : "Removes from this entity's health."

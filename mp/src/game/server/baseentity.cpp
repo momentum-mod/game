@@ -1958,6 +1958,7 @@ BEGIN_DATADESC_NO_BASE( CBaseEntity )
 	DEFINE_INPUTFUNC( FIELD_INTEGER, "RemoveEFlags", InputRemoveEFlags ),
 	DEFINE_INPUTFUNC( FIELD_INTEGER, "AddSolidFlags", InputAddSolidFlags ),
 	DEFINE_INPUTFUNC( FIELD_INTEGER, "RemoveSolidFlags", InputRemoveSolidFlags ),
+	DEFINE_INPUTFUNC( FIELD_INTEGER, "SetSolidType", InputSetSolidType ),
 	DEFINE_INPUTFUNC( FIELD_INTEGER, "SetMoveType", InputSetMoveType ),
 	DEFINE_INPUTFUNC( FIELD_INTEGER, "SetCollisionGroup", InputSetCollisionGroup ),
 
@@ -7241,6 +7242,14 @@ void CBaseEntity::InputAddSolidFlags(inputdata_t& inputdata)
 void CBaseEntity::InputRemoveSolidFlags(inputdata_t& inputdata)
 {
 	RemoveSolidFlags(inputdata.value.Int());
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: Sets the solid type.
+//-----------------------------------------------------------------------------
+void CBaseEntity::InputSetSolidType(inputdata_t& inputdata)
+{
+	SetSolid((SolidType_t)inputdata.value.Int());
 }
 
 //-----------------------------------------------------------------------------
