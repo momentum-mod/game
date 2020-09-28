@@ -1423,10 +1423,10 @@
         1 : "Yes"
     ]    
 
-    solidbsp(choices) : "Solid BSP" : 0 : "Set this if this brush is in heirarchy with a moving object of some kind, and the player can stand on this brush." =
+    solidbsp(choices) : "Solid Type" : 1 =
     [
-        0 : "No"
-        1 : "Yes"
+        0 : "VPhysics"
+        1 : "BSP"
     ]    
     vrad_brush_cast_shadows(choices) : "Shadows" : 0 : "Set this if this brush casts lightmap shadows." =
     [
@@ -3342,6 +3342,12 @@
     blockdamage(float) : "Block Damage" : 0 : "The amount of damage to do to any entity that blocks the brushes, per frame."
     startsound(sound) : "Sound played when the brush starts moving."
     stopsound(sound) : "Sound played when the brush stops moving."
+	
+	solidbsp(choices) : "Solid Type" : 1 =
+    [
+        0 : "VPhysics"    
+        1 : "BSP"
+    ]
 
     // Inputs
     input Open(void) : "Move the brush to the end position (starting position + (move direction * move distance))."
@@ -3398,7 +3404,7 @@
     _minlight(string) : "Minimum Light Level" : : "The minimum level of ambient light that hits this brush."
     dmg(integer) : "Blocking Damage" : 0 : "Damage done to any entity that blocks the rotation, per frame."
 
-    solidbsp(choices) : "Solid Type" : 0 =
+    solidbsp(choices) : "Solid Type" : 1 =
     [
         0 : "VPhysics"    
         1 : "BSP"
@@ -3753,10 +3759,10 @@
         -1 : "Forward"         // Reverses upon USE, so are
         1 : "Backward"     // reversed here.
     ]
-    solidbsp(choices) : "Solid BSP" : 0 =
+    solidbsp(choices) : "Solid Type" : 1 =
     [
-        0 : "No"
-        1 : "Yes"
+        0 : "VPhysics"
+        1 : "BSP"
     ]    
 
     // Inputs
@@ -3858,6 +3864,11 @@
         0: "No"
         1: "Yes"
     ]
+    solidbsp(choices) : "Solid Type" : 1 =
+    [
+        0 : "VPhysics"
+        1 : "BSP"
+    ]
 
     // Outputs
     output OnClose(void) : "Fired when the door starts closing."
@@ -3900,7 +3911,7 @@
     ]
     distance(integer) : "Distance" : 90 : "The amount, in degrees, that the button should rotate when it's pressed."
 
-    solidbsp(choices) : "Solid Type" : 0 =
+    solidbsp(choices) : "Solid Type" : 1 =
     [
         0 : "VPhysics"    
         1 : "BSP"
