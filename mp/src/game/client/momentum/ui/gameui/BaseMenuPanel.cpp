@@ -2,6 +2,7 @@
 
 #include "BaseMenuPanel.h"
 #include "mainmenu/MainMenu.h"
+#include "mom_modulecomms.h"
 #include "loadingscreen/LoadingScreen.h"
 
 #include "gameui/GameUIUtil.h"
@@ -125,15 +126,16 @@ void CBaseMenuPanel::OnGameUIActivated()
 
     m_pMainMenu->SetVisible(true);
 
-    if (GameUIUtil::IsInLevel())
-    {
-        OnCommand("OpenPauseMenu");
-    }
+    // Foreign only because client can just query this panel for the main menu visibility
+    g_pModuleComms->FireEvent(new KeyValues("gameui_toggle", "activated", true), FIRE_FOREIGN_ONLY);
 }
 
 void CBaseMenuPanel::OnGameUIHidden()
 {
     m_pMainMenu->SetVisible(false);
+
+    // Foreign only because client can just query this panel for the main menu visibility
+    g_pModuleComms->FireEvent(new KeyValues("gameui_toggle", "activated", false), FIRE_FOREIGN_ONLY);
 }
 
 Panel* CBaseMenuPanel::GetMainMenu()

@@ -6,6 +6,9 @@
 
 #ifdef CLIENT_DLL
 #include "input.h"
+#include "gameui/BaseMenuPanel.h"
+#else
+#include "mom_modulecomms.h"
 #endif
 
 #include "tier0/memdbgon.h"
@@ -76,7 +79,15 @@ bool CRunSafeguard::IsSafeguarded(RunSafeguardMode_t mode)
         return false;
 
     if (!pEntData->m_bTimerRunning || pPlayer->IsObserver())
-        return false; 
+        return false;
+
+#ifdef GAME_DLL
+    if (g_pRunSafeguards->IsGameUIActive())
+        return false;
+#else
+    if (g_pBasePanel->GetMainMenu()->IsVisible())
+        return false;
+#endif
 
     int nButtons = 
 #ifdef CLIENT_DLL
@@ -143,7 +154,19 @@ MomRunSafeguards::MomRunSafeguards()
 
     m_pSafeguards[RUN_SAFEGUARD_QUIT_GAME] = new CRunSafeguard("quitting the game");
     m_pSafeguards[RUN_SAFEGUARD_QUIT_GAME]->SetRelevantCVar(&mom_run_safeguard_quit_game);
+
+#ifdef GAME_DLL
+    m_bGameUIActive = false;
+    g_pModuleComms->ListenForEvent("gameui_toggle", UtlMakeDelegate(this, &MomRunSafeguards::OnGameUIToggled));
+#endif
 }
+
+#ifdef GAME_DLL
+void MomRunSafeguards::OnGameUIToggled(KeyValues *pKv)
+{
+    m_bGameUIActive = pKv->GetBool("activated");
+}
+#endif
 
 bool MomRunSafeguards::IsSafeguarded(RunSafeguardType_t type)
 {

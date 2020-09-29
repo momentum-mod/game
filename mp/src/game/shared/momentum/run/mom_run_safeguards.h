@@ -63,8 +63,17 @@ class MomRunSafeguards
     void SetMode(int type, int mode);
     void SetMode(RunSafeguardType_t type, RunSafeguardMode_t mode);
 
+#ifdef GAME_DLL
+    void OnGameUIToggled(KeyValues *pKv);
+    bool IsGameUIActive() const { return m_bGameUIActive; }
+#endif
+
   private:
     CRunSafeguard *m_pSafeguards[RUN_SAFEGUARD_COUNT];
+
+#ifdef GAME_DLL
+    bool m_bGameUIActive;
+#endif
 };
 
 extern MomRunSafeguards *g_pRunSafeguards;
