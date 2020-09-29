@@ -337,6 +337,9 @@ void CRenderPanel::OnMouseReleased(MouseCode code)
     if (m_iDragMode == RDRAG_NONE)
         return;
 
+    if (m_iDragMode != 1 << (code - MOUSE_FIRST))
+        return;
+
     m_flLastDragTime = engine->Time();
 
     input()->SetCursorOveride(NULL);
