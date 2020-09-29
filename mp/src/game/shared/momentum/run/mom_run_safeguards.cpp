@@ -187,7 +187,7 @@ RunSafeguardMode_t MomRunSafeguards::GetModeFromType(RunSafeguardType_t type)
 
 void MomRunSafeguards::SetMode(int type, int mode)
 {
-    if (type <= RUN_SAFEGUARD_INVALID && type >= RUN_SAFEGUARD_COUNT)
+    if (type <= RUN_SAFEGUARD_INVALID || type >= RUN_SAFEGUARD_COUNT)
         return;
 
     if (mode > RUN_SAFEGUARD_MODE_INVALID && mode < RUN_SAFEGUARD_MODE_COUNT)
