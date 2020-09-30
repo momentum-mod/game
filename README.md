@@ -15,3 +15,4 @@ Consider joining [our Discord server](https://discord.gg/n4v52uv) for contacting
 
 ## License
 The licenses and legal notices can be found at [SDK LICENSE](LICENSE) and [THIRD PARTY LEGAL NOTICES.](thirdpartylegalnotices.txt)
+Thank you 😊,
