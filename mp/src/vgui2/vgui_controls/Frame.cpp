@@ -878,15 +878,7 @@ Frame::Frame(Panel *parent, const char *panelName, bool showTaskbarIcon /*=true*
 //-----------------------------------------------------------------------------
 Frame::~Frame()
 {
-	if ( input()->GetAppModalSurface() == GetVPanel() )
-	{
-		vgui::input()->ReleaseAppModalSurface();
-		if ( m_hPreviousModal != 0 )
-		{
-			vgui::input()->SetAppModalSurface( m_hPreviousModal );
-			m_hPreviousModal = 0;
-		}
-	}
+	ReleaseModal();
 
 	delete _title;
 }
@@ -1001,15 +993,8 @@ void Frame::ReleaseModal()
 //-----------------------------------------------------------------------------
 void Frame::CloseModal()
 {
-	vgui::input()->ReleaseAppModalSurface();
-	if ( m_hPreviousModal != 0 )
-	{
-		vgui::input()->SetAppModalSurface( m_hPreviousModal );
-		m_hPreviousModal = 0;
-	}
-	PostMessage( this, new KeyValues("Close") );
+	OnClose();
 }
-
 
 //-----------------------------------------------------------------------------
 // Purpose: activates the dialog 
@@ -1759,15 +1744,7 @@ void Frame::InitSettings()
 void Frame::OnClose()
 {
 	// if we're modal, release that before we hide the window else the wrong window will get focus
-	if (input()->GetAppModalSurface() == GetVPanel())
-	{
-		input()->ReleaseAppModalSurface();
-		if ( m_hPreviousModal != 0 )
-		{
-			vgui::input()->SetAppModalSurface( m_hPreviousModal );
-			m_hPreviousModal = 0;
-		}
-	}
+	ReleaseModal();
 	
 	BaseClass::OnClose();
 
