@@ -6,7 +6,7 @@
         "fieldName"        "HUDPage"
         "proportionalToParent" "1"
         "wide" "f0"
-        "tall" "1050"
+        "tall" "1200"
         "autoResize"        "0"
         "pinCorner"        "0"
         "RoundedCorners"        "15"
@@ -683,7 +683,7 @@
         "NumericInputOnly"		"0"
         "unicode"		"0"
     }
-    
+    ///timershit, delete comment later
     // ================================================================================
     // ================================================================================
     // ================================================================================
@@ -1620,5 +1620,83 @@
 		"Default"		"0"
 		"cvar_name"		"mom_comparisons_strafe_show"
         "actionsignallevel" "1"
+    }
+    // =================================================================================
+    // ========================= MapInfo ==============================================
+    // =================================================================================
+    // =================================================================================
+
+    // this works now 
+    "MapInfoDivider"
+    {
+        "ControlName" "Divider"
+        "fieldName" "MapInfoDivider"
+        "xpos" "cs-0.5"
+        "ypos" "1100"
+        "proportionalToParent" "1"
+        "wide" "500"
+        "tall" "1"
+    }
+      "MapInfoLabel"
+    {
+        "ControlName"        "Label"
+        "fieldName"        "MapInfoLabel"
+        "xpos"        "0"
+        "ypos"        "12"
+        "proportionalToParent" "1"
+        "wide"        "f0"
+        "tall"        "24"
+        "pin_to_sibling" "MapInfoDivider"
+        "pin_corner_to_sibling" "4"
+        "pin_to_sibling_corner" "6"
+        "autoResize"        "0"
+        "pinCorner"        "0"
+        "visible"        "1"
+        "enabled"        "1"
+        "tabPosition"        "0"
+        "BgColor"        "0 0 0 0"
+        "allowColorOverrides"        "0"
+        "labelText"		"#MOM_MapInfo_Label"
+        "textAlignment"        "center"
+        "dulltext"        "0"
+        "brighttext"        "0"
+        "wrap"        "0"
+        "centerwrap"        "0"
+        "textinsetx"        "0"
+        "textinsety"        "0"
+        "auto_wide_tocontents" "1"
+        "auto_tall_tocontents" "1"
+        "font" "Subheader"
+    }
+    "ShowMapName"
+    {
+        "ControlName"		"CvarToggleCheckButton"
+        "fieldName"		"ShowMapName"
+        "cvar_name"		"#mom_hud_mapinfo_show_mapname"
+      "xpos"		"-16"
+		"ypos"		"-20"
+        "autoResize"		"0"
+        "pinCorner"		"0"
+        "pin_to_sibling" "MapInfoLabel"
+        "pin_corner_to_sibling"		"0"
+        "pin_to_sibling_corner"		"1"
+        "visible"		"1"
+        "enabled"		"1"
+        "tabPosition"		"0"
+        "labelText"		"#MOM_Settings_Show_MapName"
+        "textAlignment"		"west"
+        "dulltext"		"0"
+        "brighttext"		"0"
+        "wrap"		"0"
+        "centerwrap"		"0"
+        "textinsetx"		"6"
+        "textinsety"		"0"
+        "auto_wide_tocontents"		"1"
+        "auto_tall_tocontents" "1"
+        "use_proportional_insets"		"0"
+        "Default"		"0"
+    }
+
+    {
     }
 }

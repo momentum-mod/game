@@ -521,6 +521,9 @@
         "MOM_Settings_Compare_Show_Jumps" "Zone jumps"
         "MOM_Settings_Compare_Show_Strafes" "Zone strafe"
 
+        // "MapInfo"
+        "MOM_MapInfo_Label" "Map info"
+        "MOM_Settings_Show_MapName" "Display Map name"
 
         // Replay Info
         // Spec GUI
