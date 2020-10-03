@@ -42,7 +42,7 @@
         "10" "#MOM_Tip_Surf_10"
         "11" "#MOM_Tip_Surf_11"
 
-        "shared1" "MOM_Tip_Bhop_11"
+        "shared1" "#MOM_Tip_Bhop_11"
     }
     "#MOM_GameType_Tricksurf"
     {
@@ -57,11 +57,11 @@
         "9" "#MOM_Tip_Surf_9"
         "10" "#MOM_Tip_Surf_10"
         "11" "#MOM_Tip_Surf_11"
-
+        
         "alt1" "#MOM_Tip_Surf_Alt_1"
         "alt2" "#MOM_Tip_Surf_Alt_2"
-
-        "shared1" "MOM_Tip_Bhop_11"
+        
+        "shared1" "#MOM_Tip_Bhop_11"
     }
     "#MOM_GameType_Bhop"
     {
@@ -116,7 +116,7 @@
         "6" "#MOM_Tip_Ahop_6"
         "7" "#MOM_Tip_Ahop_7"
         "8" "#MOM_Tip_Ahop_8"
-
+        
         "shared1" "#MOM_Tip_Bhop_3"
     }
     "#MOM_GameType_Parkour"

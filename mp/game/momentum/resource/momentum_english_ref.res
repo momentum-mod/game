@@ -746,7 +746,7 @@
         "MOM_Tip_SJ_3" "Tip: Crouching without jumping before detonating a stickybomb will allow a more horizontal boost."
         "MOM_Tip_SJ_4" "Tip: Shooting stickies as early possible is essential to improving your course times." // hex
         "MOM_Tip_SJ_5" "Tip: The Stickybomb Launcher fires on +attack end instead of on +attack start." // Hellbent
-
+        
         // Ahop
         "MOM_Tip_Ahop_1" "Tip: Hold sprint while airborne to gain maximum air control."
         "MOM_Tip_Ahop_2" "Tip: Although ABH is faster, ASH/AFH allows more control."
