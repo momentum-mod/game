@@ -527,7 +527,7 @@
 
         // Replay Info
         // Spec GUI
-        "MOM_WatchingReplay"    "REPLAY"
+        "WatchingReplay"    "REPLAY"
         "MOM_WatchingGhost"    "SPECTATING"
         "MOM_SpecGUI_GainControl" "Press your %duck% key to toggle mouse capture!"
         "MOM_SpecGUI_StopPlayback" "Stop Playback"
