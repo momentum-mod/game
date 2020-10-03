@@ -672,23 +672,25 @@
         "MOM_Tip_General_5" "Tip: Gain Ranked points each time you beat your previous best time."
         "MOM_Tip_General_6" "Tip: It can be helpful to look over the map in practice mode to better understand it."
         "MOM_Tip_General_7" "Tip: You can use practice mode during a run without stopping your timer."
-        "MOM_Tip_General_8" "Tip: If you’re having too much trouble with a map, try another one."
-        "MOM_Tip_General_9" "Tip: The higher a map's tier (difficulty) is, the harder it is to complete, but the more XP and points you gain!"
-        "MOM_Tip_General_10" "Tip: When in the air, pressing a movement key opposite to the direction of movement will rapidly decrease your speed." // Block57
-        "MOM_Tip_General_11" "Tip: Remember to have fun. Don't get frustrated trying to beat your times on a map!" // hex
-        "MOM_Tip_General_12" "Tip: Use 'mom_practice' to explore and test if you are stuck or lost on a map." // hex
-        "MOM_Tip_General_13" "Tip: Adjust your mouse senstivity to your liking and try to avoid changing it frequently." // amp
-        "MOM_Tip_General_14" "Tip: Crouching while mid-air raises your feet and lowers your head, but extends your jump distance." // Bela + BorkChops
-        "MOM_Tip_General_15" "Tip: Check out the Momentum Discord to talk about game modes, discuss announcements, and more!" // BorkChops
-        "MOM_Tip_General_16" "Tip: The command 'cl_yawspeed' controls the speed of your turn binds, if you have any." // Pretzl
-        "MOM_Tip_General_17" "Tip: Being comfortable with your keybinds and posture helps avoid gaming-related injuries." // hex
-        "MOM_Tip_General_18" "Tip: Some game modes may be daunting at first, but don't let this stop you from learning them!" // amp
-        "MOM_Tip_General_19" "Tip: In the air, don't hold your forward key to go forwards. Let your momentum take care of that - control your movement with strafe keys." // porkie
+        "MOM_Tip_General_8" "Tip: Higher tier maps are harder to complete, but they give you more XP upon completion!"
+        "MOM_Tip_General_9" "Tip: Remember to have fun. Don't get frustrated trying to beat your times on a map!" // hex
+        "MOM_Tip_General_10" "Tip: Use 'mom_practice' to explore and test if you are stuck or lost on a map." // hex
+        "MOM_Tip_General_11" "Tip: Adjust your mouse senstivity to your liking and try to avoid changing it frequently." // amp
+        "MOM_Tip_General_12" "Tip: Crouching while mid-air raises your feet and lowers your head - extending your jump distance." // Bela + BorkChops
+        "MOM_Tip_General_13" "Tip: Check out the Momentum Discord to talk about game modes, discuss announcements, and more!" // BorkChops
+        "MOM_Tip_General_14" "Tip: The command 'cl_yawspeed' controls the speed of your turn binds, if you have any." // Pretzl
+        "MOM_Tip_General_15" "Tip: Being comfortable with your keybinds and posture helps avoid gaming-related injuries." // hex
+        "MOM_Tip_General_16" "Tip: Some game modes may be daunting at first, but don't let this stop you from learning them!" // amp
+        "MOM_Tip_General_17" "Tip: In the air, don't hold your forward key to go forwards. Let your momentum take care of that - control your movement with strafe keys." // porkie
+        "MOM_Tip_General_18" "Tip: Playing maps outside of your comfort zone aids improvement." // change name
+        "MOM_Tip_General_19" "Tip: If a map is too dark, increase the brightness in the settings." //nevier
 
         // General meme/alt tips
         "MOM_Tip_General_Alt_1" "Posture check." // roger
         "MOM_Tip_General_Alt_2" "Good choice! This game mode is the best one." // hex
         "MOM_Tip_General_Alt_3" "Tip: Go fast to get a good run." // matter
+        "MOM_Tip_General_Alt_4" "Tip: If you’re having too much trouble with a map, try another one."
+        "MOM_Tip_General_Alt_5" "Tip: Stay Hydrated!"
 
         // Bhop
         "MOM_Tip_Bhop_1" "Tip: The better sync you maintain throughout a run, the more speed you'll have."
@@ -701,6 +703,7 @@
         "MOM_Tip_Bhop_8" "Tip: Strafe using wider arcs/curves to maintain speed on closely-spaced platforms." // amp
         "MOM_Tip_Bhop_9" "Tip: Adding multiple strafes per jump is faster, when done right." // roger
         "MOM_Tip_Bhop_10" "Tip: Turn binds are great for maintaining speed in tight locations." // amp
+        "MOM_Tip_Bhop_11" "Tip: When in the air, pressing a movement key opposite to the direction of movement will rapidly decrease your speed." // Block57
 
         // Surf
         "MOM_Tip_Surf_1" "Tip: The lower you go on a surf ramp, the more velocity you'll gain."
@@ -712,9 +715,12 @@
         "MOM_Tip_Surf_7" "Tip: Landing as high as you can on ramps, without losing speed to do so, helps maintain high speeds." // Bela
         "MOM_Tip_Surf_8" "Tip: Be sure to practice your Bhop skills. Bhop trains your strafing, which helps you navigate in the air. Having a better strafe ability will make you a better surfer!" // Garanimal
         "MOM_Tip_Surf_9" "Tip: Sometimes leaving a ramp early is better than riding it all the way to its end." // Pretzl
-        
+        "MOM_Tip_Surf_10" "Tip: If your turn bind speed is set too high, you'll lose speed when using it." // nevier
+        "MOM_Tip_Surf_11" "Tip: If you have trouble boarding a ramp, use the paint tool to mark the spline or beginning of the ramp." //nevier
+
         // Surf meme tips
         "MOM_Tip_Surf_Alt_1" "Tip: Be smooth. B)" // maz
+        "MOM_Tip_Surf_Alt_2" "Tip: Angle surfing is a good way to challenge yourself on a familiar map. Momentum supports Half-Sideways, Sideways and Backwards surfing. Give it a try!" // nevier
 
         // Climb
         "MOM_Tip_KZ_1" "Tip: When starting out, use ‘saveloc’s to save your place in case you fall."
@@ -732,18 +738,28 @@
         "MOM_Tip_RJ_7" "Tip: Having trouble hitting a tele-sync? Use +paint to mark your spawn location."
         "MOM_Tip_RJ_8" "Tip: Tapping your backwards key while airborne can help you slow down and gain more control." // yi yi
         "MOM_Tip_RJ_9" "Tip: Sometimes there is more than one way to beat a jump. Get creative!" // porkie
+        "MOM_Tip_RJ_10" "Tip: If center firing is disabled, when wallclimbing, you have to aim further left for your rockets to hit walls at your center." // Paypur
 
         // Sticky Jump
         "MOM_Tip_SJ_1" "Tip: An uncharged stickybomb is fired at 900 units per second, regardless of the player’s speed."
         "MOM_Tip_SJ_2" "Tip: Jump and crouch before detonating a stickybomb to receive a much more powerful boost."
         "MOM_Tip_SJ_3" "Tip: Crouching without jumping before detonating a stickybomb will allow a more horizontal boost."
         "MOM_Tip_SJ_4" "Tip: Shooting stickies as early possible is essential to improving your course times." // hex
+        "MOM_Tip_SJ_5" "Tip: The Stickybomb Launcher fires on +attack end instead of on +attack start." // Hellbent
 
         // Ahop
         "MOM_Tip_Ahop_1" "Tip: Hold sprint while airborne to gain maximum air control."
-        "MOM_Tip_Ahop_2" "Tip: Although ABH is faster, ASH/AFH is often preferred due to more control."
+        "MOM_Tip_Ahop_2" "Tip: Although ABH is faster, ASH/AFH allows more control."
         "MOM_Tip_Ahop_3" "Tip: Delaying jumps can be used to control your speed." // Imbellis
+        "MOM_Tip_Ahop_4" "Tip: When ASHing at higher speeds, the velocity gained tends more towards where you aim. Turn more forwards as higher speeds." // Chili_n_such
+        "MOM_Tip_Ahop_5" "Tip: Due to low air acceleration in Ahop, holding backwards in the air slows you rather than instantly stopping you." // Chili_n_such
+        "MOM_Tip_Ahop_6" "Tip: While crouch-jumping accelerates you faster, walk-jumping allows you to jump over taller hurdles and larger gaps." // Chili_n_such
+        "MOM_Tip_Ahop_7" "Tip: A good circle jump can significantly increase your first jump's speed" // Imbellis
+        "MOM_Tip_Ahop_8" "Tip: At higher speeds, you can hold backwards while AFHing instead of tapping." // Imbellis
 
+        // Parkour
+        // Conc
+        // Defrag
         // etc
     }
 }
