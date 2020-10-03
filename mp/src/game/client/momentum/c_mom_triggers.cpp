@@ -9,6 +9,7 @@
 #include "mom_shareddefs.h"
 #include "dt_utlvector_recv.h"
 #include "debugoverlay_shared.h"
+#include "mom_player_shared.h"
 
 #include "tier0/memdbgon.h"
 
@@ -121,6 +122,18 @@ bool C_BaseMomZoneTrigger::ShouldDraw()
 
 int C_BaseMomZoneTrigger::DrawModel(int flags)
 {
+    const auto pPlayer = C_MomentumPlayer::GetLocalMomPlayer();
+    if (!pPlayer)
+        return 0;
+
+    const auto pRunEntData = pPlayer->GetCurrentUIEntData();
+    if (!pRunEntData)
+        return 0;
+
+    const auto pStartZone = dynamic_cast<C_TriggerTimerStart*>(this);
+    if (!pStartZone && m_iTrackNumber != pRunEntData->m_iCurrentTrack)
+        return 0;
+
     if (ShouldDrawOutline())
     {
         if ((flags & STUDIO_RENDER) && (flags & (STUDIO_SHADOWDEPTHTEXTURE | STUDIO_SHADOWDEPTHTEXTURE)) == 0)
