@@ -45,6 +45,8 @@ CRenderPanel::CRenderPanel(Panel *parent, const char *pElementName) : BaseClass(
     __ViewProj.Identity();
     __ViewProjNDC.Identity();
 
+    m_hDefaultCubemap.Init(materials->FindTexture("cubemaps/cubemap_menu_model_bg.hdr", TEXTURE_GROUP_CUBE_MAP));
+
     ListenForGameEvent("invalid_mdl_cache");
     SetPaintBorderEnabled(true);
 }
@@ -112,7 +114,6 @@ void CRenderPanel::OnThink()
         {
             if (m_nAllowedRotateModes & ROTATE_PITCH)
             {
-
                 m_flPitch -= mdelta_y * 0.5f;
                 m_flPitch = clamp(m_flPitch, -89, 89);
             }
@@ -133,8 +134,7 @@ void CRenderPanel::OnThink()
 #define RENDER_DRAGPOS_MOVESCALE 0.2f
             Vector viewRight, viewUp;
             AngleVectors(render_ang, NULL, &viewRight, &viewUp);
-            render_offset +=
-                mdelta_x * -viewRight * RENDER_DRAGPOS_MOVESCALE + mdelta_y * viewUp * RENDER_DRAGPOS_MOVESCALE;
+            render_offset += mdelta_x * -viewRight * RENDER_DRAGPOS_MOVESCALE + mdelta_y * viewUp * RENDER_DRAGPOS_MOVESCALE;
         }
         break;
         default:
@@ -421,6 +421,8 @@ void CRenderPanel::Paint()
     MaterialFogMode_t oldFog = pRenderContext->GetFogMode();
     pRenderContext->FogMode(MATERIAL_FOG_NONE);
 
+    pRenderContext->BindLocalCubemap(m_hDefaultCubemap);
+
     DrawModel();
 
     pRenderContext->FogMode(oldFog);
@@ -428,6 +430,8 @@ void CRenderPanel::Paint()
     render->PopView(frustum);
 
     modelrender->SuppressEngineLighting(false);
+
+    pRenderContext->Flush();
 }
 
 void CRenderPanel::DrawModel()

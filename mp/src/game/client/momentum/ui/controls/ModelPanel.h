@@ -120,6 +120,7 @@ private:
     VMatrix __ViewProj;
     VMatrix __ViewProjNDC;
 
+    CTextureReference m_hDefaultCubemap;
     C_ModelPanelModel *m_pModelInstance;
     char m_szModelPath[MAX_PATH];
 
