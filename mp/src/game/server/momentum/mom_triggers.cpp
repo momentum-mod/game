@@ -505,6 +505,7 @@ LINK_ENTITY_TO_CLASS(trigger_momentum_teleport, CTriggerMomentumTeleport);
 BEGIN_DATADESC(CTriggerMomentumTeleport)
     DEFINE_KEYFIELD(m_bResetVelocity, FIELD_BOOLEAN, "stop"),
     DEFINE_KEYFIELD(m_bResetAngles, FIELD_BOOLEAN, "resetang"),
+    DEFINE_KEYFIELD(m_bFail, FIELD_BOOLEAN, "fail"),
 END_DATADESC()
 
 void CTriggerMomentumTeleport::OnStartTouch(CBaseEntity *pOther)
@@ -530,21 +531,24 @@ void CTriggerMomentumTeleport::OnEndTouch(CBaseEntity *pOther)
 
 void CTriggerMomentumTeleport::HandleTeleport(CBaseEntity *pOther)
 {
-    if (pOther)
-    {
-        if (!m_hDestinationEnt.Get())
-        {
-            if (m_target != NULL_STRING)
-                m_hDestinationEnt = gEntList.FindEntityByName(nullptr, m_target, nullptr, pOther, pOther);
-            else
-            {
-                DevWarning("CTriggerTeleport cannot teleport, pDestinationEnt and m_target are null!\n");
-                return;
-            }
-        }
+    if (!pOther)
+        return;
 
-        DoTeleport(m_hDestinationEnt.Get(), pOther);
+    if (!m_hDestinationEnt.Get())
+    {
+        if (m_target != NULL_STRING)
+            m_hDestinationEnt = gEntList.FindEntityByName(nullptr, m_target, nullptr, pOther, pOther);
+        else
+        {
+            DevWarning("CTriggerTeleport cannot teleport, pDestinationEnt and m_target are null!\n");
+            return;
+        }
     }
+
+    DoTeleport(m_hDestinationEnt.Get(), pOther);
+
+    if (m_bFail)
+        OnFailTeleport(pOther);
 }
 
 bool CTriggerMomentumTeleport::DoTeleport(CBaseEntity *pTeleportTo, CBaseEntity *pEntToTeleport)

@@ -303,11 +303,14 @@ public:
     // True if the entity was teleported, else false
     virtual bool DoTeleport(CBaseEntity *pTeleportTo, CBaseEntity *pEntToTeleport);
     // After teleporting, do this code. Base class does nothing.
-    virtual void AfterTeleport(CBaseEntity *pEntTeleported) {};
+    virtual void AfterTeleport(CBaseEntity *pEntTeleported) {}
+    // Called when teleported by a fail teleport
+    void OnFailTeleport(CBaseEntity *pEntTeleported) {}
 
 private:
     bool m_bResetVelocity;
     bool m_bResetAngles;
+    bool m_bFail;
     EHANDLE m_hDestinationEnt;
 };
 

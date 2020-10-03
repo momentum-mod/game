@@ -73,6 +73,12 @@
         0 : "False"
         1 : "True"
     ]
+    
+    fail(choices) : "Indicates whether this teleport is for failing a level" : 0 =
+    [
+        0 : "False"
+        1 : "True"
+    ]
 ]
 
 @SolidClass base(TeleTrigger) = trigger_momentum_teleport : "A trigger volume that teleports entities that touch it. Entities are teleported to the Remote Destination. "+
