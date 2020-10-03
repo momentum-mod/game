@@ -6,8 +6,8 @@ enum DragRotateMode_t
 {
     RDRAG_NONE = 0,
     RDRAG_ROTATE = 1 << 0,
-    RDRAG_LIGHT = 1 << 1,
-    RDRAG_POS = 1 << 2,
+    RDRAG_POS = 1 << 1,
+    RDRAG_LIGHT = 1 << 2,
 
     RDRAG_ALL = ~RDRAG_NONE,
 };
