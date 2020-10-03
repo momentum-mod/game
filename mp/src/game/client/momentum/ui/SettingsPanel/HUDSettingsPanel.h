@@ -27,7 +27,11 @@ private:
     vgui::CvarComboBox *m_pSyncType, *m_pSyncColorize;
 
     vgui::CvarToggleCheckButton *m_pHUDSyncShow, *m_pSyncShowBar, *m_pButtonsShow, *m_pShowVersion, *m_pTimerShow, *m_pTimerSoundFailEnable,
+<<<<<<< HEAD
                                 *m_pTimerSoundStartEnable, *m_pTimerSoundStopEnable, *m_pTimerSoundFinishEnable, *m_pShowMapName, *m_pShowMapAuthor, *m_pShowMapDifficulty, *m_pShowMapStatus;
+=======
+                                *m_pTimerSoundStartEnable, *m_pTimerSoundStopEnable, *m_pTimerSoundFinishEnable, *m_pShowMapName;
+>>>>>>> 2a50d41c8 (issue #956 fix p.1)
 
     // speedo controls
     vgui::ComboBox *m_pSpeedometerGameType, *m_pSpeedometerType, *m_pSpeedometerUnits, *m_pSpeedometerColorize;

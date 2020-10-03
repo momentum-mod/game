@@ -683,6 +683,14 @@
         "NumericInputOnly"		"0"
         "unicode"		"0"
     }
+<<<<<<< HEAD
+=======
+    ///timershit, delete comment later
+    // ================================================================================
+    // ================================================================================
+    // ================================================================================
+    // ================================================================================
+>>>>>>> 2a50d41c8 (issue #956 fix p.1)
     "TimerDivider"
     {
         "ControlName" "Divider"
@@ -1616,23 +1624,39 @@
 		"cvar_name"		"mom_comparisons_strafe_show"
         "actionsignallevel" "1"
     }
+<<<<<<< HEAD
 
+=======
+>>>>>>> 2a50d41c8 (issue #956 fix p.1)
     // =================================================================================
     // ========================= MapInfo ==============================================
     // =================================================================================
     // =================================================================================
+<<<<<<< HEAD
+=======
+
+    // this works now 
+>>>>>>> 2a50d41c8 (issue #956 fix p.1)
     "MapInfoDivider"
     {
         "ControlName" "Divider"
         "fieldName" "MapInfoDivider"
         "xpos" "cs-0.5"
+<<<<<<< HEAD
         "ypos" "1050"
+=======
+        "ypos" "1100"
+>>>>>>> 2a50d41c8 (issue #956 fix p.1)
         "proportionalToParent" "1"
         "wide" "500"
         "tall" "1"
     }
+<<<<<<< HEAD
 
     "MapInfoLabel"
+=======
+      "MapInfoLabel"
+>>>>>>> 2a50d41c8 (issue #956 fix p.1)
     {
         "ControlName"        "Label"
         "fieldName"        "MapInfoLabel"
@@ -1663,6 +1687,7 @@
         "auto_tall_tocontents" "1"
         "font" "Subheader"
     }
+<<<<<<< HEAD
 
     "ShowMapNameLabel"
     {
@@ -1694,11 +1719,14 @@
         "use_proportional_insets"		"0"
     }
 
+=======
+>>>>>>> 2a50d41c8 (issue #956 fix p.1)
     "ShowMapName"
     {
         "ControlName"		"CvarToggleCheckButton"
         "fieldName"		"ShowMapName"
         "cvar_name"		"#mom_hud_mapinfo_show_mapname"
+<<<<<<< HEAD
         "xpos"		"24"
 		"ypos"		"4"
         "autoResize"		"0"
@@ -1822,12 +1850,23 @@
         "autoResize"		"0"
         "pinCorner"		"0"
         "pin_to_sibling" "ShowMapDifficultyLabel"
+=======
+      "xpos"		"-16"
+		"ypos"		"-20"
+        "autoResize"		"0"
+        "pinCorner"		"0"
+        "pin_to_sibling" "MapInfoLabel"
+>>>>>>> 2a50d41c8 (issue #956 fix p.1)
         "pin_corner_to_sibling"		"0"
         "pin_to_sibling_corner"		"1"
         "visible"		"1"
         "enabled"		"1"
         "tabPosition"		"0"
+<<<<<<< HEAD
         "labelText"		"#GameUI_Enabled"
+=======
+        "labelText"		"#MOM_Settings_Show_MapName"
+>>>>>>> 2a50d41c8 (issue #956 fix p.1)
         "textAlignment"		"west"
         "dulltext"		"0"
         "brighttext"		"0"
@@ -1841,6 +1880,7 @@
         "Default"		"0"
     }
 
+<<<<<<< HEAD
     "ShowMapStatusLabel"
     {
        "ControlName"		"Label"
@@ -1900,3 +1940,8 @@
         "Default"		"0"
     }
  }
+=======
+    {
+    }
+}
+>>>>>>> 2a50d41c8 (issue #956 fix p.1)
