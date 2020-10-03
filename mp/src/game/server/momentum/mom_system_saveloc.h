@@ -21,6 +21,7 @@ enum SavedLocationComponent_t
     SAVELOC_DUCKED = 1 << 9,
     SAVELOC_TRACK = 1 << 10,
     SAVELOC_ZONE = 1 << 11,
+    SAVELOC_TOGGLED_BTNS = 1 << 12,
 
     SAVELOC_ALL = ~SAVELOC_NONE,
 };
@@ -37,6 +38,7 @@ struct SavedLocation_t
     float m_fGravityScale;
     float m_fMovementLagScale;
     int m_iDisabledButtons;
+    int m_iToggledButtons;
     int m_iTrack, m_iZone;
     CEventQueueState entEventsState;
 
