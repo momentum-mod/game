@@ -383,6 +383,9 @@ void CRenderPanel::Paint()
 {
     BaseClass::Paint();
 
+    if (!IsModelReady())
+        return;
+
     MDLCACHE_CRITICAL_SECTION();
 
     modelrender->SuppressEngineLighting(true);
