@@ -964,12 +964,15 @@ void Frame::Activate()
 //-----------------------------------------------------------------------------
 void Frame::DoModal( )
 {
+	if (input()->GetAppModalSurface() == GetVPanel())
+		return;
+
 	// move to the middle of the screen
 	MoveToCenterOfScreen();
 	InvalidateLayout();
 	Activate();
-	m_hPreviousModal = vgui::input()->GetAppModalSurface();
-	vgui::input()->SetAppModalSurface( GetVPanel() );
+	m_hPreviousModal = input()->GetAppModalSurface();
+	input()->SetAppModalSurface( GetVPanel() );
 }
 
 void Frame::ReleaseModal()
