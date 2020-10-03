@@ -441,11 +441,11 @@ void CRenderPanel::DrawModel()
 
 void CRenderPanel::SetRenderColors(C_BaseEntity* pEnt)
 {
-    color32 col = pEnt->GetRenderColor();
-    float color[4] = { col.r / 255.0f, col.g / 255.0f, col.b / 255.0f, col.a / 255.0f };
-    float alphaBias = (GetParent() ? GetParent()->GetAlpha() : GetAlpha()) / 255.0f;
+    const auto col = pEnt->GetRenderColor();
+    const auto fAlpha = col.a / 255.0f;
+    float color[4] = { col.r / 255.0f, col.g / 255.0f, col.b / 255.0f, fAlpha };
     render->SetColorModulation(color);
-    render->SetBlend(alphaBias * color[3]);
+    render->SetBlend(fAlpha);
 }
 
 void CRenderPanel::FireGameEvent(IGameEvent* event)
