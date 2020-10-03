@@ -304,6 +304,31 @@ void CMomStickybomb::Explode(trace_t *pTrace, CBaseEntity *pOther)
 
 void CMomStickybomb::Fizzle() { m_bFizzle = true; }
 
+void CMomStickybomb::Stick(Vector vecNormal)
+{
+    g_PostSimulationQueue.QueueCall(VPhysicsGetObject(), &IPhysicsObject::EnableMotion, false);
+
+    const auto *pGrenadesZone = CNoGrenadesZone::IsInsideNoGrenadesZone(this);
+
+    if (pGrenadesZone)
+    {
+        if (pGrenadesZone->m_iExplosivePreventionType == CNoGrenadesZone::FIZZLE_ON_DET_AIRBORNE_ONLY)
+        {
+            SetCanExplode(true);
+        }
+        else if (pGrenadesZone->m_iExplosivePreventionType == CNoGrenadesZone::FIZZLE_ON_LAND)
+        {
+            Destroy(true);
+            return;
+        }
+    }
+
+    // Save impact data for explosions.
+    m_bDidHitWorld = true;
+    m_vecImpactNormal = vecNormal;
+    m_vecImpactNormal.Negate();
+}
+
 void CMomStickybomb::VPhysicsCollision(int index, gamevcollisionevent_t *pEvent)
 {
     BaseClass::VPhysicsCollision(index, pEvent);
@@ -326,27 +351,9 @@ void CMomStickybomb::VPhysicsCollision(int index, gamevcollisionevent_t *pEvent)
     // Stickybombs stick to the world when they touch it
     if (pHitEntity && (pHitEntity->IsWorld() || bIsDynamicProp))
     {
-        g_PostSimulationQueue.QueueCall(VPhysicsGetObject(), &IPhysicsObject::EnableMotion, false);
-
-        const auto *pGrenadesZone = CNoGrenadesZone::IsInsideNoGrenadesZone(this);
-
-        if (pGrenadesZone)
-        {
-            if (pGrenadesZone->m_iExplosivePreventionType == CNoGrenadesZone::FIZZLE_ON_DET_AIRBORNE_ONLY)
-            {
-                SetCanExplode(true);
-            }
-            else if (pGrenadesZone->m_iExplosivePreventionType == CNoGrenadesZone::FIZZLE_ON_LAND)
-            {
-                Destroy(true);
-                return;
-            }
-        }
-
-        // Save impact data for explosions.
-        m_bDidHitWorld = true;
-        pEvent->pInternalData->GetSurfaceNormal(m_vecImpactNormal);
-        m_vecImpactNormal.Negate();
+        Vector vecNormal;
+        pEvent->pInternalData->GetSurfaceNormal(vecNormal);
+        Stick(vecNormal);
     }
 }
 

@@ -42,6 +42,7 @@ class CMomStickybomb : public CMomExplosive
 
     void Fizzle();
     void Detonate();
+    void Stick(Vector vecNormal);
     void VPhysicsCollision(int index, gamevcollisionevent_t *pEvent) override;
 
     bool DidHitWorld() const { return m_bDidHitWorld; }
