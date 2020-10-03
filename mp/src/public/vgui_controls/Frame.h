@@ -199,6 +199,7 @@ private:
 	void SetupResizeCursors();
 	void FinishClose();
 	void OnFrameFocusChanged(bool bHasFocus);
+	void ReleaseModal();
 
 	Color		_titleBarBgColor;
 	Color		_titleBarDisabledBgColor;

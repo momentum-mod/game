@@ -980,6 +980,21 @@ void Frame::DoModal( )
 	vgui::input()->SetAppModalSurface( GetVPanel() );
 }
 
+void Frame::ReleaseModal()
+{
+	const auto hVPanel = GetVPanel();
+	if (input()->GetAppModalSurface() != hVPanel)
+		return;
+
+	input()->ReleaseAppModalSurface();
+
+	if (m_hPreviousModal != 0 && m_hPreviousModal != hVPanel)
+	{
+		input()->SetAppModalSurface(m_hPreviousModal);
+	}
+
+    m_hPreviousModal = 0;
+}
 
 //-----------------------------------------------------------------------------
 // Closes a modal dialog
