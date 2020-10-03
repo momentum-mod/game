@@ -125,6 +125,7 @@ MainMenu::MainMenu(CBaseMenuPanel *pParent) : BaseClass(pParent, "MainMenu")
     m_pModelPanel->SetAllowedDragModes(RDRAG_ROTATE);
     m_pModelPanel->SetAllowedRotateModes(ROTATE_YAW);
     m_pModelPanel->SetCameraDefaults(40, 0.0f, 180.0f, 200);
+    m_pModelPanel->SetDefaultLightAngle(QAngle(90.0f, 0, 0));
     m_pModelPanel->SetAutoModelRotationSpeed(QAngle(0, mom_menu_model_rotation_speed.GetInt(), 0));
     m_pModelPanel->LoadModel(mom_menu_model_path.GetString());
 
