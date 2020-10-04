@@ -424,3 +424,12 @@
     "20 start points is typical. Should be placed at least 128 units away from each other and surrounding walls."
 [
 ]
+
+@SolidClass base(Targetname, Parentname, Origin, Inputfilter, Shadow, Campaign) = func_momentum_splashthrough : "Brush entity used for " 
+[
+    solidToPlayer(choices) : "Solid to the player" : 0 =
+    [
+        0 : "False"
+        1 : "True"
+    ]
+]

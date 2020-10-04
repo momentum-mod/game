@@ -7,6 +7,7 @@
 #include "mom_system_gamemode.h"
 #include "mom_system_progress.h"
 #include "mom_stickybomb.h"
+#include "mom_rocket.h"
 #include "fmtstr.h"
 #include "mom_timer.h"
 #include "mom_modulecomms.h"
@@ -1953,6 +1954,52 @@ int CTriggerMomentumCatapult::DrawDebugTextOverlays()
 
 
     return text_offset;
+}
+
+//-----------------------------------------------------------------------------------------------
+
+LINK_ENTITY_TO_CLASS(func_momentum_splashthrough, CFuncSplashThrough);
+
+BEGIN_DATADESC(CFuncSplashThrough)
+    DEFINE_KEYFIELD(m_bSolidToPlayer, FIELD_BOOLEAN, "solidToPlayer"),
+END_DATADESC()
+
+void CFuncSplashThrough::Spawn()
+{
+    BaseClass::Spawn();
+    InitTrigger();
+
+    AddSpawnFlags(SF_TRIGGER_ALLOW_ALL);
+    RemoveEffects(EF_NODRAW); // appear as a brush
+    if (m_bSolidToPlayer)
+    {
+        RemoveSolidFlags(FSOLID_NOT_SOLID);
+        SetCollisionGroup(COLLISION_GROUP_PLAYER);
+    }
+    SetSolid(SOLID_OBB);
+}
+
+void CFuncSplashThrough::StartTouch(CBaseEntity *pEntity)
+{
+    BaseClass::StartTouch(pEntity);
+    if (!pEntity)
+        return;
+
+    const auto pSticky = dynamic_cast<CMomStickybomb *>(pEntity);
+    if (pSticky && !pSticky->DidHitWorld())
+    {
+        pSticky->Stick(GetTouchTrace().plane.normal);
+        return;
+    }
+
+    const auto pRocket = dynamic_cast<CMomRocket *>(pEntity);
+    if (pRocket)
+    {
+        // trick rocket into thinking this is not a trigger
+        RemoveSolidFlags(FSOLID_TRIGGER);
+        pRocket->RocketTouch(this);
+        AddSolidFlags(FSOLID_TRIGGER);
+    }
 }
 
 //-----------------------------------------------------------------------------------------------

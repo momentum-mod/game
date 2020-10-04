@@ -748,3 +748,18 @@ class CTriggerMomentumCatapult : public CBaseMomentumTrigger
     bool m_bEveryTick;
     float m_flHeightOffset;
 };
+
+class CFuncSplashThrough : public CBaseMomentumTrigger
+{
+    DECLARE_CLASS(CFuncSplashThrough, CBaseMomentumTrigger);
+    DECLARE_DATADESC();
+
+  public:
+    void Spawn() override;
+
+    // force collision when explosive hits it
+    void StartTouch(CBaseEntity *pEntity) override;
+
+  private:
+    bool m_bSolidToPlayer;
+};
