@@ -750,7 +750,7 @@
         
         // Ahop
         "MOM_Tip_Ahop_1" "Tip: Hold sprint while airborne to gain maximum air control."
-        "MOM_Tip_Ahop_2" "Tip: Although ABH is faster, ASH/AFH allows more control."
+        "MOM_Tip_Ahop_2" "Tip: Although ABH is faster, ASH/AFH allows for more control."
         "MOM_Tip_Ahop_3" "Tip: Delaying jumps can be used to control your speed." // Imbellis
         "MOM_Tip_Ahop_4" "Tip: When ASHing at higher speeds, the velocity gained tends more towards where you aim. Turn more forwards as higher speeds." // Chili_n_such
         "MOM_Tip_Ahop_5" "Tip: Due to low air acceleration in Ahop, holding backwards in the air slows you rather than instantly stopping you." // Chili_n_such
