@@ -523,7 +523,10 @@
 
         // "MapInfo"
         "MOM_MapInfo_Label" "Map info"
-        "MOM_Settings_Show_MapName" "Display Map name"
+        "MOM_Settings_Show_MapName" "Display map name"
+        "MOM_Settings_Show_MapAuthor" "Display map author"
+        "MOM_Settings_Show_MapDifficulty" "Display map difficulty"
+        "MOM_Settings_Show_MapStatus" "Show map status"
 
         // Replay Info
         // Spec GUI

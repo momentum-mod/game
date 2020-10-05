@@ -99,6 +99,19 @@ HUDSettingsPanel::HUDSettingsPanel(Panel *pParent, Button *pAssociate) : BaseCla
     m_pShowMapName =
         new CvarToggleCheckButton(this, "ShowMapName", "#MOM_Settings_Show_MapName", "mom_hud_mapinfo_show_mapname");
     m_pShowMapName->AddActionSignalTarget(this);
+
+    m_pShowMapAuthor =
+        new CvarToggleCheckButton(this, "ShowMapAuthor", "#MOM_Settings_Show_MapAuthor", "mom_hud_mapinfo_show_author");
+    m_pShowMapAuthor->AddActionSignalTarget(this);
+
+    m_pShowMapDifficulty =
+        new CvarToggleCheckButton(this, "ShowMapDifficulty", "#MOM_Settings_Show_MapDifficulty", "mom_hud_mapinfo_show_difficulty");
+    m_pShowMapDifficulty->AddActionSignalTarget(this);
+
+    m_pShowMapStatus =
+        new CvarToggleCheckButton(this, "ShowMapStatus", "#MOM_Settings_Show_MapStatus", "mom_hud_mapinfo_show_status");
+    m_pShowMapStatus->AddActionSignalTarget(this);
+
     /*
     * Some confusion on how to turn these elements off; they are in the res file but can only be turned off via these cvars:
     * mom_hud_mapinfo_show_mapname
