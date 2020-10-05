@@ -739,7 +739,7 @@
         "MOM_Tip_RJ_7" "Tip: Having trouble hitting a tele-sync? Use +paint to mark your spawn location."
         "MOM_Tip_RJ_8" "Tip: Tapping your backwards key while airborne can help you slow down and gain more control." // yi yi
         "MOM_Tip_RJ_9" "Tip: Sometimes there is more than one way to beat a jump. Get creative!" // porkie
-        "MOM_Tip_RJ_10" "Tip: If center firing is disabled, when wallclimbing, you have to aim further left for your rockets to hit walls at your center." // Paypur
+        "MOM_Tip_RJ_10" "Tip: If center firing is disabled, when wallclimbing you must aim further left (or right) for your rockets to hit the wall near your center, in order to more effectively boost you." // Paypur
 
         // Sticky Jump
         "MOM_Tip_SJ_1" "Tip: An uncharged stickybomb is fired at 900 units per second, regardless of the player’s speed."
