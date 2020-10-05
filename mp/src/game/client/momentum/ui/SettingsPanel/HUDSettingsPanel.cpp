@@ -94,19 +94,6 @@ HUDSettingsPanel::HUDSettingsPanel(Panel *pParent, Button *pAssociate) : BaseCla
 
     m_pTimerSoundFinishEnable = new CvarToggleCheckButton(this, "TimerSoundFinishEnable", "#MOM_Settings_Timer_Sound_Finish_Enable", "mom_timer_sound_finish_enable");
     m_pTimerSoundFinishEnable->AddActionSignalTarget(this);
-    // ==== Mapinfo panel
-    // - Button appears in the top left of the program, needs formatting fix
-    m_pShowMapName =
-        new CvarToggleCheckButton(this, "ShowMapName", "#MOM_Settings_Show_MapName", "mom_hud_mapinfo_show_mapname");
-    m_pShowMapName->AddActionSignalTarget(this);
-    /*
-    * Some confusion on how to turn these elements off; they are in the res file but can only be turned off via these cvars:
-    * mom_hud_mapinfo_show_mapname
-    * mom_hud_mapinfo_show_author
-    * mom_hud_mapinfo_show_difficulty
-    * mom_hud_mapinfo_show_status
-    */
-
 
     // ==== Comparisons panel
     m_pCompareShow = new CvarToggleCheckButton(this, "CompareShow", "#MOM_Settings_Compare_Show", "mom_comparisons");
