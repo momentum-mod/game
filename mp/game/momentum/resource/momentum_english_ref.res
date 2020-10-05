@@ -717,7 +717,7 @@
         "MOM_Tip_Surf_8" "Tip: Be sure to practice your Bhop skills. Bhop trains your strafing, which helps you navigate in the air. Having a better strafe ability will make you a better surfer!" // Garanimal
         "MOM_Tip_Surf_9" "Tip: Sometimes leaving a ramp early is better than riding it all the way to its end." // Pretzl
         "MOM_Tip_Surf_10" "Tip: If your turn bind speed is set too high, you'll lose speed when using it." // nevier
-        "MOM_Tip_Surf_11" "Tip: If you have trouble boarding a ramp, use the paint tool to mark the spline or beginning of the ramp." //nevier
+        "MOM_Tip_Surf_11" "Tip: If you have trouble boarding a ramp, use the paint tool to mark the spine or beginning of the ramp." //nevier
 
         // Surf meme tips
         "MOM_Tip_Surf_Alt_1" "Tip: Be smooth. B)" // maz
