@@ -691,7 +691,7 @@
         "MOM_Tip_General_Alt_2" "Good choice! This game mode is the best one." // hex
         "MOM_Tip_General_Alt_3" "Tip: Go fast to get a good run." // matter
         "MOM_Tip_General_Alt_4" "Tip: If you’re having too much trouble with a map, try another one."
-        "MOM_Tip_General_Alt_5" "Tip: Stay Hydrated!"
+        "MOM_Tip_General_Alt_5" "Tip: Stay hydrated!"
 
         // Bhop
         "MOM_Tip_Bhop_1" "Tip: The better sync you maintain throughout a run, the more speed you'll have."
