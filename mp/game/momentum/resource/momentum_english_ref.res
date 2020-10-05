@@ -744,7 +744,7 @@
         "MOM_Tip_SJ_1" "Tip: An uncharged stickybomb is fired at 900 units per second, regardless of the player’s speed."
         "MOM_Tip_SJ_2" "Tip: Jump and crouch before detonating a stickybomb to receive a much more powerful boost."
         "MOM_Tip_SJ_3" "Tip: Crouching without jumping before detonating a stickybomb will allow a more horizontal boost."
-        "MOM_Tip_SJ_4" "Tip: Shooting stickies as early possible is essential to improving your course times." // hex
+        "MOM_Tip_SJ_4" "Tip: Shooting stickies as early as possible is essential to improving your course times." // hex
         "MOM_Tip_SJ_5" "Tip: The Stickybomb Launcher fires on +attack end instead of on +attack start." // Hellbent
         
         // Ahop
