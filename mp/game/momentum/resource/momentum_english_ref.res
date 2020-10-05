@@ -755,7 +755,7 @@
         "MOM_Tip_Ahop_4" "Tip: When ASHing at higher speeds, the velocity gained tends more towards where you aim. Turn more forwards as higher speeds." // Chili_n_such
         "MOM_Tip_Ahop_5" "Tip: Due to low air acceleration in Ahop, holding backwards in the air slows you rather than instantly stopping you." // Chili_n_such
         "MOM_Tip_Ahop_6" "Tip: While crouch-jumping accelerates you faster, walk-jumping allows you to jump over taller hurdles and larger gaps." // Chili_n_such
-        "MOM_Tip_Ahop_7" "Tip: A good circle jump can significantly increase your first jump's speed" // Imbellis
+        "MOM_Tip_Ahop_7" "Tip: A good circle jump can significantly increase your first jump's speed." // Imbellis
         "MOM_Tip_Ahop_8" "Tip: At higher speeds, you can hold backwards while AFHing instead of tapping." // Imbellis
 
         // Parkour
