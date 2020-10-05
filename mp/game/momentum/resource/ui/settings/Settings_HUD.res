@@ -683,11 +683,6 @@
         "NumericInputOnly"		"0"
         "unicode"		"0"
     }
-    ///timershit, delete comment later
-    // ================================================================================
-    // ================================================================================
-    // ================================================================================
-    // ================================================================================
     "TimerDivider"
     {
         "ControlName" "Divider"
@@ -1621,12 +1616,11 @@
 		"cvar_name"		"mom_comparisons_strafe_show"
         "actionsignallevel" "1"
     }
+
     // =================================================================================
     // ========================= MapInfo ==============================================
     // =================================================================================
     // =================================================================================
-
-    // this works now 
     "MapInfoDivider"
     {
         "ControlName" "Divider"
@@ -1637,7 +1631,8 @@
         "wide" "500"
         "tall" "1"
     }
-      "MapInfoLabel"
+
+    "MapInfoLabel"
     {
         "ControlName"        "Label"
         "fieldName"        "MapInfoLabel"
@@ -1668,7 +1663,8 @@
         "auto_tall_tocontents" "1"
         "font" "Subheader"
     }
-     "ShowMapNameLabel"
+
+    "ShowMapNameLabel"
     {
         "ControlName"		"Label"
         "fieldName"		"ShowMapNameLabel"
@@ -1697,6 +1693,7 @@
         "auto_tall_tocontents" "1"
         "use_proportional_insets"		"0"
     }
+
     "ShowMapName"
     {
         "ControlName"		"CvarToggleCheckButton"
@@ -1725,7 +1722,8 @@
         "use_proportional_insets"		"0"
         "Default"		"0"
     }
-     "ShowMapAuthorLabel"
+
+    "ShowMapAuthorLabel"
     {
        "ControlName"		"Label"
         "fieldName"		"ShowMapAuthorLabel"
@@ -1754,6 +1752,7 @@
         "auto_tall_tocontents" "1"
         "use_proportional_insets"		"0"
     }
+
     "ShowMapAuthor"
     {
         "ControlName"		"CvarToggleCheckButton"
@@ -1782,8 +1781,9 @@
         "use_proportional_insets"		"0"
         "Default"		"0"
     }
-      "ShowMapDifficultyLabel"
-   {
+
+    "ShowMapDifficultyLabel"
+    {
        "ControlName"		"Label"
         "fieldName"		"ShowMapDifficultyLabel"
         "xpos"		"0"
@@ -1811,6 +1811,7 @@
         "auto_tall_tocontents" "1"
         "use_proportional_insets"		"0"
     }
+
     "ShowMapDifficulty"
     {
         "ControlName"		"CvarToggleCheckButton"
@@ -1839,8 +1840,9 @@
         "use_proportional_insets"		"0"
         "Default"		"0"
     }
-          "ShowMapStatusLabel"
-     {
+
+    "ShowMapStatusLabel"
+    {
        "ControlName"		"Label"
         "fieldName"		"ShowMapStatusLabel"
         "xpos"		"0"
@@ -1868,6 +1870,7 @@
         "auto_tall_tocontents" "1"
         "use_proportional_insets"		"0"
     }
+
     "ShowMapStatus"
     {
         "ControlName"		"CvarToggleCheckButton"
@@ -1896,4 +1899,3 @@
         "use_proportional_insets"		"0"
         "Default"		"0"
     }
-}
