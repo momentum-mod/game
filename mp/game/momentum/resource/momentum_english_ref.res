@@ -683,7 +683,7 @@
         "MOM_Tip_General_16" "Tip: Some game modes may be daunting at first, but don't let this stop you from learning them!" // amp
         "MOM_Tip_General_17" "Tip: In the air, don't hold your forward key to go forwards. Let your momentum take care of that - control your movement with strafe keys." // porkie
         "MOM_Tip_General_18" "Tip: Playing maps outside of your comfort zone aids improvement." // change name
-        "MOM_Tip_General_19" "Tip: If a map is too dark, increase the brightness in the settings." //nevier
+        "MOM_Tip_General_19" "Tip: If a map is too dark, you may increase the brightness in the settings (while in Fullscreen mode only)." //nevier
 "MOM_Tip_General_20" "Tip: Map teleports can be ignored in practice mode by holding jump." // Hellbent
 
         // General meme/alt tips
