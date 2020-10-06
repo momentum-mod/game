@@ -57,7 +57,8 @@ static MAKE_TOGGLE_CONVAR(mom_run_safeguard_change_map, "1", FCVAR_ARCHIVE | FCV
 static MAKE_TOGGLE_CONVAR(mom_run_safeguard_quit_map, "1", FCVAR_ARCHIVE | FCVAR_REPLICATED, "Changes the safeguard setting for preventing quitting/disconnecting while in a run. 0 = OFF, 1 = ON\n");
 static MAKE_TOGGLE_CONVAR(mom_run_safeguard_quit_game, "1", FCVAR_ARCHIVE | FCVAR_REPLICATED, "Changes the safeguard setting for preventing quitting the game while in a run. 0 = OFF, 1 = ON\n");
 
-CRunSafeguard::CRunSafeguard(const char *szAction) : m_flLastTimePressed(0.0f), m_bDoublePressSafeguard(true), m_pRelatedVar(nullptr)
+CRunSafeguard::CRunSafeguard(const char *szAction)
+    : m_flLastTimePressed(0.0f), m_bDoublePressSafeguard(true), m_pRelatedVar(nullptr), m_bIgnoredInMenu(true)
 {
     Q_strncpy(m_szAction, szAction, sizeof(m_szAction));
 }
@@ -82,10 +83,10 @@ bool CRunSafeguard::IsSafeguarded(RunSafeguardMode_t mode)
         return false;
 
 #ifdef GAME_DLL
-    if (g_pRunSafeguards->IsGameUIActive())
+    if (m_bIgnoredInMenu && g_pRunSafeguards->IsGameUIActive())
         return false;
 #else
-    if (g_pBasePanel->GetMainMenu()->IsVisible())
+    if (m_bIgnoredInMenu && g_pBasePanel->GetMainMenu()->IsVisible())
         return false;
 #endif
 
@@ -148,12 +149,15 @@ MomRunSafeguards::MomRunSafeguards()
 
     m_pSafeguards[RUN_SAFEGUARD_MAP_CHANGE] = new CRunSafeguard("changing map");
     m_pSafeguards[RUN_SAFEGUARD_MAP_CHANGE]->SetRelevantCVar(&mom_run_safeguard_change_map);
+    m_pSafeguards[RUN_SAFEGUARD_MAP_CHANGE]->SetIgnoredInMenu(false);
 
     m_pSafeguards[RUN_SAFEGUARD_QUIT_TO_MENU] = new CRunSafeguard("quitting to menu");
     m_pSafeguards[RUN_SAFEGUARD_QUIT_TO_MENU]->SetRelevantCVar(&mom_run_safeguard_quit_map);
+    m_pSafeguards[RUN_SAFEGUARD_QUIT_TO_MENU]->SetIgnoredInMenu(false);
 
     m_pSafeguards[RUN_SAFEGUARD_QUIT_GAME] = new CRunSafeguard("quitting the game");
     m_pSafeguards[RUN_SAFEGUARD_QUIT_GAME]->SetRelevantCVar(&mom_run_safeguard_quit_game);
+    m_pSafeguards[RUN_SAFEGUARD_QUIT_GAME]->SetIgnoredInMenu(false);
 
 #ifdef GAME_DLL
     m_bGameUIActive = false;
