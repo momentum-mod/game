@@ -372,7 +372,7 @@ public:
     CNetworkVar(int, m_iDrawState);
 };
 
-enum
+enum TeleportMode
 {
     TELEPORT_DEFAULT = 0,
     TELEPORT_RESET,
@@ -591,15 +591,40 @@ private:
     void ToggleButtons(CMomRunEntity *pEnt, bool bEnable);
 };
 
-enum
+enum PushMode
 {
-    BOOST_SET = 0,
-    BOOST_ADD,
-    BOOST_SET_IF_LOWER,
-    BOOST_ADD_IF_LOWER,
-    BOOST_BASEVELOCITY,
+    PUSH_SET = 0,
+    PUSH_ADD,
+    PUSH_SET_IF_LOWER,
+    PUSH_ADD_IF_LOWER,
+    PUSH_BASEVELOCITY,
+    PUSH_VARIABLE,
 
-    BOOST_COUNT
+    PUSH_COUNT
+};
+
+struct VariablePush
+{
+    CBaseEntity *m_pEntity;
+    Vector m_vecPushForce;
+    int m_iElapsedTicks;
+    int m_iNumTicks;
+
+    float m_flDuration;
+    float m_flBias;
+
+    bool m_bIncreasing;
+
+    // For debugging
+    float m_flStartTime;
+};
+
+void InitVariablePush(CBaseEntity *pOther, Vector vecForce, float flDuration, float flBias, bool bIncreasing);
+void DoVariablePushes();
+
+class CMomentumTriggerSystem : public CAutoGameSystemPerFrame
+{
+    virtual void FrameUpdatePostEntityThink() OVERRIDE;
 };
 
 // CFuncShootBoost
@@ -616,15 +641,24 @@ class CFuncShootBoost : public CBreakable
     int DrawDebugTextOverlays() OVERRIDE;
     // Force in units per seconds applied to the player
     float m_fPushForce;
-    // 0: No
-    // 1: Yes
-    // 2: Only if the player's velocity is lower than the push velocity, set player's velocity to final push velocity
-    // 3: Only if the player's velocity is lower than the push velocity, increase player's velocity by final push
+    // 0: Set the player's velocity to final push force
+    // 1: Increase player's current velocity by push final force amount, this is almost like the default trigger_push
+    // behaviour
+    // 2: Only set the player's velocity to the final push velocity if player's velocity is lower than final push
     // velocity
-    // 4: Basevelocity push
+    // 3: Only increase the player's velocity by final push velocity if player's velocity is lower than final push
+    // velocity
+    // 4: Act as a basevelocity push
+    // 5: A variable push that increases or decreases over a given duration, with impulses applied every tick
     int m_iIncrease;
     // Dictates the direction of push
     Vector m_vPushDir;
+    // The duration of a variable push
+    float m_flVariablePushDuration;
+    // The curve bias of a variable push (0 - 1, higher values bias the curve towards the end, 0.5 is linear)
+    float m_flVariablePushBias;
+    // Whether the push increases or decreases over the duration
+    bool m_bVariablePushIncreasing;
     // If not null, dictates which entity the attacker must be touching for the func to work
     EHANDLE m_hEntityCheck;
 };
@@ -651,14 +685,23 @@ class CTriggerMomentumPush : public CBaseMomentumTrigger
     // Force in units per seconds applied to the player
     float m_fPushForce;
     // 0: Set the player's velocity to final push force
-    // 1: Increase player's current velocity by push final force amount // This is almost like the default trigger_push
+    // 1: Increase player's current velocity by push final force amount, this is almost like the default trigger_push
     // behaviour
     // 2: Only set the player's velocity to the final push velocity if player's velocity is lower than final push
     // velocity
-    // 3: Act as a basevelocity push
+    // 3: Only increase the player's velocity by final push velocity if player's velocity is lower than final push
+    // velocity
+    // 4: Act as a basevelocity push
+    // 5: A variable push that increases or decreases over a given duration, with impulses applied every tick
     int m_iIncrease;
     // Dictates the direction of push
     Vector m_vPushDir;
+    // The duration of a variable push
+    float m_flVariablePushDuration;
+    // The curve bias of a variable push (0 - 1, higher values bias the curve towards the end, 0.5 is linear)
+    float m_flVariablePushBias;
+    // Whether the push increases or decreases over the duration
+    bool m_bVariablePushIncreasing;
 };
 
 class CTriggerSlide : public CBaseMomentumTrigger
