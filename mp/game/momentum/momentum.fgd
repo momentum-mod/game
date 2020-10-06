@@ -296,13 +296,21 @@
     pushdir(angle) : "Push Direction (Pitch Yaw Roll)" : "0 0 0" : "Where player will be pushed."
     force(integer) : "Force of the push" : 300 : "General force of the push (Player final velocity in Units per seconds) " +
     "Ignored if -Use the direction vector as final force instead of calculating it by force amount- flag is set."
-    increase(choices) : "Handling of player's velocity" : 4 =
+    increase(choices) : "Push mode" : 3 : "The method of pushing players. " =
     [
-        0 : "Set player's velocity to push final force"
-        1 : "Increase player's velocity by push final force"
-        2 : "Only if the player's velocity is lower than the push velocity, set player's velocity to final push velocity"
-        3 : "Only if the player's velocity is lower than the push velocity, increase player's velocity by final push velocity"
-        4 : "Act as basevelocity"
+        0 : "Set velocity"
+        1 : "Add velocity"
+        2 : "Set velocity if lower"
+        3 : "Add velocity if lower"
+        4 : "Basevelocity"
+        5 : "Variable push"
+    ]
+    varpushduration(float) : "Variable push duration" : 1 : "Duration of a variable push in seconds"
+    varpushbias(float) : "Variable push bias" : "0.5" : "The curve bias of a variable push, higher values bias the curve towards the end, 0.5 is linear"
+    varpushincrease(choices) : "Variable push mode" : 0 : "Whether the variable push increases or decreases over its duration" =
+    [
+        0 : "Decreasing"
+        1 : "Increasing"
     ]
     spawnflags(flags) = 
     [ 
@@ -318,13 +326,21 @@
     pushdir(angle) : "Push Direction (Pitch Yaw Roll)" : "0 0 0" : "Where player will be pushed. (Check flags for controlling its behaviour)."
     force(integer) : "Force of the push" : 300 : "General force of the push (Player final velocity in units per second) " +
     "Ignored if -Use the direction vector as final force instead of calculating it by force amount- flag is set."
-    increase(choices) : "Handling of player's velocity" : 3 =
+    increase(choices) : "Push mode" : 3 : "The method of pushing players. " =
     [
-        0 : "Set player's velocity to push final force"
-        1 : "Increase player's velocity by push final force"
-        2 : "Only if the player's velocity is lower than the push velocity, set player's velocity to final push velocity"
-        3 : "Only if the player's velocity is lower than the push velocity, increase player's velocity by final push velocity"
-        4 : "Act as basevelocity"
+        0 : "Set velocity"
+        1 : "Add velocity"
+        2 : "Set velocity if lower"
+        3 : "Add velocity if lower"
+        4 : "Basevelocity"
+        5 : "Variable push"
+    ]
+    varpushduration(float) : "Variable push duration" : 1 : "Duration of a variable push in seconds"
+    varpushbias(float) : "Variable push bias" : "0.5" : "The curve bias of a variable push, higher values bias the curve towards the end, 0.5 is linear"
+    varpushincrease(choices) : "Variable push mode" : 0 : "Whether the variable push increases or decreases over its duration" =
+    [
+        0 : "Decreasing"
+        1 : "Increasing"
     ]
     spawnflags(flags) = 
     [ 

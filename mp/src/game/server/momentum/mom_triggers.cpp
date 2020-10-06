@@ -26,6 +26,13 @@ static MAKE_TOGGLE_CONVAR(mom_triggers_overlay_bbox_enable, "0", FCVAR_DEVELOPME
 static MAKE_TOGGLE_CONVAR(mom_triggers_overlay_text_enable, "0", FCVAR_DEVELOPMENTONLY,
                           "Toggles showing the entity text for momentum triggers, needs map restart if changed!\n");
 
+CMomentumTriggerSystem g_MomentumTriggerSystem;
+
+void CMomentumTriggerSystem::FrameUpdatePostEntityThink()
+{
+    DoVariablePushes();
+}
+
 // ------------- Base Trigger ------------------------------------
 BEGIN_DATADESC(CBaseMomentumTrigger)
     DEFINE_KEYFIELD(m_iTrackNumber, FIELD_INTEGER, "track_number")
@@ -1172,6 +1179,89 @@ void CTriggerLimitMovement::ToggleButtons(CMomRunEntity* pEnt, bool bEnable)
 
 //-----------------------------------------------------------------------------------------------
 
+CUtlVector<VariablePush> g_VariablePushes;
+
+void InitVariablePush(CBaseEntity *pOther, Vector vecForce, float flDuration, float flBias, bool bIncreasing)
+{
+    VariablePush push;
+
+    push.m_pEntity = pOther;
+    push.m_vecPushForce = vecForce;
+    push.m_iNumTicks = Ceil2Int(flDuration / gpGlobals->interval_per_tick);
+    push.m_iElapsedTicks = 0;
+    push.m_flDuration = flDuration;
+    push.m_flBias = flBias;
+    push.m_bIncreasing = bIncreasing;
+
+    g_VariablePushes.AddToTail(push);
+}
+
+void DoVariablePushes()
+{
+    FOR_EACH_VEC(g_VariablePushes, i)
+    {
+        VariablePush *pPush = &g_VariablePushes[i];
+
+        if (pPush->m_iElapsedTicks == 0)
+        {
+            pPush->m_flStartTime = (float)Plat_FloatTime();
+        }
+
+        if (pPush->m_iElapsedTicks == pPush->m_iNumTicks)
+        {
+            DevLog("Variable push: %d ticks in %.4f seconds, average %.4f seconds per tick\n", 
+                pPush->m_iElapsedTicks, Plat_FloatTime() - pPush->m_flStartTime, (Plat_FloatTime() - pPush->m_flStartTime) / pPush->m_iElapsedTicks);
+        
+            g_VariablePushes.Remove(i);
+            continue;
+        }
+
+        // We start on tick 0 hence the -1 here
+        float flFactor = pPush->m_iElapsedTicks / (float)(pPush->m_iNumTicks - 1);
+
+        if (!pPush->m_bIncreasing)
+        {
+            flFactor = 1 - flFactor;
+        }
+
+        Vector vecForce = pPush->m_vecPushForce * Bias(flFactor, pPush->m_flBias);
+
+        pPush->m_pEntity->SetAbsVelocity(vecForce + pPush->m_pEntity->GetAbsVelocity());
+        pPush->m_iElapsedTicks++;
+    }
+}
+
+void PushEntity(CBaseEntity *pEntity, Vector vecPush, int iMode, float flVariableDuration = 1.0f, float flVariableBias = 0.5f, bool bVariableIncreasing = false)
+{
+    switch (iMode)
+    {
+    case PUSH_SET:
+        break;
+    case PUSH_ADD:
+        vecPush += pEntity->GetAbsVelocity();
+        break;
+    case PUSH_SET_IF_LOWER:
+        if (vecPush.LengthSqr() < pEntity->GetAbsVelocity().LengthSqr())
+            vecPush = pEntity->GetAbsVelocity();
+        break;
+    case PUSH_ADD_IF_LOWER:
+        if (vecPush.LengthSqr() < pEntity->GetAbsVelocity().LengthSqr())
+            vecPush += pEntity->GetAbsVelocity();
+        break;
+    case PUSH_BASEVELOCITY:
+        pEntity->SetBaseVelocity(vecPush);
+        return;
+    case PUSH_VARIABLE:
+        InitVariablePush(pEntity, vecPush, flVariableDuration, flVariableBias, bVariableIncreasing);
+        return;
+    default:
+        DevWarning("PushEntity: invalid mode!");
+        break;
+    }
+
+    pEntity->SetAbsVelocity(vecPush);
+}
+
 //---------- CFuncShootBoost --------------------------------------------------------------------
 LINK_ENTITY_TO_CLASS(func_shootboost, CFuncShootBoost);
 
@@ -1179,9 +1269,12 @@ BEGIN_DATADESC(CFuncShootBoost)
     DEFINE_KEYFIELD(m_vPushDir, FIELD_VECTOR, "pushdir"),
     DEFINE_KEYFIELD(m_fPushForce, FIELD_FLOAT, "force"),
     DEFINE_KEYFIELD(m_iIncrease, FIELD_INTEGER, "increase"),
+    DEFINE_KEYFIELD(m_flVariablePushDuration, FIELD_FLOAT, "varpushduration"),
+    DEFINE_KEYFIELD(m_flVariablePushBias, FIELD_FLOAT, "varpushbias"),
+    DEFINE_KEYFIELD(m_bVariablePushIncreasing, FIELD_BOOLEAN, "varpushincrease")
 END_DATADESC()
 
-CFuncShootBoost::CFuncShootBoost(): m_fPushForce(300.0f), m_iIncrease(4)
+CFuncShootBoost::CFuncShootBoost(): m_fPushForce(300.0f), m_iIncrease(3), m_flVariablePushDuration(1.0f), m_flVariablePushBias(0.5), m_bVariablePushIncreasing(false)
 {
     m_vPushDir.Init();
 }
@@ -1230,32 +1323,7 @@ int CFuncShootBoost::OnTakeDamage(const CTakeDamageInfo &info)
         else
             finalVel = vecAbsDir.Normalized() * m_fPushForce;
 
-        switch (m_iIncrease)
-        {
-        case BOOST_SET:
-            break;
-        case BOOST_ADD:
-            finalVel += pInflictor->GetAbsVelocity();
-            break;
-        case BOOST_SET_IF_LOWER:
-            if (finalVel.LengthSqr() < pInflictor->GetAbsVelocity().LengthSqr())
-                finalVel = pInflictor->GetAbsVelocity();
-            break;
-        case BOOST_ADD_IF_LOWER:
-            // The description of this method says the player velocity is increased by final velocity,
-            // but we're just adding one vec to the other, which is not quite the same
-            if (finalVel.LengthSqr() < pInflictor->GetAbsVelocity().LengthSqr())
-                finalVel += pInflictor->GetAbsVelocity();
-            break;
-        case BOOST_BASEVELOCITY:
-            pInflictor->SetBaseVelocity(finalVel);
-            return info.GetDamage();
-        default:
-            DevWarning("CFuncShootBoost:: %i not recognized as valid for m_iIncrease", m_iIncrease);
-            break;
-        }
-        
-        pInflictor->SetAbsVelocity(finalVel);
+        PushEntity(pInflictor, finalVel, m_iIncrease, m_flVariablePushDuration, m_flVariablePushBias, m_bVariablePushIncreasing);
     }
     // As we don't want to break it, we don't call BaseClass::OnTakeDamage(info);
     // OnTakeDamage returns the damage dealt
@@ -1267,16 +1335,58 @@ int CFuncShootBoost::DrawDebugTextOverlays(void)
     int text_offset = BaseClass::DrawDebugTextOverlays();
 
     char tempstr[255];
-    const char *szBoostType[BOOST_COUNT] = { "set", "add", "set if lower", "add if lower", "basevelocity" };
+    static const char *szBoostType[PUSH_COUNT] = { "set", "add", "set if lower", "add if lower", "basevelocity", "variable push" };
 
-    if (m_iIncrease >= 0 && m_iIncrease < BOOST_COUNT)
+    if (m_iIncrease >= 0 && m_iIncrease < PUSH_COUNT)
     {
-        Q_snprintf(tempstr, sizeof(tempstr), "Boost type: %s", szBoostType[m_iIncrease]);
+        Q_snprintf(tempstr, sizeof(tempstr), "Push type: %s", szBoostType[m_iIncrease]);
         EntityText(text_offset, tempstr, 0);
         text_offset++;
     }
     
     Q_snprintf(tempstr, sizeof(tempstr), "Force: %.2f", m_fPushForce);
+    EntityText(text_offset, tempstr, 0);
+    text_offset++;
+
+    Vector vecFinalVel;
+    VectorRotate(m_vPushDir, EntityToWorldTransform(), vecFinalVel);
+
+    if (!HasSpawnFlags(SF_PUSH_DIRECTION_AS_FINAL_FORCE))
+        vecFinalVel = vecFinalVel.Normalized() * m_fPushForce;
+
+    if (m_iIncrease == PUSH_VARIABLE)
+    {
+        Q_snprintf(tempstr, sizeof(tempstr), "Variable push duration: %.2f", m_flVariablePushDuration);
+        EntityText(text_offset, tempstr, 0);
+        text_offset++;
+
+        const int iNumTicks = Ceil2Int(m_flVariablePushDuration / gpGlobals->interval_per_tick);
+
+        float flFactor;
+        Vector vecTotalForce(0.0f, 0.0f, 0.0f);
+
+        // Calculate the total velocity given over the duration
+        // This is pretty dumb but it's the most accurate method, and we're only doing this when printing debug text anyway
+        for (int i = 0; i < iNumTicks; i++)
+        {
+            flFactor = i / (float)(iNumTicks - 1);
+
+            if (!m_bVariablePushIncreasing)
+            {
+                flFactor = 1 - flFactor;
+            }
+
+            vecTotalForce += vecFinalVel * Bias(1 - flFactor, m_flVariablePushBias);
+        }
+
+        vecFinalVel = vecTotalForce;
+
+        Q_snprintf(tempstr, sizeof(tempstr), "Variable push total force: %.2f", vecFinalVel.Length());
+        EntityText(text_offset, tempstr, 0);
+        text_offset++;
+    }
+
+    Q_snprintf(tempstr, sizeof(tempstr), "Push force vector: %.2f %.2f %.2f", vecFinalVel.x, vecFinalVel.y, vecFinalVel.z);
     EntityText(text_offset, tempstr, 0);
     text_offset++;
 
@@ -1297,10 +1407,13 @@ LINK_ENTITY_TO_CLASS(trigger_momentum_push, CTriggerMomentumPush);
 BEGIN_DATADESC(CTriggerMomentumPush)
     DEFINE_KEYFIELD(m_vPushDir, FIELD_VECTOR, "pushdir"),
     DEFINE_KEYFIELD(m_fPushForce, FIELD_FLOAT, "force"),
-    DEFINE_KEYFIELD(m_iIncrease, FIELD_INTEGER, "increase")
+    DEFINE_KEYFIELD(m_iIncrease, FIELD_INTEGER, "increase"),
+    DEFINE_KEYFIELD(m_flVariablePushDuration, FIELD_FLOAT, "varpushduration"),
+    DEFINE_KEYFIELD(m_flVariablePushBias, FIELD_FLOAT, "varpushbias"),
+    DEFINE_KEYFIELD(m_bVariablePushIncreasing, FIELD_BOOLEAN, "varpushincrease")
 END_DATADESC()
 
-CTriggerMomentumPush::CTriggerMomentumPush(): m_fPushForce(300.0f), m_iIncrease(3)
+CTriggerMomentumPush::CTriggerMomentumPush(): m_fPushForce(300.0f), m_iIncrease(3), m_flVariablePushDuration(1.0f), m_flVariablePushBias(0.5), m_bVariablePushIncreasing(false)
 {
     m_vPushDir.Init();
 }
@@ -1346,48 +1459,67 @@ void CTriggerMomentumPush::OnSuccessfulTouch(CBaseEntity *pOther)
         else
             finalVel = vecAbsDir.Normalized() * m_fPushForce;
 
-        switch (m_iIncrease)
-        {
-        case BOOST_SET:
-            break;
-        case BOOST_ADD:
-            finalVel += pOther->GetAbsVelocity();
-            break;
-        case BOOST_SET_IF_LOWER:
-            if (finalVel.LengthSqr() < pOther->GetAbsVelocity().LengthSqr())
-                finalVel = pOther->GetAbsVelocity();
-            break;
-        case BOOST_ADD_IF_LOWER:
-            if (finalVel.LengthSqr() < pOther->GetAbsVelocity().LengthSqr())
-                finalVel += pOther->GetAbsVelocity();
-            break;
-        case BOOST_BASEVELOCITY:
-            pOther->SetBaseVelocity(finalVel);
-            return;
-        default:
-            DevWarning("CTriggerMomentumPush:: %i not recognized as valid for m_iIncrease", m_iIncrease);
-            break;
-        }
-
-        pOther->SetAbsVelocity(finalVel);
+        PushEntity(pOther, finalVel, m_iIncrease, m_flVariablePushDuration, m_flVariablePushBias, m_bVariablePushIncreasing);
     }
-}
+} 
 
 int CTriggerMomentumPush::DrawDebugTextOverlays(void) 
 {
     int text_offset = BaseClass::DrawDebugTextOverlays();
 
     char tempstr[255];
-    const char *szBoostType[BOOST_COUNT] = { "set", "add", "set if lower", "add if lower", "basevelocity" };
+    static const char *szBoostType[PUSH_COUNT] = { "set", "add", "set if lower", "add if lower", "basevelocity", "variable push" };
 
-    if (m_iIncrease >= 0 && m_iIncrease < BOOST_COUNT)
+    if (m_iIncrease >= 0 && m_iIncrease < PUSH_COUNT)
     {
-        Q_snprintf(tempstr, sizeof(tempstr), "Boost type: %s", szBoostType[m_iIncrease]);
+        Q_snprintf(tempstr, sizeof(tempstr), "Push type: %s", szBoostType[m_iIncrease]);
         EntityText(text_offset, tempstr, 0);
         text_offset++;
     }
     
     Q_snprintf(tempstr, sizeof(tempstr), "Force: %.2f", m_fPushForce);
+    EntityText(text_offset, tempstr, 0);
+    text_offset++;
+
+    Vector vecFinalVel;
+    VectorRotate(m_vPushDir, EntityToWorldTransform(), vecFinalVel);
+
+    if (!HasSpawnFlags(SF_PUSH_DIRECTION_AS_FINAL_FORCE))
+        vecFinalVel = vecFinalVel.Normalized() * m_fPushForce;
+
+    if (m_iIncrease == PUSH_VARIABLE)
+    {
+        Q_snprintf(tempstr, sizeof(tempstr), "Variable push duration: %.2f", m_flVariablePushDuration);
+        EntityText(text_offset, tempstr, 0);
+        text_offset++;
+
+        const int iNumTicks = Ceil2Int(m_flVariablePushDuration / gpGlobals->interval_per_tick);
+
+        float flFactor;
+        Vector vecTotalForce(0.0f, 0.0f, 0.0f);
+
+        // Calculate the total velocity given over the duration
+        // This is pretty dumb but it's the most accurate method, and we're only doing this when printing debug text anyway
+        for (int i = 0; i < iNumTicks; i++)
+        {
+            flFactor = i / (float)(iNumTicks - 1);
+
+            if (!m_bVariablePushIncreasing)
+            {
+                flFactor = 1 - flFactor;
+            }
+
+            vecTotalForce += vecFinalVel * Bias(1 - flFactor, m_flVariablePushBias);
+        }
+
+        vecFinalVel = vecTotalForce;
+
+        Q_snprintf(tempstr, sizeof(tempstr), "Variable push total force: %.2f", vecFinalVel.Length());
+        EntityText(text_offset, tempstr, 0);
+        text_offset++;
+    }
+
+    Q_snprintf(tempstr, sizeof(tempstr), "Push force vector: %.2f %.2f %.2f", vecFinalVel.x, vecFinalVel.y, vecFinalVel.z);
     EntityText(text_offset, tempstr, 0);
     text_offset++;
 
