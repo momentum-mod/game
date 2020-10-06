@@ -8,6 +8,7 @@
 #include "clientmode.h"
 
 #include "vgui/ISurface.h"
+#include <vgui/IInput.h>
 #include "voice_status.h"
 #include <inputsystem/iinputsystem.h>
 #include "vgui_controls/AnimationController.h"
@@ -102,6 +103,8 @@ void CClientTimesDisplay::OnThink()
             GetClientVoiceMgr()->StopSquelchMode();
         }
     }
+
+    if (input()->IsKeyDown(KEY_ESCAPE)) { Close(); }
 }
 
 //-----------------------------------------------------------------------------
@@ -182,6 +185,7 @@ void CClientTimesDisplay::ShowPanel(bool bShow)
 
     if (bShow)
     {
+        engine->ClientCmd_Unrestricted("gameui_preventescapetoshow\n");
         Reset(true);
         SetVisible(true);
         MoveToFront();
@@ -222,6 +226,7 @@ void CClientTimesDisplay::Close()
     SetMouseInputEnabled(false);
 
     g_pClientMode->GetViewportAnimationController()->StartAnimationSequence(GetParent(), "LeaderboardsBgFocusLost");
+    engine->ClientCmd_Unrestricted("gameui_allowescapetoshow\n");
 }
 
 void CClientTimesDisplay::FireGameEvent(IGameEvent *event)
