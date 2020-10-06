@@ -36,6 +36,8 @@ class CRunSafeguard
     bool IsSafeguarded(RunSafeguardMode_t mode);
 
     void SetRelevantCVar(ConVar *pVarRef) { m_pRelatedVar = pVarRef; }
+    void SetIgnoredInMenu(bool bIgnoredInMenu) { m_bIgnoredInMenu = bIgnoredInMenu; }
+    bool IsIgnoredInMenu() const { return m_bIgnoredInMenu; }
 
   private:
     bool IsMovementKeysSafeguarded(int nButtons);
@@ -46,6 +48,9 @@ class CRunSafeguard
     float m_flLastTimePressed;
 
     bool m_bDoublePressSafeguard;
+
+    bool m_bIgnoredInMenu;
+
     ConVar *m_pRelatedVar;
 };
 
