@@ -764,7 +764,9 @@ bool TeleportEntity(CBaseEntity* pTeleportTo, CBaseEntity* pEntToTeleport, int i
         break;
 
     default:
-        pVelocity = nullptr;
+        // vphysics objects get stopped even when no velocity is sent, so just send the current velocity
+        if (pEntToTeleport->GetMoveType() != MOVETYPE_VPHYSICS)
+            pVelocity = nullptr;
     };
 
     if (!bResetAngles)
