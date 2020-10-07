@@ -290,10 +290,10 @@
 [
 ]
 
-@SolidClass base(func_breakable) = func_shootboost : "Entity that pushes the player when hit by the momentum_gun."
+@SolidClass base(func_brush) = func_shootboost : "Entity that pushes the player when hit by the momentum_gun."
 [
-    target(target_destination) : "Inside trigger" : : "If specified, the player must be inside this trigger for the func to work."
-    pushdir(angle) : "Push Direction (Pitch Yaw Roll)" : "0 0 0" : "Where player will be pushed."
+    target(target_destination) : "Trigger" : : "If specified, the player must be inside this trigger for the boost to work."
+    pushdir(angle) : "Push Direction (Pitch Yaw Roll)" : "0 0 0" : "Where player will be pushed. (Check flags for controlling its behaviour)."
     force(integer) : "Force of the push" : 300 : "General force of the push (Player final velocity in Units per seconds) " +
     "Ignored if -Use the direction vector as final force instead of calculating it by force amount- flag is set."
     increase(choices) : "Push mode" : 3 : "The method of pushing players. " =
@@ -316,9 +316,6 @@
     [ 
         524288: "Use the direction vector as final force instead of calculating it by force amount" : 0
     ]
-
-    // THIS THROWS AN ERROR, BUT AS IT HIDES IT-> WE STAY WITH IT FOR NOW
-    health(float) : "Strength" : 1 : "Number of points of damage to take before breaking. IT HAS TO BE ABOVE 0."
 ]
 
 @SolidClass base(MomentumTrigger) = trigger_momentum_push : "A trigger volume that modifies velocity of players that touch it."
