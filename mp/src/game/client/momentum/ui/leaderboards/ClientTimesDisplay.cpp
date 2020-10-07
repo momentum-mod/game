@@ -8,7 +8,6 @@
 #include "clientmode.h"
 
 #include "vgui/ISurface.h"
-#include <vgui/IInput.h>
 #include "voice_status.h"
 #include <inputsystem/iinputsystem.h>
 #include "vgui_controls/AnimationController.h"
@@ -103,8 +102,6 @@ void CClientTimesDisplay::OnThink()
             GetClientVoiceMgr()->StopSquelchMode();
         }
     }
-
-    if (input()->IsKeyDown(KEY_ESCAPE)) { Close(); }
 }
 
 //-----------------------------------------------------------------------------
@@ -185,7 +182,6 @@ void CClientTimesDisplay::ShowPanel(bool bShow)
 
     if (bShow)
     {
-        engine->ClientCmd_Unrestricted("gameui_preventescapetoshow\n");
         Reset(true);
         SetVisible(true);
         MoveToFront();
@@ -209,6 +205,8 @@ void CClientTimesDisplay::SetMouseInputEnabled(bool bState)
     {
         m_bToggledOpen = true;
         g_pClientMode->GetViewportAnimationController()->StartAnimationSequence(GetParent(), "LeaderboardsBgFocusGain");
+        engine->ClientCmd_Unrestricted("gameui_preventescapetoshow\n");
+        SetKeyBoardInputEnabled(true);
     }
 }
 
@@ -222,11 +220,24 @@ void CClientTimesDisplay::SetVisible(bool bState)
 void CClientTimesDisplay::Close()
 {
     m_bToggledOpen = false;
+    engine->ClientCmd_Unrestricted("gameui_allowescapetoshow\n");
     SetVisible(false);
     SetMouseInputEnabled(false);
+    SetKeyBoardInputEnabled(false);
 
     g_pClientMode->GetViewportAnimationController()->StartAnimationSequence(GetParent(), "LeaderboardsBgFocusLost");
-    engine->ClientCmd_Unrestricted("gameui_allowescapetoshow\n");
+}
+
+void CClientTimesDisplay::OnKeyCodeReleased(KeyCode code)
+{
+    if (code == KEY_ESCAPE)
+    {
+        Close();
+    }
+    else
+    {
+        BaseClass::OnKeyCodeReleased(code);
+    }
 }
 
 void CClientTimesDisplay::FireGameEvent(IGameEvent *event)
