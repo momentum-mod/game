@@ -163,10 +163,6 @@ int ClientModeMOMNormal::HudElementKeyInput(int down, ButtonCode_t keynum, const
         if (keynum == MOUSE_RIGHT)
         {
             m_pLeaderboards->SetMouseInputEnabled(true);
-            // MOM_TODO: Consider toggling the leaderboards open with this
-            // m_pLeaderboards->SetKeyBoardInputEnabled(!prior);
-            // ButtonCode_t close = gameuifuncs->GetButtonCodeForBind("showtimes");
-            // gViewPortInterface->PostMessageToPanel(PANEL_TIMES, new KeyValues("PollHideCode", "code", close));
             return 0;
         }
     }
