@@ -628,10 +628,10 @@ class CMomentumTriggerSystem : public CAutoGameSystemPerFrame
 };
 
 // CFuncShootBoost
-class CFuncShootBoost : public CBreakable
+class CFuncShootBoost : public CFuncBrush
 {
   public:
-    DECLARE_CLASS(CFuncShootBoost, CBreakable);
+    DECLARE_CLASS(CFuncShootBoost, CFuncBrush);
     DECLARE_DATADESC();
 
     CFuncShootBoost();
