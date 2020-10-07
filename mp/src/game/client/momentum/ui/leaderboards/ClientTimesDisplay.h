@@ -54,6 +54,7 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
 
     // functions to override
     void OnThink() OVERRIDE;
+    void OnKeyCodeReleased(vgui::KeyCode code) override;
 
     void ApplySchemeSettings(vgui::IScheme *pScheme) OVERRIDE;
     void PerformLayout() OVERRIDE;
