@@ -8,6 +8,7 @@
 #include "clientmode.h"
 
 #include "vgui/ISurface.h"
+#include "IGameUIFuncs.h"
 #include "voice_status.h"
 #include <inputsystem/iinputsystem.h>
 #include "vgui_controls/AnimationController.h"
@@ -184,7 +185,7 @@ void CClientTimesDisplay::Close()
 
 void CClientTimesDisplay::OnKeyCodeReleased(KeyCode code)
 {
-    if (code == KEY_ESCAPE || code == KEY_TAB)
+    if (code == KEY_ESCAPE || code == gameuifuncs->GetButtonCodeForBind("showtimes"))
     {
         Close();
     }
