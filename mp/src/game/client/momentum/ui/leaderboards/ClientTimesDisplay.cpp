@@ -26,8 +26,6 @@ CClientTimesDisplay::CClientTimesDisplay(IViewPort *pViewPort) : EditablePanel(n
 {
     SetSize(10, 10); // Quiet the "parent not sized yet" spew, actual size in leaderboards.res
 
-    m_nCloseKey = BUTTON_CODE_INVALID;
-
     m_bToggledOpen = false;
     m_flNextUpdateTime = 0.0f;
 
@@ -69,45 +67,6 @@ CClientTimesDisplay::CClientTimesDisplay(IViewPort *pViewPort) : EditablePanel(n
 CClientTimesDisplay::~CClientTimesDisplay()
 {
 }
-
-//-----------------------------------------------------------------------------
-// Call every frame
-//-----------------------------------------------------------------------------
-void CClientTimesDisplay::OnThink()
-{
-    BaseClass::OnThink();
-
-    // NOTE: this is necessary because of the way input works.
-    // If a key down message is sent to vgui, then it will get the key up message
-    // Sometimes the scoreboard is activated by other vgui menus,
-    // sometimes by console commands. In the case where it's activated by
-    // other vgui menus, we lose the key up message because this panel
-    // doesn't accept keyboard input. It *can't* accept keyboard input
-    // because another feature of the dialog is that if it's triggered
-    // from within the game, you should be able to still run around while
-    // the scoreboard is up. That feature is impossible if this panel accepts input.
-    // because if a vgui panel is up that accepts input, it prevents the engine from
-    // receiving that input. So, I'm stuck with a polling solution.
-    //
-    // Close key is set to non-invalid when something other than a keybind
-    // brings the scoreboard up, and it's set to invalid as soon as the
-    // dialog becomes hidden.
-
-    if (m_nCloseKey != BUTTON_CODE_INVALID)
-    {
-        if (!g_pInputSystem->IsButtonDown(m_nCloseKey))
-        {
-            m_nCloseKey = BUTTON_CODE_INVALID;
-            gViewPortInterface->ShowPanel(PANEL_TIMES, false);
-            GetClientVoiceMgr()->StopSquelchMode();
-        }
-    }
-}
-
-//-----------------------------------------------------------------------------
-// Called by vgui panels that activate the client scoreboard
-//-----------------------------------------------------------------------------
-void CClientTimesDisplay::OnPollHideCode(int code) { m_nCloseKey = static_cast<ButtonCode_t>(code); }
 
 //-----------------------------------------------------------------------------
 // Purpose: clears everything in the scoreboard and all it's state
@@ -172,11 +131,6 @@ void CClientTimesDisplay::ShowPanel(bool bShow)
     if (m_pTimes)
         m_pTimes->OnPanelShow(bShow);
 
-    if (!bShow)
-    {
-        m_nCloseKey = BUTTON_CODE_INVALID;
-    }
-
     if (BaseClass::IsVisible() == bShow)
         return;
 
@@ -230,7 +184,7 @@ void CClientTimesDisplay::Close()
 
 void CClientTimesDisplay::OnKeyCodeReleased(KeyCode code)
 {
-    if (code == KEY_ESCAPE)
+    if (code == KEY_ESCAPE || code == KEY_TAB)
     {
         Close();
     }

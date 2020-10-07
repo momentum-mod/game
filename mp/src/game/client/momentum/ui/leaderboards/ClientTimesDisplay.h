@@ -50,10 +50,7 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
     void SetParent(vgui::VPANEL parent) OVERRIDE { BaseClass::SetParent(parent); }
 
   protected:
-    MESSAGE_FUNC_INT(OnPollHideCode, "PollHideCode", code);
-
     // functions to override
-    void OnThink() OVERRIDE;
     void OnKeyCodeReleased(vgui::KeyCode code) override;
 
     void ApplySchemeSettings(vgui::IScheme *pScheme) OVERRIDE;
@@ -81,7 +78,6 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
     CLeaderboardsTimes *m_pTimes;
 
     IViewPort *m_pViewPort;
-    ButtonCode_t m_nCloseKey;
 
     float m_flNextUpdateTime;
 
