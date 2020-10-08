@@ -1,0 +1,26 @@
+UnlitGeneric
+{
+	$basetexture 			"models/props/gameplay/capturepoint/mom_capturepoint_hologram_Map_c"
+	//$texture2 			"models/props/gameplay/capturepoint/mom_capturepoint_hologram_scan"
+
+	//$alpha 				.5
+	$additive 			1
+	$nocull 				1
+
+	$nodecal 			1
+	//$texture2Scale 		2
+	$model				1
+	
+	// Proxies
+	// {
+	
+		// TextureScroll
+		// {
+			// texturescrollvar 		$texture2Transform
+			// texturescrollrate 	.1
+			// texturescrollangle 	90
+			// texturescale 			$texture2Scale
+		// }
+		
+	// }
+}

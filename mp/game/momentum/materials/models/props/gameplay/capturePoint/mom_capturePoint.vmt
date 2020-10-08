@@ -1,0 +1,12 @@
+PBR
+{
+	$baseTexture		models/props/gameplay/capturePoint/mom_capturePoint_C
+	$bumpmap			models/props/gameplay/capturePoint/mom_capturePoint_N
+	$MRAOTexture		models/props/gameplay/capturePoint/mom_capturePoint_MRAO
+	//$emissionTexture	models/props/gameplay/capturePoint/mom_capturePoint_E    
+	$envMap			    env_cubemap
+	
+    $nodecal			1
+	$model			    1
+    $surfaceProp        "metal"
+}
