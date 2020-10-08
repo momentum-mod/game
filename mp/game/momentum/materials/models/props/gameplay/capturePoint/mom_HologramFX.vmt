@@ -1,0 +1,34 @@
+UnlitTwoTexture
+{
+	$basetexture 			"models/props/gameplay/capturepoint/mom_capturepoint_hologram_c"
+	$texture2 			"models/props/gameplay/capturepoint/mom_capturepoint_hologram_scan"
+
+	//$alpha 				.5
+	$additive 			1
+	$nocull 				1
+
+	$nodecal 			1
+	$texture2Scale 		0.0
+	$model				1
+	
+	Proxies
+	{
+	
+		Sine
+		{
+			sineperiod			8
+			sinemin				.5
+			sinemax				3
+			resultVar			$texture2Scale
+		}
+		
+		TextureScroll
+		{
+			texturescrollvar 		$texture2Transform
+			texturescrollrate 	5
+			texturescrollangle 	125
+			texturescale 			$texture2Scale
+		}
+		
+	}
+}

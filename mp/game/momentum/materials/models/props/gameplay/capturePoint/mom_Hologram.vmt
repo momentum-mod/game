@@ -1,0 +1,11 @@
+PBR
+{
+	$baseTexture		models/props/gameplay/capturePoint/mom_capturePoint_C
+	$bumpmap			models/props/gameplay/capturePoint/mom_capturePoint_N
+	$MRAOTexture		models/props/gameplay/capturePoint/mom_capturePoint_MRAO    
+	$envMap			    env_cubemap
+	
+    $translucent		1
+	$model			    1
+    $surfaceProp        "Glass"
+}
