@@ -1139,13 +1139,16 @@ void CTriggerUserInput::Touch(CBaseEntity *pOther)
 //--------- CTriggerLimitMovement -------------------------------------------------------------------
 LINK_ENTITY_TO_CLASS(trigger_momentum_limitmovement, CTriggerLimitMovement);
 
-void CTriggerLimitMovement::OnStartTouch(CBaseEntity *pOther)
+void CTriggerLimitMovement::Touch(CBaseEntity *pOther)
 {
+    if (!PassesTriggerFilters(pOther))
+        return;
+
     CMomRunEntity *pEnt = dynamic_cast<CMomRunEntity*>(pOther);
     if (pEnt)
         ToggleButtons(pEnt, false);
 
-    BaseClass::OnStartTouch(pOther);
+    BaseClass::Touch(pOther);
 }
 
 void CTriggerLimitMovement::OnEndTouch(CBaseEntity *pOther)
