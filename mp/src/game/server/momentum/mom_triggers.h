@@ -570,7 +570,7 @@ class CTriggerLimitMovement : public CBaseMomentumTrigger
     DECLARE_CLASS(CTriggerLimitMovement, CBaseMomentumTrigger);
 
   public:
-    void OnStartTouch(CBaseEntity *pOther) OVERRIDE;
+    void Touch(CBaseEntity *pOther) OVERRIDE;
     void OnEndTouch(CBaseEntity *pOther) OVERRIDE;
 
     // spawnflags
