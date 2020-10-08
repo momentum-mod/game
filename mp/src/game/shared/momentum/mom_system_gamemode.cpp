@@ -236,6 +236,11 @@ void CGameMode_Tricksurf::SetGameModeVars()
     sv_accelerate.SetValue(10);
 }
 
+bool CGameMode_Tricksurf::HasCapability(GameModeHUDCapability_t capability)
+{
+    return capability == GameModeHUDCapability_t::CAP_HUD_KEYPRESS_JUMPS;
+}
+
 void CGameMode_Ahop::SetGameModeVars()
 {
     CGameModeBase::SetGameModeVars();
