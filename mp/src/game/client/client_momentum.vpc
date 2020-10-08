@@ -271,6 +271,8 @@ $Project "Client (Momentum)"
 
             $File   "momentum\mom_system_user_data.h"
             $File   "momentum\mom_system_user_data.cpp"
+            $File   "$SRCDIR\game\shared\momentum\mom_system_tricks.h"
+            $File   "$SRCDIR\game\shared\momentum\mom_system_tricks.cpp"
 
             $Folder "Weapons"
             {

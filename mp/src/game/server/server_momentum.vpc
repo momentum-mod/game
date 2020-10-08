@@ -129,6 +129,9 @@ $Project "Server (Momentum)"
                 $File "$SRCDIR\game\shared\momentum\weapon\weapon_shareddefs.h"
             }
 
+            $File   "$SRCDIR\game\shared\momentum\mom_system_tricks.h"
+            $File   "$SRCDIR\game\shared\momentum\mom_system_tricks.cpp"
+
             $File "momentum\server_events.h"
             $File "momentum\server_events.cpp"
             $File "momentum\mapzones.h"
