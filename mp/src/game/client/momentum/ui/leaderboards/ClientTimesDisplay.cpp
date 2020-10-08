@@ -122,10 +122,6 @@ void CClientTimesDisplay::ShowPanel(bool bShow)
 {
     if (m_bToggledOpen)
     {
-        if (bShow == false)
-        {
-            m_bToggledOpen = false;
-        }
         return;
     }
 
@@ -185,7 +181,7 @@ void CClientTimesDisplay::Close()
 
 void CClientTimesDisplay::OnKeyCodeReleased(KeyCode code)
 {
-    if (code == KEY_ESCAPE || code == gameuifuncs->GetButtonCodeForBind("showtimes"))
+    if (m_bToggledOpen && (code == KEY_ESCAPE || code == gameuifuncs->GetButtonCodeForBind("showtimes")))
     {
         Close();
     }
