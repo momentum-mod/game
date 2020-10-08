@@ -143,7 +143,11 @@ void IGameSystem::RemoveAll(  )
 //-----------------------------------------------------------------------------
 char const*	IGameSystem::MapName()
 {
+#ifdef GAME_DLL
+	return gpGlobals->mapname.ToCStr();
+#else
 	return s_pMapName;
+#endif
 }
 
 #ifndef CLIENT_DLL
