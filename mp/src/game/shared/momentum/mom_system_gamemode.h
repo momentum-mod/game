@@ -149,12 +149,14 @@ class CGameMode_Tricksurf : public CGameModeBase
 {
 public:
     GameMode_t GetType() override { return GAMEMODE_TRICKSURF; }
-    const char* GetStatusString() override { return "Surfing"; }
+    const char* GetStatusString() override { return "Tricksurfing"; }
     const char* GetDiscordIcon() override { return "mom_icon_tricksurf"; }
-    const char* GetMapPrefix() override { return "tricksurf_"; }
-    const char* GetGameModeCfg() override { return "tricksurf.cfg"; }
+    const char* GetMapPrefix() override { return "tsurf_"; }
+    const char* GetGameModeCfg() override { return "tsurf.cfg"; }
     float GetIntervalPerTick() override { return 0.01f; }
     void SetGameModeVars() override;
+
+    bool HasCapability(GameModeHUDCapability_t capability) override;
 };
 
 // Ahop-specific defines
