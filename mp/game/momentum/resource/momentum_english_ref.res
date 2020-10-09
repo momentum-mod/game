@@ -99,6 +99,20 @@
 
         "MOM_RunFlag_Reset" "Reset Flags"
 
+        // Tricks system
+        "MOM_Tricks_TrickList" "Trick List"
+        "MOM_Tricks_MapTeleList" "Map Teles"
+        "MOM_Tricks_Official" "Official"
+        "MOM_Tricks_Community" "Community"
+        "MOM_Tricks_Local" "Local"
+
+        "MOM_Tricks_Filters" "Filters"
+        
+        "MOM_Trick_Steps" "Steps"
+        "MOM_Trick_Name" "Trick Name"
+        "MOM_Trick_Teleport" "Teleport to trick start"
+        "MOM_Trick_Path" "Path for: %name%"
+
     //Timer
         "MOM_SavedLocation" "Saveloc %s1/%s2"
         "MOM_Cheater_Message" "For your times to be able to submit,\nyou must turn sv_cheats off!"
@@ -547,6 +561,7 @@
         "MOM_ZoneMenu_ZoneType_BEnd" "Bonus End"
         "MOM_ZoneMenu_ZoneType_Stage" "Stage"
         "MOM_ZoneMenu_ZoneType_Checkpoint" "Checkpoint"
+        "MOM_ZoneMenu_ZoneType_Trick" "Trick"
         "MOM_ZoneMenu_GridSize" "Grid Snap Size"
         "MOM_ZoneMenu_GridSizeTT" "The amount of units of grid that the reticle will snap to."
         "MOM_ZoneMenu_TrackNumber" "Track Number:"
