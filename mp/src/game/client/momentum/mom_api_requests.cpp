@@ -161,6 +161,11 @@ bool CAPIRequests::GetMapZones(uint32 uMapID, CallbackFunc func)
     return false;
 }
 
+bool CAPIRequests::GetMapTrickData(uint32 uMapID, CallbackFunc func)
+{
+    NOT_IMPL;
+}
+
 bool CAPIRequests::GetUserMapLibrary(CallbackFunc func)
 {
     APIRequest *req = new APIRequest;

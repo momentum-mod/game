@@ -124,6 +124,7 @@ public:
     bool GetMapInfo(uint32 mapID, CallbackFunc func);
     bool GetMapByName(const char *pMapName, CallbackFunc func);
     bool GetMapZones(uint32 uMapID, CallbackFunc func);
+    bool GetMapTrickData(uint32 uMapID, CallbackFunc func);
     bool GetUserMapLibrary(CallbackFunc func);
     // bAddToLibrary being false means "remove from library"
     bool SetMapInLibrary(uint32 mapID, bool bAddToLibrary, CallbackFunc func);
