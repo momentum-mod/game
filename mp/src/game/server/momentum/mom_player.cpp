@@ -1828,6 +1828,15 @@ void CMomentumPlayer::TimerCommand_Restart(int track)
 
     DestroyExplosives();
 
+    if (g_pGameModeSystem->GameModeIs(GAMEMODE_TRICKSURF))
+    {
+        if (g_pTrickSystem->GetTrackedTrick() != -1)
+        {
+            g_pTrickSystem->TeleportToTrick(g_pTrickSystem->GetTrackedTrick());
+            return;
+        }
+    }
+
     const auto pStart = g_pMomentumTimer->GetStartTrigger(track);
     if (pStart)
     {
