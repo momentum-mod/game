@@ -201,6 +201,9 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
     int GetAccelTicks() const { return m_nAccelTicks; }
     void SetAccelTicks(int ticks) { m_nAccelTicks = ticks; }
 
+    bool CanTeleport();
+    void ManualTeleport(const Vector *newPosition, const QAngle *newAngles, const Vector *newVelocity);
+
     // Trail Methods
     void Teleport(const Vector *newPosition, const QAngle *newAngles, const Vector *newVelocity) OVERRIDE;
     bool KeyValue(const char *szKeyName, const char *szValue) OVERRIDE;
