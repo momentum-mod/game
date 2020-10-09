@@ -920,16 +920,43 @@ void CMomentumPlayer::ToggleDuckThisFrame(bool bState)
     }
 }
 
+bool CMomentumPlayer::CanTeleport()
+{
+    if (!m_bAllowUserTeleports)
+        return false;
+
+    if (m_Data.m_bMapFinished && !m_cvarMapFinMoveEnable.GetBool())
+        return false;
+
+    if (m_bHasPracticeMode && (m_nButtons & IN_JUMP))
+        return false;
+
+    return true;
+}
+
+void CMomentumPlayer::ManualTeleport(const Vector *newPosition, const QAngle *newAngles, const Vector *newVelocity)
+{
+    if (!CanTeleport())
+        return;
+
+    m_nButtonsToggled = 0;
+
+    DestroyExplosives();
+
+    g_pMomentumTimer->Stop(this);
+    g_pMomentumTimer->SetCanStart(false);
+
+    g_pTrickSystem->ClearTrickAttempts();
+
+    Teleport(newPosition, newAngles, newVelocity);
+
+    g_pTrickSystem->PostPlayerManualTeleport(this);
+}
+
 // Overrides Teleport() so we can take care of the trail
 void CMomentumPlayer::Teleport(const Vector *newPosition, const QAngle *newAngles, const Vector *newVelocity)
 {
-    if (!m_bAllowUserTeleports)
-        return;
-
-    if (m_Data.m_bMapFinished && !m_cvarMapFinMoveEnable.GetBool())
-        return;
-
-    if (m_bHasPracticeMode && (m_nButtons & IN_JUMP))
+    if (!CanTeleport())
         return;
 
     // No need to remove the trail here, CreateTrail() already does it for us
