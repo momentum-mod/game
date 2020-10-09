@@ -250,6 +250,8 @@ $Project "Client (Momentum)"
 
                 $Folder "TricksUI"
                 {
+                    $File "momentum\ui\tricks\hud_trick_tracker.cpp"
+                    $File "momentum\ui\tricks\hud_trick_tracker.h"
                     $File "momentum\ui\tricks\TrickList.cpp"
                     $File "momentum\ui\tricks\TrickList.h"
                     $File "momentum\ui\tricks\CommunityTricksTab.h"
