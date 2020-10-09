@@ -1,5 +1,11 @@
 "Resource/HudLayout.res"
 {
+    TrickTrackerHUD
+    {
+        "fieldName" "TrickTrackerHUD"
+        // See resource/ui/tricks/TrickTracker.res
+    }
+
     //Timer
     HudTimer
     {
