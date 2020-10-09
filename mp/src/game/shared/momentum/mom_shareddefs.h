@@ -260,6 +260,7 @@ enum WallRunState
 
 #define PANEL_TIMES "times"
 #define PANEL_REPLAY "replaycontrols"
+#define PANEL_TRICK_LIST "tricks"
 
 #define MOM_COLORIZATION_CHECK_FREQUENCY 0.1f
 
