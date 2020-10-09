@@ -248,6 +248,20 @@ $Project "Client (Momentum)"
                     $File "momentum\ui\PaintPreviewPanel.h"
                 }
 
+                $Folder "TricksUI"
+                {
+                    $File "momentum\ui\tricks\TrickList.cpp"
+                    $File "momentum\ui\tricks\TrickList.h"
+                    $File "momentum\ui\tricks\CommunityTricksTab.h"
+                    $File "momentum\ui\tricks\CommunityTricksTab.cpp"
+                    $File "momentum\ui\tricks\LocalTricksTab.h"
+                    $File "momentum\ui\tricks\LocalTricksTab.cpp"
+                    $File "momentum\ui\tricks\MapTeleTab.h"
+                    $File "momentum\ui\tricks\MapTeleTab.cpp"
+                    $File "momentum\ui\tricks\OfficialTricksTab.h"
+                    $File "momentum\ui\tricks\OfficialTricksTab.cpp"
+                }
+
                 $Folder "Credits"
                 {
                     $File "momentum\ui\CreditsDialog.cpp"
