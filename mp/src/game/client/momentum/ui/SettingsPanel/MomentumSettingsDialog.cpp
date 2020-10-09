@@ -110,11 +110,9 @@ CMomentumSettingsDialog::CMomentumSettingsDialog() : BaseClass(nullptr, "Setting
     m_pScrollableSettingsPanel = new ScrollableEditablePanel(this, nullptr, "CurrentSettings");
 
     m_pInputButton = new Button(this, "InputButton", "#MOM_Settings_Input", this, "Input");
-    m_pInputButton->SetStaySelectedOnClick(true);
     m_pButtonGroup->AddPanelToGroup(m_pInputButton);
 
     m_pAudioButton = new Button(this, "AudioButton", "#MOM_Settings_Audio", this, "Audio");
-    m_pInputButton->SetStaySelectedOnClick(true);
     m_pButtonGroup->AddPanelToGroup(m_pAudioButton);
 
     m_pVideoButton = new Button(this, "VideoButton", "#MOM_Settings_Video", this, "Video");
