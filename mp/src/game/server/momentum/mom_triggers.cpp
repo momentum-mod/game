@@ -12,6 +12,7 @@
 #include "mom_modulecomms.h"
 #include "trigger_trace_enums.h"
 #include "movevars_shared.h"
+#include "mom_system_tricks.h"
 
 #include "dt_utlvector_send.h"
 
@@ -455,6 +456,8 @@ CTriggerTrickZone::CTriggerTrickZone()
 void CTriggerTrickZone::Spawn()
 {
     BaseClass::Spawn();
+
+    g_pTrickSystem->AddZone(this);
 }
 
 int CTriggerTrickZone::GetZoneType()
@@ -480,10 +483,20 @@ bool CTriggerTrickZone::ToKeyValues(KeyValues* pKvInto)
 
 void CTriggerTrickZone::OnStartTouch(CBaseEntity *pOther)
 {
+    if (pOther->IsPlayer())
+    {
+        const auto pMomPlayer = ToCMOMPlayer(pOther);
+        g_pTrickSystem->OnTrickZoneEnter(this, pMomPlayer);
+    }
 }
 
 void CTriggerTrickZone::OnEndTouch(CBaseEntity *pOther)
 {
+    if (pOther->IsPlayer())
+    {
+        const auto pMomPlayer = ToCMOMPlayer(pOther);
+        g_pTrickSystem->OnTrickZoneExit(this, pMomPlayer);
+    }
 }
 
 //----------- CTriggerTeleport -----------------------------------------------------------------

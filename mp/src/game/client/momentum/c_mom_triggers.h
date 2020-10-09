@@ -86,6 +86,8 @@ public:
     bool ShouldDrawOutline() override;
     bool GetOutlineColor() override;
 
+    void OnDataChanged(DataUpdateType_t type) override;
+
     CNetworkVar(int, m_iID);
     CNetworkString(m_szZoneName, 32);
 
