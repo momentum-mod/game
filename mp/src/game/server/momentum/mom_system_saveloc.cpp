@@ -144,9 +144,9 @@ void SavedLocation_t::Teleport(CMomentumPlayer* pPlayer)
         }
     }
 
-    pPlayer->Teleport(&m_vecPos,
-                      m_savedComponents & SAVELOC_ANG ? &m_qaAng : nullptr,
-                      m_savedComponents & SAVELOC_VEL ? &m_vecVel : &vec3_origin);
+    pPlayer->ManualTeleport(&m_vecPos,
+                            m_savedComponents & SAVELOC_ANG ? &m_qaAng : nullptr,
+                            m_savedComponents & SAVELOC_VEL ? &m_vecVel : &vec3_origin);
 
     if ( m_savedComponents & SAVELOC_GRAVITY )
         pPlayer->SetGravity(m_fGravityScale);

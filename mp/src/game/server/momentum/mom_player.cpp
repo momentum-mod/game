@@ -21,6 +21,7 @@
 #include "run/mom_replay_base.h"
 #include "mapzones.h"
 #include "fx_mom_shared.h"
+#include "mom_system_tricks.h"
 #include "run/mom_run_safeguards.h"
 #include "movevars_shared.h"
 
@@ -30,8 +31,7 @@
 #define SND_SPRINT "HL2Player.SprintStart"
 #define PAINT_CYCLE_TIME 0.1f
 
-static MAKE_TOGGLE_CONVAR(mom_practice_warning_enable, "1", FCVAR_ARCHIVE | FCVAR_REPLICATED,
-                          "Toggles the warning for enabling practice mode during a run. 0 = OFF, 1 = ON\n");
+static MAKE_TOGGLE_CONVAR(mom_practice_warning_enable, "1", FCVAR_ARCHIVE | FCVAR_REPLICATED, "Toggles the warning for enabling practice mode during a run. 0 = OFF, 1 = ON\n");
 
 static MAKE_TOGGLE_CONVAR(mom_ahop_sound_sprint_enable, "1", FCVAR_ARCHIVE | FCVAR_REPLICATED, "Toggles the sound made when enabling sprint. 0 = OFF, 1 = ON.\n");
 
@@ -49,59 +49,55 @@ CON_COMMAND_F(
     pPlayer->TogglePracticeMode();
 }
 
-CON_COMMAND(
-    mom_eyetele,
-    "Teleports the player to the solid that they are looking at.\n")
+CON_COMMAND(mom_eyetele, "Teleports the player to the solid that they are looking at.\n")
 {
     CMomentumPlayer *pPlayer = CMomentumPlayer::GetLocalPlayer();
     if (!pPlayer)
         return;
 
-    if (pPlayer->m_bHasPracticeMode || !g_pMomentumTimer->IsRunning())
-    {
-        trace_t tr;
-        Vector pos = pPlayer->EyePosition();
-        Vector ang;
-        pPlayer->EyeVectors(&ang);
-
-        int mask = CONTENTS_SOLID | CONTENTS_MOVEABLE | CONTENTS_OPAQUE | CONTENTS_WINDOW;
-        UTIL_TraceLine(pos, pos + ang * MAX_COORD_RANGE, mask, pPlayer, COLLISION_GROUP_NONE, &tr);
-
-        if (!CloseEnough(tr.fraction, 1.0f) && tr.DidHit())
-        {
-            Vector hit = tr.endpos;
-            if (enginetrace->PointOutsideWorld(hit))
-            {
-                hit += (hit - pos).Normalized() * 64.0f;
-
-                UTIL_TraceLine(hit, hit + ang * MAX_COORD_RANGE, mask, pPlayer, COLLISION_GROUP_NONE, &tr);
-
-                if (tr.DidHit())
-                    hit = tr.endpos;
-            }
-            Vector nrm = tr.plane.normal;
-
-            if (CloseEnough(nrm.z, 1.0f))
-            {
-                if (pPlayer->GetMoveType() == MOVETYPE_NOCLIP) 
-                    hit.z += 32.0f;
-            }
-            else
-            {
-                hit += (hit - pos).Normalized() * -32.0f;
-            }
-
-            QAngle new_ang = pPlayer->GetAbsAngles();
-            if (new_ang.x > 45.0f && enginetrace->PointOutsideWorld(pos))
-                new_ang.x = 0.0f;
-
-            g_pMomentumTimer->SetCanStart(false);
-            pPlayer->Teleport(&hit, &new_ang, nullptr);
-        }
-    }
-    else
+    if (!pPlayer->m_bHasPracticeMode && g_pMomentumTimer->IsRunning())
     {
         Warning("Eyetele can only be used when the timer is not running or in practice mode!\n");
+        return;
+    }
+
+    trace_t tr;
+    Vector pos = pPlayer->EyePosition();
+    Vector ang;
+    pPlayer->EyeVectors(&ang);
+
+    int mask = CONTENTS_SOLID | CONTENTS_MOVEABLE | CONTENTS_OPAQUE | CONTENTS_WINDOW;
+    UTIL_TraceLine(pos, pos + ang * MAX_COORD_RANGE, mask, pPlayer, COLLISION_GROUP_NONE, &tr);
+
+    if (!CloseEnough(tr.fraction, 1.0f) && tr.DidHit())
+    {
+        Vector hit = tr.endpos;
+        if (enginetrace->PointOutsideWorld(hit))
+        {
+            hit += (hit - pos).Normalized() * 64.0f;
+
+            UTIL_TraceLine(hit, hit + ang * MAX_COORD_RANGE, mask, pPlayer, COLLISION_GROUP_NONE, &tr);
+
+            if (tr.DidHit())
+                hit = tr.endpos;
+        }
+        Vector nrm = tr.plane.normal;
+
+        if (CloseEnough(nrm.z, 1.0f))
+        {
+            if (pPlayer->GetMoveType() == MOVETYPE_NOCLIP) 
+                hit.z += 32.0f;
+        }
+        else
+        {
+            hit += (hit - pos).Normalized() * -32.0f;
+        }
+
+        QAngle new_ang = pPlayer->GetAbsAngles();
+        if (new_ang.x > 45.0f && enginetrace->PointOutsideWorld(pos))
+            new_ang.x = 0.0f;
+
+        pPlayer->ManualTeleport(&hit, &new_ang, nullptr);
     }
 }
 
@@ -1830,11 +1826,6 @@ void CMomentumPlayer::TimerCommand_Restart(int track)
     if (!AllowUserTeleports())
         return;
 
-    g_pMomentumTimer->Stop(this);
-    g_pMomentumTimer->SetCanStart(false);
-
-    m_nButtonsToggled = 0;
-
     DestroyExplosives();
 
     const auto pStart = g_pMomentumTimer->GetStartTrigger(track);
@@ -1849,7 +1840,7 @@ void CMomentumPlayer::TimerCommand_Restart(int track)
         {
             // Don't set angles if still in start zone.
             QAngle ang = pStart->GetLookAngles();
-            Teleport(&pStart->GetRestartPosition(), (pStart->HasLookAngles() ? &ang : nullptr), &vec3_origin);
+            ManualTeleport(&pStart->GetRestartPosition(), (pStart->HasLookAngles() ? &ang : nullptr), &vec3_origin);
         }
 
         m_Data.m_iCurrentTrack = track;
@@ -1860,7 +1851,7 @@ void CMomentumPlayer::TimerCommand_Restart(int track)
         const auto pStartPoint = EntSelectSpawnPoint();
         if (pStartPoint)
         {
-            Teleport(&pStartPoint->GetAbsOrigin(), &pStartPoint->GetAbsAngles(), &vec3_origin);
+            ManualTeleport(&pStartPoint->GetAbsOrigin(), &pStartPoint->GetAbsAngles(), &vec3_origin);
             ResetRunStats();
         }
     }
@@ -1899,9 +1890,7 @@ void CMomentumPlayer::TimerCommand_RestartStage(int stage, int track)
     {
         if (pStage->GetZoneNumber() == stage && pStage->GetTrackNumber() == track)
         {
-            Teleport(&pStage->GetRestartPosition(), &pStage->GetAbsAngles(), &vec3_origin);
-            // Stop *after* the teleport
-            g_pMomentumTimer->Stop(this);
+            ManualTeleport(&pStage->GetRestartPosition(), &pStage->GetAbsAngles(), &vec3_origin);
             return;
         }
     }
