@@ -248,6 +248,16 @@ bool C_TriggerTrickZone::GetOutlineColor()
     return true;
 }
 
+void C_TriggerTrickZone::OnDataChanged(DataUpdateType_t type)
+{
+    BaseClass::OnDataChanged(type);
+
+    if (type == DATA_UPDATE_CREATED)
+    {
+        g_pTrickSystem->AddZone(this);
+    }
+}
+
 // ======================================
 LINK_ENTITY_TO_CLASS(trigger_momentum_slide, C_TriggerSlide);
 
