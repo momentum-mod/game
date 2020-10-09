@@ -15,6 +15,7 @@
 #else
 #include "momentum/mapzones.h"
 #include "momentum/mom_player.h"
+#include "momentum/mom_system_tricks.h"
 #endif
 
 #include "tier0/memdbgon.h"
@@ -221,18 +222,22 @@ void CMomentumGameRules::ClientCommandKeyValues(edict_t *pEntity, KeyValues *pKe
 {
     BaseClass::ClientCommandKeyValues(pEntity, pKeyValues);
 
-    if (FStrEq(pKeyValues->GetName(), "NoZones"))
+    if (FStrEq(pKeyValues->GetName(), TRICK_DATA_KEY))
+    {
+        g_pTrickSystem->LoadTrickDataFromFile(pKeyValues);
+    }
+    else if (FStrEq(pKeyValues->GetName(), "NoZones"))
     {
         // Load if they're available in a file
         g_MapZoneSystem.LoadZonesFromFile();
     }
     else if (FStrEq(pKeyValues->GetName(), "ZonesFromSite"))
     {
-        if (pKeyValues->FindKey("tracks"))
+        const auto pTrackPtr = pKeyValues->GetPtr("tracks");
+        if (pTrackPtr)
         {
-            KeyValuesAD pTracks(static_cast<KeyValues *>(pKeyValues->GetPtr("tracks")));
-            // Zones loaded, pass them through
-            g_MapZoneSystem.LoadZonesFromSite(pTracks, CBaseEntity::Instance(pEntity));
+            KeyValuesAD pData(static_cast<KeyValues *>(pTrackPtr));
+            g_MapZoneSystem.LoadZonesFromSite(pData, CBaseEntity::Instance(pEntity));
         }
     }
 }
