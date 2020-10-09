@@ -8,6 +8,7 @@ class CHudMapFinishedDialog;
 class CMOMSpectatorGUI;
 class CClientTimesDisplay;
 class LobbyMembersPanel;
+class TrickList;
 
 namespace vgui
 {
@@ -52,6 +53,7 @@ class ClientModeMOMNormal : public ClientModeShared
     CClientTimesDisplay *m_pLeaderboards;
     CMOMSpectatorGUI *m_pSpectatorGUI;
     LobbyMembersPanel *m_pLobbyMembers;
+    TrickList *m_pTrickList;
 };
 
 extern IClientMode *GetClientModeNormal();
