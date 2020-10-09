@@ -371,6 +371,12 @@ CON_COMMAND_F(mom_restart_stage,
               "Usage: mom_restart_stage [stage] [track]\n",
               FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_SERVER_CAN_EXECUTE)
 {
+    if (g_pGameModeSystem->GameModeIs(GAMEMODE_TRICKSURF))
+    {
+        Warning("This command deliberately does nothing in this gamemode!\n");
+        return;
+    }
+
     const auto pPlayer = CMomentumPlayer::GetLocalPlayer();
     if (!pPlayer)
         return;
