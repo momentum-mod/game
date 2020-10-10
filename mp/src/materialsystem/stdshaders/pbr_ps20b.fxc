@@ -220,5 +220,6 @@ float4 main(PS_INPUT i) : COLOR
     combinedLighting += emission;
 #endif
 
+    alpha *= g_DiffuseModulation.a;
     return FinalOutput(float4(combinedLighting, alpha), fogFactor, PIXELFOGTYPE, TONEMAP_SCALE_LINEAR, bWriteDepthToAlpha, i.projPos.z);
 }
