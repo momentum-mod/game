@@ -64,6 +64,7 @@
 
 static ConVar cl_SetupAllBones( "cl_SetupAllBones", "0" );
 ConVar r_sequence_debug( "r_sequence_debug", "" );
+extern ConVar r_drawviewmodel;
 
 // If an NPC is moving faster than this, he should play the running footstep sound
 const float RUN_SPEED_ESTIMATE_SQR = 150.0f * 150.0f;
@@ -3610,6 +3611,9 @@ void C_BaseAnimating::DoAnimationEvents( CStudioHdr *pStudioHdr )
 //-----------------------------------------------------------------------------
 bool C_BaseAnimating::DispatchMuzzleEffect( const char *options, bool isFirstPerson )
 {
+	if (isFirstPerson && !r_drawviewmodel.GetBool())
+		return false;
+
 	const char	*p = options;
 	char		token[128];
 	int			weaponType = 0;
