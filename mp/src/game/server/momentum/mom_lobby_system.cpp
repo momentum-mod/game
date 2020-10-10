@@ -790,129 +790,140 @@ void CMomentumLobbySystem::SendAndReceiveP2PPackets()
 
     SendP2PPackets();
 
+    ReceiveP2PPackets();
+}
+
+void CMomentumLobbySystem::ReceiveP2PPackets()
+{
     CHECK_STEAM_API(SteamNetworkingMessages());
 
-    SteamNetworkingMessage_t *messages[64];
-    int read = SteamNetworkingMessages()->ReceiveMessagesOnChannel(0, messages, 64);
+#define MAX_MESSAGES_PER_READ 64
 
-    for (int i = 0; i < read; i++)
+    SteamNetworkingMessage_t *messages[MAX_MESSAGES_PER_READ];
+    int read = SteamNetworkingMessages()->ReceiveMessagesOnChannel(0, messages, MAX_MESSAGES_PER_READ);
+    while (read > 0)
     {
-        const auto pMessage = messages[i];
-
-        CSteamID fromWho = pMessage->m_identityPeer.GetSteamID();
-
-        CUtlBuffer buf(pMessage->m_pData, pMessage->m_cbSize, CUtlBuffer::READ_ONLY);
-        buf.SetBigEndian(false);
-
-        const auto type = buf.GetUnsignedChar();
-        switch (type)
+        for (int i = 0; i < read; i++)
         {
-        case PACKET_TYPE_POSITION:
-        {
-            PositionPacket frame(buf);
-            CMomentumOnlineGhostEntity *pEntity = GetLobbyMemberEntity(fromWho);
-            if (pEntity)
-                pEntity->AddPositionFrame(frame);
-        }
-        break;
-        case PACKET_TYPE_DECAL:
-        {
-            DecalPacket decals(buf);
-            if (decals.decal_type == DECAL_INVALID)
-                break;
+            auto pMessage = messages[i];
 
-            const auto pEntity = GetLobbyMemberEntity(fromWho);
-            if (pEntity)
+            CSteamID fromWho = pMessage->m_identityPeer.GetSteamID();
+
+            CUtlBuffer buf(pMessage->m_pData, pMessage->m_cbSize, CUtlBuffer::READ_ONLY);
+            buf.SetBigEndian(false);
+
+            const auto type = buf.GetUnsignedChar();
+            switch (type)
             {
-                pEntity->AddDecalFrame(decals);
+            case PACKET_TYPE_POSITION:
+            {
+                PositionPacket frame(buf);
+                CMomentumOnlineGhostEntity *pEntity = GetLobbyMemberEntity(fromWho);
+                if (pEntity)
+                    pEntity->AddPositionFrame(frame);
             }
-        }
-        break;
-        case PACKET_TYPE_SAVELOC_REQ:
-        {
-            SavelocReqPacket saveloc(buf);
-
-            // Done/fail states:
-            // 1. They hit "cancel" (most common)
-            // 2. They leave the map (same as 1, just accidental maybe)
-            // 3. They leave the lobby/server (manually, due to power outage, etc)
-            // 4. We leave the map
-            // 5. We leave the lobby/server
-            // 6. They get the savelocs they need
-
-            // Of the above, 1 and 6 are the ones that are manually sent.
-            // 2<->5 can be automatically detected with lobby/server hooks
-
-            // Fail requirements:
-            // Requester: set "requesting" to false, close the request UI
-            // Requestee: remove requester from requesters vector
-
-            if (mom_lobby_debug.GetBool())
-                Log("Received a stage %i saveloc request packet!\n", saveloc.stage);
-
-            switch (saveloc.stage)
+            break;
+            case PACKET_TYPE_DECAL:
             {
-            case SAVELOC_REQ_STAGE_COUNT_REQ:
-            {
-                if (!g_pSavelocSystem->AddSavelocRequester(fromWho.ConvertToUint64()))
+                DecalPacket decals(buf);
+                if (decals.decal_type == DECAL_INVALID)
                     break;
 
-                SavelocReqPacket response;
-                response.stage = SAVELOC_REQ_STAGE_COUNT_ACK;
-                response.saveloc_count = g_pSavelocSystem->GetSavelocCount();
-
-                SendPacket(&response, fromWho, k_nSteamNetworkingSend_Reliable);
-            }
-            break;
-            case SAVELOC_REQ_STAGE_COUNT_ACK:
-            {
-                KeyValues *pKV = new KeyValues("req_savelocs");
-                pKV->SetInt("stage", SAVELOC_REQ_STAGE_COUNT_ACK);
-                pKV->SetInt("count", saveloc.saveloc_count);
-                g_pModuleComms->FireEvent(pKV);
-            }
-            break;
-            case SAVELOC_REQ_STAGE_SAVELOC_REQ:
-            {
-                SavelocReqPacket response;
-                response.stage = SAVELOC_REQ_STAGE_SAVELOC_ACK;
-
-                if (g_pSavelocSystem->WriteRequestedSavelocs(&saveloc, &response, fromWho.ConvertToUint64()))
-                    SendPacket(&response, fromWho, k_nSteamNetworkingSend_Reliable);
-            }
-            break;
-            case SAVELOC_REQ_STAGE_SAVELOC_ACK:
-            {
-                if (g_pSavelocSystem->ReadReceivedSavelocs(&saveloc, fromWho.ConvertToUint64()))
+                const auto pEntity = GetLobbyMemberEntity(fromWho);
+                if (pEntity)
                 {
-                    SavelocReqPacket response;
-                    response.stage = SAVELOC_REQ_STAGE_DONE;
-                    if (SendPacket(&response, fromWho, k_nSteamNetworkingSend_Reliable))
-                    {
-                        KeyValues *pKv = new KeyValues("req_savelocs");
-                        pKv->SetInt("stage", SAVELOC_REQ_STAGE_DONE);
-                        g_pModuleComms->FireEvent(pKv);
-                    }
+                    pEntity->AddDecalFrame(decals);
                 }
             }
             break;
-            case SAVELOC_REQ_STAGE_DONE:
+            case PACKET_TYPE_SAVELOC_REQ:
             {
-                g_pSavelocSystem->RequesterLeft(fromWho.ConvertToUint64());
+                SavelocReqPacket saveloc(buf);
+
+                // Done/fail states:
+                // 1. They hit "cancel" (most common)
+                // 2. They leave the map (same as 1, just accidental maybe)
+                // 3. They leave the lobby/server (manually, due to power outage, etc)
+                // 4. We leave the map
+                // 5. We leave the lobby/server
+                // 6. They get the savelocs they need
+
+                // Of the above, 1 and 6 are the ones that are manually sent.
+                // 2<->5 can be automatically detected with lobby/server hooks
+
+                // Fail requirements:
+                // Requester: set "requesting" to false, close the request UI
+                // Requestee: remove requester from requesters vector
+
+                if (mom_lobby_debug.GetBool())
+                    Log("Received a stage %i saveloc request packet!\n", saveloc.stage);
+
+                switch (saveloc.stage)
+                {
+                case SAVELOC_REQ_STAGE_COUNT_REQ:
+                {
+                    if (!g_pSavelocSystem->AddSavelocRequester(fromWho.ConvertToUint64()))
+                        break;
+
+                    SavelocReqPacket response;
+                    response.stage = SAVELOC_REQ_STAGE_COUNT_ACK;
+                    response.saveloc_count = g_pSavelocSystem->GetSavelocCount();
+
+                    SendPacket(&response, fromWho, k_nSteamNetworkingSend_Reliable);
+                }
+                break;
+                case SAVELOC_REQ_STAGE_COUNT_ACK:
+                {
+                    KeyValues *pKV = new KeyValues("req_savelocs");
+                    pKV->SetInt("stage", SAVELOC_REQ_STAGE_COUNT_ACK);
+                    pKV->SetInt("count", saveloc.saveloc_count);
+                    g_pModuleComms->FireEvent(pKV);
+                }
+                break;
+                case SAVELOC_REQ_STAGE_SAVELOC_REQ:
+                {
+                    SavelocReqPacket response;
+                    response.stage = SAVELOC_REQ_STAGE_SAVELOC_ACK;
+
+                    if (g_pSavelocSystem->WriteRequestedSavelocs(&saveloc, &response, fromWho.ConvertToUint64()))
+                        SendPacket(&response, fromWho, k_nSteamNetworkingSend_Reliable);
+                }
+                break;
+                case SAVELOC_REQ_STAGE_SAVELOC_ACK:
+                {
+                    if (g_pSavelocSystem->ReadReceivedSavelocs(&saveloc, fromWho.ConvertToUint64()))
+                    {
+                        SavelocReqPacket response;
+                        response.stage = SAVELOC_REQ_STAGE_DONE;
+                        if (SendPacket(&response, fromWho, k_nSteamNetworkingSend_Reliable))
+                        {
+                            KeyValues *pKv = new KeyValues("req_savelocs");
+                            pKv->SetInt("stage", SAVELOC_REQ_STAGE_DONE);
+                            g_pModuleComms->FireEvent(pKv);
+                        }
+                    }
+                }
+                break;
+                case SAVELOC_REQ_STAGE_DONE:
+                {
+                    g_pSavelocSystem->RequesterLeft(fromWho.ConvertToUint64());
+                }
+                break;
+                case SAVELOC_REQ_STAGE_INVALID:
+                default:
+                    DevWarning(2, "Invalid stage for the saveloc request packet!\n");
+                    break;
+                }
             }
             break;
-            case SAVELOC_REQ_STAGE_INVALID:
             default:
-                DevWarning(2, "Invalid stage for the saveloc request packet!\n");
                 break;
             }
-        }
-        break;
-        default:
-            break;
+
+            pMessage->Release();
         }
 
-        pMessage->Release();
+        read = SteamNetworkingMessages()->ReceiveMessagesOnChannel(0, messages, MAX_MESSAGES_PER_READ);
     }
 }
 

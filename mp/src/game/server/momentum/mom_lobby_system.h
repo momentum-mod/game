@@ -46,6 +46,7 @@ public:
     void CreateLobbyGhostEntities(); // Creates everyone's ghosts if possible
 
     void SendAndReceiveP2PPackets();
+    void ReceiveP2PPackets();
     void SendP2PPackets();
 
     void SetSpectatorTarget(const CSteamID &ghostTarget, bool bStarted, bool bLeft = false);
