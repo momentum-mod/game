@@ -7,7 +7,7 @@ PBR
     $mraoScale              "{255 100 255}"
     $emissionTexture        models/weapons/mom_stickylauncher/mom_stickybomb/mom_stickybomb_classic_E
     $emissionScale          "[0 0 0]"
-	$envMap					cubemaps/cubemap_TheseLights_hdr.hdr
+	$envMap					cubemaps/cubemap_TheseLights
 
     $model                  1
 	$surfaceprop            "weapon"
