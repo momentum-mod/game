@@ -788,6 +788,8 @@ void CMomentumLobbySystem::SendAndReceiveP2PPackets()
     if (m_mapLobbyGhosts.Count() == 0)
         return;
 
+    SendP2PPackets();
+
     CHECK_STEAM_API(SteamNetworkingMessages());
 
     SteamNetworkingMessage_t *messages[64];
@@ -912,7 +914,10 @@ void CMomentumLobbySystem::SendAndReceiveP2PPackets()
 
         pMessage->Release();
     }
+}
 
+void CMomentumLobbySystem::SendP2PPackets()
+{
     if (m_flNextUpdateTime > 0.0f && gpGlobals->curtime > m_flNextUpdateTime)
     {
         PositionPacket frame;
