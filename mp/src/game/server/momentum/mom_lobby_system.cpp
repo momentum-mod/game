@@ -95,19 +95,19 @@ void CMomentumLobbySystem::HandleP2PConnectionFail(SteamNetworkingMessagesSessio
     if (mom_lobby_debug.GetBool())
     {
         const auto iEndReason = pParam->m_info.m_eEndReason;
-        if (iEndReason > k_ESteamNetConnectionEnd_AppException_Min && iEndReason < k_ESteamNetConnectionEnd_AppException_Max)
+        if (iEndReason >= k_ESteamNetConnectionEnd_AppException_Min && iEndReason <= k_ESteamNetConnectionEnd_AppException_Max)
         {
             Warning("P2P Connection failed due to an application problem! Error code: %i\n", iEndReason);
         }
-        else if (iEndReason > k_ESteamNetConnectionEnd_Local_Min && iEndReason < k_ESteamNetConnectionEnd_Local_Max)
+        else if (iEndReason >= k_ESteamNetConnectionEnd_Local_Min && iEndReason <= k_ESteamNetConnectionEnd_Local_Max)
         {
             Warning("P2P Connection failed due to a local problem! Error code: %i\n", iEndReason);
         }
-        else if (iEndReason > k_ESteamNetConnectionEnd_Remote_Min && iEndReason < k_ESteamNetConnectionEnd_Remote_Max)
+        else if (iEndReason >= k_ESteamNetConnectionEnd_Remote_Min && iEndReason <= k_ESteamNetConnectionEnd_Remote_Max)
         {
             Warning("P2P Connection failed due to a remote problem! Error code: %i\n", iEndReason);
         }
-        else if (iEndReason > k_ESteamNetConnectionEnd_Misc_Min && iEndReason < k_ESteamNetConnectionEnd_Misc_Max)
+        else if (iEndReason >= k_ESteamNetConnectionEnd_Misc_Min && iEndReason <= k_ESteamNetConnectionEnd_Misc_Max)
         {
             Warning("P2P Connection failed due to a miscellaneous problem! Error code: %i\n", iEndReason);
         }
