@@ -34,10 +34,6 @@ public:
     STEAM_CALLBACK(CMomentumLobbySystem, HandleP2PConnectionFail, SteamNetworkingMessagesSessionFailed_t); // Talking/connecting to somebody failed
     STEAM_CALLBACK(CMomentumLobbySystem, HandlePersonaCallback, PersonaStateChange_t); // Called when we get their avatar and name from steam
 
-    // Deprecated??
-    STEAM_CALLBACK(CMomentumLobbySystem, HandleNewP2PRequest_OLD, P2PSessionRequest_t); // Somebody is trying to talk to us
-    STEAM_CALLBACK(CMomentumLobbySystem, HandleP2PConnectionFail_OLD, P2PSessionConnectFail_t); // Talking/connecting to somebody failed
-
     static CSteamID m_sLobbyID;
     static float m_flNextUpdateTime;
 
@@ -77,9 +73,6 @@ private:
     CUtlMap<uint64, CMomentumOnlineGhostEntity*> m_mapLobbyGhosts;
 
     bool m_bHostingLobby;
-
-    void HandleNewP2PRequestInternal(const SteamNetworkingIdentity &identity);
-    void HandleP2PConnectionFailInternal(const SteamNetworkingIdentity &identity);
 
     // Sends a packet to a specific person
     bool SendPacket(MomentumPacket *packet, const CSteamID &target, int sendType = k_nSteamNetworkingSend_Unreliable) const;
