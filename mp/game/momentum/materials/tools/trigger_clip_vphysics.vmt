@@ -1,0 +1,10 @@
+UnlitGeneric
+{
+	"$basetexture" "tools/tools_clip_vphysics"
+
+	"$translucent" "1"
+
+	"%keywords" "momentum,tools,trigger"
+
+	"%compiletrigger" "1"
+}
