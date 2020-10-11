@@ -1,0 +1,10 @@
+UnlitGeneric
+{
+	"$basetexture" "tools/tools_nogrenade"
+
+	"$translucent" "1"
+
+	"%keywords" "momentum,tools,trigger,nogrenades"
+
+	"%compiletrigger" "1"
+}
