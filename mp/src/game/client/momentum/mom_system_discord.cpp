@@ -17,7 +17,7 @@
 #define DISCORD_APP_ID "378351756104564738"
 #define MOM_STEAM_ID "669270"
 
-#define MAIN_MENU_STR "Main Menu"
+#define MAIN_MENU_STR "In Menus"
 #define MOM_ICON_LOGO "mom"
 
 // How many frames to wait before updating discord
