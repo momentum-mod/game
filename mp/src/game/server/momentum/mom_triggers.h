@@ -272,6 +272,7 @@ public:
     bool LoadFromKeyValues(KeyValues* pKvFrom) override;
     bool ToKeyValues(KeyValues* pKvInto) override;
 
+    void Think() override;
     void OnStartTouch(CBaseEntity* pOther) override;
     void OnEndTouch(CBaseEntity* pOther) override;
 
@@ -454,6 +455,7 @@ class CTriggerLimitMovement : public CBaseMomentumTrigger
     DECLARE_CLASS(CTriggerLimitMovement, CBaseMomentumTrigger);
 
   public:
+    void Think() OVERRIDE;
     void OnStartTouch(CBaseEntity *pOther) OVERRIDE;
     void OnEndTouch(CBaseEntity *pOther) OVERRIDE;
 

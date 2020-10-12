@@ -821,11 +821,32 @@ void CTriggerUserInput::CheckEnt(CBaseEntity *pOther)
 //--------- CTriggerLimitMovement -------------------------------------------------------------------
 LINK_ENTITY_TO_CLASS(trigger_momentum_limitmovement, CTriggerLimitMovement);
 
+void CTriggerLimitMovement::Think()
+{
+    if (m_hTouchingEntities.Count())
+    {
+        FOR_EACH_VEC(m_hTouchingEntities, i)
+        {
+            const auto pEnt = dynamic_cast<CMomRunEntity *>(m_hTouchingEntities[i].Get());
+            if (pEnt)
+            {
+                ToggleButtons(pEnt, false);
+                SetNextThink(gpGlobals->curtime);
+            }
+        }
+    }
+    else
+        SetNextThink(TICK_NEVER_THINK);
+}
+
 void CTriggerLimitMovement::OnStartTouch(CBaseEntity *pOther)
 {
     CMomRunEntity *pEnt = dynamic_cast<CMomRunEntity*>(pOther);
     if (pEnt)
+    {
         ToggleButtons(pEnt, false);
+        SetNextThink(gpGlobals->curtime);
+    }
 
     BaseClass::OnStartTouch(pOther);
 }
