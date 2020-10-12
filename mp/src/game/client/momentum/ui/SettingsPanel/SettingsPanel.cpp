@@ -15,6 +15,7 @@ SettingsPanel::SettingsPanel(Panel *pParent, const char *pName, Button *pAssocia
 
 void SettingsPanel::OnPageShow()
 {
+    RequestFocus();
     m_pAssociatedButton->SetSelected(true);
 }
 
