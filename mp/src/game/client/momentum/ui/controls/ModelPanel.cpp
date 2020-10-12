@@ -424,6 +424,7 @@ void CRenderPanel::Paint()
     MaterialFogMode_t oldFog = pRenderContext->GetFogMode();
     pRenderContext->FogMode(MATERIAL_FOG_NONE);
 
+    const auto pCubemapTex = pRenderContext->GetLocalCubemap();
     pRenderContext->BindLocalCubemap(m_hDefaultCubemap);
 
     DrawModel();
@@ -434,6 +435,7 @@ void CRenderPanel::Paint()
 
     modelrender->SuppressEngineLighting(false);
 
+    pRenderContext->BindLocalCubemap(pCubemapTex);
     pRenderContext->Flush();
 }
 
