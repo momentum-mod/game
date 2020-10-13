@@ -56,10 +56,13 @@ public:
 	// Jump time, time to auto unduck (since we auto crouch jump now).
 	CNetworkVar( float, m_flJumpTime );
 	// Mobility - power slide time
-	CNetworkVar(float, m_flSlideTime);
+	CNetworkVar(float, m_slideBoostCooldown); // MOM_TODO: Network these??
+	CNetworkVar(float, m_lurchTimer);
 	CNetworkVar(float, m_flWallRunTime);
+	CNetworkVar(float, m_punchRollOverride);
+	CNetworkVar(float, m_punchRollOverrideTarget);
 	// Step sound side flip/flip
-	int m_nStepside;;
+	int m_nStepside;
 	// Velocity at time when we hit ground
 	CNetworkVar( float, m_flFallVelocity );
 	// Previous button state
