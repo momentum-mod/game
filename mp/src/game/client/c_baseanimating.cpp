@@ -3454,6 +3454,9 @@ void C_BaseAnimating::DoAnimationEvents( CStudioHdr *pStudioHdr )
 	if ( bIsInvisible )
 		return;
 
+    if (IsViewModel() && !r_drawviewmodel.GetBool())
+        return;
+
 	// If we don't have any sequences, don't do anything
 	int nStudioNumSeq = pStudioHdr->GetNumSeq();
 	if ( nStudioNumSeq < 1 )
