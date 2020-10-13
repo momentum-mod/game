@@ -1387,8 +1387,35 @@ bool CMomentumGameMovement::CheckJumpButton()
     }
 
     // Add the accelerated hop movement
-    // MOM_TODO: we DO NOT want to come down here for PARKOUR!! Pull important bits out and let's not allow accelerated speed gain!
-    if (g_pGameModeSystem->GameModeIs(GAMEMODE_AHOP) || g_pGameModeSystem->GameModeIs(GAMEMODE_PARKOUR))
+    if (g_pGameModeSystem->GameModeIs(GAMEMODE_AHOP))
+    {
+        Vector vecForward;
+        AngleVectors(mv->m_vecViewAngles, &vecForward);
+        vecForward.z = 0.0f;
+        VectorNormalize(vecForward);
+
+        // We give a certain percentage of the current forward movement as a bonus to the jump speed.  That bonus is clipped
+        // to not accumulate over time.
+        float flSpeedBoostPerc = (!m_pPlayer->m_bIsSprinting && !player->m_Local.m_bDucked) ? 0.5f : 0.1f;
+        float flSpeedAddition = fabsf(mv->m_flForwardMove * flSpeedBoostPerc);
+        float flMaxSpeed = mv->m_flMaxSpeed + (mv->m_flMaxSpeed * flSpeedBoostPerc);
+        float flNewSpeed = (flSpeedAddition + mv->m_vecVelocity.Length2D());
+
+        // If we're over the maximum, we want to only boost as much as will get us to the goal speed
+        if (flNewSpeed > flMaxSpeed)
+        {
+            flSpeedAddition -= flNewSpeed - flMaxSpeed;
+        }
+
+        if (mv->m_flForwardMove < 0.0f)
+            flSpeedAddition *= -1.0f;
+
+        // Add it on
+        VectorAdd((vecForward * flSpeedAddition), mv->m_vecVelocity, mv->m_vecVelocity);
+    }
+
+    // MOM_TODO: This has AHOP bits still!!! Pull important bits out and let's not allow accelerated speed gain!
+    if (g_pGameModeSystem->GameModeIs(GAMEMODE_PARKOUR))
     {
         Vector vecForward;
         AngleVectors(mv->m_vecViewAngles, &vecForward);
