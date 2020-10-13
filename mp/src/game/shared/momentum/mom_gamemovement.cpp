@@ -872,7 +872,7 @@ void CMomentumGameMovement::DoDuck(int iButtonsPressed)
         if (!bFullyCrouched)
         {
             // Use 1 second so super long jump will work
-            player->m_Local.m_flDucktime = GAMEMOVEMENT_DUCK_TIME;
+            player->m_Local.m_flDucktime = GetDuckTimer();
             player->m_Local.m_bDucking = true;
 
             if (!bInAir)
@@ -883,15 +883,15 @@ void CMomentumGameMovement::DoDuck(int iButtonsPressed)
         else if (player->m_Local.m_bDucking)
         {
             // Invert time if released before fully unducked
-            float remainingDuckMilliseconds = (GAMEMOVEMENT_DUCK_TIME - player->m_Local.m_flDucktime) * (GetTimeToDuck() / TIME_TO_UNDUCK);
+            float remainingDuckMilliseconds = (GetDuckTimer() - player->m_Local.m_flDucktime) * (GetTimeToDuck() / TIME_TO_UNDUCK);
 
-            player->m_Local.m_flDucktime = GAMEMOVEMENT_DUCK_TIME - (GetTimeToDuck() * 1000.0f) + remainingDuckMilliseconds;
+            player->m_Local.m_flDucktime = GetDuckTimer() - (GetTimeToDuck() * 1000.0f) + remainingDuckMilliseconds;
         }
     }
 
     if (player->m_Local.m_bDucking)
     {
-        float duckmilliseconds = max(0.0f, GAMEMOVEMENT_DUCK_TIME - player->m_Local.m_flDucktime);
+        float duckmilliseconds = max(0.0f, GetDuckTimer() - player->m_Local.m_flDucktime);
         float duckseconds = duckmilliseconds / 1000.0f;
 
         const bool bIsSliding = m_pPlayer->m_CurrentSlideTrigger != nullptr;
@@ -932,15 +932,15 @@ void CMomentumGameMovement::DoUnduck(int iButtonsReleased)
             if (player->GetFlags() & FL_DUCKING)
             {
                 // Use 1 second so super long jump will work
-                player->m_Local.m_flDucktime = GAMEMOVEMENT_DUCK_TIME;
+                player->m_Local.m_flDucktime = GetDuckTimer();
                 player->m_Local.m_bDucking = true; // or unducking
             }
             else if (player->m_Local.m_bDucking)
             {
                 // Invert time if released before fully ducked
-                float remainingUnduckMilliseconds = (GAMEMOVEMENT_DUCK_TIME - player->m_Local.m_flDucktime) * (TIME_TO_UNDUCK / GetTimeToDuck());
+                float remainingUnduckMilliseconds = (GetDuckTimer() - player->m_Local.m_flDucktime) * (TIME_TO_UNDUCK / GetTimeToDuck());
 
-                player->m_Local.m_flDucktime = GAMEMOVEMENT_DUCK_TIME - TIME_TO_UNDUCK_MS + remainingUnduckMilliseconds;
+                player->m_Local.m_flDucktime = GetDuckTimer() - TIME_TO_UNDUCK_MS + remainingUnduckMilliseconds;
             }
         }
 
@@ -948,7 +948,7 @@ void CMomentumGameMovement::DoUnduck(int iButtonsReleased)
         {
             if (player->m_Local.m_bDucking || player->m_Local.m_bDucked) // or unducking
             {
-                float duckmilliseconds = max(0.0f, GAMEMOVEMENT_DUCK_TIME - player->m_Local.m_flDucktime);
+                float duckmilliseconds = max(0.0f, GetDuckTimer() - player->m_Local.m_flDucktime);
                 float duckseconds = duckmilliseconds / 1000.0f;
 
                 // Finish ducking immediately if duck time is over or not on ground
@@ -969,7 +969,7 @@ void CMomentumGameMovement::DoUnduck(int iButtonsReleased)
         {
             // Still under something where we can't unduck, so make sure we reset this timer so
             //  that we'll unduck once we exit the tunnel, etc.
-            player->m_Local.m_flDucktime = GAMEMOVEMENT_DUCK_TIME;
+            player->m_Local.m_flDucktime = GetDuckTimer();
 
             if (g_pGameModeSystem->IsTF2BasedMode() || g_pGameModeSystem->GameModeIs(GAMEMODE_AHOP))
             {
