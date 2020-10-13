@@ -19,6 +19,7 @@
 
 #include "clientmode.h"
 #include "ienginevgui.h"
+#include "mom_shareddefs.h"
 
 #include "tier0/memdbgon.h"
 
@@ -71,7 +72,7 @@ private:
     int m_iSpacingX;
 };
 
-
+static MAKE_TOGGLE_CONVAR(mom_settings_remember_tab, "1", FCVAR_ARCHIVE, "Toggles remembering the last opened tab in settings. 0 = OFF, 1 = ON.\n");
 static CMomentumSettingsDialog *g_pSettingsDialog = nullptr;
 
 CMomentumSettingsDialog::CMomentumSettingsDialog() : BaseClass(nullptr, "SettingsDialog")
@@ -175,7 +176,7 @@ void CMomentumSettingsDialog::Activate()
 {
     BaseClass::Activate();
 
-    SetActivePanel(m_pInputPage);
+    SetActivePanel(mom_settings_remember_tab.GetBool() ? m_pCurrentSettingsPage : m_pInputPage);
 }
 
 void CMomentumSettingsDialog::OnThink()
