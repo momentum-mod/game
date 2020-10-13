@@ -815,7 +815,7 @@ void CMomentumPlayer::ToggleSprint(bool bShouldSprint)
     m_bIsSprinting = bShouldSprint;
     DeriveMaxSpeed();
 
-    if (bShouldSprint && mom_ahop_sound_sprint_enable.GetBool())
+    if (bShouldSprint && mom_ahop_sound_sprint_enable.GetBool() && !g_pGameModeSystem->GameModeIs(GAMEMODE_PARKOUR))
     {
         EmitSound(SND_SPRINT);
     }
@@ -855,26 +855,42 @@ void CMomentumPlayer::HandleSprintAndWalkChanges()
     const int buttonsChanged = m_afButtonPressed | m_afButtonReleased;
 
     const bool bWantSprint = (CanSprint() && (m_nButtons & IN_SPEED));
-    if (m_bIsSprinting != bWantSprint && (buttonsChanged & IN_SPEED))
+    if (g_pGameModeSystem->GameModeIs(GAMEMODE_PARKOUR))
     {
-        // If someone wants to sprint, make sure they've pressed the button to do so. We want to prevent the
-        // case where a player can hold down the sprint key and burn tiny bursts of sprint as the suit recharges
-        // We want a full debounce of the key to resume sprinting after the suit is completely drained
-        ToggleSprint(bWantSprint);
-
-        if (!bWantSprint)
+        if (m_bIsSprinting == false && bWantSprint && (buttonsChanged & IN_SPEED) && (m_nButtons & IN_FORWARD))
         {
-            // Reset key, so it will be activated post whatever is suppressing it.
-            m_nButtons &= ~IN_SPEED;
+            ToggleSprint(true);
         }
-    }
 
-    if (m_bIsSprinting)
-    {
-        // Disable sprint while ducked unless we're in the air (jumping)
-        if (IsDucked() && GetGroundEntity())
+        // Do not sprint backwards
+        if (m_bIsSprinting && !(m_nButtons & (IN_FORWARD | IN_MOVELEFT | IN_MOVERIGHT)))
         {
             ToggleSprint(false);
+        }
+    }
+    else
+    {
+        if (m_bIsSprinting != bWantSprint && (buttonsChanged & IN_SPEED))
+        {
+            // If someone wants to sprint, make sure they've pressed the button to do so. We want to prevent the
+            // case where a player can hold down the sprint key and burn tiny bursts of sprint as the suit recharges
+            // We want a full debounce of the key to resume sprinting after the suit is completely drained
+            ToggleSprint(bWantSprint);
+
+            if (!bWantSprint)
+            {
+                // Reset key, so it will be activated post whatever is suppressing it.
+                m_nButtons &= ~IN_SPEED;
+            }
+        }
+
+        if (m_bIsSprinting)
+        {
+            // Disable sprint while ducked unless we're in the air (jumping)
+            if (IsDucked() && GetGroundEntity())
+            {
+                ToggleSprint(false);
+            }
         }
     }
     
