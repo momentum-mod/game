@@ -681,6 +681,11 @@ float CMomentumGameMovement::GetTimeToDuck()
     return g_pGameModeSystem->IsTF2BasedMode() ? 0.2f : BaseClass::GetTimeToDuck();
 }
 
+float CMomentumGameMovement::GetDuckTimer()
+{
+    return g_pGameModeSystem->GameModeIs(GAMEMODE_PARKOUR) ? 400.0f : BaseClass::GetDuckTimer();
+}
+
 bool CMomentumGameMovement::CanUnduck()
 {
     trace_t trace;
