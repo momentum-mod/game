@@ -276,6 +276,6 @@ sv_coyote_time(
 ConVar
 sv_slide_lock(
 	"sv_slide_lock",
-	"0",
+	"1",
 	FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_ARCHIVE,
 	"Locks your move direction when sliding");

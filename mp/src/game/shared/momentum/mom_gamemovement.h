@@ -63,6 +63,7 @@ public:
     void FinishUnDuck() override;
     void HandleDuckingSpeedCrop() override;
     float GetTimeToDuck() override;
+    float GetDuckTimer() override;
 
     void CheckParameters() override;
     void ReduceTimers() override;

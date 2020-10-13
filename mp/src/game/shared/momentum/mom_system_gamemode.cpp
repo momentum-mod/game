@@ -287,12 +287,9 @@ void CGameMode_Parkour::SetGameModeVars()
     CGameModeBase::SetGameModeVars();
 
     // Parkour-specific
-    sv_gravity.SetValue(750);
-    sv_airaccelerate.SetValue(500);
-    sv_accelerate.SetValue(10);
-    sv_maxspeed.SetValue(320);
-    sv_stopspeed.SetValue(100);
-    sv_considered_on_ground.SetValue(2);
+    sv_gravity.SetValue(600);
+    sv_airaccelerate.SetValue(8);
+    sv_accelerate.SetValue(15);
 }
 
 void CGameMode_Parkour::OnPlayerSpawn(CMomentumPlayer *pPlayer)
