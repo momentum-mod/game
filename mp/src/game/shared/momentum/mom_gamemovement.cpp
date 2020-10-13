@@ -2213,6 +2213,69 @@ void CMomentumGameMovement::StuckGround()
     }
 }
 
+void CMomentumGameMovement::PerformLurchChecks()
+{
+    Vector wishdir;
+    Vector forward, right, up;
+
+    AngleVectors(mv->m_vecViewAngles, &forward, &right, &up); // Determine movement angles
+
+    // Copy movement amounts
+    float fmove = mv->m_flForwardMove;
+    float smove = mv->m_flSideMove;
+
+    // Zero out z components of movement vectors
+    forward[2] = 0;
+    right[2] = 0;
+    VectorNormalize(forward); // Normalize remainder of vectors
+    VectorNormalize(right);   //
+    wishdir.Init();
+
+    for (int i = 0; i < 2; i++) // Determine x and y parts of velocity
+        wishdir[i] = forward[i] * fmove + right[i] * smove;
+    wishdir[2] = 0; // Zero out z part of velocity
+
+    int buttonsChanged = (mv->m_nOldButtons ^ mv->m_nButtons); // These buttons have changed this frame
+    int buttonsPressed = buttonsChanged & mv->m_nButtons;      // The changed ones still down are "pressed"
+
+    float timer = player->m_Local.m_lurchTimer;
+
+    if (buttonsPressed & IN_FORWARD || buttonsPressed & IN_BACK || buttonsPressed & IN_MOVELEFT ||
+        buttonsPressed & IN_MOVERIGHT)
+    {
+        if (timer > 0 && wishdir.Length() > 0.1f)
+        {
+            wishdir.z = 0;
+            VectorNormalizeFast(wishdir);
+            float maxTime = 0.5f;
+            float minTime = 0.2f;
+            float amt = MIN((player->m_Local.m_lurchTimer / 1000.0f) / (maxTime - minTime), 1.0f);
+            float strength = 0.7f;
+            float max = PK_SPRINT_SPEED * 0.7f * amt;
+
+            Vector currentdirection = mv->m_vecVelocity;
+            currentdirection.z = 0;
+            VectorNormalizeFast(currentdirection);
+
+            Vector lurchdirection = VectorLerp(currentdirection, wishdir * 1.5f, strength) - currentdirection;
+            VectorNormalizeFast(lurchdirection);
+
+            float beforespeed = mv->m_vecVelocity.Length2D();
+            Vector lurchVector = currentdirection * beforespeed + lurchdirection * max;
+
+            if (lurchVector.Length2D() > beforespeed)
+            {
+                lurchVector.z = 0;
+                VectorNormalizeFast(lurchVector);
+                lurchVector *= beforespeed;
+            }
+
+            mv->m_vecVelocity.x = lurchVector.x;
+            mv->m_vecVelocity.y = lurchVector.y;
+        }
+    }
+}
+
 void CMomentumGameMovement::AirMove()
 {
     BaseClass::AirMove();

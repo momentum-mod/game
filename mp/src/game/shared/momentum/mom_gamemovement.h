@@ -138,6 +138,8 @@ public:
     // Parkour's version of WaterJump
     void WaterJumpParkour();
 
+    void PerformLurchChecks();
+
 private:
     CMomentumPlayer *m_pPlayer;
 
