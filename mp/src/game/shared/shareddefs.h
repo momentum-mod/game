@@ -102,7 +102,7 @@ public:
 
 #define MAX_CLIMB_SPEED		200
 
-#define TIME_TO_UNDUCK		0.2
+#define TIME_TO_UNDUCK		0.2f
 #define TIME_TO_UNDUCK_MS	200.0f
 
 #define MAX_PITCHDOWN       89.0f

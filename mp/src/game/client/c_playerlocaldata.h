@@ -49,7 +49,7 @@ public:
 	bool					m_bDucked;
 	bool					m_bDucking;
 	bool					m_bInDuckJump;
-	float					m_flDucktime;
+	float					m_flDucktime; // Timer, gets set & decremented in gamemovement, usually used to measure how much of a duck action the player has done
 	float					m_flDuckJumpTime;
 	float					m_flJumpTime;
 
