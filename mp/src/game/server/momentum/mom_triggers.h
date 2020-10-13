@@ -305,7 +305,7 @@ public:
     // After teleporting, do this code. Base class does nothing.
     virtual void AfterTeleport(CBaseEntity *pEntTeleported) {}
     // Called when teleported by a fail teleport
-    void OnFailTeleport(CBaseEntity *pEntTeleported) {}
+    void OnFailTeleport(CBaseEntity *pEntTeleported);
 
 private:
     bool m_bResetVelocity;

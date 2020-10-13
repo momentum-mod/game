@@ -563,6 +563,15 @@ bool CTriggerMomentumTeleport::DoTeleport(CBaseEntity *pTeleportTo, CBaseEntity 
     return true;
 }
 
+void CTriggerMomentumTeleport::OnFailTeleport(CBaseEntity *pEntTeleported)
+{
+    const auto pPlayer = ToCMOMPlayer(pEntTeleported);
+    if (!pPlayer)
+        return;
+
+    pPlayer->m_nButtonsToggled = 0;
+}
+
 //---------- CTriggerProgress ----------------------------------------------------------------
 LINK_ENTITY_TO_CLASS(trigger_momentum_progress, CTriggerProgress);
 
