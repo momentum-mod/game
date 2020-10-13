@@ -54,8 +54,11 @@ public:
 	float					m_flJumpTime;
 
 	// Parkour
-	float                   m_flSlideTime; // power slide time
-	float                   m_flWallRunTime;
+	float					m_slideBoostCooldown;
+	float					m_lurchTimer;
+	float					m_flWallRunTime;
+	float					m_punchRollOverride;
+	float					m_punchRollOverrideTarget;
 
 	int						m_nStepside;
 	float					m_flFallVelocity;
