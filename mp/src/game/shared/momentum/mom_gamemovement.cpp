@@ -221,6 +221,18 @@ void CMomentumGameMovement::WalkMove()
         // physics objects which can be fixed by pretending they 
         // are holding the button down 
         VectorCopy(mv->m_vecVelocity, wishdir);
+
+        Vector direction = mv->m_vecVelocity;
+        VectorNormalizeFast(direction);
+        // float leanProjection = DotProduct(direction, );
+
+        QAngle angles;
+        float player_yaw = AngleNormalizePositive(mv->m_vecAbsViewAngles[YAW]);
+        VectorAngles(direction, angles);
+        float velocity_yaw = AngleNormalizePositive(angles[YAW]);
+
+        float angle = 15 * sinf(DEG2RAD(velocity_yaw - player_yaw));
+        player->m_Local.m_punchRollOverrideTarget = angle;
     }
     else
     {
@@ -239,8 +251,22 @@ void CMomentumGameMovement::WalkMove()
         wishspeed = mv->m_flMaxSpeed;
     }
 
+    float oldspeed = mv->m_vecVelocity.Length2D();
+
     // Set pmove velocity
     Accelerate(wishdir, wishspeed, sv_accelerate.GetFloat());
+
+    // Cap ground speed if the speed is gained from the above Accelerate()
+    if (g_pGameModeSystem->GameModeIs(GAMEMODE_PARKOUR))
+    {
+        if (mv->m_vecVelocity.Length2D() >= wishspeed)
+        {
+            float cappedSpeed = Max(wishspeed, oldspeed);
+            Vector direction = mv->m_vecVelocity;
+            VectorNormalizeFast(direction);
+            mv->m_vecVelocity = direction * cappedSpeed;
+        }
+    }
 
     // Cap ground movement speed in tf2 modes
     if (g_pGameModeSystem->IsTF2BasedMode())
@@ -864,6 +890,24 @@ void CMomentumGameMovement::DoDuck(int iButtonsPressed)
     const bool bFullyCrouched = (player->GetFlags() & FL_DUCKING) == FL_DUCKING;
     const bool bInAir = player->GetGroundEntity() == nullptr;
 
+    float duckTimer = GetDuckTimer();
+
+    if (g_pGameModeSystem->GameModeIs(GAMEMODE_PARKOUR))
+    {
+        float speed = mv->m_vecVelocity.Length2D();
+        if (speed > PK_POWERSLIDE_MIN_SPEED && player->GetGroundEntity() != nullptr &&
+            player->m_Local.m_slideBoostCooldown <= 0 && !bFullyCrouched)
+        {
+            duckTimer = 200.0f;
+
+            Vector velocityDirection = mv->m_vecVelocity;
+            VectorNormalizeFast(velocityDirection);
+
+            Accelerate(velocityDirection, 400.0f, 400.0f);
+            player->m_Local.m_slideBoostCooldown = 2.0f;
+        }
+    }
+
     if (iButtonsPressed & IN_DUCK)
     {
         if (m_pPlayer->m_nWallRunState == WALLRUN_RUNNING)
@@ -877,7 +921,7 @@ void CMomentumGameMovement::DoDuck(int iButtonsPressed)
         if (!bFullyCrouched)
         {
             // Use 1 second so super long jump will work
-            player->m_Local.m_flDucktime = GetDuckTimer();
+            player->m_Local.m_flDucktime = duckTimer;
             player->m_Local.m_bDucking = true;
 
             if (!bInAir)
@@ -888,20 +932,23 @@ void CMomentumGameMovement::DoDuck(int iButtonsPressed)
         else if (player->m_Local.m_bDucking)
         {
             // Invert time if released before fully unducked
-            float remainingDuckMilliseconds = (GetDuckTimer() - player->m_Local.m_flDucktime) * (GetTimeToDuck() / TIME_TO_UNDUCK);
+            float remainingDuckMilliseconds = (duckTimer - player->m_Local.m_flDucktime) * (GetTimeToDuck() / TIME_TO_UNDUCK);
 
-            player->m_Local.m_flDucktime = GetDuckTimer() - (GetTimeToDuck() * 1000.0f) + remainingDuckMilliseconds;
+            player->m_Local.m_flDucktime = duckTimer - (GetTimeToDuck() * 1000.0f) + remainingDuckMilliseconds;
         }
     }
 
     if (player->m_Local.m_bDucking)
     {
-        float duckmilliseconds = max(0.0f, GetDuckTimer() - player->m_Local.m_flDucktime);
+        float duckmilliseconds = max(0.0f, duckTimer - player->m_Local.m_flDucktime);
         float duckseconds = duckmilliseconds / 1000.0f;
 
         const bool bIsSliding = m_pPlayer->m_CurrentSlideTrigger != nullptr;
 
         // Finish ducking immediately if duck time is over or not on ground
+
+        //MOM_TODO: Fzzy's original code replaces both GetTimeToDuck()s here with (duckTimer / 1000.0f) ... is that correct?
+
         if (duckseconds > GetTimeToDuck() || (!bIsSliding && bInAir))
         {
             FinishDuck();
@@ -951,6 +998,11 @@ void CMomentumGameMovement::DoUnduck(int iButtonsReleased)
 
         if (CanUnduck())
         {
+            if (m_pPlayer->m_bIsPowerSliding)
+            {
+                EndPowerSlide();
+            }
+
             if (player->m_Local.m_bDucking || player->m_Local.m_bDucked) // or unducking
             {
                 float duckmilliseconds = max(0.0f, GetDuckTimer() - player->m_Local.m_flDucktime);
@@ -1023,11 +1075,6 @@ void CMomentumGameMovement::FinishUnDuck()
     player->SetViewOffset(GetPlayerViewOffset(false));
     player->m_Local.m_flDucktime = 0.f;
 
-    if (m_pPlayer->m_bIsPowerSliding)
-    {
-        EndPowerSlide();
-    }
-
     mv->SetAbsOrigin(newOrigin);
 
 #ifdef CLIENT_DLL
@@ -1077,6 +1124,12 @@ void CMomentumGameMovement::FinishDuck()
             player->ResetLatched();
         }
 #endif
+    }
+
+    const bool bInAir = player->GetGroundEntity() == nullptr;
+    if (!bInAir)
+    {
+        CheckPowerSlide();
     }
 
     // See if we are stuck?
@@ -1194,7 +1247,7 @@ void CMomentumGameMovement::CheckVelocity()
         mv->m_vecVelocity.z =
             clamp(mv->m_vecVelocity.z,
                   sv_wallrun_min_rise.GetFloat(),
-                  0.0);
+                  0.0f);
     }
 
     BaseClass::CheckVelocity();
@@ -1261,6 +1314,11 @@ bool CMomentumGameMovement::CheckJumpButton()
     const bool bJustJumped = ((mv->m_nButtons & IN_JUMP) && !(mv->m_nOldButtons & IN_JUMP));
 
     const bool bCoyoteJump = (gpGlobals->curtime <= m_pPlayer->m_flCoyoteTime);
+
+    if (bJustJumped)
+    {
+        m_pPlayer->m_Local.m_lurchTimer = 500.0f;
+    }
 
     if (player->GetGroundEntity() == nullptr)
     {
@@ -1336,7 +1394,7 @@ bool CMomentumGameMovement::CheckJumpButton()
     if (m_pPlayer->m_nAirJumpState == AIRJUMP_NOW)
     {
         m_pPlayer->PlayAirjumpSound(mv->GetAbsOrigin()); // softer
-        player->m_Local.m_vecPunchAngle.Set(PITCH, 2); // shake the view a bit
+        // player->m_Local.m_vecPunchAngle.Set(PITCH, 2); // shake the view a bit
     }
     else
     {
@@ -1440,17 +1498,12 @@ bool CMomentumGameMovement::CheckJumpButton()
 
         const bool bNewSpeedOverMax = flNewSpeed > flMaxSpeed;
         // If we're over the maximum, we want to only boost as much as will get us to the goal speed,
-		// with lots of special exceptions for Parkour
-        if (g_pGameModeSystem->GameModeIs(GAMEMODE_PARKOUR) &&
-            bNewSpeedOverMax &&
+        // with lots of special exceptions for Parkour
+        if (bNewSpeedOverMax &&
             !m_pPlayer->m_bIsPowerSliding &&
             m_pPlayer->m_nWallRunState == WALLRUN_NOT &&
             m_pPlayer->m_nAirJumpState != AIRJUMP_NOW &&
             !bCoyoteJump)
-        {
-            flSpeedAddition -= flNewSpeed - flMaxSpeed;
-        }
-        else if (bNewSpeedOverMax)
         {
             flSpeedAddition -= flNewSpeed - flMaxSpeed;
         }
@@ -1459,10 +1512,7 @@ bool CMomentumGameMovement::CheckJumpButton()
         {
             // A wallrun jump is allowed to take them over the max speed, but
             // acceleration should be limited still
-            flSpeedAddition =
-                MIN(flSpeedAddition,
-                    sv_wallrun_jump_boost.GetFloat() *
-                    sv_wallrun_speed.GetFloat());
+            flSpeedAddition = MIN(flSpeedAddition, sv_wallrun_jump_boost.GetFloat() * sv_wallrun_speed.GetFloat());
 
             //Msg( "Adding speed in jump\n" );
         }
@@ -1479,11 +1529,11 @@ bool CMomentumGameMovement::CheckJumpButton()
         {
             // allow an airjump to change direction, but not gain speed in the 
             // original direction
-            Vector wishdir, flatvel;
+            Vector wishdir;
             for (int i = 0; i < 2; i++)
-            {// Determine x and y parts of velocity
-                wishdir[i] = m_vecForward[i] * mv->m_flForwardMove +
-                    m_vecRight[i] * mv->m_flSideMove;
+            {
+                // Determine x and y parts of velocity
+                wishdir[i] = m_vecForward[i] * mv->m_flForwardMove + m_vecRight[i] * mv->m_flSideMove;
             }
             wishdir.z = mv->m_vecVelocity.z;
             VectorNormalize(wishdir);
@@ -1498,7 +1548,7 @@ bool CMomentumGameMovement::CheckJumpButton()
             }
         }
 
-        if (m_pPlayer->m_nWallRunState == WALLRUN_JUMPING)
+        /*if (m_pPlayer->m_nWallRunState == WALLRUN_JUMPING)
         {
             // Jump out from the wall 
             float wall_push_scale =
@@ -1508,6 +1558,15 @@ bool CMomentumGameMovement::CheckJumpButton()
             Vector vecWallPush = vec3_origin; // if jumping off a wall, add some velocity from the wall normal
             VectorScale(m_pPlayer->m_vecWallNorm, wall_push_scale, vecWallPush);
             VectorAdd(vecWallPush, mv->m_vecVelocity, mv->m_vecVelocity);
+        }*/
+
+        if (m_pPlayer->m_nWallRunState == WALLRUN_JUMPING)
+        {
+            Vector direction = mv->m_vecVelocity;
+            direction.z = 0;
+            VectorNormalizeFast(direction);
+            mv->m_vecVelocity += direction * 60.0f;
+            mv->m_vecVelocity += m_pPlayer->m_vecWallNorm * 205.0f;
         }
     }
 
@@ -1927,25 +1986,16 @@ void CMomentumGameMovement::FullWalkMove()
         //  we don't slow when standing still, relative to the conveyor.
         if (player->GetGroundEntity() != nullptr)
         {
-            mv->m_vecVelocity[2] = 0.0;
+            mv->m_vecVelocity[2] = 0.0f;
 
             if (g_pGameModeSystem->GameModeIs(GAMEMODE_PARKOUR) && m_pPlayer->m_bIsPowerSliding)
             {
-                if (player->m_Local.m_flSlideTime <= 0.0f)
-                {
-                    // time's up
-                    EndPowerSlide();
-                }
-                else
-                {
-                    PowerSlideFriction();
-                }
+                PowerSlideFriction();
             }
             else // not powersliding - normal friction
             {
                 Friction();
             }
-
         }
 
         // Make sure velocity is valid.
@@ -2305,6 +2355,11 @@ void CMomentumGameMovement::PerformLurchChecks()
 
 void CMomentumGameMovement::AirMove()
 {
+    if (g_pGameModeSystem->GameModeIs(GAMEMODE_PARKOUR))
+    {
+        PerformLurchChecks();
+    }
+
     BaseClass::AirMove();
 
     // In air, so must have slid over a ledge
@@ -3022,13 +3077,23 @@ void CMomentumGameMovement::ReduceTimers()
         }
     }
 
-    if (m_pPlayer->m_Local.m_flSlideTime > 0)
+    if (m_pPlayer->m_Local.m_slideBoostCooldown > 0)
     {
-        m_pPlayer->m_Local.m_flSlideTime -= frame_msec;
+        m_pPlayer->m_Local.m_slideBoostCooldown -= frame_msec;
 
-        if (m_pPlayer->m_Local.m_flSlideTime < 0)
+        if (m_pPlayer->m_Local.m_slideBoostCooldown < 0)
         {
-            m_pPlayer->m_Local.m_flSlideTime = 0;
+            m_pPlayer->m_Local.m_slideBoostCooldown = 0;
+        }
+    }
+
+    if (m_pPlayer->m_Local.m_lurchTimer > 0)
+    {
+        m_pPlayer->m_Local.m_lurchTimer -= frame_msec;
+
+        if (m_pPlayer->m_Local.m_lurchTimer < 0)
+        {
+            m_pPlayer->m_Local.m_lurchTimer = 0;
         }
     }
 
@@ -3102,11 +3167,19 @@ void CMomentumGameMovement::CheckPowerSlide()
 
     if (speed > PK_POWERSLIDE_MIN_SPEED)
     {
-
         m_pPlayer->m_bIsPowerSliding = true;
-        player->m_Local.m_flSlideTime = sv_slide_time.GetFloat();
+
+        if (player->m_Local.m_slideBoostCooldown <= 0)
+        {
+            Vector velocityDirection = mv->m_vecVelocity;
+            VectorNormalizeFast(velocityDirection);
+
+            Accelerate(velocityDirection, 400, 400);
+
+            player->m_Local.m_slideBoostCooldown = 2;
+        }
         // Give speed boost
-        float newspeed = speed + sv_slide_speed_boost.GetFloat();
+        // float newspeed = speed + sv_slide_speed_boost.GetFloat();
         // float maxboostspeed = sv_maxspeed.GetFloat(); // don't boost beyond this speed if restrictions on
 
         // don't boost speed above max plus boost if we have agreed to abide by certain restrictions
@@ -3123,12 +3196,12 @@ void CMomentumGameMovement::CheckPowerSlide()
             }
         }*/
 
-        mv->m_vecVelocity.z = 0.0f; // zero out z component of velocity
-        VectorScale(mv->m_vecVelocity, newspeed / speed, mv->m_vecVelocity);
+        //mv->m_vecVelocity.z = 0.0f; // zero out z component of velocity
+        //VectorScale(mv->m_vecVelocity, newspeed / speed, mv->m_vecVelocity);
 
         m_pPlayer->PlayPowerSlideSound(mv->GetAbsOrigin());
 
-        player->m_Local.m_vecPunchAngle.Set(PITCH, -2); // shake the view a bit
+        //player->m_Local.m_vecPunchAngle.Set(PITCH, -2); // shake the view a bit
 
         // Workaround for bug - if they slide, then jump, then slide on landing
         // the view stays at standing height from the second time onwards.
@@ -3150,7 +3223,6 @@ void CMomentumGameMovement::CheckPowerSlide()
 void CMomentumGameMovement::EndPowerSlide()
 {
     m_pPlayer->m_bIsPowerSliding = false;
-    player->m_Local.m_flSlideTime = 0.0f;
     m_pPlayer->StopPowerSlideSound();
 }
 
@@ -3161,26 +3233,32 @@ void CMomentumGameMovement::EndPowerSlide()
 //-----------------------------------------------------------------------------
 void CMomentumGameMovement::PowerSlideFriction()
 {
-    if (!m_pPlayer->m_bIsPowerSliding)
+    if (!m_pPlayer->m_bIsPowerSliding || m_pPlayer->m_flWaterJumpTime > 0.0f)
         return;
+
+    // Friction shouldn't be affected by z velocity
+    Vector velocity = mv->m_vecVelocity;
+    velocity.z = 0.0f;
 
     // Calculate speed
-    float speed = VectorLength(mv->m_vecVelocity);
+    float speed = VectorLength(velocity);
 
-    // how much faster than crawl speed are we going
-    float drop = speed - (0.33333333f * PK_POWERSLIDE_MIN_SPEED);
-
-    // If we drop below crawl speed or reach the end of slide time, 
-    // powerslide is over (avoid chance of divide by zero in drop formula)
-    if (drop <= 0.0f || player->m_Local.m_flSlideTime <= 0.0f)
-    {
-        EndPowerSlide();
+    if (speed < 0.1f)
         return;
-    }
 
-    // how much do we need to drop each frame to get to that speed at the end
-    float dt = 1000.0f * gpGlobals->frametime;
-    drop *= (dt / player->m_Local.m_flSlideTime);
+    float drop = 0.0f;
+
+    if (ShouldApplyGroundFriction())
+    {
+        // For wallrunning, this might need to be revisited. Wallrunning on steep
+        // rock walls is weirdly slow, and I think it might be because those surfaces
+        // have low friction to stop you standing on them. So it might be better to
+        // ignore surface info and just assume full friction when wallrunning.
+        float friction = 0.4f * player->m_surfaceFriction;
+
+        // Add the amount to the drop amount.
+        drop += speed * friction * gpGlobals->frametime;
+    }
 
     float newspeed = speed - drop;
 
@@ -3192,10 +3270,13 @@ void CMomentumGameMovement::PowerSlideFriction()
         // Determine proportion of old speed we are using.
         newspeed /= speed;
         // Adjust velocity according to proportion.
-        VectorScale(mv->m_vecVelocity, newspeed, mv->m_vecVelocity);
+        VectorScale(velocity, newspeed, velocity);
     }
 
-    mv->m_outWishVel -= (1.f - newspeed) * mv->m_vecVelocity;
+    mv->m_outWishVel -= (1.f - newspeed) * velocity;
+
+    mv->m_vecVelocity.x = velocity.x;
+    mv->m_vecVelocity.y = velocity.y;
 }
 
 //-----------------------------------------------------------------------------
@@ -3234,9 +3315,9 @@ void CMomentumGameMovement::AnticipateWallRun()
     if (player->pl.deadflag)
         return;
 
-    const float antime = 0.5;
+    const float antime = 0.25f;
 
-    Vector move; // relative position .5sec in future
+    Vector move; // relative position .25sec in future
     Vector end;  // absolute position after moving 
     trace_t pm;
 
@@ -3256,7 +3337,11 @@ void CMomentumGameMovement::AnticipateWallRun()
         // Wall coming - start leaning
         m_pPlayer->m_nWallRunState = WALLRUN_LEAN_IN;
         m_pPlayer->m_vecWallNorm = pm.plane.normal;
-        player->m_Local.m_vecTargetPunchAngle.Set(ROLL, (1.0f - pm.fraction) * GetWallRunRollAngle());
+        float currentLean = (1.0f - pm.fraction);
+        float curve = currentLean * (2 - currentLean);
+        player->m_Local.m_vecTargetPunchAngle.Set(ROLL, curve * GetWallRunRollAngle());
+        player->m_Local.m_vecPunchAngleVel.Set(ROLL, Sign(GetWallRunRollAngle()) * 50);
+        // player->m_Local.m_punchRollOverride = curve * GetWallRunRollAngle();
     }
 }
 
@@ -3359,6 +3444,7 @@ void CMomentumGameMovement::CheckWallRun(Vector &vecWallNormal, trace_t &pm)
         );
 
     player->SetMaxSpeed(newmaxspeed);
+    player->m_Local.m_vecPunchAngleVel.Set(ROLL, 0);
 
     // Redirect velocity along plane
     ClipVelocity(mv->m_vecVelocity, vecWallNormal, mv->m_vecVelocity, 1.0f);
@@ -3426,6 +3512,7 @@ void CMomentumGameMovement::WallRunMove()
         rollangle *= player->m_Local.m_flWallRunTime / PK_WALLRUN_OUT_TIME;
     }
     player->m_Local.m_vecTargetPunchAngle.Set(ROLL, rollangle);
+    player->m_Local.m_punchRollOverride = rollangle;
 
     // Determine movement angles
     AngleVectors(mv->m_vecViewAngles, &forward, &right, &up);
@@ -3447,7 +3534,6 @@ void CMomentumGameMovement::WallRunMove()
     // speed boost when you first start wallrunning, and then the speed eases down by the 
     // end if you stay on the wall. "Short wallruns connected by long leaps give you the most speed", as it were.
 
-
     // Set the new maxspeed = current speed + some fraction of boost speed that decays for
     // first half of wallrun
     float decel_time = sv_wallrun_time.GetFloat();
@@ -3468,29 +3554,21 @@ void CMomentumGameMovement::WallRunMove()
     wishspeed = newmaxspeed;
 
     // Set pmove velocity
-    mv->m_vecVelocity.z =
-        clamp(mv->m_vecVelocity.z,
-              sv_wallrun_min_rise.GetFloat(),
-              sv_wallrun_max_rise.GetFloat());
+    mv->m_vecVelocity.z = 0.0f;
 
-    player->m_surfaceFriction = 1.0;
+    player->m_surfaceFriction = 1.0f;
 
-    Accelerate(wishdir, wishspeed, sv_wallrun_accel.GetFloat());
+    float angle = DotProduct(forward, m_pPlayer->m_vecWallNorm);
+    Vector direction = forward - angle * m_pPlayer->m_vecWallNorm;
+    Accelerate(direction, sv_wallrun_speed.GetFloat(), sv_wallrun_accel.GetFloat());
 
     // Derive max climb - this is in the range -5 to sv_wallrun_max_rise, based on 
     // wallrun yaw angle. The idea here is that you can wallrun upwards if you're 
     // running along the wall, but if you're facing into the wall you'll drop slowly.
-    max_climb = fabs(sinf(DEG2RAD(GetWallRunYaw()))) *  // 
-        (sv_wallrun_max_rise.GetFloat() + 5.0f) - 5.0f;
+    max_climb = fabsf(sinf(DEG2RAD(GetWallRunYaw()))) * (sv_wallrun_max_rise.GetFloat() + 5.0f) - 5.0f;
 
     if (m_pPlayer->m_nWallRunState == WALLRUN_STALL)
-        max_climb = -5;
-
-    mv->m_vecVelocity.z =
-        clamp(mv->m_vecVelocity.z,
-              sv_wallrun_min_rise.GetFloat(),
-              max_climb);
-
+        max_climb = -5.0f;
 
     if (mv->m_vecVelocity.Length2D() < 2.5f)
     {
