@@ -159,7 +159,7 @@ void SavedLocation_t::Teleport(CMomentumPlayer* pPlayer)
         pPlayer->SetGravity(m_fGravityScale);
 
     if ( m_savedComponents & SAVELOC_DISABLED_BTNS )
-        pPlayer->DisableButtons(m_iDisabledButtons);
+        pPlayer->m_afButtonDisabled = m_iDisabledButtons;
 
     if ( m_savedComponents & SAVELOC_MOVEMENTLAG )
         pPlayer->SetLaggedMovementValue(m_fMovementLagScale);
