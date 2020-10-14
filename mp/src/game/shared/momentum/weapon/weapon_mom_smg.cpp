@@ -40,7 +40,7 @@ void CMomentumMachinegun::PrimaryAttack()
     if (!FBitSet(pPlayer->GetFlags(), FL_ONGROUND))
         pPlayer->KickBack(1.0, 0.55, 0.40, 0.04, 6.0, 4.0, 5);
     else if (pPlayer->GetAbsVelocity().Length2D() > 5)
-        pPlayer->KickBack(0.40, 0.25, 0.2, 0.0260, 4, 2.17, 5.9);
+        pPlayer->KickBack(0.40, 0.25, 0.2, 0.0260, 4, 2.17, 4.9);
     else if (FBitSet(pPlayer->GetFlags(), FL_DUCKING))
         pPlayer->KickBack(0.275, 0.2, 0.125, 0.02, 3, 1, 9);
     else
