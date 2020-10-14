@@ -6,6 +6,7 @@
 #include "filesystem.h"
 #include "inputsystem/iinputsystem.h"
 #include "IGameUIFuncs.h"
+#include "MessageboxPanel.h"
 
 #include "vgui_controls/CvarComboBox.h"
 #include "vgui_controls/CvarToggleCheckButton.h"
@@ -147,10 +148,7 @@ void InputSettingsPanel::OnCommand(const char *command)
     if (FStrEq(command, "Defaults"))
     {
         // open a box asking if we want to restore defaults
-        QueryBox *box = new QueryBox("#GameUI_KeyboardSettings", "#GameUI_KeyboardSettingsText");
-        box->AddActionSignalTarget(this);
-        box->SetCommand(new KeyValues("Command", "command", "DefaultsOK"));
-        box->DoModal();
+        g_pMessageBox->CreateConfirmationBox(this, "#GameUI_KeyboardSettings", "#GameUI_KeyboardSettingsText", new KeyValues("Command", "command", "DefaultsOK"), nullptr);
     }
     else if (FStrEq(command, "DefaultsOK"))
     {
