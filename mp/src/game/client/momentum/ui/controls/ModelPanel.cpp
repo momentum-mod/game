@@ -149,8 +149,7 @@ void CRenderPanel::ResetView()
     lightAng = m_angLightDefault;
     m_nFOV = m_nDefaultFOV;
 
-    GetModelCenter(render_offset_modelBase);
-
+    render_offset_modelBase.Init();
     render_offset.Init();
 
     UpdateRenderPosition();
