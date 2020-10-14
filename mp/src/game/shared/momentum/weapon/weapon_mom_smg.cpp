@@ -38,7 +38,7 @@ void CMomentumMachinegun::PrimaryAttack()
 
     // Kick the gun based on the state of the player.
     if (!FBitSet(pPlayer->GetFlags(), FL_ONGROUND))
-        pPlayer->KickBack(1.0, 0.55, 0.40, 0.04, 6.0, 4.0, 5);
+        pPlayer->KickBack(.33, 0.23, 0.18, 0.020, 3.7, 2.1, 4.5);
     else if (pPlayer->GetAbsVelocity().Length2D() > 5)
         pPlayer->KickBack(0.40, 0.25, 0.2, 0.0260, 4, 2.17, 4.9);
     else if (FBitSet(pPlayer->GetFlags(), FL_DUCKING))
