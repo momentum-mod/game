@@ -97,11 +97,11 @@ BEGIN_VS_SHADER(PBR, "PBR shader")
     END_SHADER_PARAMS;
 
     // Setting up variables for this shader
-    void SetupVars(PBR_Vars_t &info)
+    void SetupVars(IMaterialVar **params, PBR_Vars_t &info)
     {
         info.baseTexture = BASETEXTURE;
         info.baseTexture2 = BASETEXTURE2;
-        info.baseColor = COLOR;
+        info.baseColor = IS_FLAG_SET(MATERIAL_VAR_MODEL) ? COLOR2 : COLOR;
         info.normalTexture = NORMALTEXTURE;
         info.bumpMap = BUMPMAP;
         info.bumpMap2 = BUMPMAP2;
@@ -170,7 +170,7 @@ BEGIN_VS_SHADER(PBR, "PBR shader")
     SHADER_INIT
     {
         PBR_Vars_t info;
-        SetupVars(info);
+        SetupVars(params, info);
 
         Assert(info.flashlightTexture >= 0);
         LoadTexture(info.flashlightTexture, TEXTUREFLAGS_SRGB);
@@ -231,7 +231,7 @@ BEGIN_VS_SHADER(PBR, "PBR shader")
     SHADER_DRAW
     {
         PBR_Vars_t info;
-        SetupVars(info);
+        SetupVars(params, info);
 
         // Setting up booleans
         bool bHasBaseTexture = (info.baseTexture != -1) && params[info.baseTexture]->IsTexture();
