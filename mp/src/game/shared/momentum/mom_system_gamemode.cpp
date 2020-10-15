@@ -42,6 +42,7 @@ void CGameModeBase::SetGameModeVars()
     sv_maxvelocity.SetValue(3500);
     sv_airaccelerate.SetValue(150);
     sv_accelerate.SetValue(5);
+    sv_friction.SetValue(4);
     sv_maxspeed.SetValue(260);
     sv_stopspeed.SetValue(75);
     sv_considered_on_ground.SetValue(1);
@@ -125,6 +126,7 @@ void CGameMode_KZ::SetGameModeVars()
     // KZ-specific (Based on SimpleKZ variables)
     sv_accelerate.SetValue(6.5f);
     sv_airaccelerate.SetValue(100);
+    sv_friction.SetValue(5.2f);
     sv_maxspeed.SetValue(320);
     sv_maxvelocity.SetValue(3500);
     sv_wateraccelerate.SetValue(10);
