@@ -2,7 +2,7 @@
 #include "weapon_mom_sniper.h"
 #include "weapon_mom_pistol.h"
 #include "weapon_mom_shotgun.h"
-#include "weapon_mom_smg.h"
+#include "weapon_mom_machinegun.h"
 #include "weapon_mom_grenade.h"
 
 #include "tier0/memdbgon.h"
