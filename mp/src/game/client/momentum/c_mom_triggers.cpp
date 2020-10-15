@@ -22,6 +22,17 @@ static ConVar mom_zone_start_outline_color("mom_zone_start_outline_color", "00FF
 static ConVar mom_zone_end_outline_color("mom_zone_end_outline_color", "FF0000FF", FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE, "Color of the end zone.");
 static ConVar mom_zone_stage_outline_color("mom_zone_stage_outline_color", "0000FFFF", FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE, "Color of the stage zone(s).");
 static ConVar mom_zone_checkpoint_outline_color("mom_zone_checkpoint_outline_color", "FFFF00FF", FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE, "Color of the checkpoint zone(s).");
+enum ZoneDrawMode_t
+{
+    MOM_ZONE_DRAW_MODE_NONE = 0,
+    MOM_ZONE_DRAW_MODE_OUTLINE,
+    MOM_ZONE_DRAW_MODE_FACES_BRUSH,
+    MOM_ZONE_DRAW_MODE_FACES_OVERLAY,
+
+    MOM_ZONE_DRAW_MODE_FIRST = MOM_ZONE_DRAW_MODE_NONE,
+    MOM_ZONE_DRAW_MODE_LAST = MOM_ZONE_DRAW_MODE_FACES_OVERLAY
+};
+
 
 CTriggerOutlineRenderer::CTriggerOutlineRenderer()
 {
@@ -52,8 +63,8 @@ bool CTriggerOutlineRenderer::RenderBrushModelSurface(IClientEntity* pBaseEntity
 
     CMeshBuilder builder;
     builder.Begin(pRenderContext->GetDynamicMesh(true, nullptr, nullptr, 
-                                                 materials->FindMaterial("momentum/zone_outline", TEXTURE_GROUP_OTHER)),
-                    MATERIAL_LINE_LOOP, vertices);
+        materials->FindMaterial("momentum/zone_outline", TEXTURE_GROUP_OTHER)),
+        m_iRenderMode == MOM_ZONE_DRAW_MODE_FACES_BRUSH || m_iRenderMode == MOM_ZONE_DRAW_MODE_FACES_OVERLAY ? MATERIAL_POLYGON : MATERIAL_LINE_LOOP, vertices);
 
     for (int i = 0; i < vertices; i++)
     {
