@@ -23,9 +23,11 @@ public:
     virtual bool ShouldDrawOutline() { return false; }
     virtual bool GetOutlineColor() { return false; }
 
-    void DrawOutlineModel(const Color &outlineColor);
+    void DrawOutlineModel();
     bool ShouldDraw() OVERRIDE;
     int DrawModel(int flags) OVERRIDE;
+    bool IsTwoPass() override { return true; }
+    bool IsTransparent() override { return true; }
 
     int m_iTrackNumber;
 

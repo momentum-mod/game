@@ -81,38 +81,54 @@ C_BaseMomZoneTrigger::C_BaseMomZoneTrigger()
     m_iTrackNumber = -1; // TRACK_ALL
 }
 
-void C_BaseMomZoneTrigger::DrawOutlineModel(const Color& outlineColor)
+void C_BaseMomZoneTrigger::DrawOutlineModel()
 {
     const int iNum = m_vecZonePoints.Count();
-
     if (iNum <= 2)
         return;
 
+    Color outlineColor = m_OutlineRenderer.outlineColor;
+
+    CMatRenderContextPtr pRenderContext(materials);
+    IMesh *pMesh = pRenderContext->GetDynamicMesh(true, nullptr, nullptr, materials->FindMaterial("momentum/zone_outline", TEXTURE_GROUP_OTHER));
+    CMeshBuilder builder;
+
     // Bottom
+    builder.Begin(pMesh, MATERIAL_LINE_LOOP, iNum);
     for (int i = 0; i < iNum; i++)
     {
-        const auto cur = m_vecZonePoints[i];
-        const auto next = i == (iNum - 1) ? m_vecZonePoints[0] : m_vecZonePoints[i+1];
-        debugoverlay->AddLineOverlayAlpha(cur, next, outlineColor.r(), outlineColor.g(), outlineColor.b(), outlineColor.a(), false, 0.0f);
+        builder.Position3fv(m_vecZonePoints[i].Base());
+        builder.Color4ub(outlineColor.r(), outlineColor.g(), outlineColor.b(), outlineColor.a());
+        builder.AdvanceVertex();
     }
+    builder.End(false, true);
 
     // Connecting lines
     for (int i = 0; i < iNum; i++)
     {
-        const Vector &cur = m_vecZonePoints[i];
-        const Vector next(cur.x, cur.y, cur.z + m_flZoneHeight);
-        debugoverlay->AddLineOverlayAlpha(cur, next, outlineColor.r(), outlineColor.g(), outlineColor.b(), outlineColor.a(), false, 0.0f);
+        // Connecting lines
+        builder.Begin(pMesh, MATERIAL_LINES, 2);
+
+        builder.Position3fv(m_vecZonePoints[i].Base());
+        builder.Color4ub(outlineColor.r(), outlineColor.g(), outlineColor.b(), outlineColor.a());
+        builder.AdvanceVertex();
+
+        builder.Position3f(m_vecZonePoints[i].x, m_vecZonePoints[i].y, m_vecZonePoints[i].z + m_flZoneHeight);
+        builder.Color4ub(outlineColor.r(), outlineColor.g(), outlineColor.b(), outlineColor.a());
+        builder.AdvanceVertex();
+
+        builder.End(false, true);
     }
 
     // Top
+    builder.Begin(pMesh, MATERIAL_LINE_LOOP, iNum);
     for (int i = 0; i < iNum; i++)
     {
-        auto cur = m_vecZonePoints[i];
-        auto next = i == (iNum - 1) ? m_vecZonePoints[0] : m_vecZonePoints[i + 1];
-        Vector curUp(cur.x, cur.y, cur.z + m_flZoneHeight);
-        Vector nextUp(next.x, next.y, next.z + m_flZoneHeight);
-        debugoverlay->AddLineOverlayAlpha(curUp, nextUp, outlineColor.r(), outlineColor.g(), outlineColor.b(), outlineColor.a(), false, 0.0f);
+        builder.Position3f(m_vecZonePoints[i].x, m_vecZonePoints[i].y, m_vecZonePoints[i].z + m_flZoneHeight);
+        builder.Color4ub(outlineColor.r(), outlineColor.g(), outlineColor.b(), outlineColor.a());
+        builder.AdvanceVertex();
     }
+    builder.End(false, true);
 }
 
 bool C_BaseMomZoneTrigger::ShouldDraw()
