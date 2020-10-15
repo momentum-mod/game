@@ -122,9 +122,12 @@ void CGameMode_KZ::SetGameModeVars()
 {
     CGameModeBase::SetGameModeVars();
 
-    // KZ-specific
+    // KZ-specific (Based on SimpleKZ variables)
+    sv_accelerate.SetValue(6.5f);
     sv_airaccelerate.SetValue(100);
-    sv_maxspeed.SetValue(250);
+    sv_maxspeed.SetValue(320);
+    sv_maxvelocity.SetValue(3500);
+    sv_wateraccelerate.SetValue(10);
 }
 
 bool CGameMode_KZ::WeaponIsAllowed(WeaponID_t weapon)
