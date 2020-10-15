@@ -615,11 +615,17 @@ void CTrickSystem::OnTrickFailed(CTrickAttempt *pAttempt)
 
 void CTrickSystem::ClearTrickAttempts()
 {
+    if (!g_pGameModeSystem->GameModeIs(GAMEMODE_TRICKSURF))
+        return;
+
     m_vecCurrentTrickAttempts.PurgeAndDeleteElements();
 }
 
 void CTrickSystem::PostPlayerManualTeleport(CMomentumPlayer *pPlayer)
 {
+    if (!g_pGameModeSystem->GameModeIs(GAMEMODE_TRICKSURF))
+        return;
+
     ClearTrickAttempts();
 
     const auto iTracked = m_iTrackedTrick;
