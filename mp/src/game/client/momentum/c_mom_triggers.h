@@ -26,6 +26,9 @@ public:
     void DrawOutlineModel();
     bool ShouldDraw() OVERRIDE;
     int DrawModel(int flags) OVERRIDE;
+
+    void DrawSideFacesModelAsOverlay();
+
     bool IsTwoPass() override { return true; }
     bool IsTransparent() override { return true; }
 
