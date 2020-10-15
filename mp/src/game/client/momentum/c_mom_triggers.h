@@ -5,8 +5,9 @@ class CTriggerOutlineRenderer : public IBrushRenderer
 public:
     CTriggerOutlineRenderer();
     virtual ~CTriggerOutlineRenderer();
-    bool RenderBrushModelSurface(IClientEntity* pBaseEntity, IBrushSurface* pBrushSurface) OVERRIDE;
     Color outlineColor;
+    bool RenderBrushModelSurface(IClientEntity* pBaseEntity, IBrushSurface* pBrushSurface) override;
+    int m_iRenderMode;
 private:
     BrushVertex_t *m_pVertices;
     int m_vertexCount;
@@ -24,12 +25,12 @@ public:
     virtual bool GetOutlineColor() { return false; }
 
     void DrawOutlineModel();
-    int DrawModel(int flags) OVERRIDE;
 
     void DrawSideFacesModelAsBrush();
     void DrawSideFacesModelAsOverlay();
 
     bool ShouldDraw() override { return true; }
+    int DrawModel(int flags) override;
     bool IsTwoPass() override { return true; }
     bool IsTransparent() override { return true; }
 
