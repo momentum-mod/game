@@ -5,8 +5,8 @@ class CTriggerOutlineRenderer : public IBrushRenderer
 public:
     CTriggerOutlineRenderer();
     virtual ~CTriggerOutlineRenderer();
-    Color outlineColor;
     bool RenderBrushModelSurface(IClientEntity* pBaseEntity, IBrushSurface* pBrushSurface) override;
+    Color m_Color;
     int m_iRenderMode;
 private:
     BrushVertex_t *m_pVertices;
@@ -21,8 +21,9 @@ class C_BaseMomZoneTrigger : public C_BaseEntity
 public:
     C_BaseMomZoneTrigger();
 
-    virtual bool ShouldDrawOutline() { return false; }
-    virtual bool GetOutlineColor() { return false; }
+    virtual bool ShouldDrawModel() { return false; }
+    virtual bool GetDrawColor() { return false; }
+    virtual int GetDrawMode() { return 0; }
 
     void DrawOutlineModel();
 
@@ -40,7 +41,7 @@ public:
     float m_flZoneHeight;
 
 protected:
-    CTriggerOutlineRenderer m_OutlineRenderer;
+    CTriggerOutlineRenderer m_ZoneModelRenderer;
 };
 
 class C_TriggerTimerStart : public C_BaseMomZoneTrigger
@@ -48,8 +49,9 @@ class C_TriggerTimerStart : public C_BaseMomZoneTrigger
   public:
     DECLARE_CLASS(C_TriggerTimerStart, C_BaseMomZoneTrigger);
     DECLARE_CLIENTCLASS();
-    bool ShouldDrawOutline() OVERRIDE;
-    bool GetOutlineColor() OVERRIDE;
+
+    bool GetDrawColor() override;
+    int GetDrawMode() override;
 };
 
 class C_TriggerTimerStop : public C_BaseMomZoneTrigger
@@ -58,8 +60,8 @@ class C_TriggerTimerStop : public C_BaseMomZoneTrigger
     DECLARE_CLASS(C_TriggerTimerStop, C_BaseMomZoneTrigger);
     DECLARE_CLIENTCLASS();
 
-    bool ShouldDrawOutline() OVERRIDE;
-    bool GetOutlineColor() OVERRIDE;
+    bool GetDrawColor() override;
+    int GetDrawMode() override;
 };
 
 class C_TriggerStage : public C_BaseMomZoneTrigger
@@ -68,8 +70,8 @@ public:
     DECLARE_CLASS(C_TriggerStage, C_BaseMomZoneTrigger);
     DECLARE_CLIENTCLASS();
 
-    bool ShouldDrawOutline() OVERRIDE;
-    bool GetOutlineColor() OVERRIDE;
+    bool GetDrawColor() override;
+    int GetDrawMode() override;
 };
 
 class C_TriggerCheckpoint : public C_BaseMomZoneTrigger
@@ -78,8 +80,8 @@ public:
     DECLARE_CLASS(C_TriggerCheckpoint, C_BaseMomZoneTrigger);
     DECLARE_CLIENTCLASS();
 
-    bool ShouldDrawOutline() OVERRIDE;
-    bool GetOutlineColor() OVERRIDE;
+    bool GetDrawColor() override;
+    int GetDrawMode() override;
 };
 
 class C_TriggerTrickZone : public C_BaseMomZoneTrigger
@@ -90,8 +92,8 @@ public:
 
     C_TriggerTrickZone();
 
-    bool ShouldDrawOutline() override;
-    bool GetOutlineColor() override;
+    bool GetDrawColor() override;
+    int GetDrawMode() override;
 
     void OnDataChanged(DataUpdateType_t type) override;
 
