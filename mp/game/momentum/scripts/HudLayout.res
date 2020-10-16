@@ -1,5 +1,11 @@
 "Resource/HudLayout.res"
 {
+    TrickTrackerHUD
+    {
+        "fieldName" "TrickTrackerHUD"
+        // See resource/ui/tricks/TrickTracker.res
+    }
+
     //Timer
     HudTimer
     {
@@ -9,7 +15,7 @@
     //Speedometer
     HudSpeedMeter
     {
-        "fieldName"		"HudSpeedMeter"
+        "fieldName"     "HudSpeedMeter"
          // See resource/ui/Speedometer.res for changing settings
     }
     //Strafe Sync Meter
@@ -92,6 +98,7 @@
         "WordTextFont"  "HudNumbersVerySmall"
         "KeyPressedColor"   "MOM.Panel.Fg"
         "KeyOutlineColor"   "Dark Gray"
+        "bgcolor_override" "0 0 0 0"
     }
     
     CHudCompare
@@ -192,8 +199,8 @@
         "fieldName" "HudMenu"
         "visible" "1"
         "enabled" "1"
-        "wide"   "640"
-        "tall"   "480"
+        "wide"   "500"
+        "tall"   "300"
     }
 
     HudCloseCaption
@@ -223,6 +230,11 @@
         "fieldName" "HudChat"
         "visible" "0"
         "enabled" "1"
+        "xpos"          "10"
+        "ypos"          "300"
+        "wide"          "300"
+        "tall"          "150"
+        "paintbackground" "0"
     }
 
     HudHistoryResource  [$WIN32]
@@ -385,14 +397,11 @@
     
     HudStickyCharge
     {
-        "fieldName"		"HudStickyCharge"
+        "fieldName"     "HudStickyCharge"
     }
 
     CHudStickybombs
     {
-        "fieldName"		"CHudStickybombs"
-        "pin_to_sibling" "HudStickyCharge"
-        "pin_to_sibling_corner" "6" //bottom center
-        "pin_corner_to_sibling" "4" //top center
+        "fieldName"     "CHudStickybombs"
     }
 }
