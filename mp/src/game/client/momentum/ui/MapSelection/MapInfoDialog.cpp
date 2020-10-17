@@ -122,21 +122,39 @@ void CDialogMapInfo::OnCommand(const char* command)
 {
     if (FStrEq(command, "Top10"))
     {
-        GetMapTimes(TIMES_TOP10);
-        m_pAroundButton->SetSelected(false);
-        m_pFriendsButton->SetSelected(false);
+        if (GetMapTimes(TIMES_TOP10))
+        {
+            m_pAroundButton->SetSelected(false);
+            m_pFriendsButton->SetSelected(false);
+        }
+        else if (m_pAroundButton->IsSelected() || m_pFriendsButton->IsSelected())
+        {
+            m_pTop10Button->SetSelected(false);
+        }
     }
     else if (FStrEq(command, "Around"))
     {
-        GetMapTimes(TIMES_AROUND);
-        m_pTop10Button->SetSelected(false);
-        m_pFriendsButton->SetSelected(false);
+        if (GetMapTimes(TIMES_AROUND))
+        {
+            m_pTop10Button->SetSelected(false);
+            m_pFriendsButton->SetSelected(false);
+        }
+        else if(m_pTop10Button->IsSelected() || m_pFriendsButton->IsSelected())
+        {
+            m_pAroundButton->SetSelected(false);
+        }
     }
     else if (FStrEq(command, "Friends"))
     {
-        GetMapTimes(TIMES_FRIENDS);
-        m_pAroundButton->SetSelected(false);
-        m_pTop10Button->SetSelected(false);
+        if (GetMapTimes(TIMES_FRIENDS))
+        {
+            m_pAroundButton->SetSelected(false);
+            m_pTop10Button->SetSelected(false);
+        }
+        else if (m_pAroundButton->IsSelected() || m_pTop10Button->IsSelected())
+        {
+            m_pFriendsButton->SetSelected(false);
+        }
     }
     else BaseClass::OnCommand(command);
 }
