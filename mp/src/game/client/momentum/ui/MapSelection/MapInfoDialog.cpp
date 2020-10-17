@@ -85,6 +85,7 @@ CDialogMapInfo::CDialogMapInfo(Panel *parent, MapData *pMapData) : Frame(parent,
 
     m_bUnauthorizedFriendsList = false;
     V_memset(m_fRequestDelays, 0, sizeof(m_fRequestDelays));
+    m_bTimesLoading[TIMES_TOP10] = m_bTimesLoading[TIMES_AROUND] = m_bTimesLoading[TIMES_FRIENDS] = false;
 }
 
 //-----------------------------------------------------------------------------
@@ -157,6 +158,12 @@ void CDialogMapInfo::OnCommand(const char* command)
         }
     }
     else BaseClass::OnCommand(command);
+}
+
+void CDialogMapInfo::OnClose()
+{
+    if (!m_bTimesLoading[TIMES_TOP10] && !m_bTimesLoading[TIMES_AROUND] && !m_bTimesLoading[TIMES_FRIENDS])
+        BaseClass::OnClose();
 }
 
 void CDialogMapInfo::OnMapDataUpdate(KeyValues* pKv)
@@ -303,16 +310,15 @@ bool CDialogMapInfo::GetMapTimes(TimeType_t type)
 
     bool bSent = false;
 
-    if (type == TIMES_TOP10)
+    switch (type)
     {
+    case TIMES_TOP10:
         bSent = g_pAPIRequests->GetTop10MapTimes(m_pMapData->m_uID, UtlMakeDelegate(this, &CDialogMapInfo::OnTop10TimesCallback));
-    }
-    else if (type == TIMES_AROUND)
-    {
+        break;
+    case TIMES_AROUND:
         bSent = g_pAPIRequests->GetAroundTimes(m_pMapData->m_uID, UtlMakeDelegate(this, &CDialogMapInfo::OnAroundTimesCallback));
-    }
-    else if (type == TIMES_FRIENDS)
-    {
+        break;
+    case TIMES_FRIENDS:
         if (m_bUnauthorizedFriendsList)
         {
             m_pTimesList->SetEmptyListText(g_szTimesStatusStrings[STATUS_UNAUTHORIZED_FRIENDS_LIST]);
@@ -321,10 +327,14 @@ bool CDialogMapInfo::GetMapTimes(TimeType_t type)
         {
             bSent = g_pAPIRequests->GetFriendsTimes(m_pMapData->m_uID, UtlMakeDelegate(this, &CDialogMapInfo::OnFriendsTimesCallback));
         }
+        break;
     }
 
     if (bSent)
+    {
+        m_bTimesLoading[type] = true;
         ClearPlayerList();
+    }
 
     m_fRequestDelays[type] = gpGlobals->curtime + UPDATE_INTERVAL;
     return bSent;
@@ -436,4 +446,5 @@ void CDialogMapInfo::ParseAPITimes(KeyValues *pKvResponse, TimeType_t type)
             }
         }
     }
+    m_bTimesLoading[type] = false;
 }
