@@ -42,7 +42,7 @@ protected:
     void GetMapInfo();
     void FillMapInfo();
 
-    void GetMapTimes(TimeType_t type);
+    bool GetMapTimes(TimeType_t type);
     void OnTop10TimesCallback(KeyValues *pKvResponse);
     void OnAroundTimesCallback(KeyValues *pKvResponse);
     void OnFriendsTimesCallback(KeyValues *pKvResponse);

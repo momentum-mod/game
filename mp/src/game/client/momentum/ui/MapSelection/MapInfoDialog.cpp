@@ -278,10 +278,10 @@ void CDialogMapInfo::FillMapInfo()
     }
 }
 
-void CDialogMapInfo::GetMapTimes(TimeType_t type)
+bool CDialogMapInfo::GetMapTimes(TimeType_t type)
 {
     if (gpGlobals->curtime - UPDATE_INTERVAL < m_fRequestDelays[type])
-        return;
+        return false;
 
     bool bSent = false;
 
@@ -309,6 +309,7 @@ void CDialogMapInfo::GetMapTimes(TimeType_t type)
         ClearPlayerList();
 
     m_fRequestDelays[type] = gpGlobals->curtime + UPDATE_INTERVAL;
+    return bSent;
 }
 
 void CDialogMapInfo::OnTop10TimesCallback(KeyValues *pKvResponse)
