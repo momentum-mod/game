@@ -231,9 +231,9 @@
         "visible" "0"
         "enabled" "1"
         "xpos"			"10"
-		"ypos"			"240"
+		"ypos"			"300"
 		"wide"	 		"300"
-		"tall"	 		"210"
+		"tall"	 		"150"
         "paintbackground" "0"
     }
 
