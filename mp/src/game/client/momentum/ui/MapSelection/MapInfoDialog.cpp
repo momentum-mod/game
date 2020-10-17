@@ -305,7 +305,7 @@ void CDialogMapInfo::FillMapInfo()
 
 bool CDialogMapInfo::GetMapTimes(TimeType_t type)
 {
-    if (gpGlobals->curtime - UPDATE_INTERVAL < m_fRequestDelays[type])
+    if (gpGlobals->curtime < m_fRequestDelays[type])
         return false;
 
     bool bSent = false;
