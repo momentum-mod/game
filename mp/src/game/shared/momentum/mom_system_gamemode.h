@@ -236,6 +236,26 @@ public:
     bool WeaponIsAllowed(WeaponID_t weapon) override;
 };
 
+class CGameMode_Defrag : public CGameModeBase
+{
+public:
+    GameMode_t GetType() override { return GAMEMODE_DEFRAG; }
+    const char *GetStatusString() override { return "Defragging"; }
+    const char *GetDiscordIcon() override { return "mom_icon_dfrag"; }
+    const char *GetMapPrefix() override { return "df_"; }
+    const char *GetGameModeCfg() override { return "df.cfg"; }
+    float GetViewScale() override { return 1.0f; }
+    bool CanBhop() override { return true; }
+
+    float GetIntervalPerTick() override { return 0.01f; }
+
+    void SetGameModeVars() override;
+    bool PlayerHasAutoBhop() override { return true; }
+    void OnPlayerSpawn(CMomentumPlayer *pPlayer) override;
+    bool WeaponIsAllowed(WeaponID_t weapon) override;
+    bool HasCapability(GameModeHUDCapability_t capability) override;
+};
+
 class CGameModeSystem : public CAutoGameSystem
 {
 public:

@@ -107,7 +107,7 @@ static const char *const g_szSubmitStates[] = {
 // Gamemode for momentum
 enum GameMode_t
 {
-    GAMEMODE_UNKNOWN = 0, // Non-recognized map (no info ents in it)
+    GAMEMODE_UNKNOWN = 0, // Unrecognized map
     GAMEMODE_SURF = 1,
     GAMEMODE_BHOP = 2,
     GAMEMODE_KZ = 3,
@@ -117,7 +117,7 @@ enum GameMode_t
     GAMEMODE_AHOP = 7,
     GAMEMODE_PARKOUR = 8,
     GAMEMODE_CONC = 9,
-    // MOM_TODO: etc
+    GAMEMODE_DEFRAG = 10,
 
     // NOTE NOTE: IF YOU UPDATE THIS, UPDATE MOMENTUM.FGD's "GameTypes" BASECLASS!
     GAMEMODE_COUNT // Should be last
@@ -133,7 +133,8 @@ const char * const g_szGameModes[] = {
     "#MOM_GameType_Tricksurf",
     "#MOM_GameType_Ahop",
     "#MOM_GameType_Parkour",
-    "#MOM_GameType_Conc"
+    "#MOM_GameType_Conc",
+    "#MOM_GameType_Defrag"
 };
 
 // Run Flags
