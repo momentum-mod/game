@@ -10,6 +10,7 @@
 #include "momentum/mom_triggers.h"
 #endif
 
+#include "mom_system_gamemode.h"
 #include "tier0/memdbgon.h"
 
 #define MOM_ROCKET_SPEED 1100.0f
@@ -86,6 +87,11 @@ void CMomRocket::SpawnRocketSurprise()
         DispatchSpawn(pModelEnt);
         pModelEnt->FollowEntity(this);
     }
+}
+
+float CMomRocket::GetDamageAmount()
+{
+    return g_pGameModeSystem->GameModeIs(GAMEMODE_RJ) ? 90.0f : 50.0f;
 }
 
 void CMomRocket::Destroy(bool bShowFizzleSprite)

@@ -426,11 +426,15 @@ void CMomentumGameRules::RadiusDamage(const CTakeDamageInfo &info, const Vector 
     {
         CBaseEntity *pInflictor = info.GetInflictor();
 
-        if (g_pGameModeSystem->GameModeIs(GAMEMODE_RJ))
+        if (FClassnameIs(pInflictor, "momentum_rocket"))
         {
-            if (FClassnameIs(pInflictor, "momentum_rocket"))
+            if (g_pGameModeSystem->GameModeIs(GAMEMODE_RJ))
             {
                 flRadius = 121.0f; // Rocket self-damage radius is 121.0f
+            }
+            else if (g_pGameModeSystem->GameModeIs(GAMEMODE_DEFRAG))
+            {
+                flRadius = 120.0f;
             }
         }
 
