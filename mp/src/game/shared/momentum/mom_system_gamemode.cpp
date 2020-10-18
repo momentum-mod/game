@@ -345,6 +345,37 @@ bool CGameMode_Parkour::HasCapability(GameModeHUDCapability_t capability)
            capability == GameModeHUDCapability_t::CAP_HUD_KEYPRESS_JUMPS;
 }
 
+void CGameMode_Defrag::SetGameModeVars()
+{
+    CGameModeBase::SetGameModeVars();
+
+    sv_maxvelocity.SetValue(100000);
+    sv_airaccelerate.SetValue(1000);
+    sv_accelerate.SetValue(10);
+}
+
+void CGameMode_Defrag::OnPlayerSpawn(CMomentumPlayer *pPlayer)
+{
+    CGameModeBase::OnPlayerSpawn(pPlayer);
+
+#ifdef GAME_DLL
+    pPlayer->GiveWeapon(WEAPON_ROCKETLAUNCHER);
+    pPlayer->GiveWeapon(WEAPON_MACHINEGUN);
+#endif
+}
+
+bool CGameMode_Defrag::HasCapability(GameModeHUDCapability_t capability)
+{
+    return capability == GameModeHUDCapability_t::CAP_HUD_KEYPRESS_JUMPS;
+}
+
+bool CGameMode_Defrag::WeaponIsAllowed(WeaponID_t weapon)
+{
+    return weapon == WEAPON_ROCKETLAUNCHER ||
+           weapon == WEAPON_MACHINEGUN ||
+           weapon == WEAPON_KNIFE;
+}
+
 CGameModeSystem::CGameModeSystem() : CAutoGameSystem("CGameModeSystem")
 {
     m_pCurrentGameMode = new CGameModeBase; // Unknown game mode
@@ -358,6 +389,7 @@ CGameModeSystem::CGameModeSystem() : CAutoGameSystem("CGameModeSystem")
     m_vecGameModes.AddToTail(new CGameMode_Ahop);
     m_vecGameModes.AddToTail(new CGameMode_Parkour);
     m_vecGameModes.AddToTail(new CGameMode_Conc);
+    m_vecGameModes.AddToTail(new CGameMode_Defrag);
 }
 
 CGameModeSystem::~CGameModeSystem()
