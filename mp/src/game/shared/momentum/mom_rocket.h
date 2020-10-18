@@ -19,7 +19,7 @@ class CMomRocket : public CMomExplosive
     void CreateTrailParticles() override;
 
 #else
-    float GetDamageAmount() override { return 90.0f; }
+    float GetDamageAmount() override;
     void Destroy(bool bShowFizzleSprite) override;
 
     void RocketTouch(CBaseEntity *pOther);
