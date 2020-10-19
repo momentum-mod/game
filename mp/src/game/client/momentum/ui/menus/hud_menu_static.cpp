@@ -83,6 +83,7 @@ void CHudMenuStatic::HideMenu(bool bImmediate)
 
     CloseFunc = nullptr;
     SelectFunc = nullptr;
+    m_pszCloseCmd = nullptr;
 
     m_bMenuTakesInput = false;
     if (bImmediate)
@@ -104,6 +105,8 @@ void CHudMenuStatic::SelectMenuItemFromFile(int menu_item)
     if (menu_item == 0) // close button
     {
         CloseFunc();
+        if (m_pszCloseCmd && m_pszCloseCmd[0])
+            engine->ExecuteClientCmd(m_pszCloseCmd);
         return;
     }
 
@@ -142,11 +145,17 @@ void CHudMenuStatic::ShowMenu(const char *filename, void (*ClosFunc)())
     if (!g_pFullFileSystem->FileExists(strTemp))
     {
         char strFileNameDefault[64];
-        KeyValues *pKVTemp = new KeyValues(filename);
         Q_snprintf(strFileNameDefault, sizeof(strFileNameDefault), "cfg/menus/%s_default.vdf", filename);
+
+        if (!g_pFullFileSystem->FileExists(strFileNameDefault))
+        {
+            Warning("No hud menu by the name %s!\n", strTemp);
+            return;
+        }
+
+        KeyValuesAD pKVTemp(filename);
         pKVTemp->LoadFromFile(g_pFullFileSystem, strFileNameDefault, "MOD");
         pKVTemp->SaveToFile(g_pFullFileSystem, strTemp, "MOD");
-        pKVTemp->deleteThis();
     }
 
     m_kvFromFile->LoadFromFile(g_pFullFileSystem, strTemp, "MOD");
@@ -166,6 +175,7 @@ void CHudMenuStatic::ShowMenu(const char *filename, void (*ClosFunc)())
     }
 
     CloseFunc = ClosFunc;
+    m_pszCloseCmd = m_kvFromFile->GetString("close_command");
     m_bLoadedFromFile = true;
     ShowMenu_KeyValueItems(pKv);
     pKv->deleteThis();

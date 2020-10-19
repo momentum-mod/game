@@ -47,6 +47,7 @@ class CHudMenuStatic : public CHudElement, public vgui::Panel
   private:
     void (*SelectFunc)(int);
     void (*CloseFunc)();
+    const char *m_pszCloseCmd;
 
     struct ProcessedLine
     {
