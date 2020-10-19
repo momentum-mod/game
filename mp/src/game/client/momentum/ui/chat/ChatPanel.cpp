@@ -60,6 +60,7 @@ ChatPanel *g_pChatPanel = nullptr;
 ChatContainer::ChatContainer(Panel *pParent) : BaseClass(pParent, "ChatContainer")
 {
     m_hAutomaticMessageMode = MESSAGE_MODE_NONE;
+    SetMouseInputEnabled(true);
 }
 
 void ChatContainer::Paint()
