@@ -19,6 +19,7 @@ class CHudMenuStatic : public CHudElement, public vgui::Panel
     void Reset(void) OVERRIDE;
     bool ShouldDraw(void) OVERRIDE;
     virtual bool IsMenuDisplayed();
+    virtual bool IsMenuDisplayed(const char* pszName);
     void HideMenu(bool bImmediate = false);
     void Paint() OVERRIDE;
     void OnThink() OVERRIDE;
@@ -48,6 +49,7 @@ class CHudMenuStatic : public CHudElement, public vgui::Panel
     void (*SelectFunc)(int);
     void (*CloseFunc)();
     const char *m_pszCloseCmd;
+    char m_pszFilenameNoExt[64];
 
     struct ProcessedLine
     {
@@ -71,7 +73,6 @@ class CHudMenuStatic : public CHudElement, public vgui::Panel
     bool m_bMenuTakesInput;
     float m_flSelectionTime;
 
-  private:
     KeyValues *m_kvFromFile;
     bool m_bLoadedFromFile;
 

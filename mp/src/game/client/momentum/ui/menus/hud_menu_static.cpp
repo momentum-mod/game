@@ -32,6 +32,11 @@ bool CHudMenuStatic::ShouldDraw() { return CHudElement::ShouldDraw() && m_bMenuD
 
 bool CHudMenuStatic::IsMenuDisplayed() { return m_bMenuDisplayed && m_bMenuTakesInput; }
 
+bool CHudMenuStatic::IsMenuDisplayed(const char *pszName)
+{
+    return IsMenuDisplayed() && FStrEq(pszName, m_pszFilenameNoExt) || FStrEq(pszName, m_kvFromFile->GetName());
+}
+
 void CHudMenuStatic::Init(void)
 {
     m_nSelectedItem = -1;
@@ -177,6 +182,7 @@ void CHudMenuStatic::ShowMenu(const char *filename, void (*ClosFunc)())
     CloseFunc = ClosFunc;
     m_pszCloseCmd = m_kvFromFile->GetString("close_command");
     m_bLoadedFromFile = true;
+    Q_StripExtension(filename, m_pszFilenameNoExt, 64);
     ShowMenu_KeyValueItems(pKv);
     pKv->deleteThis();
 }
