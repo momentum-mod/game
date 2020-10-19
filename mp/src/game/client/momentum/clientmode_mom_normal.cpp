@@ -6,7 +6,7 @@
 #include "cbase.h"
 
 #include "leaderboards/ClientTimesDisplay.h"
-#include "HUD/hud_menu_static.h"
+#include "menus/hud_menu_static.h"
 #include "HUD/hud_mapfinished.h"
 #include "spectate/mom_spectator_gui.h"
 #include "spectate/mom_replayui.h"
