@@ -180,8 +180,6 @@ $Project "Client (Momentum)"
                     $File "momentum\ui\HUD\hud_strafesync.cpp"
                     $File "momentum\ui\HUD\hud_timer.cpp"
                     $File "momentum\ui\HUD\hud_saveloc_menu.cpp"
-                    $File "momentum\ui\HUD\hud_menu_static.h"
-                    $File "momentum\ui\HUD\hud_menu_static.cpp"
                     $File "momentum\ui\HUD\hud_fillablebar.h"
                     $File "momentum\ui\HUD\hud_measuretool.cpp"
                     $File "hud_chat.cpp"
@@ -267,6 +265,12 @@ $Project "Client (Momentum)"
                 $Folder "Credits"
                 {
                     $File "momentum\ui\CreditsDialog.cpp"
+                }
+
+                $Folder "Menus"
+                {
+                    $File "momentum\ui\menus\hud_menu_static.h"
+                    $File "momentum\ui\menus\hud_menu_static.cpp"
                 }
             }
 
