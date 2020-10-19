@@ -1,6 +1,7 @@
 "Ruler Menu"
 {
-    "menu_name" "Ruler Menu"
+    "menu_name"     "Ruler Menu"
+    "close_command" "mom_ruler_close"
     "1" // Button number
     {
         "label" "#MOM_Ruler_FirstPoint"
