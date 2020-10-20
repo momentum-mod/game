@@ -1,6 +1,5 @@
 "Saveloc Menu"
 {
-    "menu_name"     "Saveloc Menu"
     "close_command" "mom_saveloc_close"
     "1" // Button number
     {
