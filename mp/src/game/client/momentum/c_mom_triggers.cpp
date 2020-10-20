@@ -248,6 +248,19 @@ int C_BaseMomZoneTrigger::DrawModel(int flags)
     return BaseClass::DrawModel(flags);
 }
 
+void C_BaseMomZoneTrigger::Spawn()
+{
+    BaseClass::Spawn();
+    Precache();
+}
+
+void C_BaseMomZoneTrigger::Precache()
+{
+    BaseClass::Precache();
+    PrecacheMaterial(MOM_ZONE_DRAW_MATERIAL);
+    PrecacheMaterial(MOM_ZONE_DRAW_MATERIAL_OVERLAY);
+}
+
 int C_BaseMomZoneTrigger::GetZoneType()
 {
     return ZONE_TYPE_INVALID;

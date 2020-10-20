@@ -96,6 +96,9 @@ public:
 
     CBaseMomZoneTrigger();
 
+    void Spawn() override;
+    void Precache() override;
+
     // Point-based zones need a custom collision check
     void InitCustomCollision(CPhysCollide *pPhysCollide, const Vector &vecMins, const Vector &vecMaxs);
     virtual bool TestCollision(const Ray_t &ray, unsigned int mask, trace_t &tr) OVERRIDE;

@@ -3,6 +3,7 @@
 #include "mom_triggers.h"
 #include "in_buttons.h"
 #include "mom_player_shared.h"
+#include "mom_shareddefs.h"
 #include "mom_replay_entity.h"
 #include "mom_system_gamemode.h"
 #include "mom_system_progress.h"
@@ -96,6 +97,19 @@ CBaseMomZoneTrigger::CBaseMomZoneTrigger()
 {
     m_iTrackNumber = TRACK_MAIN; // Default zones to the main map.
     m_vecRestartPos = vec3_invalid;
+}
+
+void CBaseMomZoneTrigger::Spawn()
+{
+    Precache();
+    BaseClass::Spawn();
+}
+
+void CBaseMomZoneTrigger::Precache()
+{
+    BaseClass::Precache();
+    PrecacheMaterial(MOM_ZONE_DRAW_MATERIAL);
+    PrecacheMaterial(MOM_ZONE_DRAW_MATERIAL_OVERLAY);
 }
 
 void CBaseMomZoneTrigger::InitCustomCollision(CPhysCollide* pPhysCollide, const Vector& vecMins, const Vector& vecMaxs)
