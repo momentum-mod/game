@@ -490,6 +490,10 @@ void CMomentumPlayer::Spawn()
             ClearStartMark(i, false);
         }
 
+        // Load startmarks after player spawn
+        if (this == GetLocalPlayer())
+            g_pSavelocSystem->LoadStartMarks();
+
         g_MapZoneSystem.DispatchMapInfo(this);
 
         // Reset current checkpoint trigger upon spawn
@@ -782,6 +786,17 @@ bool CMomentumPlayer::CreateStartMark()
         {
             Warning("Could not create the start mark for some reason!\n");
         }
+    }
+    return false;
+}
+
+bool CMomentumPlayer::SetStartMark(int track, SavedLocation_t *saveloc)
+{
+    if (track >= 0 && track < MAX_TRACKS && saveloc->m_savedComponents == (SAVELOC_POS | SAVELOC_ANG))
+    {
+        m_pStartZoneMarks[track] = saveloc;
+
+        return true;
     }
     return false;
 }
