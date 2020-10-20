@@ -48,11 +48,11 @@ void CHudVersionInfo::VidInit()
     KeyValuesAD loc("Version");
     loc->SetWString("verLabel", g_pVGuiLocalize->FindSafe("#MOM_StartupMsg_Alpha_Title"));
 
+    loc->SetString("verNum", 
 #ifdef DEBUG
-    loc->SetString("verNum", "[Development Build]");
-#else
-    loc->SetString("verNum", MOM_CURRENT_VERSION);
+    "[Development Build] "
 #endif
+    MOM_CURRENT_VERSION);
 
     loc->SetString("mappingMode", CommandLine()->CheckParm("-mapping") ? "- Mapping Mode Active" : "");
     SetText(CConstructLocalizedString(L"%verLabel% %verNum% %mappingMode%", (KeyValues*)loc));
