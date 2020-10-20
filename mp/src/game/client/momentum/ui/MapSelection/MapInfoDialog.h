@@ -35,14 +35,15 @@ class CDialogMapInfo : public vgui::Frame
 
 protected:
     // vgui overrides
-    void PerformLayout() OVERRIDE;
-    void OnCommand(const char* command) OVERRIDE;
+    void PerformLayout() override;
+    void OnCommand(const char* command) override;
+    void OnClose() override;
 
     // API
     void GetMapInfo();
     void FillMapInfo();
 
-    void GetMapTimes(TimeType_t type);
+    bool GetMapTimes(TimeType_t type);
     void OnTop10TimesCallback(KeyValues *pKvResponse);
     void OnAroundTimesCallback(KeyValues *pKvResponse);
     void OnFriendsTimesCallback(KeyValues *pKvResponse);
@@ -53,6 +54,7 @@ private:
     void RequestInfo();
 
     float m_fRequestDelays[TIMES_COUNT];
+    bool m_bTimesLoading[TIMES_COUNT];
 
     vgui::Button *m_pMapActionButton, *m_pTop10Button, *m_pAroundButton, *m_pFriendsButton;
     vgui::ListPanel *m_pTimesList;

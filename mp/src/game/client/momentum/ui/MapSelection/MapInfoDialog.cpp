@@ -85,6 +85,7 @@ CDialogMapInfo::CDialogMapInfo(Panel *parent, MapData *pMapData) : Frame(parent,
 
     m_bUnauthorizedFriendsList = false;
     V_memset(m_fRequestDelays, 0, sizeof(m_fRequestDelays));
+    m_bTimesLoading[TIMES_TOP10] = m_bTimesLoading[TIMES_AROUND] = m_bTimesLoading[TIMES_FRIENDS] = false;
 }
 
 //-----------------------------------------------------------------------------
@@ -122,23 +123,47 @@ void CDialogMapInfo::OnCommand(const char* command)
 {
     if (FStrEq(command, "Top10"))
     {
-        GetMapTimes(TIMES_TOP10);
-        m_pAroundButton->SetSelected(false);
-        m_pFriendsButton->SetSelected(false);
+        if (GetMapTimes(TIMES_TOP10))
+        {
+            m_pAroundButton->SetSelected(false);
+            m_pFriendsButton->SetSelected(false);
+        }
+        else if (m_pAroundButton->IsSelected() || m_pFriendsButton->IsSelected())
+        {
+            m_pTop10Button->SetSelected(false);
+        }
     }
     else if (FStrEq(command, "Around"))
     {
-        GetMapTimes(TIMES_AROUND);
-        m_pTop10Button->SetSelected(false);
-        m_pFriendsButton->SetSelected(false);
+        if (GetMapTimes(TIMES_AROUND))
+        {
+            m_pTop10Button->SetSelected(false);
+            m_pFriendsButton->SetSelected(false);
+        }
+        else if(m_pTop10Button->IsSelected() || m_pFriendsButton->IsSelected())
+        {
+            m_pAroundButton->SetSelected(false);
+        }
     }
     else if (FStrEq(command, "Friends"))
     {
-        GetMapTimes(TIMES_FRIENDS);
-        m_pAroundButton->SetSelected(false);
-        m_pTop10Button->SetSelected(false);
+        if (GetMapTimes(TIMES_FRIENDS))
+        {
+            m_pAroundButton->SetSelected(false);
+            m_pTop10Button->SetSelected(false);
+        }
+        else if (m_pAroundButton->IsSelected() || m_pTop10Button->IsSelected())
+        {
+            m_pFriendsButton->SetSelected(false);
+        }
     }
     else BaseClass::OnCommand(command);
+}
+
+void CDialogMapInfo::OnClose()
+{
+    if (!m_bTimesLoading[TIMES_TOP10] && !m_bTimesLoading[TIMES_AROUND] && !m_bTimesLoading[TIMES_FRIENDS])
+        BaseClass::OnClose();
 }
 
 void CDialogMapInfo::OnMapDataUpdate(KeyValues* pKv)
@@ -278,23 +303,22 @@ void CDialogMapInfo::FillMapInfo()
     }
 }
 
-void CDialogMapInfo::GetMapTimes(TimeType_t type)
+bool CDialogMapInfo::GetMapTimes(TimeType_t type)
 {
-    if (gpGlobals->curtime - UPDATE_INTERVAL < m_fRequestDelays[type])
-        return;
+    if (gpGlobals->curtime < m_fRequestDelays[type])
+        return false;
 
     bool bSent = false;
 
-    if (type == TIMES_TOP10)
+    switch (type)
     {
+    case TIMES_TOP10:
         bSent = g_pAPIRequests->GetTop10MapTimes(m_pMapData->m_uID, UtlMakeDelegate(this, &CDialogMapInfo::OnTop10TimesCallback));
-    }
-    else if (type == TIMES_AROUND)
-    {
+        break;
+    case TIMES_AROUND:
         bSent = g_pAPIRequests->GetAroundTimes(m_pMapData->m_uID, UtlMakeDelegate(this, &CDialogMapInfo::OnAroundTimesCallback));
-    }
-    else if (type == TIMES_FRIENDS)
-    {
+        break;
+    case TIMES_FRIENDS:
         if (m_bUnauthorizedFriendsList)
         {
             m_pTimesList->SetEmptyListText(g_szTimesStatusStrings[STATUS_UNAUTHORIZED_FRIENDS_LIST]);
@@ -303,12 +327,17 @@ void CDialogMapInfo::GetMapTimes(TimeType_t type)
         {
             bSent = g_pAPIRequests->GetFriendsTimes(m_pMapData->m_uID, UtlMakeDelegate(this, &CDialogMapInfo::OnFriendsTimesCallback));
         }
+        break;
     }
 
     if (bSent)
+    {
+        m_bTimesLoading[type] = true;
         ClearPlayerList();
+    }
 
     m_fRequestDelays[type] = gpGlobals->curtime + UPDATE_INTERVAL;
+    return bSent;
 }
 
 void CDialogMapInfo::OnTop10TimesCallback(KeyValues *pKvResponse)
@@ -417,4 +446,5 @@ void CDialogMapInfo::ParseAPITimes(KeyValues *pKvResponse, TimeType_t type)
             }
         }
     }
+    m_bTimesLoading[type] = false;
 }
