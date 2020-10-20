@@ -6,5 +6,5 @@
     "$selfillum" "1"
     "$nofog" "1"
     "$nocull" "1"
-    "$alphatest" "1"
+    "$alphatest" "0"
 }

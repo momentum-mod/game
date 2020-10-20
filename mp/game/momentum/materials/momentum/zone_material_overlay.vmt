@@ -1,0 +1,10 @@
+"UnlitGeneric"
+{
+    "$vertexcolor" "1"
+    "$vertexalpha" "1"
+    "$ignorez" "1" // Change this to 1 to see it through walls
+    "$selfillum" "1"
+    "$nofog" "1"
+    "$nocull" "1"
+    "$alphatest" "0"
+}
