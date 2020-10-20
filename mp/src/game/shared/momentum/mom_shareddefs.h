@@ -358,4 +358,8 @@ enum WallRunState
 #define LOBBY_DATA_OWNER_MAP "owner_map" // Note: this is used by public and roaming lobbies
 #define LOBBY_DATA_TYPE "type"
 
+// Use this with zone rendering
+#define MOM_ZONE_DRAW_MATERIAL "momentum/zone_material"
+#define MOM_ZONE_DRAW_MATERIAL_OVERLAY "momentum/zone_material_overlay"
+
 static const unsigned long long MOM_STEAM_GROUP_ID64 = 103582791441609755;

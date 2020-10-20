@@ -17,29 +17,27 @@ enum ZoneDrawMode_t
 {
     MOM_ZONE_DRAW_MODE_NONE = 0,
     MOM_ZONE_DRAW_MODE_OUTLINE,
-    MOM_ZONE_DRAW_MODE_FACES_BRUSH,
+    MOM_ZONE_DRAW_MODE_OUTLINE_OVERLAY,
+    MOM_ZONE_DRAW_MODE_FACES,
     MOM_ZONE_DRAW_MODE_FACES_OVERLAY,
 
     MOM_ZONE_DRAW_MODE_FIRST = MOM_ZONE_DRAW_MODE_NONE,
     MOM_ZONE_DRAW_MODE_LAST = MOM_ZONE_DRAW_MODE_FACES_OVERLAY
 };
 
-static MAKE_CONVAR(mom_zone_start_draw_mode, "1", FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE, 
-                   "Changes the drawing mode for start zones.\n 0 = Off; None, 1 = Outline (Default), 2 = Side faces as brushes, 3 = Side faces as overlays.\n", MOM_ZONE_DRAW_MODE_FIRST, MOM_ZONE_DRAW_MODE_LAST);
-static MAKE_CONVAR(mom_zone_end_draw_mode, "1", FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
-                   "Changes the drawing mode for end zones.\n 0 = Off; None, 1 = Outline (Default), 2 = Side faces as brushes, 3 = Side faces as overlays.\n", MOM_ZONE_DRAW_MODE_FIRST, MOM_ZONE_DRAW_MODE_LAST);
-static MAKE_CONVAR(mom_zone_stage_draw_mode, "1", FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
-                   "Changes the drawing mode for stage zones.\n 0 = Off; None, 1 = Outline (Default), 2 = Side faces as brushes, 3 = Side faces as overlays.\n", MOM_ZONE_DRAW_MODE_FIRST, MOM_ZONE_DRAW_MODE_LAST);
-static MAKE_CONVAR(mom_zone_checkpoint_draw_mode, "1", FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
-                   "Changes the drawing mode for checkpoint zones.\n 0 = Off; None, 1 = Outline (Default), 2 = Side faces as brushes, 3 = Side faces as overlays.\n", MOM_ZONE_DRAW_MODE_FIRST, MOM_ZONE_DRAW_MODE_LAST);
+static MAKE_CONVAR(mom_zone_start_draw_mode, "1", FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE, "Changes the drawing mode for start zones.\n"
+                   "0 = Off; None, 1 = Outlines (Default), 2 = Outlines as overlays (see through walls), 3 = Side faces, 4 = Side faces as overlays (see through walls).\n", MOM_ZONE_DRAW_MODE_FIRST, MOM_ZONE_DRAW_MODE_LAST);
+static MAKE_CONVAR(mom_zone_end_draw_mode, "1", FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE, "Changes the drawing mode for end zones.\n"
+                   "0 = Off; None, 1 = Outlines (Default), 2 = Outlines as overlays (see through walls), 3 = Side faces, 4 = Side faces as overlays (see through walls).\n", MOM_ZONE_DRAW_MODE_FIRST, MOM_ZONE_DRAW_MODE_LAST);
+static MAKE_CONVAR(mom_zone_stage_draw_mode, "1", FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE, "Changes the drawing mode for stage zones.\n"
+                   "0 = Off; None, 1 = Outlines (Default), 2 = Outlines as overlays (see through walls), 3 = Side faces, 4 = Side faces as overlays (see through walls).\n", MOM_ZONE_DRAW_MODE_FIRST, MOM_ZONE_DRAW_MODE_LAST);
+static MAKE_CONVAR(mom_zone_checkpoint_draw_mode, "1", FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE, "Changes the drawing mode for checkpoint zones.\n"
+                   "0 = Off; None, 1 = Outlines (Default), 2 = Outlines as overlays (see through walls), 3 = Side faces, 4 = Side faces as overlays (see through walls).\n", MOM_ZONE_DRAW_MODE_FIRST, MOM_ZONE_DRAW_MODE_LAST);
 
 static ConVar mom_zone_start_draw_color("mom_zone_start_draw_color", "00FF00FF", FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE, "Color of the start zones.\n");
 static ConVar mom_zone_end_draw_color("mom_zone_end_draw_color", "FF0000FF", FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE, "Color of the end zones.\n");
 static ConVar mom_zone_stage_draw_color("mom_zone_stage_draw_color", "0000FFFF", FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE, "Color of the stage zones.\n");
 static ConVar mom_zone_checkpoint_draw_color("mom_zone_checkpoint_draw_color", "FFFF00FF", FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE, "Color of the checkpoint zones.\n");
-
-static MAKE_CONVAR(mom_zone_draw_overlay_duration, "0.001", FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE, "Changes the duration of the side faces overlays when drawn."
-                   "Too low or high of a value can cause stuttering, with higher values lagging the game.\n", 0.0f, 1.0f);
 
 static MAKE_TOGGLE_CONVAR(mom_zone_draw_alpha_override_toggle, "1", FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE, "Toggles the alpha override for drawing zone faces.\n");
 static MAKE_CONVAR(mom_zone_draw_faces_alpha_override, "160", FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE, "Alpha override for drawing zone faces.\n", 0, 255);
@@ -71,10 +69,12 @@ bool CTriggerOutlineRenderer::RenderBrushModelSurface(IClientEntity* pBaseEntity
     pBrushSurface->GetVertexData(m_pVertices);
     CMatRenderContextPtr pRenderContext(materials);
 
-    bool bDrawingFace = m_iRenderMode == MOM_ZONE_DRAW_MODE_FACES_BRUSH || m_iRenderMode == MOM_ZONE_DRAW_MODE_FACES_OVERLAY;
+    bool bDrawingFace = m_iRenderMode == MOM_ZONE_DRAW_MODE_FACES || m_iRenderMode == MOM_ZONE_DRAW_MODE_FACES_OVERLAY;
+    bool bOverlay = m_iRenderMode == MOM_ZONE_DRAW_MODE_FACES_OVERLAY || m_iRenderMode == MOM_ZONE_DRAW_MODE_OUTLINE_OVERLAY;
+    const auto pMaterial = materials->FindMaterial(bOverlay ? MOM_ZONE_DRAW_MATERIAL_OVERLAY : MOM_ZONE_DRAW_MATERIAL, TEXTURE_GROUP_OTHER);
+
     CMeshBuilder builder;
-    builder.Begin(pRenderContext->GetDynamicMesh(true, nullptr, nullptr, 
-                  materials->FindMaterial("momentum/zone_outline", TEXTURE_GROUP_OTHER)),
+    builder.Begin(pRenderContext->GetDynamicMesh(true, nullptr, nullptr, pMaterial),
                   bDrawingFace ? MATERIAL_POLYGON : MATERIAL_LINE_LOOP, vertices);
 
     int iAlpha = bDrawingFace && mom_zone_draw_alpha_override_toggle.GetBool() ? mom_zone_draw_faces_alpha_override.GetInt() : m_Color.a();
@@ -105,7 +105,7 @@ C_BaseMomZoneTrigger::C_BaseMomZoneTrigger()
     m_iTrackNumber = -1; // TRACK_ALL
 }
 
-void C_BaseMomZoneTrigger::DrawOutlineModel()
+void C_BaseMomZoneTrigger::DrawOutlineModel(bool bOverlay)
 {
     const int iNum = m_vecZonePoints.Count();
     if (iNum <= 2)
@@ -114,7 +114,8 @@ void C_BaseMomZoneTrigger::DrawOutlineModel()
     Color outlineColor = m_ZoneModelRenderer.m_Color;
 
     CMatRenderContextPtr pRenderContext(materials);
-    IMesh *pMesh = pRenderContext->GetDynamicMesh(true, nullptr, nullptr, materials->FindMaterial("momentum/zone_outline", TEXTURE_GROUP_OTHER));
+    const auto pMaterial = materials->FindMaterial(bOverlay ? MOM_ZONE_DRAW_MATERIAL_OVERLAY : MOM_ZONE_DRAW_MATERIAL, TEXTURE_GROUP_OTHER);
+    IMesh *pMesh = pRenderContext->GetDynamicMesh(true, nullptr, nullptr, pMaterial);
     CMeshBuilder builder;
 
     // Bottom
@@ -155,7 +156,7 @@ void C_BaseMomZoneTrigger::DrawOutlineModel()
     builder.End(false, true);
 }
 
-void C_BaseMomZoneTrigger::DrawSideFacesModelAsBrush()
+void C_BaseMomZoneTrigger::DrawSideFacesModel(bool bOverlay)
 {
     const int iNum = m_vecZonePoints.Count();
     if (iNum <= 2)
@@ -166,7 +167,8 @@ void C_BaseMomZoneTrigger::DrawSideFacesModelAsBrush()
     int faceAlpha = mom_zone_draw_alpha_override_toggle.GetBool() ? mom_zone_draw_faces_alpha_override.GetInt() : faceColor.a();
 
     CMatRenderContextPtr pRenderContext(materials);
-    IMesh *pMesh = pRenderContext->GetDynamicMesh(true, nullptr, nullptr, materials->FindMaterial("momentum/zone_outline", TEXTURE_GROUP_OTHER));
+    const auto pMaterial = materials->FindMaterial(bOverlay ? MOM_ZONE_DRAW_MATERIAL_OVERLAY : MOM_ZONE_DRAW_MATERIAL, TEXTURE_GROUP_OTHER);
+    IMesh *pMesh = pRenderContext->GetDynamicMesh(true, nullptr, nullptr, pMaterial);
     CMeshBuilder builder;
 
     for (int i = 0; i < iNum; i++)
@@ -193,35 +195,6 @@ void C_BaseMomZoneTrigger::DrawSideFacesModelAsBrush()
         builder.AdvanceVertex();
         
         builder.End(false, true);
-    }
-}
-
-void C_BaseMomZoneTrigger::DrawSideFacesModelAsOverlay()
-{
-    const int iNum = m_vecZonePoints.Count();
-    if (iNum <= 2)
-        return;
-
-    Color faceColor = m_ZoneModelRenderer.m_Color;
-
-    int faceAlpha = mom_zone_draw_alpha_override_toggle.GetBool() ? mom_zone_draw_faces_alpha_override.GetInt() : faceColor.a();
-
-    Vector min = Vector(0, 0, 0);
-    for (int i = 0; i < iNum; i++)
-    {
-        const auto& vecCurr = m_vecZonePoints[i];
-        const auto& vecNext = m_vecZonePoints[(i + 1) % iNum];
-
-        QAngle angle(0.0f, 0.0f, 0.0f);
-        float iWidth = sqrtf(Sqr(vecNext.x - vecCurr.x) + Sqr(vecNext.y - vecCurr.y));
-
-        VectorAngles(vecNext - vecCurr, angle);
-
-        // `AddBoxOverlay` always draws outlines based on the color given so `AddBoxOverlay2` is used
-        // 0.001 duration used as 0, FLT_EPSILON, 0.01, etc. flickers for some reason
-        // too high of duration causes too much to be rendered at once and can crash / lag the game
-        debugoverlay->AddBoxOverlay(vecCurr, min, Vector(iWidth, 0, m_flZoneHeight), angle, 
-            faceColor.r(), faceColor.g(), faceColor.b(),faceAlpha, mom_zone_draw_overlay_duration.GetFloat());
     }
 }
 
@@ -253,13 +226,16 @@ int C_BaseMomZoneTrigger::DrawModel(int flags)
             switch (iRenderMode)
             {
             case MOM_ZONE_DRAW_MODE_OUTLINE:
-                DrawOutlineModel();
+                DrawOutlineModel(false);
                 break;
-            case MOM_ZONE_DRAW_MODE_FACES_BRUSH:
-                DrawSideFacesModelAsBrush();
+            case MOM_ZONE_DRAW_MODE_OUTLINE_OVERLAY:
+                DrawOutlineModel(true);
+                break;
+            case MOM_ZONE_DRAW_MODE_FACES:
+                DrawSideFacesModel(false);
                 break;
             case MOM_ZONE_DRAW_MODE_FACES_OVERLAY:
-                DrawSideFacesModelAsOverlay();
+                DrawSideFacesModel(true);
                 break;
             }
             return 1;
