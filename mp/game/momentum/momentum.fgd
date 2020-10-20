@@ -114,7 +114,14 @@
     ]
 ]
 
-@SolidClass base(ZoneTrigger) = trigger_momentum_timer_stop : "Trigger that stops the timer." []
+@SolidClass base(ZoneTrigger) = trigger_momentum_timer_stop : "Trigger that stops the timer."
+[
+    cancel(choices) : "Cancel Timer" : 0 : "If true, the run will not be submitted." =
+    [
+        0 : "False"
+        1 : "True"
+    ]
+]
 
 @SolidClass base(ZoneTrigger) = trigger_momentum_timer_stage : "Starting trigger for each stage of a map. trigger_momentum_timer_start is automatically stage 1!" []
 
