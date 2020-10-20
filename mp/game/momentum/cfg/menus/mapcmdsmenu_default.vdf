@@ -1,6 +1,5 @@
 "Map Commands Menu"
 {
-    "menu_name" "Map Commands Menu"
     "1"
     {
         "label"   "#MOM_Menu_MapCommands_Toggle_Wireframes"

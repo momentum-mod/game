@@ -159,7 +159,7 @@ void CHudMenuStatic::ShowMenu(const char *filename)
     }
 
     m_kvFromFile->LoadFromFile(g_pFullFileSystem, strTemp, "MOD");
-    KeyValues *pKv = new KeyValues(m_kvFromFile->GetString("menu_name", "NOT FOUND"));
+    KeyValues *pKv = new KeyValues(m_kvFromFile->GetName());
 
     // keep 9 max (0 for cancel & >10 isn't reachable)
     // also retrieves by number, not by order in file, & ignores the rest
