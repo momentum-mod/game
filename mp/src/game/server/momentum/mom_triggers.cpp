@@ -434,8 +434,17 @@ void CTriggerTimerStart::SetHasLookAngles(const bool bHasLook)
 //----------- CTriggerTimerStop ----------------------------------------------------------------
 LINK_ENTITY_TO_CLASS(trigger_momentum_timer_stop, CTriggerTimerStop);
 
+BEGIN_DATADESC(CTriggerTimerStop)
+    DEFINE_KEYFIELD(m_bCancel, FIELD_BOOLEAN, "cancel")
+END_DATADESC();
+
 IMPLEMENT_SERVERCLASS_ST(CTriggerTimerStop, DT_TriggerTimerStop)
 END_SEND_TABLE()
+
+CTriggerTimerStop::CTriggerTimerStop()
+{
+    m_bCancel = false;
+}
 
 void CTriggerTimerStop::Spawn()
 {
@@ -451,6 +460,7 @@ int CTriggerTimerStop::GetZoneType()
 
 //----------------------------------------------------------------------------------------------
 
+//----------- CTriggerTrickZone ----------------------------------------------------------------
 LINK_ENTITY_TO_CLASS(trigger_momentum_trick, CTriggerTrickZone);
 
 IMPLEMENT_SERVERCLASS_ST(CTriggerTrickZone, DT_TriggerTrickZone)

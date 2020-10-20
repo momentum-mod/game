@@ -249,6 +249,9 @@ class CTriggerTimerStop : public CTriggerZone
 public:
     DECLARE_CLASS(CTriggerTimerStop, CTriggerZone);
     DECLARE_NETWORKCLASS();
+    DECLARE_DATADESC();
+
+    CTriggerTimerStop();
 
     virtual void Spawn() OVERRIDE;
 
@@ -256,6 +259,11 @@ public:
     virtual int UpdateTransmitState() OVERRIDE { return SetTransmitState(FL_EDICT_ALWAYS); }
 
     int GetZoneType() OVERRIDE;
+
+    bool GetCancelBool() const { return m_bCancel; }
+
+private:
+    bool m_bCancel;
 };
 
 class CTriggerTrickZone : public CBaseMomZoneTrigger
