@@ -235,8 +235,7 @@ int C_BaseMomZoneTrigger::DrawModel(int flags)
     if (!pRunEntData)
         return 0;
 
-    const auto pStartZone = dynamic_cast<C_TriggerTimerStart*>(this);
-    if (!pStartZone && m_iTrackNumber != pRunEntData->m_iCurrentTrack)
+    if (GetZoneType() != ZONE_TYPE_START && m_iTrackNumber != pRunEntData->m_iCurrentTrack)
         return 0;
 
     int iRenderMode = GetDrawMode();
@@ -273,6 +272,11 @@ int C_BaseMomZoneTrigger::DrawModel(int flags)
     return BaseClass::DrawModel(flags);
 }
 
+int C_BaseMomZoneTrigger::GetZoneType()
+{
+    return ZONE_TYPE_INVALID;
+}
+
 LINK_ENTITY_TO_CLASS(trigger_momentum_timer_start, C_TriggerTimerStart);
 
 IMPLEMENT_CLIENTCLASS_DT(C_TriggerTimerStart, DT_TriggerTimerStart, CTriggerTimerStart)
@@ -286,6 +290,11 @@ bool C_TriggerTimerStart::GetDrawColor()
 int C_TriggerTimerStart::GetDrawMode()
 {
     return mom_zone_start_draw_mode.GetInt();
+}
+
+int C_TriggerTimerStart::GetZoneType()
+{
+    return ZONE_TYPE_START;
 }
 
 LINK_ENTITY_TO_CLASS(trigger_momentum_timer_stop, C_TriggerTimerStop);
@@ -303,6 +312,11 @@ int C_TriggerTimerStop::GetDrawMode()
     return mom_zone_end_draw_mode.GetInt();
 }
 
+int C_TriggerTimerStop::GetZoneType()
+{
+    return ZONE_TYPE_STOP;
+}
+
 LINK_ENTITY_TO_CLASS(trigger_momentum_timer_stage, C_TriggerStage);
 
 IMPLEMENT_CLIENTCLASS_DT(C_TriggerStage, DT_TriggerStage, CTriggerStage)
@@ -318,6 +332,11 @@ int C_TriggerStage::GetDrawMode()
     return mom_zone_stage_draw_mode.GetInt();
 }
 
+int C_TriggerStage::GetZoneType()
+{
+    return ZONE_TYPE_STAGE;
+}
+
 LINK_ENTITY_TO_CLASS(trigger_momentum_timer_checkpoint, C_TriggerCheckpoint);
 
 IMPLEMENT_CLIENTCLASS_DT(C_TriggerCheckpoint, DT_TriggerCheckpoint, CTriggerCheckpoint)
@@ -331,6 +350,11 @@ bool C_TriggerCheckpoint::GetDrawColor()
 int C_TriggerCheckpoint::GetDrawMode()
 {
     return mom_zone_checkpoint_draw_mode.GetInt();
+}
+
+int C_TriggerCheckpoint::GetZoneType()
+{
+    return ZONE_TYPE_CHECKPOINT;
 }
 
 // ====================================
@@ -353,6 +377,11 @@ C_TriggerTrickZone::C_TriggerTrickZone()
 int C_TriggerTrickZone::GetDrawMode()
 {
     return m_iDrawState > TRICK_DRAW_NONE;
+}
+
+int C_TriggerTrickZone::GetZoneType()
+{
+    return ZONE_TYPE_TRICK;
 }
 
 bool C_TriggerTrickZone::GetDrawColor()
