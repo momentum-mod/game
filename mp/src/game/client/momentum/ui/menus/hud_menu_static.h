@@ -29,14 +29,13 @@ class CHudMenuStatic : public CHudElement, public vgui::Panel
     // Called from a CON_COMMAND most likely.
     // kv is the menu items, SelecFunc is the override/custom code for SelectMenuItem
     // ClosFunc is a function to be called when this menu gets closed (could be due to something else)
-    virtual void ShowMenu(KeyValues *kv, void (*SelecFunc)(int), void (*ClosFunc)() = nullptr)
+    virtual void ShowMenu(KeyValues *kv, void (*SelecFunc)(int))
     {
         SelectFunc = SelecFunc;
-        CloseFunc = ClosFunc;
         m_bLoadedFromFile = false;
         ShowMenu_KeyValueItems(kv);
     }
-    virtual void ShowMenu(const char *file, void (*ClosFunc)() = nullptr);
+    virtual void ShowMenu(const char *file);
     virtual void SelectMenuItem(int menu_item);
     void SelectMenuItemFromFile(int menu_item);
 
@@ -47,7 +46,6 @@ class CHudMenuStatic : public CHudElement, public vgui::Panel
 
   private:
     void (*SelectFunc)(int);
-    void (*CloseFunc)();
     const char *m_pszCloseCmd;
     char m_pszFilenameNoExt[64];
 
