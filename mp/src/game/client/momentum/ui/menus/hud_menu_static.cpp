@@ -83,10 +83,6 @@ void CHudMenuStatic::LevelShutdown() { HideMenu(true); }
 
 void CHudMenuStatic::HideMenu(bool bImmediate)
 {
-    if (CloseFunc)
-        CloseFunc();
-
-    CloseFunc = nullptr;
     SelectFunc = nullptr;
     m_pszCloseCmd = nullptr;
 
@@ -109,7 +105,6 @@ void CHudMenuStatic::SelectMenuItemFromFile(int menu_item)
 
     if (menu_item == 0) // close button
     {
-        CloseFunc();
         if (m_pszCloseCmd && m_pszCloseCmd[0])
             engine->ExecuteClientCmd(m_pszCloseCmd);
         return;
@@ -136,7 +131,7 @@ void CHudMenuStatic::SelectMenuItemFromFile(int menu_item)
     }
 }
 
-void CHudMenuStatic::ShowMenu(const char *filename, void (*ClosFunc)())
+void CHudMenuStatic::ShowMenu(const char *filename)
 {
     if (m_kvFromFile)
         m_kvFromFile->deleteThis();
@@ -179,7 +174,6 @@ void CHudMenuStatic::ShowMenu(const char *filename, void (*ClosFunc)())
         pKv->AddSubKey(new KeyValues(subKV->GetString("label", "NOT FOUND")));
     }
 
-    CloseFunc = ClosFunc;
     m_pszCloseCmd = m_kvFromFile->GetString("close_command");
     m_bLoadedFromFile = true;
     Q_StripExtension(filename, m_pszFilenameNoExt, 64);
