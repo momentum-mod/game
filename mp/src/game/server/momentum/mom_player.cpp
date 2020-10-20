@@ -491,8 +491,10 @@ void CMomentumPlayer::Spawn()
         }
 
         // Load startmarks after player spawn
-        if (this == GetLocalPlayer())
-            g_pSavelocSystem->LoadStartMarks();
+        if(g_pSavelocSystem->LoadStartMarks())
+            DevLog("Loaded startmarks from %s!\n", SAVELOC_FILE_NAME);
+        else
+            DevWarning("ERROR: Failed loading startmarks from %s.\n", SAVELOC_FILE_NAME);
 
         g_MapZoneSystem.DispatchMapInfo(this);
 

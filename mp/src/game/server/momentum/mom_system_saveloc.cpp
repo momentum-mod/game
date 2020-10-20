@@ -13,8 +13,6 @@
 
 #include "tier0/memdbgon.h"
 
-#define SAVELOC_FILE_NAME "savedlocs.txt"
-
 MAKE_TOGGLE_CONVAR(mom_saveloc_save_between_sessions, "1", FCVAR_ARCHIVE, "Defines if savelocs should be saved between sessions of the same map.\n");
 
 SavedLocation_t::SavedLocation_t() : m_bCrouched(false), m_vecPos(vec3_origin), m_vecVel(vec3_origin), m_qaAng(vec3_angle),
@@ -262,39 +260,33 @@ void CSaveLocSystem::LevelInitPreEntity()
 
 bool CSaveLocSystem::LoadStartMarks()
 {
-    if (m_pSavedLocsKV)
+    if (!m_pSavedLocsKV || m_pSavedLocsKV->IsEmpty())
+        return false;
+
+    KeyValues *kvMapSavelocs = m_pSavedLocsKV->FindKey(gpGlobals->mapname.ToCStr());
+    if (!kvMapSavelocs || kvMapSavelocs->IsEmpty())
+        return false;
+
+    KeyValues *kvStartMarks = kvMapSavelocs->FindKey("startmarks");
+    if (!kvStartMarks)
+        return false;
+
+    CMomentumPlayer *pPlayer = CMomentumPlayer::GetLocalPlayer();
+    if (!pPlayer)
+        return false;
+
+    FOR_EACH_SUBKEY(kvStartMarks, kvStartMark)
     {
-        DevLog("Loaded startmarks from %s!\n", SAVELOC_FILE_NAME);
+        int track = Q_atoi(kvStartMark->GetName());
 
-        if (!m_pSavedLocsKV->IsEmpty())
-        {
-            KeyValues *kvMapSavelocs = m_pSavedLocsKV->FindKey(gpGlobals->mapname.ToCStr());
-            if (kvMapSavelocs && !kvMapSavelocs->IsEmpty())
-            {
-                KeyValues *kvStartMarks = kvMapSavelocs->FindKey("startmarks");
-                if (!kvStartMarks)
-                    return false;
+        SavedLocation_t * pStartmark = new SavedLocation_t;
+        pStartmark->Load(kvStartMark);
 
-                CMomentumPlayer *pPlayer = CMomentumPlayer::GetLocalPlayer();
-
-                if (!pPlayer)
-                    return false;
-
-                FOR_EACH_SUBKEY(kvStartMarks, kvStartMark)
-                {
-                    int track = atoi(kvStartMark->GetName());
-
-                    auto c = new SavedLocation_t;
-                    c->Load(kvStartMark);
-
-                    pPlayer->SetStartMark(track, c);
-                }
-
-                return true;
-            }
-        }
+        if (!pPlayer->SetStartMark(track, pStartmark))
+            return false;
     }
-    return false;
+
+    return true;
 }
 
 void CSaveLocSystem::LevelShutdownPreEntity()
@@ -323,14 +315,15 @@ void CSaveLocSystem::LevelShutdownPreEntity()
         KeyValues *kvStartMarks = new KeyValues("startmarks");
         for (int track = 0; track < MAX_TRACKS; track++)
         {
-            char szTrackNum[10];
-            Q_snprintf(szTrackNum, sizeof(szTrackNum), "%09i", track);
+            SavedLocation_t *startMark = pPlayer->GetStartMark(track);
+            if (!startMark) // Save location of valid startmarks only
+                continue;
+
+            char szTrackNum[4]; // 999 tracks should be enough
+            Q_snprintf(szTrackNum, sizeof(szTrackNum), "%03i", track); 
             KeyValues *kvStartMark = new KeyValues(szTrackNum);
 
-            // Save location of valid startmarks only
-            if (SavedLocation_t *startMark = pPlayer->GetStartMark(track))
-                startMark->Save(kvStartMark);
-
+            startMark->Save(kvStartMark);
             kvStartMarks->AddSubKey(kvStartMark);
         }
 
