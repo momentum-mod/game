@@ -709,7 +709,7 @@ float CMomentumGameMovement::GetTimeToDuck()
 
 float CMomentumGameMovement::GetDuckTimer()
 {
-    return g_pGameModeSystem->GameModeIs(GAMEMODE_PARKOUR) ? 400.0f : BaseClass::GetDuckTimer();
+    return (g_pGameModeSystem->GameModeIs(GAMEMODE_PARKOUR) || g_pGameModeSystem->GameModeIs(GAMEMODE_CONC)) ? 400.0f : BaseClass::GetDuckTimer();
 }
 
 bool CMomentumGameMovement::CanUnduck()
@@ -998,6 +998,13 @@ void CMomentumGameMovement::DoUnduck(int iButtonsReleased)
 
         if (CanUnduck())
         {
+            // Unducking in FF is instant
+            if (g_pGameModeSystem->GameModeIs(GAMEMODE_CONC))
+            {
+                FinishUnDuck();
+                return;
+            }
+
             if (m_pPlayer->m_bIsPowerSliding)
             {
                 EndPowerSlide();
@@ -1058,12 +1065,17 @@ void CMomentumGameMovement::FinishUnDuck()
     }
     else
     {
-        // If in air an letting go of crouch, make sure we can offset origin to make
-        //  up for uncrouching
+        // If in air and letting go of crouch, make sure we can offset origin to make
+        // up for uncrouching
         Vector hullSizeNormal = VEC_HULL_MAX - VEC_HULL_MIN;
         Vector hullSizeCrouch = VEC_DUCK_HULL_MAX - VEC_DUCK_HULL_MIN;
 
         Vector viewDelta = -g_pGameModeSystem->GetGameMode()->GetViewScale() * (hullSizeNormal - hullSizeCrouch);
+
+        if (g_pGameModeSystem->GameModeIs(GAMEMODE_CONC))
+        {
+            viewDelta /= 2.0f;
+        }
 
         VectorAdd(newOrigin, viewDelta, newOrigin);
     }
