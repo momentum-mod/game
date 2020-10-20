@@ -121,12 +121,23 @@
         "MOM_NoTimer" "No Timer"
         "MOM_PracticeMode" "Practice Mode"
 
-    // Ruler
+    //Ruler
         "MOM_Ruler_FirstPoint" "First point"
         "MOM_Ruler_SecondPoint" "Second point"
         "MOM_Ruler_Measure" "Measure distance"
         "MOM_Ruler_Distance" "Distance: %s1 units\n"
         "MOM_Ruler_ToggleMenu" "Toggle showing Ruler Menu"
+
+    //Map Commands Menu
+        "MOM_Menu_MapCommands_Toggle_Wireframes"  "Toggle wireframes"
+        "MOM_Menu_MapCommands_Toggle_Triggers"    "Toggle showtriggers"
+        "MOM_Menu_MapCommands_Toggle_Fullbright"  "Toggle fullbright"
+        "MOM_Menu_MapCommands_Toggle_Clipbrushes" "Toggle clip brushes"
+        "MOM_Menu_MapCommands_Toggle_Water"       "Toggle water"
+        "MOM_Menu_MapCommands_Toggle_Show_Sounds" "Toggle showing sounds"
+        "MOM_Menu_MapCommands_Toggle_Entities"    "Toggle drawing entities"
+        "MOM_Menu_MapCommands_Reload_Materials"   "Reload all materials"
+        "MOM_Menu_MapCommands_Toggle_Cheats"      "Toggle cheats"
 
     //Comparison Panel
         "MOM_Compare_Against" "Comparing against: "
