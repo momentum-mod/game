@@ -1922,8 +1922,10 @@ void CMomentumPlayer::TimerCommand_RestartStage(int stage, int track)
         const auto pCurrentZone = GetCurrentZoneTrigger();
         if (pCurrentZone)
         {
-            DestroyExplosives();
+            if (m_Data.m_bIsInZone)
+                return;
 
+            DestroyExplosives();
             Teleport(&pCurrentZone->GetRestartPosition(), nullptr, &vec3_origin);
         }
         return;
