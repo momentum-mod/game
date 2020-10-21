@@ -2282,6 +2282,9 @@ void CMomentumGameMovement::StuckGround()
                 // If the distance is good, we can start being on the surface and follow it.
                 mv->SetAbsOrigin(tr_Point_C.endpos);
 
+                // Reject velocity normal to the ground
+                mv->m_vecVelocity -= tr_Point_C.plane.normal * mv->m_vecVelocity.Dot(tr_Point_C.plane.normal);
+
                 StayOnGround();
             }
 
