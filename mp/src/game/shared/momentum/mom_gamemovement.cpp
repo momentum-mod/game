@@ -1970,6 +1970,11 @@ void CMomentumGameMovement::FullWalkMove()
         // Was jump button pressed?
         if (mv->m_nButtons & IN_JUMP)
         {
+            // Player should be able to jump when on ground and sliding on a slide trigger 
+            // that allows it, check for ground entity before jump so player actually jumps.
+            if (bIsSliding && m_pPlayer->m_CurrentSlideTrigger->m_bAllowingJump &&
+                !m_pPlayer->m_CurrentSlideTrigger->m_bStuckOnGround)
+                CategorizePosition();
             CheckJumpButton();
         }
         else
@@ -2984,8 +2989,18 @@ void CMomentumGameMovement::SetGroundEntity(const trace_t *pm)
     // We check jump button because the player might want jumping while sliding
     // And it's more fun like this
     const auto pSlideTrigger = m_pPlayer->m_CurrentSlideTrigger.Get();
-    if (pSlideTrigger && !(m_pPlayer->HasAutoBhop() && (mv->m_nButtons & IN_JUMP) && pSlideTrigger->m_bAllowingJump))
-        pm = nullptr;
+
+    if (pSlideTrigger)
+    {
+        bool bHasJumped = (mv->m_nButtons & IN_JUMP) && (m_pPlayer->HasAutoBhop() || !(mv->m_nOldButtons & IN_JUMP));
+        bool bCanJumpTF2 = !(g_pGameModeSystem->IsTF2BasedMode() && (player->GetFlags() & FL_DUCKING));
+        // Disallow stuckonground jumps as they instantly shoot you up slopes.
+        bool bSlideAllowsJump = pSlideTrigger->m_bAllowingJump && !pSlideTrigger->m_bStuckOnGround;
+        
+        if (!(bSlideAllowsJump && (bHasJumped && bCanJumpTF2)))
+            pm = nullptr;
+    }
+        
 
     bool bLanded = false;
     if (player->GetGroundEntity() == nullptr && (pm && pm->m_pEnt))
