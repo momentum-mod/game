@@ -5,8 +5,6 @@
 class CMomentumPlayer;
 class SavelocReqPacket;
 
-#define SAVELOC_FILE_NAME "savedlocs.txt"
-
 enum SavedLocationComponent_t
 {
     SAVELOC_NONE = 0,

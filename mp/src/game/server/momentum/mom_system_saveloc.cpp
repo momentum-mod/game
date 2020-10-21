@@ -13,6 +13,8 @@
 
 #include "tier0/memdbgon.h"
 
+#define SAVELOC_FILE_NAME "savedlocs.txt"
+
 MAKE_TOGGLE_CONVAR(mom_saveloc_save_between_sessions, "1", FCVAR_ARCHIVE, "Defines if savelocs should be saved between sessions of the same map.\n");
 
 SavedLocation_t::SavedLocation_t() : m_bCrouched(false), m_vecPos(vec3_origin), m_vecVel(vec3_origin), m_qaAng(vec3_angle),
@@ -283,7 +285,10 @@ bool CSaveLocSystem::LoadStartMarks()
         pStartmark->Load(kvStartMark);
 
         if (!pPlayer->SetStartMark(track, pStartmark))
+        {
+            delete pStartmark;
             return false;
+        }
     }
 
     return true;
