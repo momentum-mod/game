@@ -260,11 +260,46 @@ void CSaveLocSystem::LevelInitPreEntity()
     }
 }
 
+bool CSaveLocSystem::LoadStartMarks()
+{
+    if (!m_pSavedLocsKV || m_pSavedLocsKV->IsEmpty())
+        return false;
+
+    KeyValues *kvMapSavelocs = m_pSavedLocsKV->FindKey(gpGlobals->mapname.ToCStr());
+    if (!kvMapSavelocs || kvMapSavelocs->IsEmpty())
+        return false;
+
+    KeyValues *kvStartMarks = kvMapSavelocs->FindKey("startmarks");
+    if (!kvStartMarks)
+        return false;
+
+    CMomentumPlayer *pPlayer = CMomentumPlayer::GetLocalPlayer();
+    if (!pPlayer)
+        return false;
+
+    FOR_EACH_SUBKEY(kvStartMarks, kvStartMark)
+    {
+        int track = Q_atoi(kvStartMark->GetName());
+
+        SavedLocation_t * pStartmark = new SavedLocation_t;
+        pStartmark->Load(kvStartMark);
+
+        if (!pPlayer->SetStartMark(track, pStartmark))
+        {
+            delete pStartmark;
+            return false;
+        }
+    }
+
+    return true;
+}
+
 void CSaveLocSystem::LevelShutdownPreEntity()
 {
-    if (CMomentumPlayer::GetLocalPlayer() && m_pSavedLocsKV && mom_saveloc_save_between_sessions.GetBool())
+    CMomentumPlayer *pPlayer = CMomentumPlayer::GetLocalPlayer();
+    if (pPlayer && m_pSavedLocsKV && mom_saveloc_save_between_sessions.GetBool())
     {
-        DevLog("Saving map %s savelocs to %s ...\n", gpGlobals->mapname.ToCStr(), SAVELOC_FILE_NAME);
+        DevLog("Saving map %s savelocs and startmarks to %s ...\n", gpGlobals->mapname.ToCStr(), SAVELOC_FILE_NAME);
         // Make the KV to save into and save into it
         KeyValues *pKvMapSavelocs = new KeyValues(gpGlobals->mapname.ToCStr());
         // Set the current index
@@ -281,8 +316,25 @@ void CSaveLocSystem::LevelShutdownPreEntity()
             kvCPs->AddSubKey(kvCP);
         }
 
+        // Add startmarks
+        KeyValues *kvStartMarks = new KeyValues("startmarks");
+        for (int track = 0; track < MAX_TRACKS; track++)
+        {
+            SavedLocation_t *startMark = pPlayer->GetStartMark(track);
+            if (!startMark) // Save location of valid startmarks only
+                continue;
+
+            char szTrackNum[4]; // 999 tracks should be enough
+            Q_snprintf(szTrackNum, sizeof(szTrackNum), "%03i", track); 
+            KeyValues *kvStartMark = new KeyValues(szTrackNum);
+
+            startMark->Save(kvStartMark);
+            kvStartMarks->AddSubKey(kvStartMark);
+        }
+
         // Save them into the keyvalues
         pKvMapSavelocs->AddSubKey(kvCPs);
+        pKvMapSavelocs->AddSubKey(kvStartMarks);
        
         // Remove the map if it already exists in there
         KeyValues *pExisting = m_pSavedLocsKV->FindKey(gpGlobals->mapname.ToCStr());
@@ -297,7 +349,7 @@ void CSaveLocSystem::LevelShutdownPreEntity()
 
         // Save everything to file
         if (m_pSavedLocsKV->SaveToFile(filesystem, SAVELOC_FILE_NAME, "MOD", true))
-            DevLog("Saved map %s savelocs to %s!\n", gpGlobals->mapname.ToCStr(), SAVELOC_FILE_NAME);
+            DevLog("Saved map %s savelocs and startmarks to %s!\n", gpGlobals->mapname.ToCStr(), SAVELOC_FILE_NAME);
     }
 
     // Remove all requesters if we had any

@@ -85,6 +85,8 @@ public:
     bool ReadReceivedSavelocs(SavelocReqPacket *input, const uint64 &sender);
 
     // Local
+    // Loads start marks from saveloc file
+    bool LoadStartMarks();
     // Gets the current menu Saveloc index
     uint32 GetCurrentSavelocMenuIndex() const { return m_iCurrentSavelocIndx; }
     // Is the player currently using the saveloc menu?

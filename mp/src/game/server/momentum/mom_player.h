@@ -227,6 +227,7 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
     CTriggerZone *GetCurrentZoneTrigger() const { return m_CurrentZoneTrigger.Get(); }
 
     bool CreateStartMark();
+    bool SetStartMark(int track, SavedLocation_t *saveloc);
     SavedLocation_t *GetStartMark(int track) const { return (track >= 0 && track < MAX_TRACKS) ? m_pStartZoneMarks[track] : nullptr; }
     bool ClearStartMark(int track, bool bPrintMsg = true);
 
