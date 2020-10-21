@@ -105,13 +105,13 @@ C_BaseMomZoneTrigger::C_BaseMomZoneTrigger()
     m_iTrackNumber = -1; // TRACK_ALL
 }
 
-void C_BaseMomZoneTrigger::DrawOutlineModel(bool bOverlay)
+void C_BaseMomZoneTrigger::DrawZoneOutlines(bool bOverlay)
 {
     const int iNum = m_vecZonePoints.Count();
     if (iNum <= 2)
         return;
 
-    Color outlineColor = m_ZoneModelRenderer.m_Color;
+    Color color = m_ZoneModelRenderer.m_Color;
 
     CMatRenderContextPtr pRenderContext(materials);
     const auto pMaterial = materials->FindMaterial(bOverlay ? MOM_ZONE_DRAW_MATERIAL_OVERLAY : MOM_ZONE_DRAW_MATERIAL, TEXTURE_GROUP_OTHER);
@@ -123,7 +123,7 @@ void C_BaseMomZoneTrigger::DrawOutlineModel(bool bOverlay)
     for (int i = 0; i < iNum; i++)
     {
         builder.Position3fv(m_vecZonePoints[i].Base());
-        builder.Color4ub(outlineColor.r(), outlineColor.g(), outlineColor.b(), outlineColor.a());
+        builder.Color4ub(color.r(), color.g(), color.b(), color.a());
         builder.AdvanceVertex();
     }
     builder.End(false, true);
@@ -135,11 +135,11 @@ void C_BaseMomZoneTrigger::DrawOutlineModel(bool bOverlay)
         builder.Begin(pMesh, MATERIAL_LINES, 2);
 
         builder.Position3fv(m_vecZonePoints[i].Base());
-        builder.Color4ub(outlineColor.r(), outlineColor.g(), outlineColor.b(), outlineColor.a());
+        builder.Color4ub(color.r(), color.g(), color.b(), color.a());
         builder.AdvanceVertex();
 
         builder.Position3f(m_vecZonePoints[i].x, m_vecZonePoints[i].y, m_vecZonePoints[i].z + m_flZoneHeight);
-        builder.Color4ub(outlineColor.r(), outlineColor.g(), outlineColor.b(), outlineColor.a());
+        builder.Color4ub(color.r(), color.g(), color.b(), color.a());
         builder.AdvanceVertex();
 
         builder.End(false, true);
@@ -150,27 +150,77 @@ void C_BaseMomZoneTrigger::DrawOutlineModel(bool bOverlay)
     for (int i = 0; i < iNum; i++)
     {
         builder.Position3f(m_vecZonePoints[i].x, m_vecZonePoints[i].y, m_vecZonePoints[i].z + m_flZoneHeight);
-        builder.Color4ub(outlineColor.r(), outlineColor.g(), outlineColor.b(), outlineColor.a());
+        builder.Color4ub(color.r(), color.g(), color.b(), color.a());
         builder.AdvanceVertex();
     }
     builder.End(false, true);
 }
 
-void C_BaseMomZoneTrigger::DrawSideFacesModel(bool bOverlay)
+void C_BaseMomZoneTrigger::DrawZoneFaces(bool bOverlay)
 {
     const int iNum = m_vecZonePoints.Count();
     if (iNum <= 2)
         return;
 
-    Color faceColor = m_ZoneModelRenderer.m_Color;
+    Color color = m_ZoneModelRenderer.m_Color;
 
-    int faceAlpha = mom_zone_draw_alpha_override_toggle.GetBool() ? mom_zone_draw_faces_alpha_override.GetInt() : faceColor.a();
+    const int faceAlpha = mom_zone_draw_alpha_override_toggle.GetBool() ? mom_zone_draw_faces_alpha_override.GetInt() : color.a();
 
     CMatRenderContextPtr pRenderContext(materials);
     const auto pMaterial = materials->FindMaterial(bOverlay ? MOM_ZONE_DRAW_MATERIAL_OVERLAY : MOM_ZONE_DRAW_MATERIAL, TEXTURE_GROUP_OTHER);
     IMesh *pMesh = pRenderContext->GetDynamicMesh(true, nullptr, nullptr, pMaterial);
     CMeshBuilder builder;
 
+    Vector center = m_vecZonePoints[0];
+    for (int i = 1; i < iNum; i++)
+        center += m_vecZonePoints[i];
+    center /= iNum;
+
+    // Bottom
+    builder.Begin(pMesh, MATERIAL_TRIANGLES, iNum);
+    for (int i = iNum - 1; i >= 0; --i)
+    {
+        const auto &vecCurr = m_vecZonePoints[i];
+        const auto &vecNext = m_vecZonePoints[(i + 1) % iNum];
+
+        builder.Position3fv(center.Base());
+        builder.Color4ub(color.r(), color.g(), color.b(), faceAlpha);
+        builder.AdvanceVertex();
+
+        builder.Position3fv(vecCurr.Base());
+        builder.Color4ub(color.r(), color.g(), color.b(), faceAlpha);
+        builder.AdvanceVertex();
+
+        builder.Position3fv(vecNext.Base());
+        builder.Color4ub(color.r(), color.g(), color.b(), faceAlpha);
+        builder.AdvanceVertex();
+    }
+    builder.End(false, true);
+    if (!bOverlay)
+    {
+        builder.Begin(pMesh, MATERIAL_TRIANGLES, iNum);
+        for (int i = iNum - 1; i >= 0; --i)
+        {
+            const auto &vecCurr = m_vecZonePoints[i];
+            const auto &vecNext = m_vecZonePoints[(i + 1) % iNum];
+
+            builder.Position3fv(center.Base());
+            builder.Color4ub(color.r(), color.g(), color.b(), faceAlpha);
+            builder.AdvanceVertex();
+
+            builder.Position3fv(vecNext.Base());
+            builder.Color4ub(color.r(), color.g(), color.b(), faceAlpha);
+            builder.AdvanceVertex();
+
+            builder.Position3fv(vecCurr.Base());
+            builder.Color4ub(color.r(), color.g(), color.b(), faceAlpha);
+            builder.AdvanceVertex();
+        }
+        builder.End(false, true);
+        
+    }
+
+    // Middle
     for (int i = 0; i < iNum; i++)
     {
         const auto& vecCurr = m_vecZonePoints[i];
@@ -179,21 +229,92 @@ void C_BaseMomZoneTrigger::DrawSideFacesModel(bool bOverlay)
         builder.Begin(pMesh, MATERIAL_QUADS, 4);
 
         builder.Position3fv(vecCurr.Base());
-        builder.Color4ub(faceColor.r(), faceColor.g(), faceColor.b(), faceAlpha);
+        builder.Color4ub(color.r(), color.g(), color.b(), faceAlpha);
         builder.AdvanceVertex();
 
         builder.Position3f(vecCurr.x, vecCurr.y, vecCurr.z + m_flZoneHeight);
-        builder.Color4ub(faceColor.r(), faceColor.g(), faceColor.b(), faceAlpha);
+        builder.Color4ub(color.r(), color.g(), color.b(), faceAlpha);
         builder.AdvanceVertex();
 
         builder.Position3f(vecNext.x, vecNext.y, vecNext.z + m_flZoneHeight);
-        builder.Color4ub(faceColor.r(), faceColor.g(), faceColor.b(), faceAlpha);
+        builder.Color4ub(color.r(), color.g(), color.b(), faceAlpha);
         builder.AdvanceVertex();
 
         builder.Position3fv(vecNext.Base());
-        builder.Color4ub(faceColor.r(), faceColor.g(), faceColor.b(), faceAlpha);
+        builder.Color4ub(color.r(), color.g(), color.b(), faceAlpha);
         builder.AdvanceVertex();
         
+        builder.End(false, true);
+    }
+    if (!bOverlay)
+    {
+        for (int i = 0; i < iNum; i++)
+        {
+            const auto &vecCurr = m_vecZonePoints[i];
+            const auto &vecNext = m_vecZonePoints[(i + 1) % iNum];
+
+            builder.Begin(pMesh, MATERIAL_QUADS, 4);
+
+            builder.Position3fv(vecNext.Base());
+            builder.Color4ub(color.r(), color.g(), color.b(), faceAlpha);
+            builder.AdvanceVertex();
+
+            builder.Position3f(vecNext.x, vecNext.y, vecNext.z + m_flZoneHeight);
+            builder.Color4ub(color.r(), color.g(), color.b(), faceAlpha);
+            builder.AdvanceVertex();
+
+            builder.Position3f(vecCurr.x, vecCurr.y, vecCurr.z + m_flZoneHeight);
+            builder.Color4ub(color.r(), color.g(), color.b(), faceAlpha);
+            builder.AdvanceVertex();
+
+            builder.Position3fv(vecCurr.Base());
+            builder.Color4ub(color.r(), color.g(), color.b(), faceAlpha);
+            builder.AdvanceVertex();
+
+            builder.End(false, true);
+        }
+    }
+
+    // Top
+    builder.Begin(pMesh, MATERIAL_TRIANGLES, iNum);
+    for (int i = iNum - 1; i >= 0; --i)
+    {
+        const auto &vecCurr = m_vecZonePoints[i];
+        const auto &vecNext = m_vecZonePoints[(i + 1) % iNum];
+
+        builder.Position3f(center.x, center.y, center.z + m_flZoneHeight);
+        builder.Color4ub(color.r(), color.g(), color.b(), faceAlpha);
+        builder.AdvanceVertex();
+
+        builder.Position3f(vecNext.x, vecNext.y, vecNext.z + m_flZoneHeight);
+        builder.Color4ub(color.r(), color.g(), color.b(), faceAlpha);
+        builder.AdvanceVertex();
+
+        builder.Position3f(vecCurr.x, vecCurr.y, vecCurr.z + m_flZoneHeight);
+        builder.Color4ub(color.r(), color.g(), color.b(), faceAlpha);
+        builder.AdvanceVertex();
+    }
+    builder.End(false, true);
+    if (!bOverlay)
+    {
+        builder.Begin(pMesh, MATERIAL_TRIANGLES, iNum);
+        for (int i = iNum - 1; i >= 0; --i)
+        {
+            const auto &vecCurr = m_vecZonePoints[i];
+            const auto &vecNext = m_vecZonePoints[(i + 1) % iNum];
+
+            builder.Position3f(center.x, center.y, center.z + m_flZoneHeight);
+            builder.Color4ub(color.r(), color.g(), color.b(), faceAlpha);
+            builder.AdvanceVertex();
+
+            builder.Position3f(vecCurr.x, vecCurr.y, vecCurr.z + m_flZoneHeight);
+            builder.Color4ub(color.r(), color.g(), color.b(), faceAlpha);
+            builder.AdvanceVertex();
+
+            builder.Position3f(vecNext.x, vecNext.y, vecNext.z + m_flZoneHeight);
+            builder.Color4ub(color.r(), color.g(), color.b(), faceAlpha);
+            builder.AdvanceVertex();
+        }
         builder.End(false, true);
     }
 }
@@ -212,6 +333,9 @@ int C_BaseMomZoneTrigger::DrawModel(int flags)
         return 0;
 
     int iRenderMode = GetDrawMode();
+    if (iRenderMode == MOM_ZONE_DRAW_MODE_NONE)
+        return 1;
+
     if (iRenderMode && flags & STUDIO_RENDER && (flags & (STUDIO_SHADOWDEPTHTEXTURE | STUDIO_SHADOWDEPTHTEXTURE)) == 0 && GetDrawColor())
     {
         if (GetModel())
@@ -223,20 +347,13 @@ int C_BaseMomZoneTrigger::DrawModel(int flags)
         }
         else
         {
-            switch (iRenderMode)
+            if (iRenderMode >= MOM_ZONE_DRAW_MODE_FACES)
             {
-            case MOM_ZONE_DRAW_MODE_OUTLINE:
-                DrawOutlineModel(false);
-                break;
-            case MOM_ZONE_DRAW_MODE_OUTLINE_OVERLAY:
-                DrawOutlineModel(true);
-                break;
-            case MOM_ZONE_DRAW_MODE_FACES:
-                DrawSideFacesModel(false);
-                break;
-            case MOM_ZONE_DRAW_MODE_FACES_OVERLAY:
-                DrawSideFacesModel(true);
-                break;
+                DrawZoneFaces((iRenderMode & 1) == 0); // overlays are even
+            }
+            else
+            {
+                DrawZoneOutlines((iRenderMode & 1) == 0); // overlays are even
             }
             return 1;
         }

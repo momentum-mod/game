@@ -25,9 +25,8 @@ public:
     virtual bool GetDrawColor() { return false; }
     virtual int GetDrawMode() { return 0; }
 
-    void DrawOutlineModel(bool bOverlay);
-
-    void DrawSideFacesModel(bool bOverlay);
+    void DrawZoneOutlines(bool bOverlay);
+    void DrawZoneFaces(bool bOverlay);
 
     bool ShouldDraw() override { return true; }
     int DrawModel(int flags) override;
