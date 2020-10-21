@@ -1118,12 +1118,18 @@ void CMomentumPlayer::OnZoneEnter(CTriggerZone *pTrigger)
     case ZONE_TYPE_STOP:
         {
             // We've reached end zone, stop here
-            //auto pStopTrigger = static_cast<CTriggerTimerStop *>(pTrigger);
+            const auto pStopTrigger = static_cast<CTriggerTimerStop *>(pTrigger);
             m_iOldTrack = m_Data.m_iCurrentTrack;
             m_iOldZone = m_Data.m_iCurrentZone;
 
             if (g_pMomentumTimer->IsRunning())
             {
+                if (pStopTrigger->GetCancelBool())
+                {
+                    g_pMomentumTimer->Stop(this);
+                    return;
+                }
+
                 const int zoneNum = m_Data.m_iCurrentZone;
 
                 // This is needed so we have an ending velocity.
