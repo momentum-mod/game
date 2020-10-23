@@ -1,3 +1,107 @@
+0.8.6
+= Added
+  Full Ahop gamemode support
+  Stubbed Tricksurf, Conc, Parkour, and Defrag implementations
+  Run safeguards
+  Added sprint binding to keybinds
+  Added ability to have subdivision markings for any progress bars through res file (originally suggested to be for sticky charge meter). Off by default.
+  Added checkbox in gameplay settings that toggles viewmodels
+  Added (back) menu background blur 
+  Tree sway, Lightmapped generic flashlight-based phong shader
+  Added the ability to turn off speedometer autolayout in the speedo VDF. Also added easy layout overriding functionality within the VDF.
+  Added NetBeans project for Linux building & made it possible to compile without sudo
+  System for recording a history surface interactions for the player
+  Added missing tooltips throughout the settings panel
+  Added a command for resetting to the last progress trigger
+  Catapults! (trigger_momentum_catapult entity)
+  Togglable inputs; toggle_jump, toggle_speed, toggle_walk, and toggle_duck for all gamemodes
+  Viewmodel offset commands
+  Main menu drawer panel
+  Depth of field effects
+  Momentum capture point assets 
+  More tool textures 
+  Added cvar for whether the settings remember last opened tab
+  Cvar for auto-untoggling toggle_* inputs when hitting a fail teleport
+  “Fail” bool property for momentum teleports
+  Added toggle inputs to saveloc state
+  System for adding your own HUD menus 1033 
+  Add flag for end zones to not submit run (just cancel timer) 
+
+= Fixed
+  Fixed broken TF2 fire particles.
+  Fix bug where player would get stuck when closing the settings panel
+  Fixed chat not accepting non-ascii characters
+  Fixed timer not resetting it’s color on map change
+  Fixed camera bug related to ducking while teleporting via saveloc
+  Inverted logic on the “allow overlapping keys” setting; checked means “on” now
+  Fixed settings panel having a deadzone on the vertical scrollbar
+  Fixed last weapon (lastinv) not being defaulted to the secondary weapon on map load
+  Prevented leaderboards panel from being togglable when spamming m2 on game load
+  Fixed trails stacking when changing your trail while spectating someone
+  Fixed a rare case where stickybombs weren’t firing (right at the end of the buffer)
+  Fixed autocomplete for long replay names
+  Properly loading the engine-default backup skybox for when a map’s skybox is missing
+  Put the player on ground on mom_restart, fixing players getting stuck on map restart on certain start zones
+  Fixes to some odd lobby bugs revolving around not properly checking whether a player was in your lobby
+  Prevented crashes when there are more than 4096 static props
+  Fixed incorrect noto sans regular font
+  Fixed missing shaders causing crashes (missing wireframe_dx8 fallback shader)
+  Stopped sticky charge sound on weapon switch
+  Fixed a rare crash on map change
+  Fixed in-game texture browser
+  Fixed shader issue on linux caused by the shader override
+  Fixed crash when jumping/interacting with func_train without a weapon
+  Fixed a crash when enabling viewport downscaling
+  Fixed a run submission failure; solved by removing sv_alternateticks
+  Fixed charge animation not being reset to idle when charging is disabled
+  Fixed the momentum icon on the taskbar being shown as the HL logo on linux
+  Fixed water fog problem on PBR shader
+  Fixed light calculation in PBR shader
+  Fixed “undefined base class Toggle” error in hammer
+  Fixed softlock on main menu
+  Disallowed muzzle flash when viewmodel is hidden
+  Fixed PBR not respecting render alpha
+  Fixed settings on different tab being in focus
+  Fix shotgun cock sound being played every 8 shots when viewmodels are off
+  Fix color for PBR materials on models
+  Fixed “Use Defaults” button for keybinds list causing softlock 
+  Fix speedmod’s disabled buttons not resetting when saveloc teleporting outside of it
+  Fixed hud menus overlapping chat
+  Fixed crash when opening & closing map info panel too quickly
+  Fix slide for RJ/SJ and non-autohop gamemodes 
+
+= Improved
+  Renamed mom_reset to mom_restart_stage & merged mom_stage_tele into mom_restart_stage
+  Consolidated all automatic weapons down to 1; removed rifle & lmg, renamed smg to machinegun. For mappers, it is now “weapon_momentum_machinegun”
+  Improved stickybomb and rocket effects, moving away from relying on TF2 particles 
+  Migrated credits to use a VGUI frame instead of a map (rip credits.bsp). Also updated credits
+  Removed paintgun & moved paint settings to gameplay settings tab
+  More intuitive start marking; create/clear on settings page, printouts alongside savelocs, start mark creation when savelocing in a start zone with a hud hint of the bind for it
+  WVT support for PBR, PBR using mrao/emission scale for 20b; fix for LightMappedGeneric when using lighting preview
+  Improved some error outputs in map compile tools
+  Spelling fixes in many source code files
+  Improved CSS and TF2 file mounting, fixing ambient sounds not loading properly on Linux
+  Moved main menu to client
+  Allowed fps_max to be changed in-game
+  Unmount many unneeded TF2 particles
+  Show start zone exit speedometer on linear maps
+  Improved loading of speedometer data
+  Increased autocomplete length for commands
+  Redirected the “retry” command to “reload”
+  Allow WVT PBR to have parallax
+  Improved stickybomb count hud element
+  Replace main menu map with model panel
+  Improved weapon models, animations, and sounds. Most retextured with PBR 
+  Improved glow effects
+  Replaced “airborne_only” field in func_nogrenades with a prevention type, allowing for sticky fizzle on land and rocket/sticky fizzle on trigger entrance
+  Let escape key & other leaderboard binds close leaderboards 
+  Update Steamworks to v150 for more secure / stable networking backend
+  Less machine gun recoil when strafing/on ground
+  Add [Development Build] to the version number when game is in debug mode
+  Save start marks to savelocs file
+  Prevent teleporting to a stage while in it - stops abuse of the command
+  Ability to draw zone faces, not just outlines
+
 0.8.5
 = Added
   Zones folder for holding zone files
@@ -107,53 +211,3 @@
   HUD elements are now hiding parts that aren't relevant to specific game modes
   RichText (chat, console) panels render more accurately, have shift + click selection, and scroll-by-selection
   HUD based elements now match new UI direction
-
-0.8.4
-= Added
-  Added Stickybomb Launcher from TF2 and the Sticky Jumping gamemode
-  Stickybombs are networked to others in a lobby
-  Added "mom_sj_stickybomb_drawdelay", defaulted to 0
-  Added "mom_rj_rocket_drawdelay" to match stickybomb convar
-  Added "mom_hud_sj_stickycount_autohide" which auto-hides the count if 0
-  Add ConVar "mom_hud_sj_chargemeter_units" to show stickybomb speed when charged
-  Added 0.05 second buffer to firing Stickybomb Launcher
-  Charge mechanic is disabled whilst inside a start trigger
-  Added "sv_edge_fix" (off by default)
-  Added "r_viewmodel_opacity" to adjust viewmodel opacity
-  The PBR Shader has been added, supporting the Metal/Roughness workflow and Parallax Occlusion
-  Various PBR assets and "shadertest" map
-  Added "sv_tickrate" convar for simpler tickrate adjustments
-  Added a "ModelData" block inside weapon scripts that define the path to every model the weapon uses
-  Added TF2 override scripts inside "custom/overrides/scripts/" with a README on how to use them (weapon model hotswitching has been removed in favor of these)
-  Added "give_weapon" command that autocompletes which weapons you can give yourself depending on gamemodes
-
-= Fixed
-  Fixed changing weapons from and to the rocket launcher allowing faster rocket firing
-  Fixed TF2 materials from going pitch black
-  Fixed showing default "dots" crosshair with weapon crosshairs and fix custom crosshair files
-  Fixed the player_speedmod entity defaulting to the local player
-  Fixed missing default crosshair
-  Fixed incorrect sound playing when landing on a slope
-  Fixed Main Menu/func_rotating crash after running for long periods of time
-  Fixed user stats not showing for players
-  Fixed Discord integration for Linux
-  Fixed ConVarRefs being able to bypass ConVar_Validated validator funcs
-  Fixed modals (settings panel, paintgun panel) not preventing input to the game
-
-= Improved
-  Make RJ/SJ follow the other gamemodes' start zone logic (reset on landing, limit speed on enter)
-  Center fire is now the default RJ firing mode to better cater to newer players
-  Officially changed the map prefix for RJ from "jump_" to "rj_"
-  Added updated RJ trail/explosion particles by Vortex
-  Shotgun material has been reworked
-  The options for HDR bloom and tonemapping now use combo boxes
-  Consolidate gamemode settings pages into a single "Gamemodes" tab
-  The momentum rocket model now has and uses the "trail" bone for TF2-consistency (thanks to bonjorno7)
-  Updated the Main Menu background for SJ Gamemode
-  Skybox is no longer culled at >90 FoV
-  Converted hotswitching convars over to enable toggle vars
-  Removed VR support
-  Removed controller support
-  Removed Logitech G15 integration
-  Removed Mumble integration
-  Gamemodes define which weapons they can use, with the "unknown" gamemode allowing any weapon

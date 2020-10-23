@@ -4,8 +4,8 @@
 #include "shareddefs.h"
 #endif
 
-// Main Version (0 is private alpha, 1 is public beta, 2 is full release)​.Main feature push (increment by one for each)​.​Small commits or hotfixes​
-#define MOM_CURRENT_VERSION "0.8.5"
+// Milestone release (alpha, beta, gold)​ . Backwards incompatible or mini-milestone update . Small feature updates (non-breaking)​
+#define MOM_CURRENT_VERSION "0.8.6"
 
 #define MAX_TRACKS 64
 #define MAX_ZONES 64
