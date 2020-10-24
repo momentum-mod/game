@@ -605,7 +605,7 @@ void CEnvHeadcrabCanister::TestForCollisionsAgainstEntities( const Vector &vecEn
 
 	float flDamage = m_flDamage;
 
-	// Now get each entity and react accordinly!
+	// Now get each entity and react accordingly!
 	for( int iEntity = collideList.m_Entities.Count(); --iEntity >= 0; )
 	{
 		CBaseEntity *pEntity = collideList.m_Entities[iEntity];

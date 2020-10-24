@@ -1079,7 +1079,7 @@ CBaseEntity *CBasePlayer::FindUseEntity()
     {
         // If we haven't found an object that the player can use yet,
         // allow a player to use an NPC through 'see-through' volumes
-        // (rails, fenches, windows, grates, etc.).
+        // (rails, fences, windows, grates, etc.).
         UTIL_TraceLine(searchCenter, searchCenter + PLAYER_USE_RADIUS * forward, MASK_OPAQUE_AND_NPCS, this, COLLISION_GROUP_NONE, &directTrace);
         pObject = directTrace.m_pEnt;
 
@@ -1159,7 +1159,7 @@ void CBasePlayer::PlayerUse ( void )
 
 	if ( IsObserver() )
 	{
-		// do special use operation in oberserver mode
+		// do special use operation in observer mode
 		if ( m_afButtonPressed & IN_USE )
 			ObserverUse( true );
 		else if ( m_afButtonReleased & IN_USE )
@@ -1376,6 +1376,12 @@ void CBasePlayer::CalcView( Vector &eyeOrigin, QAngle &eyeAngles, float &zNear, 
 	{
 		CalcPlayerView( eyeOrigin, eyeAngles, fov );
 	}
+
+	// Little hack to reduce zNear when using wider FOV. (otherwise you can see through walls)
+	if (fov > 90.0f)
+	{
+		zNear -= MIN((fov - 90.0f) / 5.0f, 5.0f);
+	}
 }
 
 
@@ -1464,7 +1470,7 @@ void CBasePlayer::CalcObserverView( Vector& eyeOrigin, QAngle& eyeAngles, float&
 									break;
 	}
 #else
-	// on server just copy target postions, final view positions will be calculated on client
+	// on server just copy target positions, final view positions will be calculated on client
 	VectorCopy( EyePosition(), eyeOrigin );
 	VectorCopy( EyeAngles(), eyeAngles );
 #endif

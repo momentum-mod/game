@@ -162,7 +162,7 @@ public:
 	// If triggers == true, it enumerates all triggers along a ray
 	virtual void	EnumerateEntities( const Ray_t &ray, bool triggers, IEntityEnumerator *pEnumerator ) = 0;
 
-	// Same thing, but enumerate entitys within a box
+	// Same thing, but enumerate entities within a box
 	virtual void	EnumerateEntities( const Vector &vecAbsMins, const Vector &vecAbsMaxs, IEntityEnumerator *pEnumerator ) = 0;
 
 	// Convert a handle entity to a collideable.  Useful inside enumer

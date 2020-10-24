@@ -39,6 +39,8 @@ public:
 	virtual void SetTitle(const char *title, bool surfaceTitle);
 	virtual void SetTitle(const wchar_t *title, bool surfaceTitle);
 
+	TextImage *GetTitle() const { return _title; }
+
 	// Bring the frame to the front and requests focus, ensures it's not minimized
 	virtual void Activate();
 
@@ -148,7 +150,7 @@ protected:
 	virtual void ApplySchemeSettings(IScheme *pScheme);
 	// Recalculate the position of all items
 	virtual void PerformLayout();
-	// Respond when a close message is recieved.  Can be called directly to close a frame.
+	// Respond when a close message is received.  Can be called directly to close a frame.
 	virtual void OnClose();
 	// Respond to a window finishing its closure. i.e. when a fading window has fully finished its fadeout.
 	virtual void OnFinishedClose();
@@ -197,6 +199,7 @@ private:
 	void SetupResizeCursors();
 	void FinishClose();
 	void OnFrameFocusChanged(bool bHasFocus);
+	void ReleaseModal();
 
 	Color		_titleBarBgColor;
 	Color		_titleBarDisabledBgColor;

@@ -84,7 +84,7 @@ public:
 };
 
 #define PHYSICS_MULTIPLAYER_AUTODETECT	0	// use multiplayer physics mode as defined in model prop data
-#define PHYSICS_MULTIPLAYER_SOLID		1	// soild, pushes player away 
+#define PHYSICS_MULTIPLAYER_SOLID		1	// solid, pushes player away 
 #define PHYSICS_MULTIPLAYER_NON_SOLID	2	// nonsolid, but pushed by player
 #define PHYSICS_MULTIPLAYER_CLIENTSIDE	3	// Clientside only, nonsolid 	
 

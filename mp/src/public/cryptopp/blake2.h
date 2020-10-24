@@ -165,7 +165,7 @@ struct CRYPTOPP_NO_VTABLE BLAKE2b_State
 /// \brief The BLAKE2s cryptographic hash function
 /// \details BLAKE2s can function as both a hash and keyed hash. If you want only the hash,
 ///   then use the BLAKE2s constructor that accepts no parameters or digest size. If you
-///   want a keyed hash, then use the constructor that accpts the key as a parameter.
+///   want a keyed hash, then use the constructor that accepts the key as a parameter.
 ///   Once a key and digest size are selected, its effectively immutable. The Restart()
 ///   method that accepts a ParameterBlock does not allow you to change it.
 /// \sa Aumasson, Neves, Wilcox-O'Hearn and Winnerlein's
@@ -203,7 +203,7 @@ public:
     /// \param keyLength the size of the byte array
     /// \param salt a byte array used as salt
     /// \param saltLength the size of the byte array
-    /// \param personalization a byte array used as prsonalization string
+    /// \param personalization a byte array used as personalization string
     /// \param personalizationLength the size of the byte array
     /// \param treeMode flag indicating tree mode
     /// \param digestSize the digest size, in bytes
@@ -265,7 +265,7 @@ private:
 /// \brief The BLAKE2b cryptographic hash function
 /// \details BLAKE2b can function as both a hash and keyed hash. If you want only the hash,
 ///   then use the BLAKE2b constructor that accepts no parameters or digest size. If you
-///   want a keyed hash, then use the constructor that accpts the key as a parameter.
+///   want a keyed hash, then use the constructor that accepts the key as a parameter.
 ///   Once a key and digest size are selected, its effectively immutable. The Restart()
 ///   method that accepts a ParameterBlock does not allow you to change it.
 /// \sa Aumasson, Neves, Wilcox-O'Hearn and Winnerlein's
@@ -303,7 +303,7 @@ public:
     /// \param keyLength the size of the byte array
     /// \param salt a byte array used as salt
     /// \param saltLength the size of the byte array
-    /// \param personalization a byte array used as prsonalization string
+    /// \param personalization a byte array used as personalization string
     /// \param personalizationLength the size of the byte array
     /// \param treeMode flag indicating tree mode
     /// \param digestSize the digest size, in bytes

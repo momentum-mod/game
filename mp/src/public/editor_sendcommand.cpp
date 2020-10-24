@@ -172,7 +172,7 @@ EditorSendResult_t Editor_EndSession(bool bShowUI)
 //-----------------------------------------------------------------------------
 // Purpose: Attempts to sends a shell command to the editor.
 // Input  : pszCommand - Shell command to send.
-//			bShowUI - Whether to display mesage boxes on failure.
+//			bShowUI - Whether to display message boxes on failure.
 // Output : Returns one of the following values:
 //				Editor_OK - The command was executed successfully.
 //				Editor_NotRunning - Unable to establish a communications channel with the editor.

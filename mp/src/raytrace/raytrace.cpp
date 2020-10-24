@@ -100,7 +100,7 @@ void RayTracingEnvironment::AddTriangle(int32 id, const Vector &v1,
 		TriangleColors.AddToTail(color);
 	if ( !( Flags & RTE_FLAGS_DONT_STORE_TRIANGLE_MATERIALS) )
 		TriangleMaterials.AddToTail(materialIndex);
-// 	printf("add triange from (%f %f %f),(%f %f %f),(%f %f %f) id %d\n",
+// 	printf("add triangle from (%f %f %f),(%f %f %f),(%f %f %f) id %d\n",
 // 		   XYZ(v1),XYZ(v2),XYZ(v3),id);
 }
 
@@ -175,7 +175,7 @@ static Vector GetEdgeEquation(const Vector &p1, const Vector &p2, int c1, int c2
 		d = -d;
 		trial_dist = -trial_dist;
 	}
-	nx /= trial_dist;										// scale so that it will be =1.0 at the oppositve vertex
+	nx /= trial_dist;										// scale so that it will be =1.0 at the opposite vertex
 	ny /= trial_dist;
 	d /= trial_dist;
 
@@ -659,7 +659,7 @@ float RayTracingEnvironment::CalculateCostsOfSplit(
 	nleft=nboth=nright=0;
 	
 	// now, label each triangle. Since we have not converted the triangles into
-	// intersection fromat yet, we can use the CoordSelect0 field of each as a temp.
+	// intersection format yet, we can use the CoordSelect0 field of each as a temp.
 	/*nleft=0;
 	nright=0;
 	nboth=0;*/
@@ -740,7 +740,7 @@ void RayTracingEnvironment::RefineNode(int node_number,int32 const *tri_list,int
 	float best_splitvalue=0;
 	int split_plane=0;
 
-	int tri_skip=1+(ntris/10);								// don't try all trinagles as split
+	int tri_skip=1+(ntris/10);								// don't try all triangles as split
 															// points when there are a lot of them
 	for(int axis=0;axis<3;axis++)
 	{

@@ -19,6 +19,9 @@ public:
     // This can be sent from ComboBoxes or any TextEntry
     MESSAGE_FUNC_PTR_CHARPTR(OnTextChanged, "TextChanged", panel, text) { }
 
+    // Allow pages to execute code when main dialog is closed
+    MESSAGE_FUNC(OnMainDialogClosed, "MainDialogClosed") { }
+
 private:
     vgui::Button *m_pAssociatedButton;
 };

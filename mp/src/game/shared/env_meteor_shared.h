@@ -46,17 +46,17 @@ public:
 	void GetPositionAtTime( float flTime, Vector &vecPosition );
 
 	//-------------------------------------------------------------------------
-	// Changes an objects paramters from "skybox space" to "world space."
+	// Changes an objects parameters from "skybox space" to "world space."
 	//-------------------------------------------------------------------------
 	void ConvertFromSkyboxToWorld( void );
 
 	//-------------------------------------------------------------------------
-	// Changes an objects paramters from "world space" to "skybox space."
+	// Changes an objects parameters from "world space" to "skybox space."
 	//-------------------------------------------------------------------------
 	void ConvertFromWorldToSkybox( void );
 
 	//-------------------------------------------------------------------------
-	// Returns whether or not the object is the the skybox given the time.
+	// Returns whether or not the object is in the skybox given the time.
 	//-------------------------------------------------------------------------
 	bool IsInSkybox( float flTime );
 

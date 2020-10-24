@@ -487,7 +487,7 @@ typedef enum
 	eSteamSubscriptionPending						= 1,	/* Awaiting	transaction	completion */
 	eSteamSubscriptionPreorder						= 2,	/* Is currently	a pre-order */
 	eSteamSubscriptionPrepurchaseTransferred		= 3,	/* hop to this account */
-	/* Unusbscribed */
+	/* Unsubscribed */
 	eSteamSubscriptionPrepurchaseInvalid			= 4,	/* Invalid cd-key */
 	eSteamSubscriptionPrepurchaseRejected			= 5,	/* hopped out / banned / etc */
 	eSteamSubscriptionPrepurchaseRevoked			= 6,	/* hop away from this account */

@@ -1403,7 +1403,7 @@ bool CDispCollTree::IntersectAABBTriTest( Vector &rayStart, Vector &extents,
 	float dist;
 
 	//
-	// test axail planes (x, y, z)
+	// test axial planes (x, y, z)
 	//
 
 	for( dir = 0; dir < 3; dir++ )
@@ -1443,7 +1443,7 @@ bool CDispCollTree::IntersectAABBTriTest( Vector &rayStart, Vector &extents,
 		( pTri->m_Normal[2] > ONE_MINUS_COLLISION_EPSILON ) )
 		return true;
 
-	// find the closest point on the box (use negated tri face noraml)
+	// find the closest point on the box (use negated tri face normal)
 	Vector boxPt( 0.0f, 0.0f, 0.0f );
 	for( dir = 0; dir < 3; dir++ )
 	{
@@ -1823,7 +1823,7 @@ bool CDispCollTree::SweptAABBAABBTest( CDispCollTreeTempData *pTemp, const Vecto
 	float exitFraction = 0.0f;
 
 	//
-	// de-normalize the paramter space so that we don't have to divide
+	// de-normalize the parameter space so that we don't have to divide
 	// to find the fractional amount later (clamped for precision)
 	//
 	deltas[0] = rayEnd.x - rayStart.x;
@@ -1916,7 +1916,7 @@ void CDispCollTree::BuildTriList_r( CDispCollTreeTempData *pTemp, int nodeIndex,
 	CreatePlanesFromBounds( pTemp, bounds[0], bounds[1] );
 
 	//
-	// interesect/sweep test
+	// intersect/sweep test
 	//
 	bool bResult;
 	if( bIntersect )
@@ -1930,7 +1930,7 @@ void CDispCollTree::BuildTriList_r( CDispCollTreeTempData *pTemp, int nodeIndex,
 
 	if( bResult )
 	{
-		// if leaf node -- add triangles to interstection test list
+		// if leaf node -- add triangles to intersection test list
 		if( pNode->IsLeaf() )
 		{
 			// Assert for now -- flush cache later!!!!!

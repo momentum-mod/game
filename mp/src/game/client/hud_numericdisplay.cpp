@@ -121,7 +121,7 @@ void CHudNumericDisplay::PaintNumbers(HFont font, int xpos, int ypos, int value,
         int iMinutes = value / 60;
         int iSeconds = value - iMinutes * 60;
 #ifdef PORTAL
-        // portal uses a normal font for numbers so we need the seperate to be a renderable ':' char
+        // portal uses a normal font for numbers so we need the separator to be a renderable ':' char
         if (iSeconds < 10)
             V_snwprintf(unicode, ARRAYSIZE(unicode), L"%d:0%d", iMinutes, iSeconds);
         else

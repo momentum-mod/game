@@ -98,7 +98,7 @@ public:
 	virtual void ReadBackBuffer( Rect_t *pSrcRect, Rect_t *pDstRect, unsigned char *pData, ImageFormat dstFormat, int nDstStride ) = 0;
 #endif
 
-	// Calls from meshes to material system to handle queing/threading
+	// Calls from meshes to material system to handle queuing/threading
 	virtual bool OnDrawMesh( IMesh *pMesh, int firstIndex, int numIndices ) = 0;
 	virtual bool OnDrawMesh( IMesh *pMesh, CPrimList *pLists, int nLists ) = 0;
 	virtual bool OnSetFlexMesh( IMesh *pStaticMesh, IMesh *pMesh, int nVertexOffsetInBytes ) = 0;

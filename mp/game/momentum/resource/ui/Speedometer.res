@@ -19,12 +19,12 @@
         "fieldName"     "AbsSpeedometer"
         "xpos"          "0"
         "ypos"          "0"
+        "wide"          "120"
         "textAlignment" "center"
         "font"          "HudNumbersSmallBold"
         "FgColor"       "MOM.Speedometer.Normal"
         "wrap"          "0"
         "auto_tall_tocontents" "1"
-        "auto_wide_tocontents" "1"
     }
     "HorizSpeedometer"
     {
@@ -32,12 +32,12 @@
         "fieldName"     "HorizSpeedometer"
         "xpos"          "0"
         "ypos"          "0"
+        "wide"          "120"
         "textAlignment" "center"
         "font"          "HudNumbersSmallBold"
         "FgColor"       "MOM.Speedometer.Normal"
         "wrap"          "0"
         "auto_tall_tocontents" "1"
-        "auto_wide_tocontents" "1"
     }
     "VertSpeedometer"
     {
@@ -45,12 +45,12 @@
         "fieldName"     "VertSpeedometer"
         "xpos"          "0"
         "ypos"          "0"
+        "wide"          "120"
         "textAlignment" "center"
         "font"          "HudNumbersSmallBold"
         "FgColor"       "MOM.Speedometer.Normal"
         "wrap"          "0"
         "auto_tall_tocontents" "1"
-        "auto_wide_tocontents" "1"
     }
     "ExplosiveJumpVelocity"
     {
@@ -58,12 +58,12 @@
         "fieldName"	    "ExplosiveJumpVelocity"
         "xpos"          "0"
         "ypos"          "0"
+        "wide"          "120"
         "textAlignment" "center"
         "font"          "HudNumbersExtremelySmall"
         "FgColor"       "MOM.Speedometer.Normal"
         "wrap"          "0"
         "auto_tall_tocontents" "1"
-        "auto_wide_tocontents" "1"
     }
     "LastJumpVelocity"
     {
@@ -71,12 +71,12 @@
         "fieldName"	    "LastJumpVelocity"
         "xpos"          "0"
         "ypos"          "0"
+        "wide"          "120"
         "textAlignment" "center"
         "font"          "HudNumbersExtremelySmall"
         "FgColor"       "MOM.Speedometer.Normal"
         "wrap"          "0"
         "auto_tall_tocontents" "1"
-        "auto_wide_tocontents" "1"
     }
     "RampBoardVelocity"
     {
@@ -84,12 +84,12 @@
         "fieldName"	    "RampBoardVelocity"
         "xpos"          "0"
         "ypos"          "0"
+        "wide"          "120"
         "textAlignment" "center"
         "font"          "HudNumbersExtremelySmall"
         "FgColor"       "MOM.Speedometer.Normal"
         "wrap"          "0"
         "auto_tall_tocontents" "1"
-        "auto_wide_tocontents" "1"
     }
     "RampLeaveVelocity"
     {
@@ -97,12 +97,12 @@
         "fieldName"	    "RampLeaveVelocity"
         "xpos"          "0"
         "ypos"          "0"
+        "wide"          "120"
         "textAlignment" "center"
         "font"          "HudNumbersExtremelySmall"
         "FgColor"       "MOM.Speedometer.Normal"
         "wrap"          "0"
         "auto_tall_tocontents" "1"
-        "auto_wide_tocontents" "1"
     }
     "StageEnterExitVelocity"
     {
@@ -110,11 +110,11 @@
         "fieldName"     "StageEnterExitVelocity"
         "xpos"          "0"
         "ypos"          "0"
+        "wide"          "120"
         "textAlignment" "center"
         "font"          "HudNumbersExtremelySmall"
         "FgColor"       "MOM.Speedometer.Normal"
         "wrap"          "0"
         "auto_tall_tocontents" "1"
-        "auto_wide_tocontents" "1"
     }
 }

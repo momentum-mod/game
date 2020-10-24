@@ -47,7 +47,7 @@ public:
 	{
 		Vector	saveVelocity = pParticle->m_vecVelocity;
 
-		//Decellerate
+		//Decelerate
 		static float dtime;
 		static float decay;
 

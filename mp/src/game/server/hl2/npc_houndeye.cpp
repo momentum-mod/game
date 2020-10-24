@@ -74,7 +74,7 @@ enum Houndeye_Conds
 };
 
 //=========================================================
-// Specialized Shedules
+// Specialized Schedules
 //=========================================================
 enum
 {
@@ -224,7 +224,7 @@ int CNPC_Houndeye::RangeAttack1Conditions ( float flDot, float flDist )
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: Overidden for human grunts because they  hear the DANGER sound
+// Purpose: Overridden for human grunts because they  hear the DANGER sound
 // Input  :
 // Output :
 //-----------------------------------------------------------------------------
@@ -771,7 +771,7 @@ void CNPC_Houndeye::SonicAttack ( void )
 				}
 			}
 			// ------------------------------
-			//  Apply physics foces
+			//  Apply physics forces
 			// ------------------------------
 			IPhysicsObject *pPhysicsObject = pEntity->VPhysicsGetObject();
 			if (pPhysicsObject)
@@ -972,7 +972,7 @@ void CNPC_Houndeye::PrescheduleThink ( void )
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: Override base class activiites
+// Purpose: Override base class activities
 // Input  :
 // Output :
 //-----------------------------------------------------------------------------
@@ -1201,7 +1201,7 @@ bool CNPC_Houndeye::HandleInteraction(int interactionType, void *data, CBaseComb
 //=========================================================
 // SCHED_HOUND_ATTACK_STRAFE
 //
-//  Run a cirle around my enemy
+//  Run a circle around my enemy
 //=========================================================
 AI_DEFINE_SCHEDULE 
 (
@@ -1226,7 +1226,7 @@ AI_DEFINE_SCHEDULE
 //=========================================================
 // SCHED_HOUND_ATTACK_STRAFE_REVERSE
 //
-//  Run a cirle around my enemy
+//  Run a circle around my enemy
 //=========================================================
 AI_DEFINE_SCHEDULE 
 (
@@ -1375,7 +1375,7 @@ AI_DEFINE_SCHEDULE
 	"		 TASK_RANGE_ATTACK1			0"
 	""
 	"	Interrupts"
-	//"		COND_LIGHT_DAMAGE"	// don't interupt on small damage
+	//"		COND_LIGHT_DAMAGE"	// don't interrupt on small damage
 	"		COND_HEAVY_DAMAGE"
 );
 

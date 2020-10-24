@@ -1419,7 +1419,7 @@ void CViewRenderBeams::FreeDeadTrails( BeamTrail_t **trail )
 	BeamTrail_t *kill;
 	BeamTrail_t *p;
 
-	// kill all the ones hanging direcly off the base pointer
+	// kill all the ones hanging directly off the base pointer
 	for ( ;; ) 
 	{
 		kill = *trail;

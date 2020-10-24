@@ -17,9 +17,9 @@
 NAMESPACE_BEGIN(CryptoPP)
 
 /// \brief MQV domain for performing authenticated key agreement
-/// \tparam GROUP_PARAMETERS doamin parameters
+/// \tparam GROUP_PARAMETERS domain parameters
 /// \tparam COFACTOR_OPTION cofactor option
-/// \details GROUP_PARAMETERS parameters include the curve coefcients and the base point.
+/// \details GROUP_PARAMETERS parameters include the curve coefficients and the base point.
 ///   Binary curves use a polynomial to represent its characteristic, while prime curves
 ///   use a prime number.
 /// \sa MQV, HMQV, FHMQV, and AuthenticatedKeyAgreementDomain
@@ -127,7 +127,7 @@ public:
 	/// \param rng a RandomNumberGenerator derived class
 	/// \param privateKey a byte buffer with the previously generated private key
 	/// \param publicKey a byte buffer for the generated public key in this domain
-	/// \details The public key is an element or point on the curve, and its stored in a revrsible format.
+	/// \details The public key is an element or point on the curve, and its stored in a reversible format.
 	///    A reversible format means it has a presentation format, and its an ANS.1 encoded element or point.
 	/// \pre <tt>COUNTOF(publicKey) == PublicStaticKeyLength()</tt>
 	void GenerateStaticPublicKey(RandomNumberGenerator &rng, const byte *privateKey, byte *publicKey) const

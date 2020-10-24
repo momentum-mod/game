@@ -96,7 +96,7 @@ public:
     /// \brief Provides the minimum entropy size
     /// \returns The minimum entropy size required by the generator, in bytes
     /// \details The equivalent class constant is <tt>MINIMUM_ENTROPY</tt>. All NIST DRBGs must
-    ///   be instaniated with at least <tt>MINIMUM_ENTROPY</tt> bytes of entropy. The bytes must
+    ///   be instantiated with at least <tt>MINIMUM_ENTROPY</tt> bytes of entropy. The bytes must
     ///   meet <A HREF="http://csrc.nist.gov/publications/PubsSPs.html">NIST SP 800-90B or
     ///   SP 800-90C</A> requirements.
     virtual unsigned int MinEntropyLength() const=0;
@@ -125,12 +125,12 @@ public:
     virtual unsigned int MaxNonceLength() const=0;
 
     /// \brief Provides the maximum size of a request to GenerateBlock
-    /// \returns The the maximum size of a request to GenerateBlock(), in bytes
+    /// \returns The maximum size of a request to GenerateBlock(), in bytes
     /// \details The equivalent class constant is <tt>MAXIMUM_BYTES_PER_REQUEST</tt>
     virtual unsigned int MaxBytesPerRequest() const=0;
 
     /// \brief Provides the maximum number of requests before a reseed
-    /// \returns The the maximum number of requests before a reseed, in bytes
+    /// \returns The maximum number of requests before a reseed, in bytes
     /// \details The equivalent class constant is <tt>MAXIMUM_REQUESTS_BEFORE_RESEED</tt>.
     ///   <tt>MAXIMUM_REQUESTS_BEFORE_RESEED</tt> has been reduced from 2<sup>48</sup> to <tt>INT_MAX</tt>
     ///   to fit the underlying C++ datatype.
@@ -153,7 +153,7 @@ protected:
 ///   Security Strength and Seed Length, depend on the hash and are specified as template parameters.
 ///   The remaining parameters are included in the class. The parameters and their values are listed
 ///   in NIST SP 800-90A Rev. 1, Table 2: Definitions for Hash-Based DRBG Mechanisms (p.38).
-/// \details Some parameters have been reduce to fit C++ datatypes. For example, NIST allows upto
+/// \details Some parameters have been reduce to fit C++ datatypes. For example, NIST allows up to
 ///   2<sup>48</sup> requests before a reseed. However, Hash_DRBG limits it to <tt>INT_MAX</tt> due
 ///   to the limited data range of an int.
 /// \sa <A HREF="http://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-90Ar1.pdf">Recommendation
@@ -186,7 +186,7 @@ public:
     /// \param personalization additional input to instantiate the generator
     /// \param personalizationLength the size of the personalization buffer
     /// \throws NIST_DRBG::Err if the generator is instantiated with insufficient entropy
-    /// \details All NIST DRBGs must be instaniated with at least <tt>MINIMUM_ENTROPY</tt> bytes of entropy.
+    /// \details All NIST DRBGs must be instantiated with at least <tt>MINIMUM_ENTROPY</tt> bytes of entropy.
     ///   The byte array for <tt>entropy</tt> must meet <A HREF ="http://csrc.nist.gov/publications/PubsSPs.html">NIST
     ///   SP 800-90B or SP 800-90C</A> requirements.
     /// \details The <tt>nonce</tt> and <tt>personalization</tt> are optional byte arrays. If <tt>nonce</tt> is supplied,
@@ -271,7 +271,7 @@ private:
 ///   Security Strength and Seed Length, depend on the hash and are specified as template parameters.
 ///   The remaining parameters are included in the class. The parameters and their values are listed
 ///   in NIST SP 800-90A Rev. 1, Table 2: Definitions for Hash-Based DRBG Mechanisms (p.38).
-/// \details Some parameters have been reduce to fit C++ datatypes. For example, NIST allows upto 2<sup>48</sup> requests
+/// \details Some parameters have been reduce to fit C++ datatypes. For example, NIST allows up to 2<sup>48</sup> requests
 ///   before a reseed. However, HMAC_DRBG limits it to <tt>INT_MAX</tt> due to the limited data range of an int.
 /// \sa <A HREF="http://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-90Ar1.pdf">Recommendation
 ///   for Random Number Generation Using Deterministic Random Bit Generators, Rev 1 (June 2015)</A>
@@ -303,7 +303,7 @@ public:
     /// \param personalization additional input to instantiate the generator
     /// \param personalizationLength the size of the personalization buffer
     /// \throws NIST_DRBG::Err if the generator is instantiated with insufficient entropy
-    /// \details All NIST DRBGs must be instaniated with at least <tt>MINIMUM_ENTROPY</tt> bytes of entropy.
+    /// \details All NIST DRBGs must be instantiated with at least <tt>MINIMUM_ENTROPY</tt> bytes of entropy.
     ///   The byte array for <tt>entropy</tt> must meet <A HREF ="http://csrc.nist.gov/publications/PubsSPs.html">NIST
     ///   SP 800-90B or SP 800-90C</A> requirements.
     /// \details The <tt>nonce</tt> and <tt>personalization</tt> are optional byte arrays. If <tt>nonce</tt> is supplied,
@@ -394,7 +394,7 @@ void Hash_DRBG<HASH, STRENGTH, SEEDLENGTH>::DRBG_Instantiate(const byte* entropy
         throw NIST_DRBG::Err("Hash_DRBG", "Insufficient entropy during instantiate");
 
     // SP 800-90A, Section 9, says we should throw if we have too much entropy, too large a nonce,
-    // or too large a persoanlization string. We warn in Debug builds, but do nothing in Release builds.
+    // or too large a personalization string. We warn in Debug builds, but do nothing in Release builds.
     CRYPTOPP_ASSERT(entropyLength <= MAXIMUM_ENTROPY);
     CRYPTOPP_ASSERT(nonceLength <= MAXIMUM_NONCE);
     CRYPTOPP_ASSERT(personalizationLength <= MAXIMUM_PERSONALIZATION);
@@ -422,7 +422,7 @@ void Hash_DRBG<HASH, STRENGTH, SEEDLENGTH>::DRBG_Reseed(const byte* entropy, siz
         throw NIST_DRBG::Err("Hash_DRBG", "Insufficient entropy during reseed");
 
     // SP 800-90A, Section 9, says we should throw if we have too much entropy, too large a nonce,
-    // or too large a persoanlization string. We warn in Debug builds, but do nothing in Release builds.
+    // or too large a personalization string. We warn in Debug builds, but do nothing in Release builds.
     CRYPTOPP_ASSERT(entropyLength <= MAXIMUM_ENTROPY);
     CRYPTOPP_ASSERT(additionaLength <= MAXIMUM_ADDITIONAL);
 
@@ -447,7 +447,7 @@ void Hash_DRBG<HASH, STRENGTH, SEEDLENGTH>::Hash_Generate(const byte* additional
         throw NIST_DRBG::Err("Hash_DRBG", "Request size exceeds limit");
 
     // SP 800-90A, Section 9, says we should throw if we have too much entropy, too large a nonce,
-    // or too large a persoanlization string. We warn in Debug builds, but do nothing in Release builds.
+    // or too large a personalization string. We warn in Debug builds, but do nothing in Release builds.
     CRYPTOPP_ASSERT(additionaLength <= MAXIMUM_ADDITIONAL);
 
     // Step 2
@@ -576,7 +576,7 @@ void HMAC_DRBG<HASH, STRENGTH, SEEDLENGTH>::DRBG_Instantiate(const byte* entropy
         throw NIST_DRBG::Err("HMAC_DRBG", "Insufficient entropy during instantiate");
 
     // SP 800-90A, Section 9, says we should throw if we have too much entropy, too large a nonce,
-    // or too large a persoanlization string. We warn in Debug builds, but do nothing in Release builds.
+    // or too large a personalization string. We warn in Debug builds, but do nothing in Release builds.
     CRYPTOPP_ASSERT(entropyLength <= MAXIMUM_ENTROPY);
     CRYPTOPP_ASSERT(nonceLength <= MAXIMUM_NONCE);
     CRYPTOPP_ASSERT(personalizationLength <= MAXIMUM_PERSONALIZATION);
@@ -602,7 +602,7 @@ void HMAC_DRBG<HASH, STRENGTH, SEEDLENGTH>::DRBG_Reseed(const byte* entropy, siz
         throw NIST_DRBG::Err("HMAC_DRBG", "Insufficient entropy during reseed");
 
     // SP 800-90A, Section 9, says we should throw if we have too much entropy, too large a nonce,
-    // or too large a persoanlization string. We warn in Debug builds, but do nothing in Release builds.
+    // or too large a personalization string. We warn in Debug builds, but do nothing in Release builds.
     CRYPTOPP_ASSERT(entropyLength <= MAXIMUM_ENTROPY);
     CRYPTOPP_ASSERT(additionaLength <= MAXIMUM_ADDITIONAL);
 
@@ -622,7 +622,7 @@ void HMAC_DRBG<HASH, STRENGTH, SEEDLENGTH>::HMAC_Generate(const byte* additional
         throw NIST_DRBG::Err("HMAC_DRBG", "Request size exceeds limit");
 
     // SP 800-90A, Section 9, says we should throw if we have too much entropy, too large a nonce,
-    // or too large a persoanlization string. We warn in Debug builds, but do nothing in Release builds.
+    // or too large a personalization string. We warn in Debug builds, but do nothing in Release builds.
     CRYPTOPP_ASSERT(additionaLength <= MAXIMUM_ADDITIONAL);
 
     // Step 2

@@ -169,7 +169,7 @@ public:
 	virtual int	ObjectCaps( void ) { return BaseClass::ObjectCaps() | m_iCaps; }
 
 	float m_flNextCharge; 
-	int		m_iReactivate ; // DeathMatch Delay until reactvated
+	int		m_iReactivate ; // DeathMatch Delay until reactivated
 	int		m_iJuice;
 	int		m_iOn;			// 0 = off, 1 = startup, 2 = going
 	float   m_flSoundTime;
@@ -433,7 +433,7 @@ public:
 	virtual int	ObjectCaps( void ) { return BaseClass::ObjectCaps() | m_iCaps; }
 
 	float m_flNextCharge; 
-	int		m_iReactivate ; // DeathMatch Delay until reactvated
+	int		m_iReactivate ; // DeathMatch Delay until reactivated
 	int		m_iJuice;
 	int		m_iOn;			// 0 = off, 1 = startup, 2 = going
 	float   m_flSoundTime;

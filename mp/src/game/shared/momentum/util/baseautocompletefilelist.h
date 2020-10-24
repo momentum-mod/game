@@ -43,7 +43,7 @@ private:
 	g_##command##_CompletionFunc
 
 //-----------------------------------------------------------------------------
-// Purpose: Utility to quicky generate a simple console command with file name autocompletion
+// Purpose: Utility to quickly generate a simple console command with file name autocompletion
 //-----------------------------------------------------------------------------
 #define CON_COMMAND_AUTOCOMPLETEFILE( name, func, description, subdirectory, extension )				\
    DECLARE_AUTOCOMPLETION_FUNCTION( name, subdirectory, extension )										\

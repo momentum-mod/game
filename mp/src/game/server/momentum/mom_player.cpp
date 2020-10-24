@@ -13,7 +13,6 @@
 #include "player_command.h"
 #include "predicted_viewmodel.h"
 #include "weapon/weapon_base_gun.h"
-#include "weapon/weapon_mom_paintgun.h"
 #include "weapon/weapon_mom_stickybomblauncher.h"
 #include "mom_system_gamemode.h"
 #include "mom_system_saveloc.h"
@@ -22,17 +21,17 @@
 #include "run/mom_replay_base.h"
 #include "mapzones.h"
 #include "fx_mom_shared.h"
+#include "mom_system_tricks.h"
+#include "run/mom_run_safeguards.h"
+#include "movevars_shared.h"
 
 #include "tier0/memdbgon.h"
 
 #define AVERAGE_STATS_INTERVAL 0.1
 #define SND_SPRINT "HL2Player.SprintStart"
+#define PAINT_CYCLE_TIME 0.1f
 
-static MAKE_TOGGLE_CONVAR(mom_practice_safeguard, "1", FCVAR_ARCHIVE | FCVAR_REPLICATED,
-                          "Toggles the safeguard for enabling practice mode (not pressing any movement keys to enable). 0 = OFF, 1 = ON.\n");
-
-static MAKE_TOGGLE_CONVAR(mom_practice_warning_enable, "1", FCVAR_ARCHIVE | FCVAR_REPLICATED,
-                          "Toggles the warning for enabling practice mode during a run. 0 = OFF, 1 = ON\n");
+static MAKE_TOGGLE_CONVAR(mom_practice_warning_enable, "1", FCVAR_ARCHIVE | FCVAR_REPLICATED, "Toggles the warning for enabling practice mode during a run. 0 = OFF, 1 = ON\n");
 
 static MAKE_TOGGLE_CONVAR(mom_ahop_sound_sprint_enable, "1", FCVAR_ARCHIVE | FCVAR_REPLICATED, "Toggles the sound made when enabling sprint. 0 = OFF, 1 = ON.\n");
 
@@ -50,59 +49,74 @@ CON_COMMAND_F(
     pPlayer->TogglePracticeMode();
 }
 
-CON_COMMAND(
-    mom_eyetele,
-    "Teleports the player to the solid that they are looking at.\n")
+CON_COMMAND(mom_eyetele, "Teleports the player to the solid that they are looking at.\n")
 {
     CMomentumPlayer *pPlayer = CMomentumPlayer::GetLocalPlayer();
     if (!pPlayer)
         return;
 
-    if (pPlayer->m_bHasPracticeMode || !g_pMomentumTimer->IsRunning())
+    if (!pPlayer->m_bHasPracticeMode && g_pMomentumTimer->IsRunning())
     {
-        trace_t tr;
-        Vector pos = pPlayer->EyePosition();
-        Vector ang;
-        pPlayer->EyeVectors(&ang);
+        Warning("Eyetele can only be used when the timer is not running or in practice mode!\n");
+        return;
+    }
 
-        int mask = CONTENTS_SOLID | CONTENTS_MOVEABLE | CONTENTS_OPAQUE | CONTENTS_WINDOW;
-        UTIL_TraceLine(pos, pos + ang * MAX_COORD_RANGE, mask, pPlayer, COLLISION_GROUP_NONE, &tr);
+    trace_t tr;
+    Vector pos = pPlayer->EyePosition();
+    Vector ang;
+    pPlayer->EyeVectors(&ang);
 
-        if (!CloseEnough(tr.fraction, 1.0f) && tr.DidHit())
+    int mask = CONTENTS_SOLID | CONTENTS_MOVEABLE | CONTENTS_OPAQUE | CONTENTS_WINDOW;
+    UTIL_TraceLine(pos, pos + ang * MAX_COORD_RANGE, mask, pPlayer, COLLISION_GROUP_NONE, &tr);
+
+    if (!CloseEnough(tr.fraction, 1.0f) && tr.DidHit())
+    {
+        Vector hit = tr.endpos;
+        if (enginetrace->PointOutsideWorld(hit))
         {
-            Vector hit = tr.endpos;
-            if (enginetrace->PointOutsideWorld(hit))
-            {
-                hit += (hit - pos).Normalized() * 64.0f;
+            hit += (hit - pos).Normalized() * 64.0f;
 
-                UTIL_TraceLine(hit, hit + ang * MAX_COORD_RANGE, mask, pPlayer, COLLISION_GROUP_NONE, &tr);
+            UTIL_TraceLine(hit, hit + ang * MAX_COORD_RANGE, mask, pPlayer, COLLISION_GROUP_NONE, &tr);
 
-                if (tr.DidHit())
-                    hit = tr.endpos;
-            }
-            Vector nrm = tr.plane.normal;
-
-            if (CloseEnough(nrm.z, 1.0f))
-            {
-                if (pPlayer->GetMoveType() == MOVETYPE_NOCLIP) 
-                    hit.z += 32.0f;
-            }
-            else
-            {
-                hit += (hit - pos).Normalized() * -32.0f;
-            }
-
-            QAngle new_ang = pPlayer->GetAbsAngles();
-            if (new_ang.x > 45.0f && enginetrace->PointOutsideWorld(pos))
-                new_ang.x = 0.0f;
-
-            g_pMomentumTimer->SetCanStart(false);
-            pPlayer->Teleport(&hit, &new_ang, nullptr);
+            if (tr.DidHit())
+                hit = tr.endpos;
         }
+        Vector nrm = tr.plane.normal;
+
+        if (CloseEnough(nrm.z, 1.0f))
+        {
+            if (pPlayer->GetMoveType() == MOVETYPE_NOCLIP) 
+                hit.z += 32.0f;
+        }
+        else
+        {
+            hit += (hit - pos).Normalized() * -32.0f;
+        }
+
+        QAngle new_ang = pPlayer->GetAbsAngles();
+        if (new_ang.x > 45.0f && enginetrace->PointOutsideWorld(pos))
+            new_ang.x = 0.0f;
+
+        pPlayer->ManualTeleport(&hit, &new_ang, nullptr);
+    }
+}
+
+CON_COMMAND(mom_prog_tele, "Teleports player to the last progress trigger\n")
+{
+    CMomentumPlayer *pPlayer = CMomentumPlayer::GetLocalPlayer();
+
+    if (!pPlayer)
+        return;
+
+    CBaseMomentumTrigger *pTrigger = pPlayer->GetCurrentProgressTrigger();
+
+    if (pTrigger)
+    {
+        pPlayer->Teleport(&pTrigger->GetAbsOrigin(), nullptr, &vec3_origin);
     }
     else
     {
-        Warning("Eyetele can only be used when the timer is not running or in practice mode!\n");
+        DevWarning("mom_prog_tele cannot teleport, CurrentProgressTrigger is null!\n");
     }
 }
 
@@ -126,6 +140,7 @@ SendPropBool(SENDINFO(m_bIsSprinting)),
 SendPropBool(SENDINFO(m_bIsWalking)),
 SendPropBool(SENDINFO(m_bHasPracticeMode)),
 SendPropBool(SENDINFO(m_bPreventPlayerBhop)),
+SendPropInt(SENDINFO(m_iJumpTick)),
 SendPropInt(SENDINFO(m_iLandTick)),
 SendPropBool(SENDINFO(m_bResumeZoom)),
 SendPropInt(SENDINFO(m_iShotsFired), 16, SPROP_UNSIGNED),
@@ -136,6 +151,7 @@ SendPropEHandle(SENDINFO(m_CurrentSlideTrigger)),
 SendPropBool(SENDINFO(m_bAutoBhop)),
 SendPropFloat(SENDINFO(m_fDuckTimer)),
 SendPropBool(SENDINFO(m_bSurfing)),
+SendPropInt(SENDINFO(m_nButtonsToggled)),
 SendPropVector(SENDINFO(m_vecRampBoardVel)),
 SendPropVector(SENDINFO(m_vecRampLeaveVel)),
 SendPropArray3(SENDINFO_ARRAY3(m_iZoneCount), SendPropInt(SENDINFO_ARRAY(m_iZoneCount), 7, SPROP_UNSIGNED)),
@@ -227,6 +243,7 @@ CMomentumPlayer::CMomentumPlayer()
     m_iSuccessiveBhops = 0;
     m_bPreventPlayerBhop = false;
     m_iLandTick = 0;
+    m_iJumpTick = 0;
 
     m_RunStats.Init();
 
@@ -240,6 +257,11 @@ CMomentumPlayer::CMomentumPlayer()
 
     m_bIsWalking = false;
     m_bIsSprinting = false;
+
+    m_bIsPowerSliding = false;
+    m_nWallRunState = WALLRUN_NOT;
+
+    m_nButtonsToggled = 0;
 }
 
 CMomentumPlayer::~CMomentumPlayer()
@@ -280,6 +302,11 @@ void CMomentumPlayer::Precache()
     PrecacheScriptSound(SND_FLASHLIGHT_ON);
     PrecacheScriptSound(SND_FLASHLIGHT_OFF);
     PrecacheScriptSound(SND_SPRINT);
+    PrecacheScriptSound(SND_PAINT_SHOT);
+
+    PrecacheScriptSound("Player.AirJump");
+    m_hssPowerSlideSound = PrecacheScriptSound("Player.PowerSlide");
+    m_hssWallRunSound = PrecacheScriptSound("Player.WallRun");
 
     BaseClass::Precache();
 }
@@ -401,6 +428,9 @@ void CMomentumPlayer::FlashlightToggle(bool bOn, bool bEmitSound)
 
 void CMomentumPlayer::LoadAppearance(bool bForceUpdate)
 {
+    if (IsObserver())
+        return;
+
     AppearanceData_t newData;
     uint32 newHexColor = MomUtil::GetHexFromColor(mom_trail_color.GetString());
     newData.m_iTrailRGBAColorAsHex = newHexColor;
@@ -438,6 +468,8 @@ void CMomentumPlayer::Spawn()
 
     m_bAllowUserTeleports = true;
 
+    m_nButtonsToggled = 0;
+
     // Handle resetting only if we weren't spectating nor have practice mode
     if (m_bWasSpectating)
     {
@@ -455,8 +487,14 @@ void CMomentumPlayer::Spawn()
 
         for (int i = 0; i < MAX_TRACKS; i++)
         {
-            ClearStartMark(i);
+            ClearStartMark(i, false);
         }
+
+        // Load startmarks after player spawn
+        if (g_pSavelocSystem->LoadStartMarks())
+            DevLog("Loaded startmarks from the savedlocs file!\n");
+        else
+            DevWarning("ERROR: Failed loading startmarks from the savedlocs file.\n");
 
         g_MapZoneSystem.DispatchMapInfo(this);
 
@@ -521,6 +559,8 @@ void CMomentumPlayer::SetAutoBhopEnabled(bool bEnable)
 
 void CMomentumPlayer::OnJump()
 {
+    m_iJumpTick = gpGlobals->tickcount;
+
     // OnCheckBhop code
     m_bDidPlayerBhop = gpGlobals->tickcount - m_iLandTick < NUM_TICKS_TO_BHOP;
     if (!m_bDidPlayerBhop)
@@ -729,45 +769,59 @@ CBaseMomentumTrigger* CMomentumPlayer::GetCurrentProgressTrigger() const
     return m_CurrentProgress.Get();
 }
 
-void CMomentumPlayer::CreateStartMark()
+bool CMomentumPlayer::CreateStartMark()
 {
     const auto pCurrentZoneTrigger = GetCurrentZoneTrigger();
 
     if (pCurrentZoneTrigger && pCurrentZoneTrigger->IsTouching(this) && pCurrentZoneTrigger->GetZoneType() == ZONE_TYPE_START)
     {
-        ClearStartMark(m_Data.m_iCurrentTrack);
+        ClearStartMark(m_Data.m_iCurrentTrack, false);
 
-        m_pStartZoneMarks[m_Data.m_iCurrentTrack] = g_pMOMSavelocSystem->CreateSaveloc();
+        m_pStartZoneMarks[m_Data.m_iCurrentTrack] = g_pSavelocSystem->CreateSaveloc(SAVELOC_POS | SAVELOC_ANG);
         if (m_pStartZoneMarks[m_Data.m_iCurrentTrack])
         {
-            m_pStartZoneMarks[m_Data.m_iCurrentTrack]->vel = vec3_origin; // Rid the velocity
             DevLog("Successfully created a starting mark!\n");
+            ClientPrint(this, HUD_PRINTTALK, "Start Mark Created!");
+            return true;
         }
         else
         {
             Warning("Could not create the start mark for some reason!\n");
         }
     }
+    return false;
 }
 
-void CMomentumPlayer::ClearStartMark(int track)
+bool CMomentumPlayer::SetStartMark(int track, SavedLocation_t *saveloc)
+{
+    if (!saveloc)
+        return false;
+
+    if (track < 0 || track >= MAX_TRACKS)
+        return false;
+
+    if (saveloc->m_savedComponents != (SAVELOC_POS | SAVELOC_ANG))
+        return false;
+
+    m_pStartZoneMarks[track] = saveloc;
+
+    return true;
+}
+
+bool CMomentumPlayer::ClearStartMark(int track, bool bPrintMsg)
 {
     if (track >= 0 && track < MAX_TRACKS)
     {
         if (m_pStartZoneMarks[track])
             delete m_pStartZoneMarks[track];
         m_pStartZoneMarks[track] = nullptr;
-    }
-}
 
-void CMomentumPlayer::DoMuzzleFlash()
-{
-    // Don't do the muzzle flash for the paint gun
-    CWeaponBase *pWeapon = dynamic_cast<CWeaponBase *>(GetActiveWeapon());
-    if (!(pWeapon && pWeapon->GetWeaponID() == WEAPON_PAINTGUN))
-    {
-        BaseClass::DoMuzzleFlash();
+        if (bPrintMsg)
+            ClientPrint(this, HUD_PRINTTALK, "Start Mark Cleared!");
+
+        return true;
     }
+    return false;
 }
 
 bool CMomentumPlayer::CanSprint() const
@@ -781,9 +835,9 @@ bool CMomentumPlayer::CanSprint() const
 void CMomentumPlayer::ToggleSprint(bool bShouldSprint)
 {
     m_bIsSprinting = bShouldSprint;
-    SetMaxSpeed(bShouldSprint ? AHOP_SPRINT_SPEED : AHOP_NORM_SPEED);
+    DeriveMaxSpeed();
 
-    if (bShouldSprint && mom_ahop_sound_sprint_enable.GetBool())
+    if (bShouldSprint && mom_ahop_sound_sprint_enable.GetBool() && !g_pGameModeSystem->GameModeIs(GAMEMODE_PARKOUR))
     {
         EmitSound(SND_SPRINT);
     }
@@ -792,7 +846,30 @@ void CMomentumPlayer::ToggleSprint(bool bShouldSprint)
 void CMomentumPlayer::ToggleWalk(bool bShouldWalk)
 {
     m_bIsWalking = bShouldWalk;
-    SetMaxSpeed(m_bIsWalking ? AHOP_WALK_SPEED : AHOP_NORM_SPEED);
+    DeriveMaxSpeed();
+}
+
+void CMomentumPlayer::DeriveMaxSpeed()
+{
+    float newMaxSpeed;
+    if (m_nWallRunState >= WALLRUN_RUNNING)
+    {
+        newMaxSpeed = sv_wallrun_speed.GetFloat();
+    }
+    else if (m_bIsSprinting)
+    {
+        newMaxSpeed = g_pGameModeSystem->GameModeIs(GAMEMODE_PARKOUR) ? PK_SPRINT_SPEED : AHOP_SPRINT_SPEED;
+    }
+    else if (m_bIsWalking)
+    {
+        newMaxSpeed = AHOP_WALK_SPEED;
+    }
+    else
+    {
+        newMaxSpeed = g_pGameModeSystem->GameModeIs(GAMEMODE_PARKOUR) ? PK_NORM_SPEED : AHOP_NORM_SPEED;
+    }
+
+    SetMaxSpeed(newMaxSpeed);
 }
 
 void CMomentumPlayer::HandleSprintAndWalkChanges()
@@ -800,42 +877,66 @@ void CMomentumPlayer::HandleSprintAndWalkChanges()
     const int buttonsChanged = m_afButtonPressed | m_afButtonReleased;
 
     const bool bWantSprint = (CanSprint() && (m_nButtons & IN_SPEED));
-    if (m_bIsSprinting != bWantSprint && (buttonsChanged & IN_SPEED))
+    if (g_pGameModeSystem->GameModeIs(GAMEMODE_PARKOUR))
     {
-        // If someone wants to sprint, make sure they've pressed the button to do so. We want to prevent the
-        // case where a player can hold down the sprint key and burn tiny bursts of sprint as the suit recharges
-        // We want a full debounce of the key to resume sprinting after the suit is completely drained
-        ToggleSprint(bWantSprint);
-
-        if (!bWantSprint)
+        if (m_bIsSprinting == false && bWantSprint && (buttonsChanged & IN_SPEED) && (m_nButtons & IN_FORWARD))
         {
-            // Reset key, so it will be activated post whatever is suppressing it.
-            m_nButtons &= ~IN_SPEED;
+            ToggleSprint(true);
         }
-    }
 
-    if (m_bIsSprinting)
-    {
-        // Disable sprint while ducked unless we're in the air (jumping)
-        if (IsDucked() && GetGroundEntity())
+        // Do not sprint backwards
+        if (m_bIsSprinting && !(m_nButtons & (IN_FORWARD | IN_MOVELEFT | IN_MOVERIGHT)))
         {
             ToggleSprint(false);
         }
     }
-
-    // have suit, pressing button, not sprinting or ducking
-    const auto bWantWalk = (m_nButtons & IN_WALK) && !m_bIsSprinting && !(m_nButtons & IN_DUCK);
-
-    if (m_bIsWalking != bWantWalk)
+    else
     {
-        ToggleWalk(bWantWalk);
+        if (m_bIsSprinting != bWantSprint && (buttonsChanged & IN_SPEED))
+        {
+            // If someone wants to sprint, make sure they've pressed the button to do so. We want to prevent the
+            // case where a player can hold down the sprint key and burn tiny bursts of sprint as the suit recharges
+            // We want a full debounce of the key to resume sprinting after the suit is completely drained
+            ToggleSprint(bWantSprint);
+
+            if (!bWantSprint)
+            {
+                // Reset key, so it will be activated post whatever is suppressing it.
+                m_nButtons &= ~IN_SPEED;
+            }
+        }
+
+        if (m_bIsSprinting)
+        {
+            // Disable sprint while ducked unless we're in the air (jumping)
+            if (IsDucked() && GetGroundEntity())
+            {
+                ToggleSprint(false);
+            }
+        }
+    }
+    
+    if (!m_bIsSprinting)
+        ResetToggledInput(IN_SPEED);
+
+    if (g_pGameModeSystem->GameModeIs(GAMEMODE_AHOP))
+    {
+        // have suit, pressing button, not sprinting or ducking
+        const auto bWantWalk = (m_nButtons & IN_WALK) && !m_bIsSprinting && !(m_nButtons & IN_DUCK);
+
+        if (m_bIsWalking != bWantWalk)
+        {
+            ToggleWalk(bWantWalk);
+        }
+        
+        ResetToggledInput(m_bIsWalking ? IN_SPEED : IN_WALK);
     }
 }
 
 void CMomentumPlayer::PreThink()
 {
     // Handle Ahop related things
-    if (g_pGameModeSystem->GameModeIs(GAMEMODE_AHOP))
+    if (g_pGameModeSystem->GameModeIs(GAMEMODE_AHOP) || g_pGameModeSystem->GameModeIs(GAMEMODE_PARKOUR))
     {
         HandleSprintAndWalkChanges();
     }
@@ -853,18 +954,43 @@ void CMomentumPlayer::ToggleDuckThisFrame(bool bState)
     }
 }
 
-void CMomentumPlayer::CheckChatText(char *p, int bufsize) { g_pMomentumGhostClient->SendChatMessage(p); }
+bool CMomentumPlayer::CanTeleport()
+{
+    if (!m_bAllowUserTeleports)
+        return false;
+
+    if (m_Data.m_bMapFinished && !m_cvarMapFinMoveEnable.GetBool())
+        return false;
+
+    if (m_bHasPracticeMode && (m_nButtons & IN_JUMP))
+        return false;
+
+    return true;
+}
+
+void CMomentumPlayer::ManualTeleport(const Vector *newPosition, const QAngle *newAngles, const Vector *newVelocity)
+{
+    if (!CanTeleport())
+        return;
+
+    m_nButtonsToggled = 0;
+
+    DestroyExplosives();
+
+    g_pMomentumTimer->Stop(this);
+    g_pMomentumTimer->SetCanStart(false);
+
+    g_pTrickSystem->ClearTrickAttempts();
+
+    Teleport(newPosition, newAngles, newVelocity);
+
+    g_pTrickSystem->PostPlayerManualTeleport(this);
+}
 
 // Overrides Teleport() so we can take care of the trail
 void CMomentumPlayer::Teleport(const Vector *newPosition, const QAngle *newAngles, const Vector *newVelocity)
 {
-    if (!m_bAllowUserTeleports)
-        return;
-
-    if (m_Data.m_bMapFinished && !m_cvarMapFinMoveEnable.GetBool())
-        return;
-
-    if (m_bHasPracticeMode && (m_nButtons & IN_JUMP))
+    if (!CanTeleport())
         return;
 
     // No need to remove the trail here, CreateTrail() already does it for us
@@ -992,12 +1118,18 @@ void CMomentumPlayer::OnZoneEnter(CTriggerZone *pTrigger)
     case ZONE_TYPE_STOP:
         {
             // We've reached end zone, stop here
-            //auto pStopTrigger = static_cast<CTriggerTimerStop *>(pTrigger);
+            const auto pStopTrigger = static_cast<CTriggerTimerStop *>(pTrigger);
             m_iOldTrack = m_Data.m_iCurrentTrack;
             m_iOldZone = m_Data.m_iCurrentZone;
 
             if (g_pMomentumTimer->IsRunning())
             {
+                if (pStopTrigger->GetCancelBool())
+                {
+                    g_pMomentumTimer->Stop(this);
+                    return;
+                }
+
                 const int zoneNum = m_Data.m_iCurrentZone;
 
                 // This is needed so we have an ending velocity.
@@ -1109,7 +1241,7 @@ void CMomentumPlayer::OnZoneExit(CTriggerZone *pTrigger)
         }
         // g_pMomentumTimer->CalculateTickIntervalOffset(this, ZONE_TYPE_START, 1);
         g_pMomentumTimer->TryStart(this, true);
-        if (m_bShouldLimitPlayerSpeed && !m_bHasPracticeMode && !g_pMOMSavelocSystem->IsUsingSaveLocMenu())
+        if (m_bShouldLimitPlayerSpeed && !m_bHasPracticeMode && !g_pSavelocSystem->IsUsingSaveLocMenu())
         {
             const auto pStart = static_cast<CTriggerTimerStart*>(pTrigger);
 
@@ -1181,6 +1313,37 @@ void CMomentumPlayer::PlayerThink()
 
     // think once per tick
     SetNextThink(gpGlobals->curtime + gpGlobals->interval_per_tick, "THINK_EVERY_TICK");
+}
+
+void CMomentumPlayer::PlayerRunCommand(CUserCmd* ucmd, IMoveHelper* moveHelper)
+{
+    if (!(GetFlags() & FL_FROZEN))
+    {
+        if (m_nButtonsToggled & IN_DUCK)
+            ucmd->buttons |= IN_DUCK;
+        if (m_nButtonsToggled & IN_JUMP)
+            ucmd->buttons |= IN_JUMP;
+        if (m_nButtonsToggled & IN_SPEED)
+            ucmd->buttons |= IN_SPEED;
+        if (m_nButtonsToggled & IN_WALK)
+            ucmd->buttons |= IN_WALK;
+    }
+
+    BaseClass::PlayerRunCommand(ucmd, moveHelper);
+}
+
+void CMomentumPlayer::ToggleInput(int nInput)
+{
+    if (m_nButtonsToggled & nInput)
+        m_nButtonsToggled &= ~nInput;
+    else
+        m_nButtonsToggled |= nInput;
+}
+
+void CMomentumPlayer::ResetToggledInput(int nInput)
+{
+    if (m_nButtonsToggled & nInput)
+        m_nButtonsToggled &= ~nInput;
 }
 
 void CMomentumPlayer::UpdateRunSync()
@@ -1707,10 +1870,16 @@ void CMomentumPlayer::TimerCommand_Restart(int track)
     if (!AllowUserTeleports())
         return;
 
-    g_pMomentumTimer->Stop(this);
-    g_pMomentumTimer->SetCanStart(false);
-
     DestroyExplosives();
+
+    if (g_pGameModeSystem->GameModeIs(GAMEMODE_TRICKSURF))
+    {
+        if (g_pTrickSystem->GetTrackedTrick() != -1)
+        {
+            g_pTrickSystem->TeleportToTrick(g_pTrickSystem->GetTrackedTrick());
+            return;
+        }
+    }
 
     const auto pStart = g_pMomentumTimer->GetStartTrigger(track);
     if (pStart)
@@ -1724,7 +1893,7 @@ void CMomentumPlayer::TimerCommand_Restart(int track)
         {
             // Don't set angles if still in start zone.
             QAngle ang = pStart->GetLookAngles();
-            Teleport(&pStart->WorldSpaceCenter(), (pStart->HasLookAngles() ? &ang : nullptr), &vec3_origin);
+            ManualTeleport(&pStart->GetRestartPosition(), (pStart->HasLookAngles() ? &ang : nullptr), &vec3_origin);
         }
 
         m_Data.m_iCurrentTrack = track;
@@ -1735,29 +1904,53 @@ void CMomentumPlayer::TimerCommand_Restart(int track)
         const auto pStartPoint = EntSelectSpawnPoint();
         if (pStartPoint)
         {
-            Teleport(&pStartPoint->GetAbsOrigin(), &pStartPoint->GetAbsAngles(), &vec3_origin);
+            ManualTeleport(&pStartPoint->GetAbsOrigin(), &pStartPoint->GetAbsAngles(), &vec3_origin);
             ResetRunStats();
         }
     }
 }
 
-void CMomentumPlayer::TimerCommand_Reset()
+void CMomentumPlayer::TimerCommand_RestartStage(int stage, int track)
 {
-    if (AllowUserTeleports())
+    if (stage == 1) // start zone
+    {
+        TimerCommand_Restart(track);
+        return;
+    }
+
+    if (!AllowUserTeleports())
+        return;
+
+    m_nButtonsToggled = 0;
+
+    if (g_pMomentumTimer->IsRunning() && track == m_Data.m_iCurrentTrack && stage == m_Data.m_iCurrentZone)
     {
         const auto pCurrentZone = GetCurrentZoneTrigger();
         if (pCurrentZone)
         {
-            DestroyExplosives();
+            if (m_Data.m_bIsInZone)
+                return;
 
-            // MOM_TODO do a trace downwards from the top of the trigger's center to touchable land, teleport the player there
-            Teleport(&pCurrentZone->WorldSpaceCenter(), nullptr, &vec3_origin);
+            DestroyExplosives();
+            Teleport(&pCurrentZone->GetRestartPosition(), nullptr, &vec3_origin);
         }
-        else
+        return;
+    }
+
+    // Every other index is probably a stage (What about < 1 indexes? Mappers are weird and do "weirder"
+    // stuff so...)
+    CTriggerStage *pStage = nullptr;
+
+    while ((pStage = static_cast<CTriggerStage *>(gEntList.FindEntityByClassname(pStage, "trigger_momentum_timer_stage"))) != nullptr)
+    {
+        if (pStage->GetZoneNumber() == stage && pStage->GetTrackNumber() == track)
         {
-            Warning("Cannot reset, you have no current zone!\n");
+            ManualTeleport(&pStage->GetRestartPosition(), &pStage->GetAbsAngles(), &vec3_origin);
+            return;
         }
     }
+
+    Warning("Could not teleport to stage %i on track %i! Perhaps it doesn't exist?\n", stage, track);
 }
 
 void CMomentumPlayer::TogglePracticeMode()
@@ -1792,27 +1985,14 @@ void CMomentumPlayer::SetPracticeModeState()
 
 void CMomentumPlayer::EnablePracticeMode()
 {
-    if (m_bHasPracticeMode)
+    if (m_bHasPracticeMode || g_pRunSafeguards->IsSafeguarded(RUN_SAFEGUARD_PRACTICEMODE))
         return;
 
-    if (g_pMomentumTimer->IsRunning())
+    if (g_pMomentumTimer->IsRunning() && mom_practice_warning_enable.GetBool())
     {
-        if (mom_practice_safeguard.GetBool())
-        {
-            const auto safeGuard = (m_nButtons & (IN_FORWARD | IN_MOVELEFT | IN_MOVERIGHT | IN_BACK | IN_JUMP | IN_DUCK | IN_WALK)) != 0;
-            if (safeGuard)
-            {
-                Warning("You cannot enable practice mode while moving when the timer is running! Toggle this with \"mom_practice_safeguard\"!\n");
-                return;
-            }
-        }
-
-        if (mom_practice_warning_enable.GetBool())
-        {
-            UTIL_ShowMessage("PRACTICE_MODE_WARN", this);
-            Warning("NOTE: Upon disabling practice mode, you will return to your current spot in the run!\n"
-                    "To cancel this, stop your time with \"mom_timer_stop\".\nYou can disable this warning with \"mom_practice_warning_enable 0\"\n");
-        }
+        UTIL_ShowMessage("PRACTICE_MODE_WARN", this);
+        Warning("NOTE: Upon disabling practice mode, you will return to your current spot in the run!\n"
+                "To cancel this, stop your time with \"mom_timer_stop\".\nYou can disable this warning with \"mom_practice_warning_enable 0\"\n");
     }
 
     m_bHasPracticeMode = true;
@@ -2022,6 +2202,11 @@ void CMomentumPlayer::ApplyPushFromDamage(const CTakeDamageInfo &info, Vector &v
     Vector vecForce = -vecDir * force;
     ApplyAbsVelocityImpulse(vecForce);
 
+    if (GetFlags() & FL_ONGROUND)
+    {
+        UpdateLastAction(SurfInt::ACTION_KNOCKBACK);
+    }
+
     IGameEvent *pEvent = gameeventmanager->CreateEvent("player_explosive_hit");
     if (pEvent)
     {
@@ -2037,25 +2222,56 @@ void CMomentumPlayer::DoPaint()
     if (!CanPaint())
         return;
 
-    // Fire a paintgun bullet (doesn't actually equip/use the paintgun weapon)
+    // Fire a paint bullet
     FX_FireBullets(entindex(), EyePosition(), EyeAngles(), AMMO_TYPE_PAINT, false,
                    GetPredictionRandomSeed() & 255, 0.0f);
 
     // Delay next time we paint
-    m_flNextPaintTime = gpGlobals->curtime + CMomentumPaintGun::GetPrimaryCycleTime();
+    m_flNextPaintTime = gpGlobals->curtime + PAINT_CYCLE_TIME;
 }
 
-CON_COMMAND(toggle_duck, "Toggles duck state of the player. Only usable in the Ahop gamemode!\n")
+CON_COMMAND(toggle_duck, "Toggles duck state of the player.\n")
 {
-    if (!g_pGameModeSystem->GameModeIs(GAMEMODE_AHOP))
+    const auto pPlayer = CMomentumPlayer::GetLocalPlayer();
+    if (!pPlayer || pPlayer->GetFlags() & FL_FROZEN)
         return;
 
-    const auto pPlayer = UTIL_GetCommandClient();
-    if (!pPlayer)
+    pPlayer->ToggleInput(IN_DUCK);
+}
+
+CON_COMMAND(toggle_jump, "Toggles jump state of the player.\n")
+{
+    // no point if gamemode doesn't have autohop
+    if (!g_pGameModeSystem->GetGameMode()->PlayerHasAutoBhop())
         return;
 
-    if (pPlayer->GetFlags() & FL_FROZEN)
+    const auto pPlayer = CMomentumPlayer::GetLocalPlayer();
+    if (!pPlayer || pPlayer->GetFlags() & FL_FROZEN)
         return;
 
-    pPlayer->ToggleDuck();
+    pPlayer->ToggleInput(IN_JUMP);
+}
+
+CON_COMMAND(toggle_speed, "Toggles sprint state of the player. Toggle resets when unable to sprint.\n")
+{
+    if (!g_pGameModeSystem->GetGameMode()->HasCapability(GameModeHUDCapability_t::CAP_HUD_KEYPRESS_SPRINT))
+        return;
+
+    const auto pPlayer = CMomentumPlayer::GetLocalPlayer();
+    if (!pPlayer || pPlayer->GetFlags() & FL_FROZEN)
+        return;
+
+    pPlayer->ToggleInput(IN_SPEED);
+}
+
+CON_COMMAND(toggle_walk, "Toggles walk state of the player. Toggle resets when unable to walk.\n")
+{
+    if (!g_pGameModeSystem->GetGameMode()->HasCapability(GameModeHUDCapability_t::CAP_HUD_KEYPRESS_WALK))
+        return;
+
+    const auto pPlayer = CMomentumPlayer::GetLocalPlayer();
+    if (!pPlayer || pPlayer->GetFlags() & FL_FROZEN)
+        return;
+
+    pPlayer->ToggleInput(IN_WALK);
 }

@@ -28,12 +28,12 @@ abstract_class IViewPortPanel
 public:
 	virtual	~IViewPortPanel() {};
 
-	virtual const char *GetName( void ) = 0;// return identifer name
+	virtual const char *GetName( void ) = 0;// return identifier name
 	virtual void SetData(KeyValues *data) = 0; // set ViewPortPanel data
 	virtual void Reset( void ) = 0;		// clears internal state, deactivates it
 	virtual void Update( void ) = 0;	// updates all (size, position, content, etc)
 	virtual bool NeedsUpdate( void ) = 0; // query panel if content needs to be updated
-	virtual bool HasInputElements( void ) = 0;	// true if panel contains elments which accepts input
+	virtual bool HasInputElements( void ) = 0;	// true if panel contains elements which accepts input
 
 	virtual void ShowPanel( bool state ) = 0; // activate VGUI Frame
 		

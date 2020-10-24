@@ -64,6 +64,7 @@
 
 static ConVar cl_SetupAllBones( "cl_SetupAllBones", "0" );
 ConVar r_sequence_debug( "r_sequence_debug", "" );
+extern ConVar r_drawviewmodel;
 
 // If an NPC is moving faster than this, he should play the running footstep sound
 const float RUN_SPEED_ESTIMATE_SQR = 150.0f * 150.0f;
@@ -397,7 +398,7 @@ void C_ClientRagdoll::ImpactTrace( trace_t *pTrace, int iDamageType, const char 
 
 	if ( iDamageType == DMG_BLAST )
 	{
-		dir *= 500;  // adjust impact strenght
+		dir *= 500;  // adjust impact strength
 
 		// apply force at object mass center
 		pPhysicsObject->ApplyForceCenter( dir );
@@ -409,7 +410,7 @@ void C_ClientRagdoll::ImpactTrace( trace_t *pTrace, int iDamageType, const char 
 		VectorMA( pTrace->startpos, pTrace->fraction, dir, hitpos );
 		VectorNormalize( dir );
 
-		dir *= 4000;  // adjust impact strenght
+		dir *= 4000;  // adjust impact strength
 
 		// apply force where we hit it
 		pPhysicsObject->ApplyForceOffset( dir, hitpos );	
@@ -747,6 +748,9 @@ C_BaseAnimating::C_BaseAnimating() :
     m_pGlowEffect = NULL;
     m_bGlowEnabled = false;
     m_bOldGlowEnabled = false;
+
+	m_nBodyGroup = -1;
+	m_nBodyGroupValue = -1;
 }
 
 //-----------------------------------------------------------------------------
@@ -1167,6 +1171,11 @@ CStudioHdr *C_BaseAnimating::OnNewModel()
 		AddEFlags( EFL_USE_PARTITION_WHEN_NOT_SOLID );
 	}
 
+	// Set bodygroup stuff if buffered
+	if (m_nBodyGroup != -1 && m_nBodyGroupValue != -1)
+	{
+	    SetBodygroup(m_nBodyGroup, m_nBodyGroupValue);
+	}
 
 	// Most entities clear out their sequences when they change models on the server, but 
 	// not all entities network down their m_nSequence (like multiplayer game player entities), 
@@ -1923,7 +1932,7 @@ void C_BaseAnimating::ChildLayerBlend( Vector pos[], Quaternion q[], float curre
 				pChildAnimating->m_pBoneMergeCache->CopyParentToChild( pos, q, childPos, childQ, boneMask );
 
 				// FIXME: needs some kind of sequence
-				// merge over whatever bones the childs sequence modifies
+				// merge over whatever bones the child's sequence modifies
 				childBoneSetup.AccumulatePose( childPos, childQ, 0, GetCycle(), 1.0, currentTime, NULL );
 
 				// copy the result back into the parents bones
@@ -2520,7 +2529,7 @@ void C_BaseAnimating::CalculateIKLocks( float currentTime )
 						pTarget->SetNormal( trace.plane.normal );
 						pTarget->SetOnWorld( true );
 
-						// only do this on forward tracking or commited IK ground rules
+						// only do this on forward tracking or committed IK ground rules
 						if (pTarget->est.release < 0.1)
 						{
 							// keep track of ground height
@@ -2544,7 +2553,7 @@ void C_BaseAnimating::CalculateIKLocks( float currentTime )
 						pTarget->SetPos( trace.endpos );
 						pTarget->SetAngles( GetRenderAngles() );
 
-						// only do this on forward tracking or commited IK ground rules
+						// only do this on forward tracking or committed IK ground rules
 						if (pTarget->est.release < 0.1)
 						{
 							float offset = DotProduct( pTarget->est.pos, up );
@@ -2869,7 +2878,7 @@ bool C_BaseAnimating::SetupBones( matrix3x4_t *pBoneToWorldOut, int nMaxBones, i
 		g_PreviousBoneSetups.AddToTail( this );
 	}
 
-	// Keep track of everthing asked for over the entire frame
+	// Keep track of everything asked for over the entire frame
 	m_iAccumulatedBoneMask |= boneMask;
 
 	// Make sure that we know that we've already calculated some bone stuff this time around.
@@ -3445,6 +3454,9 @@ void C_BaseAnimating::DoAnimationEvents( CStudioHdr *pStudioHdr )
 	if ( bIsInvisible )
 		return;
 
+    if (IsViewModel() && !r_drawviewmodel.GetBool())
+        return;
+
 	// If we don't have any sequences, don't do anything
 	int nStudioNumSeq = pStudioHdr->GetNumSeq();
 	if ( nStudioNumSeq < 1 )
@@ -3602,6 +3614,9 @@ void C_BaseAnimating::DoAnimationEvents( CStudioHdr *pStudioHdr )
 //-----------------------------------------------------------------------------
 bool C_BaseAnimating::DispatchMuzzleEffect( const char *options, bool isFirstPerson )
 {
+	if (isFirstPerson && !r_drawviewmodel.GetBool())
+		return false;
+
 	const char	*p = options;
 	char		token[128];
 	int			weaponType = 0;
@@ -4905,7 +4920,7 @@ void C_BaseAnimating::UpdateGlowEffect(void)
 
     m_pGlowEffect->SetColor(GetGlowEffectColor());
     m_pGlowEffect->SetAlpha(flAlpha);
-    m_pGlowEffect->SetRenderFlags(true, false);
+    m_pGlowEffect->SetRenderFlags(true, true);
 
     SetNextClientThink(gpGlobals->curtime + 0.1f);
 }
@@ -5432,7 +5447,7 @@ void C_BaseAnimating::ResetSequenceInfo( void )
 	m_nNewSequenceParity = ( m_nNewSequenceParity + 1 ) & EF_PARITY_MASK;
 	m_nResetEventsParity = ( m_nResetEventsParity + 1 ) & EF_PARITY_MASK;
 
-	// FIXME: why is this called here?  Nothing should have changed to make this nessesary
+	// FIXME: why is this called here?  Nothing should have changed to make this necessary
 	if ( pStudioHdr )
 	{
 		SetEventIndexForSequence( pStudioHdr->pSeqdesc( GetSequence() ) );
@@ -5488,10 +5503,14 @@ int C_BaseAnimating::FindTransitionSequence( int iCurrentSequence, int iGoalSequ
 
 void C_BaseAnimating::SetBodygroup( int iGroup, int iValue )
 {
-	// SetBodygroup is not supported on pending dynamic models. Wait for it to load!
-	// XXX TODO we could buffer up the group and value if we really needed to. -henryg
-	Assert( GetModelPtr() );
-	::SetBodygroup( GetModelPtr( ), m_nBody, iGroup, iValue );
+	m_nBodyGroup = iGroup;
+	m_nBodyGroupValue = iValue;
+
+	if ( !IsDynamicModelLoading() )
+	{
+        Assert(GetModelPtr());
+        ::SetBodygroup(GetModelPtr(), m_nBody, iGroup, iValue);
+    }
 }
 
 int C_BaseAnimating::GetBodygroup( int iGroup )

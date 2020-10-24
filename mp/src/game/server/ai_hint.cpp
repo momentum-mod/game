@@ -334,7 +334,7 @@ int CAI_HintManager::FindAllHints( CAI_BaseNPC *pNPC, const Vector &position, co
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: Finds a random hint within the requested radious of the npc
+// Purpose: Finds a random hint within the requested radius of the npc
 //  Builds a list of all suitable hints and chooses randomly from amongst them.
 // Input  : *pNPC - 
 //			nHintType - 
@@ -521,14 +521,14 @@ CAI_Hint *CAI_HintManager::FindHint( CAI_BaseNPC *pNPC, const Vector &position, 
 //			claims that hint node for this NPC so that no other NPCs
 //			try to use it.
 //
-// Input  : nFlags - Search criterea. Can currently be one or more of the following:
+// Input  : nFlags - Search criteria. Can currently be one or more of the following:
 //				bits_HINT_NODE_VISIBLE - searches for visible hint nodes.
 //				bits_HINT_NODE_RANDOM - calls through the FindHintRandom and builds list of all matching
 //				nodes and picks randomly from among them.  Note:  Depending on number of hint nodes, this
 //				could be slower, so use with care.
 //
 // Output : Returns pointer to hint node if available hint node was found that matches the
-//			given criterea that this NPC also cares about. Otherwise, returns NULL
+//			given criteria that this NPC also cares about. Otherwise, returns NULL
 //-----------------------------------------------------------------------------
 CAI_Hint* CAI_HintManager::FindHint( CAI_BaseNPC *pNPC, Hint_e nHintType, int nFlags, float flMaxDist, const Vector *pMaxDistFrom )
 {
@@ -1268,7 +1268,7 @@ bool CAI_Hint::HintMatchesCriteria( CAI_BaseNPC *pNPC, const CHintCriteria &hint
 		{
 			if ( pNPC == NULL )
 			{
-				//NOTENOTE: If you're hitting this, you've asked for a visible node without specifing an NPC!
+				//NOTENOTE: If you're hitting this, you've asked for a visible node without specifying an NPC!
 				AssertMsg( 0, "Hint node attempted to find visible node without specifying NPC!\n" );
 			}
 			else
@@ -1304,7 +1304,7 @@ bool CAI_Hint::HintMatchesCriteria( CAI_BaseNPC *pNPC, const CHintCriteria &hint
 	{
 		if ( pNPC == NULL )
 		{
-			//NOTENOTE: If you're hitting this, you've asked for a clear node without specifing an NPC!
+			//NOTENOTE: If you're hitting this, you've asked for a clear node without specifying an NPC!
 			AssertMsg( 0, "Hint node attempted to find clear node without specifying NPC!\n" );
 		}
 		else

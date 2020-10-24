@@ -63,7 +63,7 @@ typedef void ( *FnCommandCallbackVoid_t )( void );
 typedef void ( *FnCommandCallback_t )( const CCommand &command );
 
 #define COMMAND_COMPLETION_MAXITEMS		64
-#define COMMAND_COMPLETION_ITEM_LENGTH	64
+#define COMMAND_COMPLETION_ITEM_LENGTH	128 // 64 -> 128 for long replay names
 
 //-----------------------------------------------------------------------------
 // Returns 0 to COMMAND_COMPLETION_MAXITEMS worth of completion strings
@@ -357,6 +357,12 @@ public:
     {
         m_pParent->m_nFlags = flags;
         m_nFlags = flags;
+    }
+
+    FORCEINLINE_CVAR void SetHelpString(char* text)
+    {
+        m_pParent->m_pszHelpString = text;
+        m_pszHelpString = text;
     }
 
     void SetMin(float min);
@@ -711,7 +717,7 @@ private:
 
 
 //-----------------------------------------------------------------------------
-// Purpose: Utility macros to quicky generate a simple console command
+// Purpose: Utility macros to quickly generate a simple console command
 //-----------------------------------------------------------------------------
 #define CON_COMMAND( name, description ) \
    static void name( const CCommand &args ); \

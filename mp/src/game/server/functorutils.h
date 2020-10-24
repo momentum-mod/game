@@ -350,7 +350,7 @@ inline bool ForEachActor( Functor &func )
 //--------------------------------------------------------------------------------------------------------------
 /**
  * The interface for functors for use with ForEachActor() that
- * want notification before iteration starts and after interation
+ * want notification before iteration starts and after iteration
  * is complete (successful or not).
  */
 class IActorFunctor

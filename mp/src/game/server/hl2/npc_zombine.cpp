@@ -365,7 +365,7 @@ int CNPC_Zombine::MeleeAttack1Conditions ( float flDot, float flDist )
 
 	if( HasGrenade() )
 	{
-		//Adrian: stop spriting if we get close enough to melee and we have a grenade
+		//Adrian: stop sprinting if we get close enough to melee and we have a grenade
 		//this gives NPCs time to move away from you (before it was almost impossible cause of the high sprint speed)
 		if ( iBase == COND_CAN_MELEE_ATTACK1 )
 		{

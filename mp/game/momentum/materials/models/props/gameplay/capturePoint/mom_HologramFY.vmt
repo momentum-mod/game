@@ -1,0 +1,9 @@
+UnlitGeneric
+{
+	$basetexture 			"models/props/gameplay/capturepoint/mom_capturepoint_hologramFY_c"
+	$additive 			1
+	$nocull 				1
+
+	$nodecal 			1
+	$model				1
+}

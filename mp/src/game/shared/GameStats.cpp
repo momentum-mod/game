@@ -1014,7 +1014,7 @@ void CBaseGameStats_Driver::CollectData( StatSendType_t sendType )
 	// add game-specific data
 	pGamestatsData->m_bHaveData |= gamestats->AddDataForSend( pKV, sendType );
 
-// Need to initialiate a reset since cs isn't using the gamestat system to add data
+// Need to initiate a reset since cs isn't using the gamestat system to add data
 #if defined(CSTRIKE_DLL) && defined(CLIENT_DLL)
 	ResetData();
 #endif

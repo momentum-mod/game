@@ -1541,7 +1541,7 @@ int  longest_match (TState &state,IPos cur_match);
 
 /* ===========================================================================
  * Update a hash value with the given input byte
- * IN  assertion: all calls to to UPDATE_HASH are made with consecutive
+ * IN  assertion: all calls to UPDATE_HASH are made with consecutive
  *    input characters, so that a running hash key can be computed from the
  *    previous key instead of complete recalculation each time.
  */
@@ -1551,7 +1551,7 @@ int  longest_match (TState &state,IPos cur_match);
  * Insert string s in the dictionary and set match_head to the previous head
  * of the hash chain (the most recent string with same hash key). Return
  * the previous length of the hash chain.
- * IN  assertion: all calls to to INSERT_STRING are made with consecutive
+ * IN  assertion: all calls to INSERT_STRING are made with consecutive
  *    input characters and the first MIN_MATCH bytes of s are valid
  *    (except for the last MIN_MATCH-1 bytes of the input file).
  */
@@ -2906,7 +2906,7 @@ unsigned int FormatZipMessageZ(ZRESULT code, char *buf,unsigned int len)
   const char *msg="unknown zip result code";
   switch (code)
   { case ZR_OK: msg="Success"; break;
-    case ZR_NODUPH: msg="Culdn't duplicate handle"; break;
+    case ZR_NODUPH: msg="Couldn't duplicate handle"; break;
     case ZR_NOFILE: msg="Couldn't create/open file"; break;
     case ZR_NOALLOC: msg="Failed to allocate memory"; break;
     case ZR_WRITE: msg="Error writing to file"; break;

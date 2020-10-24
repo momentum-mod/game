@@ -22,7 +22,7 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-//Precahce the effects
+//Precache the effects
 CLIENTEFFECT_REGISTER_BEGIN( PrecacheEffectSparks )
 CLIENTEFFECT_MATERIAL( "effects/spark" )
 CLIENTEFFECT_MATERIAL( "effects/energysplash" )
@@ -174,7 +174,7 @@ CTrailParticles::CTrailParticles( const char *pDebugName ) : CSimpleEmitter( pDe
 //			angularSpread - looseness of the spread
 //			minSpeed - minimum speed
 //			maxSpeed - maximum speed
-//			gravity - particle gravity for the sytem
+//			gravity - particle gravity for the system
 //			dampen - dampening amount on collisions
 //			flags - extra information
 //-----------------------------------------------------------------------------

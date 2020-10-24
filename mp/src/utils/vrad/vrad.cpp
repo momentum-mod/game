@@ -81,7 +81,7 @@ char		vismatfile[_MAX_PATH] = "";
 char		incrementfile[_MAX_PATH] = "";
 
 IIncremental *g_pIncremental = 0;
-bool		g_bInterrupt = false;	// Wsed with background lighting in WC. Tells VRAD
+bool		g_bInterrupt = false;	// Used with background lighting in WC. Tells VRAD
 									// to stop lighting.
 float g_SunAngularExtent=0.0;
 
@@ -176,7 +176,7 @@ typedef struct
 	char	*filename;
 } texlight_t;
 
-#define	MAX_TEXLIGHTS	128
+#define	MAX_TEXLIGHTS	512
 
 texlight_t	texlights[MAX_TEXLIGHTS];
 int			num_texlights;
@@ -399,7 +399,7 @@ void BaseLightForFace( dface_t *f, Vector& light, float *parea, Vector& reflecti
 	dtexdata_t	*texdata;
 
 	//
-	// check for light emited by texture
+	// check for light emitted by texture
 	//
 	tx = &texinfo[f->texinfo];
 	texdata = &dtexdata[tx->texdata];
@@ -897,7 +897,8 @@ void SubdividePatch( int ndxPatch )
 
 	if( area1 == 0 || area2 == 0 )
 	{
-		Msg( "zero area child patch\n" );
+        Vector v0 = patch->origin;
+		Msg( "zero area child patch near %.2f %.2f %.2f\n", v0.x, v0.y, v0.z );
 		return;
 	}
 
@@ -1229,7 +1230,7 @@ void MakeScales ( int ndxPatch, transfer_t *all_transfers )
 			total += t2->transfer;
 		}
 
-		// the total transfer should be PI, but we need to correct errors due to overlaping surfaces
+		// the total transfer should be PI, but we need to correct errors due to overlapping surfaces
 		if (total > M_PI)
 			total = 1.0f/total;
 		else	
@@ -2652,7 +2653,7 @@ int ParseCommandLine( int argc, char **argv, bool *onlydetail )
 				dispchop = ( float )atof( argv[i] );
 				if ( dispchop < 1.0f )
 				{
-					Warning( "Error: expected positive value after '-dipschop'\n" );
+					Warning( "Error: expected positive value after '-dispchop'\n" );
 					return -1;
 				}
 			}
@@ -2908,6 +2909,11 @@ int RunVRAD( int argc, char **argv )
 	CmdLib_InitFileSystem( argv[ i ] );
 	Q_FileBase( source, source, sizeof( source ) );
 
+	if ( !g_bUseMPI )
+	{
+		LoadCmdLineFromFile( argc, argv, source, "vrad" ); // Don't do this if we're a VMPI worker..
+	}
+
 	VRAD_LoadBSP( argv[i] );
 
 	if ( (! onlydetail) && (! g_bOnlyStaticProps ) )
@@ -2944,14 +2950,8 @@ int VRAD_Main(int argc, char **argv)
 	else
 #endif
 	{
-		LoadCmdLineFromFile( argc, argv, source, "vrad" ); // Don't do this if we're a VMPI worker..
 		SetupDefaultToolsMinidumpHandler();
 	}
 	
 	return RunVRAD( argc, argv );
 }
-
-
-
-
-

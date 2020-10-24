@@ -378,7 +378,7 @@ bool ScrollBar::IsVertical()
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: Check if the the scrollbar slider has full range.
+// Purpose: Check if the scrollbar slider has full range.
 // Normally if you have a scroll bar and the range goes from a to b and
 // the slider is sized to c, the range will go from a to b-c.
 // This makes it so the slider goes from a to b fully.

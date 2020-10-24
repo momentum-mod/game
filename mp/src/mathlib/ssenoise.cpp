@@ -82,7 +82,7 @@ fltx4 NoiseSIMD( const fltx4 & x, const fltx4 & y, const fltx4 & z )
 	DOPASS( 3 );
 
 	// now, we have 8 lattice values for each of four points as m128s, and interpolant values for
-	// each axis in m128 form in [xyz]frac. Perfom the trilinear interpolation as SIMD ops
+	// each axis in m128 form in [xyz]frac. Perform the trilinear interpolation as SIMD ops
 
 	// first, do x interpolation
 	fltx4 l2d00 = AddSIMD( lattice000, MulSIMD( xfrac, SubSIMD( lattice100, lattice000 ) ) );

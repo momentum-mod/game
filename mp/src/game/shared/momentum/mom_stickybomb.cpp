@@ -32,8 +32,10 @@ IMPLEMENT_NETWORKCLASS_ALIASED(MomStickybomb, DT_MomStickybomb)
 BEGIN_NETWORK_TABLE(CMomStickybomb, DT_MomStickybomb)
 #ifdef CLIENT_DLL
   RecvPropInt(RECVINFO(m_fFlags)),
+  RecvPropBool(RECVINFO(m_bCanExplode)),
 #else
   SendPropInt(SENDINFO(m_fFlags), -1, SPROP_UNSIGNED),
+  SendPropBool(SENDINFO(m_bCanExplode)),
 #endif
 END_NETWORK_TABLE();
 
@@ -52,6 +54,7 @@ static MAKE_TOGGLE_CONVAR(mom_sj_decals_enable, "1", FCVAR_ARCHIVE, "Toggles cre
 CMomStickybomb::CMomStickybomb()
 {
     m_flChargeTime = 0.0f;
+    m_bCanExplode = true;
 
 #ifdef GAME_DLL
     m_bFizzle = false;
@@ -251,7 +254,13 @@ void CMomStickybomb::Detonate()
 
 void CMomStickybomb::Explode(trace_t *pTrace, CBaseEntity *pOther)
 {
-    if (CNoGrenadesZone::IsInsideNoGrenadesZone(this) || m_bFizzle)
+    const auto *pGrenadesZone = CNoGrenadesZone::IsInsideNoGrenadesZone(this);
+
+    if (m_bFizzle || pGrenadesZone
+        &&
+        (pGrenadesZone->m_iExplosivePreventionType == CNoGrenadesZone::FIZZLE_ON_DET
+        ||
+        pGrenadesZone->m_iExplosivePreventionType == CNoGrenadesZone::FIZZLE_ON_DET_AIRBORNE_ONLY && !m_bDidHitWorld))
     {
         Destroy(true);
         return;
@@ -319,10 +328,26 @@ void CMomStickybomb::VPhysicsCollision(int index, gamevcollisionevent_t *pEvent)
     {
         g_PostSimulationQueue.QueueCall(VPhysicsGetObject(), &IPhysicsObject::EnableMotion, false);
 
+        const auto *pGrenadesZone = CNoGrenadesZone::IsInsideNoGrenadesZone(this);
+
+        if (pGrenadesZone)
+        {
+            if (pGrenadesZone->m_iExplosivePreventionType == CNoGrenadesZone::FIZZLE_ON_DET_AIRBORNE_ONLY)
+            {
+                SetCanExplode(true);
+            }
+            else if (pGrenadesZone->m_iExplosivePreventionType == CNoGrenadesZone::FIZZLE_ON_LAND)
+            {
+                Destroy(true);
+                return;
+            }
+        }
+
         // Save impact data for explosions.
         m_bDidHitWorld = true;
         pEvent->pInternalData->GetSurfaceNormal(m_vecImpactNormal);
         m_vecImpactNormal.Negate();
     }
 }
+
 #endif

@@ -141,7 +141,7 @@ private:
 	bool	m_bOldPoseValueParity;
 
 	float	m_fCurrentPoseValue;	// Actual pose value cycled by the frequency and modulation
-	float	m_fCurrentFMod;			// The current fequency modulation amount (stored for noise walk)
+	float	m_fCurrentFMod;			// The current frequency modulation amount (stored for noise walk)
 
 	CInterpolatedValue	m_PoseTransitionValue;
 };

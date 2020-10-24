@@ -1077,7 +1077,7 @@ int RichText::GetClickableTextIndexStart(int startIndex)
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: Recalcultes the formatting state from the specified index
+// Purpose: Recalculates the formatting state from the specified index
 //-----------------------------------------------------------------------------
 void RichText::RecalculateDefaultState(int startIndex)
 {
@@ -1701,13 +1701,13 @@ void RichText::OnMouseFocusTicked()
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: If a cursor enters the window, we are not elegible for 
+// Purpose: If a cursor enters the window, we are not eligible for 
 //          MouseFocusTicked events
 //-----------------------------------------------------------------------------
 void RichText::OnCursorEntered()
 {
     BaseClass::OnCursorEntered();
-	_mouseDragSelection = false; // outside of window dont recieve drag scrolling ticks
+	_mouseDragSelection = false; // outside of window don't receive drag scrolling ticks
 }
 
 //-----------------------------------------------------------------------------
@@ -1717,7 +1717,7 @@ void RichText::OnCursorEntered()
 void RichText::OnCursorExited() 
 {
     BaseClass::OnCursorExited();
-	// outside of window recieve drag scrolling ticks
+	// outside of window receive drag scrolling ticks
 	if (_mouseSelection)
 	{
 		_mouseDragSelection = true;
@@ -2172,7 +2172,7 @@ void RichText::GotoTextEnd()
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: Culls the text stream down to a managable size
+// Purpose: Culls the text stream down to a manageable size
 //-----------------------------------------------------------------------------
 void RichText::TruncateTextStream()
 {
@@ -2253,7 +2253,7 @@ void RichText::InsertString(const char *text)
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: Insertsa a unicode string into the buffer
+// Purpose: Inserts a unicode string into the buffer
 //-----------------------------------------------------------------------------
 void RichText::InsertString(const wchar_t *wszText)
 {
@@ -2320,7 +2320,7 @@ void RichText::OpenEditMenu()
 	}
 	panel->ScreenToLocal(cursorX, cursorY);
 	int x, y;
-	// get base panel's postition
+	// get base panel's position
 	panel->GetPos(x, y);	  
 	
 	// adjust our cursor position accordingly
@@ -2432,7 +2432,7 @@ int RichText::GetStartDrawIndex(int &lineBreakIndexIndex)
 	int startIndex = 0;
 	int startLine = _vertScrollBar->GetValue();
 	
-	if ( startLine >= m_LineBreaks.Count() ) // incase the line breaks got reset and the scroll bar hasn't
+	if ( startLine >= m_LineBreaks.Count() ) // in case the line breaks got reset and the scroll bar hasn't
 	{
 		startLine = m_LineBreaks.Count() - 1;
 	}

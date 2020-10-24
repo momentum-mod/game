@@ -22,30 +22,33 @@ jobs:
     - name: Generate VS solution
       working-directory: mp\src
       run: |
-        REG ADD "HKLM\SOFTWARE\WOW6432Node\Microsoft\VisualStudio\10.0\Projects\{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}" /v DefaultProjectExtension /t REG_SZ /d vcproj /f
+        reg add "HKLM\SOFTWARE\WOW6432Node\Microsoft\VisualStudio\10.0\Projects\{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}" /v DefaultProjectExtension /t REG_SZ /d vcproj /f
         .\devtools\bin\vpc.exe /momentum +everything /mksln everything.sln
         gc .\sln_fix.txt | ac .\everything.sln
     - uses: microsoft/setup-msbuild@v1
     - name: Build
       run: msbuild mp\src\everything.sln /m /nologo /p:Configuration=Release /t:"Clean;Build" /v:m
     - name: Prepare artifacts
+      id: prepare_artifacts
       run: |
-        robocopy mp\game\bin artifacts\bin\bin /xf *.pdb /r:0 /w:0
+        robocopy mp\game\bin          artifacts\bin\bin          /xf *.pdb /r:0 /w:0
         robocopy mp\game\momentum\bin artifacts\bin\momentum\bin /xf *.pdb /r:0 /w:0
-        robocopy mp\game\bin artifacts\pdb\bin *.pdb /r:0 /w:0
-        robocopy mp\game\momentum\bin artifacts\pdb\momentum\bin *.pdb /r:0 /w:0
-        If ($LastExitCode -le 7) { echo "LastExitCode = $LastExitCode"; $LastExitCode = 0 }
-        echo "::set-env name=short_commit_sha::$(git rev-parse --short HEAD)"
+        robocopy mp\game\bin          artifacts\pdb\bin              *.pdb /r:0 /w:0
+        robocopy mp\game\momentum\bin artifacts\pdb\momentum\bin     *.pdb /r:0 /w:0
+        If ($LastExitCode -le 7) { echo "LastExitCode = $LastExitCode";$LastExitCode = 0 }
+        echo "::set-output name=short_commit_sha::$(git rev-parse --short HEAD)"
     - name: Upload bin artifacts
       uses: actions/upload-artifact@v2
       with:
-        name: bin_${{ runner.os }}-${{ env.short_commit_sha }}
+        name: bin_${{ runner.os }}-${{ steps.prepare_artifacts.outputs.short_commit_sha }}
         path: artifacts\bin
+        if-no-files-found: error
     - name: Upload pdb artifacts
       uses: actions/upload-artifact@v2
       with:
-        name: pdb_${{ runner.os }}-${{ env.short_commit_sha }}
+        name: pdb_${{ runner.os }}-${{ steps.prepare_artifacts.outputs.short_commit_sha }}
         path: artifacts\pdb
+        if-no-files-found: error
 
   build-linux:
     runs-on: ubuntu-latest
@@ -61,13 +64,14 @@ jobs:
         working-directory: mp/src
         run: make -j$(nproc --all) -f games.mak
       - name: Prepare artifacts
+        id: prepare_artifacts
         shell: bash
         run: |
           mkdir -v artifacts
           shopt -s extglob
           mv -v mp/game/bin/!(*.dbg) mp/game/momentum/bin/!(*.dbg|*.dll) artifacts
-          echo "::set-env name=short_commit_sha::$(git rev-parse --short HEAD)"
+          echo "::set-output name=short_commit_sha::$(git rev-parse --short HEAD)"
       - uses: actions/upload-artifact@v1
         with:
-          name: bin_${{ runner.os }}-${{ env.short_commit_sha }}
+          name: bin_${{ runner.os }}-${{ steps.prepare_artifacts.outputs.short_commit_sha }}
           path: artifacts

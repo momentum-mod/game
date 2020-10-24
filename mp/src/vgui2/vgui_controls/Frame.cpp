@@ -878,15 +878,7 @@ Frame::Frame(Panel *parent, const char *panelName, bool showTaskbarIcon /*=true*
 //-----------------------------------------------------------------------------
 Frame::~Frame()
 {
-	if ( input()->GetAppModalSurface() == GetVPanel() )
-	{
-		vgui::input()->ReleaseAppModalSurface();
-		if ( m_hPreviousModal != 0 )
-		{
-			vgui::input()->SetAppModalSurface( m_hPreviousModal );
-			m_hPreviousModal = 0;
-		}
-	}
+	ReleaseModal();
 
 	delete _title;
 }
@@ -899,13 +891,21 @@ void Frame::SetupResizeCursors()
 	if (IsSizeable())
 	{
 		_topGrip->SetCursor(dc_sizens);
+		_topGrip->SetVisible(true);
 		_bottomGrip->SetCursor(dc_sizens);
+		_bottomGrip->SetVisible(true);
 		_leftGrip->SetCursor(dc_sizewe);
+		_leftGrip->SetVisible(true);
 		_rightGrip->SetCursor(dc_sizewe);
+		_rightGrip->SetVisible(true);
 		_topLeftGrip->SetCursor(dc_sizenwse);
+		_topLeftGrip->SetVisible(true);
 		_topRightGrip->SetCursor(dc_sizenesw);
+		_topRightGrip->SetVisible(true);
 		_bottomLeftGrip->SetCursor(dc_sizenesw);
+		_bottomLeftGrip->SetVisible(true);
 		_bottomRightGrip->SetCursor(dc_sizenwse);
+		_bottomRightGrip->SetVisible(true);
 
 		_bottomRightGrip->SetPaintEnabled(true);
 		_bottomRightGrip->SetPaintBackgroundEnabled(true);
@@ -914,13 +914,21 @@ void Frame::SetupResizeCursors()
 	{
 		// not resizable, so just use the default cursor
 		_topGrip->SetCursor(dc_arrow);
+		_topGrip->SetVisible(false);
 		_bottomGrip->SetCursor(dc_arrow);
+		_bottomGrip->SetVisible(false);
 		_leftGrip->SetCursor(dc_arrow);
+		_leftGrip->SetVisible(false);
 		_rightGrip->SetCursor(dc_arrow);
+		_rightGrip->SetVisible(false);
 		_topLeftGrip->SetCursor(dc_arrow);
+		_topLeftGrip->SetVisible(false);
 		_topRightGrip->SetCursor(dc_arrow);
+		_topRightGrip->SetVisible(false);
 		_bottomLeftGrip->SetCursor(dc_arrow);
+		_bottomLeftGrip->SetVisible(false);
 		_bottomRightGrip->SetCursor(dc_arrow);
+		_bottomRightGrip->SetVisible(false);
 
 		_bottomRightGrip->SetPaintEnabled(false);
 		_bottomRightGrip->SetPaintBackgroundEnabled(false);
@@ -956,29 +964,40 @@ void Frame::Activate()
 //-----------------------------------------------------------------------------
 void Frame::DoModal( )
 {
+	if (input()->GetAppModalSurface() == GetVPanel())
+		return;
+
 	// move to the middle of the screen
 	MoveToCenterOfScreen();
 	InvalidateLayout();
 	Activate();
-	m_hPreviousModal = vgui::input()->GetAppModalSurface();
-	vgui::input()->SetAppModalSurface( GetVPanel() );
+	m_hPreviousModal = input()->GetAppModalSurface();
+	input()->SetAppModalSurface( GetVPanel() );
 }
 
+void Frame::ReleaseModal()
+{
+	const auto hVPanel = GetVPanel();
+	if (input()->GetAppModalSurface() != hVPanel)
+		return;
+
+	input()->ReleaseAppModalSurface();
+
+	if (m_hPreviousModal != 0 && m_hPreviousModal != hVPanel)
+	{
+		input()->SetAppModalSurface(m_hPreviousModal);
+	}
+
+    m_hPreviousModal = 0;
+}
 
 //-----------------------------------------------------------------------------
 // Closes a modal dialog
 //-----------------------------------------------------------------------------
 void Frame::CloseModal()
 {
-	vgui::input()->ReleaseAppModalSurface();
-	if ( m_hPreviousModal != 0 )
-	{
-		vgui::input()->SetAppModalSurface( m_hPreviousModal );
-		m_hPreviousModal = 0;
-	}
-	PostMessage( this, new KeyValues("Close") );
+	OnClose();
 }
-
 
 //-----------------------------------------------------------------------------
 // Purpose: activates the dialog 
@@ -1560,7 +1579,7 @@ void Frame::PaintBackground()
 		else
 		{
 			int nTitleX = m_iTitleTextInsetXOverride ? m_iTitleTextInsetXOverride : m_iTitleTextInsetX;
-			int nTitleWidth = wide - 72;
+			int nTitleWidth = wide;
 			if (_menuButton && _menuButton->IsVisible())
 			{
 				int mw, mh;
@@ -1590,31 +1609,11 @@ void Frame::ApplySchemeSettings(IScheme *pScheme)
 	SetOverridableColor( &_titleBarDisabledFgColor, GetSchemeColor("FrameTitleBar.DisabledTextColor", pScheme) );
 	SetOverridableColor( &_titleBarDisabledBgColor, GetSchemeColor("FrameTitleBar.DisabledBgColor", pScheme) );
 
-	const char *font = nullptr;
-	if ( m_bSmallCaption )
-	{
-		font = pScheme->GetResourceString("FrameTitleBar.SmallFont");
-	}
-	else
-	{
-		font = pScheme->GetResourceString("FrameTitleBar.Font");
-	}
-
-	HFont titlefont;
-	if ( m_hCustomTitleFont )
-	{
-		titlefont = m_hCustomTitleFont;
-	}
-	else
-	{
-		titlefont = pScheme->GetFont((font && *font) ? font : "Default", IsProportional());
-	}
-
-	_title->SetFont(titlefont);
+	_title->SetFont(m_hCustomTitleFont ? m_hCustomTitleFont : (GetSchemeFont(pScheme, nullptr, m_bSmallCaption ? "FrameTitleBar.SmallFont" : "FrameTitleBar.Font")));
 	_title->ResizeImageToContent();
 
-	m_flTransitionEffectTime = atof(pScheme->GetResourceString("Frame.TransitionEffectTime"));
-	m_flFocusTransitionEffectTime = atof(pScheme->GetResourceString("Frame.FocusTransitionEffectTime"));
+	m_flTransitionEffectTime = Q_atof(pScheme->GetResourceString("Frame.TransitionEffectTime"));
+	m_flFocusTransitionEffectTime = Q_atof(pScheme->GetResourceString("Frame.FocusTransitionEffectTime"));
 
 	SetOverridableColor( &m_InFocusBgColor, pScheme->GetColor("Frame.BgColor", GetBgColor()) );
 	SetOverridableColor( &m_OutOfFocusBgColor, pScheme->GetColor("Frame.OutOfFocusBgColor", m_InFocusBgColor) );
@@ -1622,17 +1621,17 @@ void Frame::ApplySchemeSettings(IScheme *pScheme)
 	const char *resourceString = pScheme->GetResourceString("Frame.ClientInsetX");
 	if ( resourceString )
 	{
-		m_iClientInsetX = atoi(resourceString);
+		m_iClientInsetX = Q_atoi(resourceString);
 	}
 	resourceString = pScheme->GetResourceString("Frame.ClientInsetY");
 	if ( resourceString )
 	{
-		m_iClientInsetY = atoi(resourceString);
+		m_iClientInsetY = Q_atoi(resourceString);
 	}
 	resourceString = pScheme->GetResourceString("Frame.TitleTextInsetX");
 	if ( resourceString )
 	{
-		m_iTitleTextInsetX = atoi(resourceString);
+		m_iTitleTextInsetX = Q_atoi(resourceString);
 	}
 
 	SetBgColor(m_InFocusBgColor);
@@ -1743,20 +1742,12 @@ void Frame::InitSettings()
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: Go invisible when a close message is recieved.
+// Purpose: Go invisible when a close message is received.
 //-----------------------------------------------------------------------------
 void Frame::OnClose()
 {
 	// if we're modal, release that before we hide the window else the wrong window will get focus
-	if (input()->GetAppModalSurface() == GetVPanel())
-	{
-		input()->ReleaseAppModalSurface();
-		if ( m_hPreviousModal != 0 )
-		{
-			vgui::input()->SetAppModalSurface( m_hPreviousModal );
-			m_hPreviousModal = 0;
-		}
-	}
+	ReleaseModal();
 	
 	BaseClass::OnClose();
 
@@ -1765,7 +1756,7 @@ void Frame::OnClose()
 		// begin the hide transition effect
 		GetAnimationController()->RunAnimationCommand(this, "alpha", 0.0f, 0.0f, m_flTransitionEffectTime, AnimationController::INTERPOLATOR_LINEAR);
 		m_bFadingOut = true;
-		// move us to the back of the draw order (so that fading out over the top of other dialogs doesn't look wierd)
+		// move us to the back of the draw order (so that fading out over the top of other dialogs doesn't look weird)
 		surface()->MovePopupToBack(GetVPanel());
 	}
 	else

@@ -53,7 +53,7 @@ inline double CalcMatrixDeterminant(float **mat, int order)
     {
         // get minor of element (0,i)
         GetMatrixMinor(mat, minor, 0, i, order);
-        // the recusion is here!
+        // the recursion is here!
 
         det += (i % 2 == 1 ? -1.0 : 1.0) * mat[0][i] * CalcMatrixDeterminant(minor, order - 1);
         // det += pow( -1.0, i ) * mat[0][i] * CalcMatrixDeterminant( minor,order-1 );
@@ -67,7 +67,7 @@ inline double CalcMatrixDeterminant(float **mat, int order)
     return det;
 }
 
-// matrix inversioon
+// matrix inversion
 inline void MatrixInversion(matrix3x4_t &in, matrix3x4_t &out)
 {
     float **A;

@@ -546,7 +546,7 @@ void CPointProximitySensor::Think( void )
 		Vector vecTestDir = ( m_hTargetEntity->GetAbsOrigin() - GetAbsOrigin() );
 		float flDist = VectorNormalize( vecTestDir );
 
-		// If we're only interested in the distance along a vector, modify the length the accomodate that
+		// If we're only interested in the distance along a vector, modify the length the accommodate that
 		if ( HasSpawnFlags( SF_PROXIMITY_TEST_AGAINST_AXIS ) )
 		{
 			Vector vecDir;

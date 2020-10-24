@@ -174,8 +174,8 @@ private:
 
 	//---------------------------------
 
-	// @Note (toml 07-17-02): At some point, it may be desireable to switch to using function objects instead of functions. Probably
-	// if support for NPCs addiing custom conditions becomes necessary
+	// @Note (toml 07-17-02): At some point, it may be desirable to switch to using function objects instead of functions. Probably
+	// if support for NPCs adding custom conditions becomes necessary
 	typedef bool (CAI_ScriptConditions::*EvaluationFunc_t)( const EvalArgs_t &args );
 
 	struct EvaluatorInfo_t

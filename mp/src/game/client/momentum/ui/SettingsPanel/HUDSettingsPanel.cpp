@@ -14,21 +14,24 @@
 #include "vgui_controls/CvarToggleCheckButton.h"
 #include "vgui_controls/Tooltip.h"
 
+#include "mom_system_gamemode.h"
+
 #include "tier0/memdbgon.h"
 
 using namespace vgui;
 
 HUDSettingsPanel::HUDSettingsPanel(Panel *pParent, Button *pAssociate) : BaseClass(pParent, "HUDPage", pAssociate)
 {
+    g_pSpeedometerData->Init();
+
     m_pSpeedometerGameType = new ComboBox(this, "SpeedoGameType", GAMEMODE_COUNT, false);
     for (auto i = 0; i < GAMEMODE_COUNT; i++)
     {
         m_pSpeedometerGameType->AddItem(g_szGameModes[i], nullptr);
     }
     m_pSpeedometerGameType->AddActionSignalTarget(this);
-    m_pSpeedometerGameType->SilentActivateItemByRow(0);
 
-    m_pSpeedometerType = new ComboBox(this, "SpeedoType", SPEEDOMETER_MAX_LABELS, false);
+    m_pSpeedometerType = new ComboBox(this, "SpeedoType", SPEEDOMETER_LABEL_TYPE_COUNT, false);
     m_pSpeedometerType->AddItem("#MOM_Settings_Speedometer_Type_Absolute", nullptr);
     m_pSpeedometerType->AddItem("#MOM_Settings_Speedometer_Type_Horiz", nullptr);
     m_pSpeedometerType->AddItem("#MOM_Settings_Speedometer_Type_Vert", nullptr);
@@ -38,16 +41,16 @@ HUDSettingsPanel::HUDSettingsPanel(Panel *pParent, Button *pAssociate) : BaseCla
     m_pSpeedometerType->AddItem("#MOM_Settings_Speedometer_Type_RampLeave", nullptr);
     m_pSpeedometerType->AddItem("#MOM_Settings_Speedometer_Type_StageEnterExit", nullptr);
     m_pSpeedometerType->AddActionSignalTarget(this);
-    m_pSpeedometerType->SilentActivateItemByRow(0);
+    m_pSpeedometerType->SilentActivateItemByRow(SPEEDOMETER_LABEL_TYPE_ABS);
 
     m_pSpeedometerShow = new CheckButton(this, "SpeedoShow", "#MOM_Settings_Speedometer_Show");
     m_pSpeedometerShow->AddActionSignalTarget(this);
 
     m_pSpeedometerUnits = new ComboBox(this, "SpeedoUnits", 4, false);
-    m_pSpeedometerUnits->AddItem("#MOM_Settings_Speedometer_Units_UPS", nullptr);
-    m_pSpeedometerUnits->AddItem("#MOM_Settings_Speedometer_Units_KPH", nullptr);
-    m_pSpeedometerUnits->AddItem("#MOM_Settings_Speedometer_Units_MPH", nullptr);
-    m_pSpeedometerUnits->AddItem("#MOM_Settings_Speedometer_Units_Energy", nullptr);
+    for (int i = SPEEDOMETER_UNITS_FIRST; i < SPEEDOMETER_UNITS_COUNT; i++)
+    {
+        m_pSpeedometerUnits->AddItem(g_szSpeedometerUnits[i], nullptr);
+    }
     m_pSpeedometerUnits->AddActionSignalTarget(this);
 
     m_pSpeedometerColorize = new ComboBox(this, "SpeedoColorize", 4, false);
@@ -156,17 +159,23 @@ HUDSettingsPanel::HUDSettingsPanel(Panel *pParent, Button *pAssociate) : BaseCla
 void HUDSettingsPanel::OnPageShow()
 {
     BaseClass::OnPageShow();
+    
+    m_pSpeedometerGameType->ActivateItemByRow(g_pGameModeSystem->GetGameMode()->GetType());
+}
 
-    m_pSpeedometerGameType->SilentActivateItemByRow(g_pSpeedometerData->GetCurrentlyLoadedGameMode());
-    LoadSpeedoSetup();
+void HUDSettingsPanel::OnMainDialogClosed()
+{
+    g_pSpeedometerData->Apply();
 }
 
 void HUDSettingsPanel::OnCheckboxChecked(Panel *panel)
 {
     if (panel == m_pSpeedometerShow)
     {
-        GetSpeedoLabelFromType()->SetVisible(m_pSpeedometerShow->IsSelected());
-        g_pSpeedometerData->SaveGamemodeData(m_pSpeedometerGameType->GetCurrentItem());
+        GameMode_t gamemode = GameMode_t(m_pSpeedometerGameType->GetCurrentItem());
+        SpeedometerLabel_t speedoLabel = SpeedometerLabel_t(m_pSpeedometerType->GetCurrentItem());
+        g_pSpeedometerData->SetVisible(gamemode, speedoLabel, m_pSpeedometerShow->IsSelected());
+        g_pSpeedometerData->Save();
     }
     // Comparisons
     else if (panel == m_pCompareShow)
@@ -229,40 +238,30 @@ void HUDSettingsPanel::OnCheckboxChecked(Panel *panel)
 
 void HUDSettingsPanel::OnTextChanged(Panel *panel, const char *text)
 {
+    if (panel != m_pSpeedometerGameType && panel != m_pSpeedometerType && panel != m_pSpeedometerUnits && panel != m_pSpeedometerColorize)
+        return;
+
+    GameMode_t gamemode = GameMode_t(m_pSpeedometerGameType->GetCurrentItem());
+    SpeedometerLabel_t speedoLabel = SpeedometerLabel_t(m_pSpeedometerType->GetCurrentItem());
     if (panel == m_pSpeedometerGameType || panel == m_pSpeedometerType)
     {
-        if (panel == m_pSpeedometerGameType) // load if game type changed
-        {
-            g_pSpeedometerData->LoadGamemodeData(m_pSpeedometerGameType->GetCurrentItem());
-        }
-        LoadSpeedoSetup();
+        g_pSpeedometerData->Load();
+        m_pSpeedometerShow->SilentSetSelected(g_pSpeedometerData->GetVisible(gamemode, speedoLabel));
+        m_pSpeedometerColorize->SilentActivateItemByRow(g_pSpeedometerData->GetColorize(gamemode, speedoLabel));
+        m_pSpeedometerUnits->SilentActivateItemByRow(g_pSpeedometerData->GetUnits(gamemode, speedoLabel));
     }
     else if (panel == m_pSpeedometerUnits)
     {
-        GetSpeedoLabelFromType()->SetUnitType(m_pSpeedometerUnits->GetCurrentItem());
-        g_pSpeedometerData->SaveGamemodeData(m_pSpeedometerGameType->GetCurrentItem());
+        SpeedometerUnits_t speedoUnits = SpeedometerUnits_t(m_pSpeedometerUnits->GetCurrentItem());
+        g_pSpeedometerData->SetUnits(gamemode, speedoLabel, speedoUnits);
+        g_pSpeedometerData->Save();
     }
     else if (panel == m_pSpeedometerColorize)
     {
-        GetSpeedoLabelFromType()->SetColorizeType(m_pSpeedometerColorize->GetCurrentItem());
-        g_pSpeedometerData->SaveGamemodeData(m_pSpeedometerGameType->GetCurrentItem());
+        SpeedometerColorize_t speedoColorize = SpeedometerColorize_t(m_pSpeedometerColorize->GetCurrentItem());
+        g_pSpeedometerData->SetColorize(gamemode, speedoLabel, speedoColorize);
+        g_pSpeedometerData->Save();
     }
-}
-
-SpeedometerLabel *HUDSettingsPanel::GetSpeedoLabelFromType()
-{
-    return g_pSpeedometer->GetLabel(m_pSpeedometerType->GetCurrentItem());
-}
-
-void HUDSettingsPanel::LoadSpeedoSetup()
-{
-    // silently set settings from the currently selected speedo label
-    SpeedometerLabel *pSpeedoLabel = GetSpeedoLabelFromType();
-    m_pSpeedometerShow->SilentSetSelected(pSpeedoLabel->IsVisible());
-    m_pSpeedometerColorize->SilentActivateItemByRow(pSpeedoLabel->GetColorizeType());
-    m_pSpeedometerColorize->SetItemEnabled("#MOM_Settings_Speedometer_Colorize_Type_3", pSpeedoLabel->GetSupportsSeparateComparison());
-    m_pSpeedometerUnits->SetItemEnabled("#MOM_Settings_Speedometer_Units_Energy", pSpeedoLabel->GetSupportsEnergyUnits());
-    m_pSpeedometerUnits->SilentActivateItemByRow(pSpeedoLabel->GetUnitType());
 }
 
 void HUDSettingsPanel::CursorEnteredCallback(Panel *panel)

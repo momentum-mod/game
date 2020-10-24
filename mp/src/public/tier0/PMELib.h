@@ -85,7 +85,7 @@ enum CompareState
     CompareEnable,  // 
 };
 
-// Singletion Class
+// Singleton Class
 class PME : public ia32detect
 {
 public:

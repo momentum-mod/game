@@ -995,7 +995,7 @@ void PhysFrictionSound( CBaseEntity *pEntity, IPhysicsObject *pObject, const cha
 			CPASAttenuationFilter filter( pEntity, params.soundlevel );
 			int entindex = pEntity->entindex();
 
-			// clientside created entites doesn't have a valid entindex, let 'world' play the sound for them
+			// clientside created entities doesn't have a valid entindex, let 'world' play the sound for them
 			if ( entindex < 0 )
 				entindex = 0;
 

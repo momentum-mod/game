@@ -86,9 +86,9 @@ enum KeystreamOperationFlags {
 /// \sa AdditiveCipherAbstractPolicy::GetBytesPerIteration(), AdditiveCipherAbstractPolicy::GetOptimalBlockSize()
 ///   and AdditiveCipherAbstractPolicy::GetAlignment()
 enum KeystreamOperation {
-	/// \brief Wirte the keystream to the output buffer, input is NULL
+	/// \brief Write the keystream to the output buffer, input is NULL
 	WRITE_KEYSTREAM				= INPUT_NULL,
-	/// \brief Wirte the keystream to the aligned output buffer, input is NULL
+	/// \brief Write the keystream to the aligned output buffer, input is NULL
 	WRITE_KEYSTREAM_ALIGNED		= INPUT_NULL | OUTPUT_ALIGNED,
 	/// \brief XOR the input buffer and keystream, write to the output buffer
 	XOR_KEYSTREAM				= 0,
@@ -300,7 +300,7 @@ public:
 	/// \brief Apply keystream to data
 	/// \param outString a buffer to write the transformed data
 	/// \param inString a buffer to read the data
-	/// \param length the size fo the buffers, in bytes
+	/// \param length the size of the buffers, in bytes
 	/// \details This is the primary method to operate a stream cipher. For example:
 	/// <pre>
 	///     size_t size = 30;
@@ -382,7 +382,7 @@ protected:
 	size_t m_leftOver;
 };
 
-/// \brief Policy object for feeback based stream ciphers
+/// \brief Policy object for feedback based stream ciphers
 class CRYPTOPP_DLL CRYPTOPP_NO_VTABLE CFB_CipherAbstractPolicy
 {
 public:
@@ -547,7 +547,7 @@ public:
 	/// \brief Apply keystream to data
 	/// \param outString a buffer to write the transformed data
 	/// \param inString a buffer to read the data
-	/// \param length the size fo the buffers, in bytes
+	/// \param length the size of the buffers, in bytes
 	/// \details This is the primary method to operate a stream cipher. For example:
 	/// <pre>
 	///     size_t size = 30;

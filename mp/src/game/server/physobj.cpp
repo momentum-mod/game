@@ -1962,7 +1962,7 @@ private:
 	bool	m_bEnabled;
 	float	m_flMagnitude;
 	float	m_flRadius;
-	float	m_flInnerRadius;	// Inner radius where the push eminates from (on a sphere)
+	float	m_flInnerRadius;	// Inner radius where the push emanates from (on a sphere)
 };
 
 LINK_ENTITY_TO_CLASS( point_push, CPointPush );

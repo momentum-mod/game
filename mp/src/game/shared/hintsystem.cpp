@@ -167,7 +167,7 @@ void CHintSystem::ResetHints( void )
 
 //-----------------------------------------------------------------------------
 // Purpose: Call this to add a hint message that should be re-added  
-//			everytime we're reset, if it hasn't been displayed yet.
+//			every time we're reset, if it hasn't been displayed yet.
 //-----------------------------------------------------------------------------
 void CHintSystem::RegisterHintTimer( int iHintID, float flTimerDuration, bool bOnlyIfClear /* = false */, HintTimerCallback pfnCallback )
 {

@@ -8,6 +8,7 @@ class CHudMapFinishedDialog;
 class CMOMSpectatorGUI;
 class CClientTimesDisplay;
 class LobbyMembersPanel;
+class TrickList;
 
 namespace vgui
 {
@@ -35,12 +36,9 @@ class ClientModeMOMNormal : public ClientModeShared
     ~ClientModeMOMNormal();
 
     void Init() OVERRIDE;
-    bool ShouldDrawCrosshair(void) OVERRIDE;
     // NOTE: This includes mouse inputs!!!
     int HudElementKeyInput(int down, ButtonCode_t keynum, const char *pszCurrentBinding) OVERRIDE;
     int HandleSpectatorKeyInput(int down, ButtonCode_t keynum, const char *pszCurrentBinding) OVERRIDE;
-
-    bool DoPostScreenSpaceEffects(const CViewSetup* pSetup) OVERRIDE;
 
     // Stub
     void ComputeVguiResConditions(KeyValues *pkvConditions) override {}
@@ -55,6 +53,7 @@ class ClientModeMOMNormal : public ClientModeShared
     CClientTimesDisplay *m_pLeaderboards;
     CMOMSpectatorGUI *m_pSpectatorGUI;
     LobbyMembersPanel *m_pLobbyMembers;
+    TrickList *m_pTrickList;
 };
 
 extern IClientMode *GetClientModeNormal();

@@ -191,7 +191,7 @@ VMAC_Base::VHASH_Update_SSE2(const word64 *data, size_t blocksRemainingInWord64,
 	word64 *polyS = (word64*)(void*)m_polyState();
 	word32 L1KeyLength = m_L1KeyLength;
 
-	// These are used in the ASM, but some analysis engines cnnot determine it.
+	// These are used in the ASM, but some analysis engines cannot determine it.
 	CRYPTOPP_UNUSED(data); CRYPTOPP_UNUSED(tagPart); CRYPTOPP_UNUSED(L1KeyLength);
 	CRYPTOPP_UNUSED(blocksRemainingInWord64);
 

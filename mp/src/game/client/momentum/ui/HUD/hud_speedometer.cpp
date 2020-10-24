@@ -31,7 +31,7 @@ CHudSpeedMeter *g_pSpeedometer = nullptr;
 
 CHudSpeedMeter::CHudSpeedMeter(const char *pElementName)
     : CHudElement(pElementName), EditablePanel(g_pClientMode->GetViewport(), "HudSpeedMeter"), 
-    m_cvarTimeScale("mom_replay_timescale"), m_pRunStats(nullptr), m_pRunEntData(nullptr), m_iLastZone(0)
+    m_cvarTimeScale("mom_replay_timescale"), m_pRunStats(nullptr), m_pRunEntData(nullptr), m_iLastZone(0), m_bAutoLayout(true)
 {
     ListenForGameEvent("zone_exit");
     ListenForGameEvent("zone_enter");
@@ -70,18 +70,19 @@ CHudSpeedMeter::CHudSpeedMeter(const char *pElementName)
     m_pStageEnterExitVelLabel = new SpeedometerLabel(this, "StageEnterExitVelocity", SPEEDOMETER_COLORIZE_COMPARISON_SEPARATE);
     m_pStageEnterExitVelLabel->SetFadeOutAnimation("FadeOutStageVel", &m_fStageVelAlpha);
 
-    m_Labels[0] = m_pAbsSpeedoLabel;
-    m_Labels[1] = m_pHorizSpeedoLabel;
-    m_Labels[2] = m_pVertSpeedoLabel;
-    m_Labels[3] = m_pExplosiveJumpVelLabel;
-    m_Labels[4] = m_pLastJumpVelLabel;
-    m_Labels[5] = m_pRampBoardVelLabel;
-    m_Labels[6] = m_pRampLeaveVelLabel;
-    m_Labels[7] = m_pStageEnterExitVelLabel;
+    m_Labels.EnsureCount(SPEEDOMETER_LABEL_TYPE_COUNT);
+    m_Labels[SPEEDOMETER_LABEL_TYPE_ABS] = m_pAbsSpeedoLabel;
+    m_Labels[SPEEDOMETER_LABEL_TYPE_HORIZ] = m_pHorizSpeedoLabel;
+    m_Labels[SPEEDOMETER_LABEL_TYPE_VERT] = m_pVertSpeedoLabel;
+    m_Labels[SPEEDOMETER_LABEL_TYPE_EXPLOSIVE] = m_pExplosiveJumpVelLabel;
+    m_Labels[SPEEDOMETER_LABEL_TYPE_LASTJUMP] = m_pLastJumpVelLabel;
+    m_Labels[SPEEDOMETER_LABEL_TYPE_RAMPBOARD] = m_pRampBoardVelLabel;
+    m_Labels[SPEEDOMETER_LABEL_TYPE_RAMPLEAVE] = m_pRampLeaveVelLabel;
+    m_Labels[SPEEDOMETER_LABEL_TYPE_STAGE] = m_pStageEnterExitVelLabel;
 
     ResetLabelOrder();
 
-    LoadControlSettings("resource/ui/Speedometer.res");
+    LoadControlSettings(GetResFile());
 }
 
 void CHudSpeedMeter::Init()
@@ -96,7 +97,7 @@ void CHudSpeedMeter::Reset()
     m_iLastZone = 0;
     m_pRunStats = nullptr;
     m_pRunEntData = nullptr;
-    g_pSpeedometerData->LoadGamemodeData();
+    g_pSpeedometerData->Load(true);
 }
 
 void CHudSpeedMeter::FireGameEvent(IGameEvent *pEvent)
@@ -133,14 +134,13 @@ void CHudSpeedMeter::FireGameEvent(IGameEvent *pEvent)
         return;
 
     // zone enter/exit
-    const auto ent = pEvent->GetInt("ent");
-    if (ent != pLocal->GetCurrentUIEntity()->GetEntIndex())
+    if (pEvent->GetInt("ent") != pLocal->GetCurrentUIEntity()->GetEntIndex())
         return;
 
-    int iCurrentZone = m_pRunEntData->m_iCurrentZone;
+    int iCurrentZone = pEvent->GetInt("num");
     const bool bExit = FStrEq(pEvent->GetName(), "zone_exit"), bEnter = FStrEq(pEvent->GetName(), "zone_enter");
 
-    if (m_pRunEntData->m_bIsInZone && iCurrentZone == 1 && bEnter)
+    if (bEnter && iCurrentZone == 1)
     {
         // disappear when entering start zone
         m_fExplosiveJumpVelAlpha = 0.0f;
@@ -157,8 +157,9 @@ void CHudSpeedMeter::FireGameEvent(IGameEvent *pEvent)
     if (!m_pRunEntData->m_bTimerRunning || (iCurrentZone <= m_iLastZone && bLinear))
         return;
 
-    // Logical XOR; equivalent to (bLinear && !bExit) || (!bLinear && bExit)
-    if (bLinear != bExit)
+    const auto bLinearStartExit = bLinear && bExit && iCurrentZone == 1;
+    // Logical XOR; shown on enter for linear maps, exits for staged maps
+    if (bLinear != bExit || bLinearStartExit) 
     {
         m_iLastZone = iCurrentZone;
 
@@ -168,8 +169,7 @@ void CHudSpeedMeter::FireGameEvent(IGameEvent *pEvent)
         if (bComparisonLoaded)
         {
             // set the label's custom diff
-            float diff = act - g_pMOMRunCompare->GetRunComparisons()->runStats.GetZoneEnterSpeed(
-                                    m_pRunEntData->m_iCurrentZone, velType);
+            float diff = act - g_pMOMRunCompare->GetRunComparisons()->runStats.GetZoneEnterSpeed(iCurrentZone, velType);
             m_pStageEnterExitVelLabel->SetCustomDiff(diff);
         }
         m_pStageEnterExitVelLabel->SetDrawComparison(bComparisonLoaded);
@@ -185,13 +185,16 @@ void CHudSpeedMeter::ApplySchemeSettings(IScheme *pScheme)
 
 void CHudSpeedMeter::OnReloadControls()
 {
-    BaseClass::OnReloadControls();
-    g_pSpeedometerData->LoadGamemodeData(g_pSpeedometerData->GetCurrentlyLoadedGameMode());
+    // no need to call baseclass as controls are reloaded when loading speedo data
+    g_pSpeedometerData->Load(true);
 }
 
 void CHudSpeedMeter::PerformLayout()
 {
     EditablePanel::PerformLayout();
+
+    if (!m_bAutoLayout)
+        return;
 
     int iHeightAcc = 0;
     for (auto i = 0; i < m_LabelOrderList.Count(); i++)
@@ -199,7 +202,7 @@ void CHudSpeedMeter::PerformLayout()
         SpeedometerLabel *pLabel = m_LabelOrderList[i];
         if (pLabel->IsVisible())
         {
-            pLabel->SetPos(pLabel->GetXPos(), iHeightAcc);
+            pLabel->SetYPos(iHeightAcc);
             iHeightAcc += pLabel->GetTall();
         }
     }
@@ -238,7 +241,7 @@ void CHudSpeedMeter::OnThink()
 void CHudSpeedMeter::ResetLabelOrder()
 {
     m_LabelOrderList.RemoveAll();
-    for (int i = 0; i < SPEEDOMETER_MAX_LABELS; i++)
+    for (int i = 0; i < SPEEDOMETER_LABEL_TYPE_COUNT; i++)
     {
         m_LabelOrderList.AddToTail(m_Labels[i]);
     }

@@ -1111,7 +1111,7 @@ FORCEINLINE void VectorMultiply( const Vector& a, const Vector& b, Vector& c )
 	c.z = a.z * b.z;
 }
 
-// for backwards compatability
+// for backwards compatibility
 inline void VectorScale ( const Vector& in, vec_t scale, Vector& result )
 {
 	VectorMultiply( in, scale, result );
@@ -1139,7 +1139,7 @@ FORCEINLINE void VectorDivide( const Vector& a, const Vector& b, Vector& c )
 }
 
 // FIXME: Remove
-// For backwards compatability
+// For backwards compatibility
 inline void	Vector::MulAdd(const Vector& a, const Vector& b, float scalar)
 {
 	CHECK_VALID(a);
@@ -1200,7 +1200,7 @@ FORCEINLINE vec_t DotProduct(const Vector& a, const Vector& b)
 	return( a.x*b.x + a.y*b.y + a.z*b.z ); 
 }
 
-// for backwards compatability
+// for backwards compatibility
 inline vec_t Vector::Dot( const Vector& vOther ) const
 {
 	CHECK_VALID(vOther);
@@ -1265,7 +1265,7 @@ inline vec_t VectorNormalize( Vector& v )
 	else
 	{
 		// FIXME: 
-		// Just copying the existing implemenation; shouldn't res.z == 0?
+		// Just copying the existing implementation; shouldn't res.z == 0?
 		v.x = v.y = 0.0f; v.z = 1.0f;
 	}
 	return l;
@@ -1517,7 +1517,7 @@ inline bool operator!=( const Vector& v, float const* f )
 //-----------------------------------------------------------------------------
 // AngularImpulse
 //-----------------------------------------------------------------------------
-// AngularImpulse are exponetial maps (an axis scaled by a "twist" angle in degrees)
+// AngularImpulse are exponential maps (an axis scaled by a "twist" angle in degrees)
 typedef Vector AngularImpulse;
 
 #ifndef VECTOR_NO_SLOW_OPERATIONS

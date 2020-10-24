@@ -29,7 +29,7 @@ public:
 					C_PlayerResource();
 	virtual			~C_PlayerResource();
 
-public : // IGameResources intreface
+public : // IGameResources interface
 
 	// Team data access 
 	virtual int		GetTeamScore( int index );

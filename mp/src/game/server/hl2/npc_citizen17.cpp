@@ -1832,7 +1832,7 @@ void CNPC_Citizen::TaskFail( AI_TaskFailureCode_t code )
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: Override base class activiites
+// Purpose: Override base class activities
 //-----------------------------------------------------------------------------
 Activity CNPC_Citizen::NPC_TranslateActivity( Activity activity )
 {
@@ -3030,7 +3030,7 @@ void CNPC_Citizen::UpdatePlayerSquad()
 //-----------------------------------------------------------------------------
 int CNPC_Citizen::PlayerSquadCandidateSortFunc( const SquadCandidate_t *pLeft, const SquadCandidate_t *pRight )
 {
-	// "Bigger" means less approprate 
+	// "Bigger" means less appropriate 
 	CNPC_Citizen *pLeftCitizen = pLeft->pCitizen;
 	CNPC_Citizen *pRightCitizen = pRight->pCitizen;
 

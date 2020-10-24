@@ -80,7 +80,7 @@ IPanelMetaClassMgr *PanelMetaClassMgr();
 
 
 //-----------------------------------------------------------------------------
-// Helper class for simple construction of planel class factories
+// Helper class for simple construction of panel class factories
 // This class is expected to be a singleton
 // Note the panel must have a constructor of the following form:
 //		CPanel( vgui::Panel* );

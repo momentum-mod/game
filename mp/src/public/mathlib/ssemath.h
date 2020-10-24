@@ -1981,7 +1981,7 @@ void FourVectors::RotateBy(const matrix3x4_t& matrix)
 
  {
 	// Load the matrix into local vectors. Sadly, matrix3x4_ts are 
-	// often unaligned. The w components will be the tranpose row of
+	// often unaligned. The w components will be the transpose row of
 	// the matrix, but we don't really care about that.
 	fltx4 matCol0 = LoadUnalignedSIMD( matrix[0] );
 	fltx4 matCol1 = LoadUnalignedSIMD( matrix[1] );
@@ -2026,7 +2026,7 @@ void FourVectors::TransformBy(const matrix3x4_t& matrix)
 
  {
 	// Load the matrix into local vectors. Sadly, matrix3x4_ts are 
-	// often unaligned. The w components will be the tranpose row of
+	// often unaligned. The w components will be the transpose row of
 	// the matrix, but we don't really care about that.
 	fltx4 matCol0 = LoadUnalignedSIMD( matrix[0] );
 	fltx4 matCol1 = LoadUnalignedSIMD( matrix[1] );
@@ -2087,7 +2087,7 @@ inline fltx4 fnegate( const fltx4 & x )
 fltx4 Pow_FixedPoint_Exponent_SIMD( const fltx4 & x, int exponent);
 
 // PowSIMD - raise a SIMD register to a power.  This is analogous to the C pow() function, with some
-// restictions: fractional exponents are only handled with 2 bits of precision. Basically,
+// restrictions: fractional exponents are only handled with 2 bits of precision. Basically,
 // fractions of 0,.25,.5, and .75 are handled. PowSIMD(x,.30) will be the same as PowSIMD(x,.25).
 // negative and fractional powers are handled by the SIMD reciprocal and square root approximation
 // instructions and so are not especially accurate ----Note that this routine does not raise

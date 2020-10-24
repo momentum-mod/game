@@ -491,6 +491,8 @@ public:
 
 	// Object bodygroup
 	int								m_nBody;
+	int m_nBodyGroup;
+	int m_nBodyGroupValue;
 
 	// Hitbox set to use (default 0)
 	int								m_nHitboxSet;
@@ -544,7 +546,7 @@ private:
 
 	float							m_flGroundSpeed;	// computed linear movement rate for current sequence
 	float							m_flLastEventCheck;	// cycle index of when events were last checked
-	bool							m_bSequenceFinished;// flag set when StudioAdvanceFrame moves across a frame boundry
+	bool							m_bSequenceFinished;// flag set when StudioAdvanceFrame moves across a frame boundary
 	bool							m_bSequenceLoops;	// true if the sequence loops
 
 	// Mouth lipsync/envelope following values
@@ -600,7 +602,7 @@ private:
 	float							m_flOldModelScale;
 	int								m_nOldSequence;
 	CBoneMergeCache					*m_pBoneMergeCache;	// This caches the strcmp lookups that it has to do
-														// when merg
+														// when merging
 	
 	CUtlVector< matrix3x4_t >		m_CachedBoneData; // never access this directly. Use m_BoneAccessor.
 	memhandle_t						m_hitboxBoneCacheHandle;
@@ -755,7 +757,7 @@ inline float C_BaseAnimating::GetCycle() const
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: return a pointer to an updated studiomdl cache cache
+// Purpose: return a pointer to an updated studiomdl cache
 //-----------------------------------------------------------------------------
 
 inline CStudioHdr *C_BaseAnimating::GetModelPtr() const

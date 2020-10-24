@@ -100,7 +100,7 @@ inline bool CompareConcepts( AIConcept_t c1, AIConcept_t c2 )
 }
 
 //-------------------------------------
-// Specifies and stores the base timing and attentuation values for concepts
+// Specifies and stores the base timing and attenuation values for concepts
 //
 class AI_Response;
 

@@ -57,7 +57,7 @@ public:
 	virtual void	Think();	
 
 #if defined( CLIENT_DLL )
-	// NOTE: Ths enclosed particle effect binding will do all the drawing
+	// NOTE: The enclosed particle effect binding will do all the drawing
 	virtual bool	ShouldDraw() { return false; }
 
 	int				AllocateToolParticleEffectId();

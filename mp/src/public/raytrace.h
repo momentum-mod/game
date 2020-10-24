@@ -44,7 +44,7 @@ public:
 /// The format a triangle is stored in for intersections. size of this structure is important.
 /// This structure can be in one of two forms. Before the ray tracing environment is set up, the
 /// ProjectedEdgeEquations hold the coordinates of the 3 vertices, for facilitating bounding box
-/// checks needed while building the tree. afterwards, they are changed into the projected ege
+/// checks needed while building the tree. afterwards, they are changed into the projected edge
 /// equations for intersection purposes.
 enum triangleflags
 {
@@ -305,7 +305,7 @@ public:
 					RayTracingResult *rslt_out,
 					int32 skip_id=-1, ITransparentTriangleCallback *pCallback = NULL);
 
-	// higher level intersection routine that handles computing the mask and handling rays which do not match in direciton sign
+	// higher level intersection routine that handles computing the mask and handling rays which do not match in direction sign
 	void Trace4Rays(const FourRays &rays, fltx4 TMin, fltx4 TMax,
 					RayTracingResult *rslt_out,
 					int32 skip_id=-1, ITransparentTriangleCallback *pCallback = NULL);

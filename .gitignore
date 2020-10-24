@@ -85,7 +85,9 @@ voice_ban.dt
 # Momentum
 *.zon
 *.mrf
+*.tricks
 progress.dat
+localuser.dat
 savedlocs.txt
 game_shader_dx9.dll
 game_shader_dx9.so
@@ -116,6 +118,7 @@ mp/game/momentum/custom/
 CMakeLists.txt
 mp/game/momentum/cfg/pet.txt
 *.exe
+nbproject
 
 # Shader output
 mp/src/materialsystem/stdshaders/filestocopy.txt

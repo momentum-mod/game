@@ -98,7 +98,7 @@ public:
 	virtual void GetClientFilePath(char *clientFilePath, const char *filespec, int size) = 0;
 	virtual void GetLocalFilePath(char *localFilePath, const char *filespec, int size) = 0;
 
-	// retreives the list of files in a path
+	// retrieves the list of files in a path
 	virtual CUtlVector<P4File_t> &GetFileList( const char *path ) = 0;
 
 	// returns the list of files opened for edit/integrate/delete 
@@ -180,7 +180,7 @@ public:
 	// be changed (so for new files, they must be added first, then the filetype modified).
 	virtual bool SetFileType( const char *pFullPath, const char *pFileType ) = 0;
 
-	// retreives the list of files in a path, using a known client spec
+	// retrieves the list of files in a path, using a known client spec
 	virtual CUtlVector<P4File_t> &GetFileListUsingClientSpec( const char *pPath, const char *pClientSpec ) = 0;
 
 	// retrieves the last error from the last op (which is likely to span multiple lines)

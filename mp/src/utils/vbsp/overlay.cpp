@@ -218,7 +218,7 @@ void Overlay_EmitOverlayFace( mapoverlay_t *pMapOverlay )
 
 	g_nOverlayCount++;
 
-	// Conver the map overlay into a .bsp overlay (doverlay_t).
+	// Convert the map overlay into a .bsp overlay (doverlay_t).
 	if ( pOverlay )
 	{
 		pOverlay->nId = pMapOverlay->nId;
@@ -306,7 +306,7 @@ void OverlayTransition_EmitOverlayFace( mapoverlay_t *pMapOverlay )
 	dwateroverlay_t *pOverlay = &g_WaterOverlays[g_nWaterOverlayCount];
 	g_nWaterOverlayCount++;
 
-	// Conver the map overlay into a .bsp overlay (doverlay_t).
+	// Convert the map overlay into a .bsp overlay (doverlay_t).
 	if ( pOverlay )
 	{
 		pOverlay->nId = pMapOverlay->nId;
@@ -460,7 +460,7 @@ void Overlay_Translate( mapoverlay_t *pOverlay, Vector &OriginOffset, QAngle &An
 		//		if ( fequal(fScaleU,1,0.0001) && fequal(fScaleV,1,0.0001) && fequal(DotProduct( vecU, vecV ),0,0.0025) )
 		if ( bIsUnit && bIsPerp )
 		{
-			// transformation doesnt scale or shear anything, so just update base axes
+			// transformation doesn't scale or shear anything, so just update base axes
 			pOverlay->vecBasis[OVERLAY_BASIS_U] = vecU;
 			pOverlay->vecBasis[OVERLAY_BASIS_V] = vecV;
 			pOverlay->vecBasis[OVERLAY_BASIS_NORMAL] = vecNormal;

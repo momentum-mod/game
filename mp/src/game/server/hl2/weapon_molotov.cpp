@@ -358,7 +358,7 @@ void CWeaponMolotov::PrimaryAttack( void )
 	
 	// Don't fire again until fire animation has completed
 	//m_flNextPrimaryAttack = gpGlobals->curtime + CurSequenceDuration();
-	//<<TEMP>> - till real animation is avaible
+	//<<TEMP>> - till real animation is available
 	m_flNextPrimaryAttack = gpGlobals->curtime + 1.0;
 	m_flNextSecondaryAttack = gpGlobals->curtime + 1.0;
 
@@ -396,14 +396,14 @@ void CWeaponMolotov::DrawAmmo( void )
 	Msg("Drawing Molotov...\n");
 	m_bNeedDraw = false;
 
-	//<<TEMP>> - till real animation is avaible
+	//<<TEMP>> - till real animation is available
 	m_flNextPrimaryAttack	= gpGlobals->curtime + 2.0;
 	m_flNextSecondaryAttack = gpGlobals->curtime + 2.0;
 
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: Override so shotgun can do mulitple reloads in a row
+// Purpose: Override so shotgun can do multiple reloads in a row
 // Input  :
 // Output :
 //-----------------------------------------------------------------------------

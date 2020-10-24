@@ -6,185 +6,229 @@
 
 #include "mom_system_gamemode.h"
 #include "filesystem.h"
+#include "fmtstr.h"
 
 #include "tier0/memdbgon.h"
 
 #define SPEEDOMETER_FILENAME "cfg/speedometer.vdf"
 #define SPEEDOMETER_DEFAULT_FILENAME "cfg/speedometer_default.vdf"
+#define SPEEDOMETER_KEY_VISIBLE "visible"
+#define SPEEDOMETER_KEY_COLORIZE "colorize"
+#define SPEEDOMETER_KEY_UNITS "units"
+#define SPEEDOMETER_KEY_LAYOUT "layout"
+#define SPEEDOMETER_KEY_AUTOLAYOUT "autolayout"
+#define SPEEDOMETER_KEY_ORDER "order"
 
-CON_COMMAND_F(mom_hud_speedometer_savecfg,
-              "Writes the current speedometer setup for the current gamemode to file.\n"
-              "Optionally takes in the gamemode to write to.\n",
+CON_COMMAND_F(mom_hud_speedometer_loadcfg, "Loads the speedometer setup for the current gamemode from file.\n",
               FLAG_HUD_CVAR | FCVAR_CLIENTCMD_CAN_EXECUTE)
 {
-    if (args.ArgC() > 1)
-    {
-        int iGamemodeIndex = Q_atoi(args[1]);
-        if (iGamemodeIndex >= 0 && iGamemodeIndex < GAMEMODE_COUNT)
-        {
-            g_pSpeedometerData->SaveGamemodeData(GameMode_t(iGamemodeIndex));
-        }
-    }
-    else
-    {
-        g_pSpeedometerData->SaveGamemodeData(g_pGameModeSystem->GetGameMode()->GetType());
-    }
-}
-
-CON_COMMAND_F(mom_hud_speedometer_loadcfg,
-              "Loads the speedometer setup for the current gamemode from file.\n"
-              "Optionally takes in the gamemode to load from.\n",
-              FLAG_HUD_CVAR | FCVAR_CLIENTCMD_CAN_EXECUTE)
-{
-    if (args.ArgC() > 1)
-    {
-        int iGamemodeIndex = Q_atoi(args[1]);
-        if (iGamemodeIndex >= 0 && iGamemodeIndex < GAMEMODE_COUNT)
-        {
-            g_pSpeedometerData->LoadGamemodeData(GameMode_t(iGamemodeIndex));
-        }
-    }
-    else
-    {
-        g_pSpeedometerData->LoadGamemodeData(g_pGameModeSystem->GetGameMode()->GetType());
-    }
+    g_pSpeedometerData->Load(true);
 }
 
 SpeedometerData::SpeedometerData()
-    : m_pGamemodeSetupData(nullptr), m_CurrentlyLoadedGamemodeSettings(GAMEMODE_UNKNOWN)
 {
+    m_pDefaultSpeedoData = new KeyValues("DefaultData");
+    m_pSpeedoData = new KeyValues("LoadedData");
 }
 
-void SpeedometerData::LoadGamemodeData() 
-{ 
-    LoadGamemodeData(g_pGameModeSystem->GetGameMode()->GetType()); 
-}
-
-void SpeedometerData::LoadGamemodeData(int gametype)
+void SpeedometerData::Init()
 {
-    if (gametype >= 0 && gametype < GAMEMODE_COUNT)
-        LoadGamemodeData(GameMode_t(gametype));
-}
-
-void SpeedometerData::LoadGamemodeData(GameMode_t gametype)
-{
-    if (m_pGamemodeSetupData)
-        m_pGamemodeSetupData->deleteThis();
-
-    m_pGamemodeSetupData = new KeyValues("Gamemodes");
-
-    if (!g_pFullFileSystem->FileExists(SPEEDOMETER_FILENAME))
+    if (!m_pDefaultSpeedoData->LoadFromFile(g_pFullFileSystem, SPEEDOMETER_DEFAULT_FILENAME, "MOD"))
     {
-        KeyValues *pKVTemp = new KeyValues(SPEEDOMETER_FILENAME);
-        pKVTemp->LoadFromFile(g_pFullFileSystem, SPEEDOMETER_DEFAULT_FILENAME, "MOD");
-        pKVTemp->SaveToFile(g_pFullFileSystem, SPEEDOMETER_FILENAME, "MOD");
-        pKVTemp->deleteThis();
+        Error("Failed to load default speedometer data; please verify game cache!");
     }
 
-    m_pGamemodeSetupData->LoadFromFile(g_pFullFileSystem, SPEEDOMETER_FILENAME, "MOD");
+    Load();
+}
 
-    KeyValues *pGamemodeKV = m_pGamemodeSetupData->FindKey(g_szGameModes[gametype]);
-
-    if (!pGamemodeKV) // unknown gamemode
-        return;
-
-    m_CurrentlyLoadedGamemodeSettings = gametype;
-
-    // get ordering
-    KeyValues *pOrderKV = pGamemodeKV->FindKey("order");
-    if (pOrderKV)
+void SpeedometerData::Load(bool bApply)
+{
+    m_pSpeedoData->Clear();
+    if (!m_pSpeedoData->LoadFromFile(g_pFullFileSystem, SPEEDOMETER_FILENAME, "MOD"))
     {
-        auto pOrderList = g_pSpeedometer->GetLabelOrderListPtr();
-        pOrderList->RemoveAll();
-        char szIndex[BUFSIZELOCL];
-        for (unsigned int i = 1; i <= SPEEDOMETER_MAX_LABELS; i++)
+        m_pSpeedoData->deleteThis();
+        m_pSpeedoData = m_pDefaultSpeedoData->MakeCopy();
+
+        Save();
+    }
+
+    if (bApply)
+        Apply();
+}
+
+void SpeedometerData::Save(bool bApply)
+{
+    m_pSpeedoData->SaveToFile(g_pFullFileSystem, SPEEDOMETER_FILENAME, "MOD");
+
+    if (bApply)
+        Apply();
+}
+
+void SpeedometerData::Apply() 
+{ 
+    const auto gametype = g_pGameModeSystem->GetGameMode()->GetType();
+    const auto pszGamemode = g_szGameModes[gametype];
+
+    bool bShouldSave = false;
+    
+    auto pGamemodeKV = m_pSpeedoData->FindKey(pszGamemode);
+    auto pDefaultGamemodeKV = m_pDefaultSpeedoData->FindKey(pszGamemode);
+    if (!pGamemodeKV)
+    {
+        // Is it in the default?
+        if (!pDefaultGamemodeKV)
         {
-            Q_snprintf(szIndex, BUFSIZELOCL, "%i", i);
-            const char *szSpeedo = pOrderKV->GetString(szIndex);
-            if (szSpeedo)
+            Warning("!!! The gamemode %s does not have its default Speedometer data set. Tell a developer !!!\n", pszGamemode);
+            return;
+        }
+
+        pGamemodeKV = pDefaultGamemodeKV->MakeCopy();
+        m_pSpeedoData->AddSubKey(pGamemodeKV);
+        bShouldSave = true;
+    }
+
+    // get autolayout. if no custom layout specified, set autolayout on
+    auto pLayoutKV = pGamemodeKV->FindKey(SPEEDOMETER_KEY_LAYOUT);
+    bool bAutoLayout = pGamemodeKV->GetBool(SPEEDOMETER_KEY_AUTOLAYOUT, true) || !pLayoutKV;
+    g_pSpeedometer->SetAutoLayout(bAutoLayout);
+
+    if (bAutoLayout)
+    {
+        g_pSpeedometer->LoadControlSettings(g_pSpeedometer->GetResFile());
+
+        // get ordering
+        auto pOrderKV = pGamemodeKV->FindKey(SPEEDOMETER_KEY_ORDER);
+        if (!pOrderKV)
+        {
+            if (LoadDefaultSubKeyData(pGamemodeKV, pDefaultGamemodeKV, SPEEDOMETER_KEY_ORDER))
             {
-                SpeedometerLabel *label = GetLabelFromName(szSpeedo);
-                if (label)
+                pOrderKV = pGamemodeKV->FindKey(SPEEDOMETER_KEY_ORDER);
+                bShouldSave = true;
+            }
+            else
+            {
+                Warning("!!! The speedometer ordering for gamemode %s does not exist in the default Speedometer data set. Tell a developer !!!\n", pszGamemode);
+                g_pSpeedometer->ResetLabelOrder();
+            }
+        }
+
+        if (pOrderKV)
+        {
+            auto pOrderList = g_pSpeedometer->GetLabelOrderListPtr();
+            pOrderList->RemoveAll();
+            for (unsigned int i = 1; i <= SPEEDOMETER_LABEL_TYPE_COUNT; i++)
+            {
+                const auto pszIndex = CFmtStr("%i", i).Get();
+                bool bFound = false;
+                for (unsigned int j = 0; j < SPEEDOMETER_LABEL_TYPE_COUNT; j++)
                 {
-                    pOrderList->AddToTail(label);
+                    const auto pSpeedoLabel = g_pSpeedometer->GetLabel(j);
+                    if (FStrEq(pSpeedoLabel->GetName(), pOrderKV->GetString(pszIndex)))
+                    {
+                        pOrderList->AddToTail(pSpeedoLabel);
+                        bFound = true;
+                        break;
+                    }
                 }
+
+                if (bFound)
+                    continue;
+
+                Warning("! The speedometer ordering for gamemode %s has at least one incorrect or missing speedometer type. Loading default !\n", pszGamemode);
+                pGamemodeKV->RemoveSubKey(pOrderKV);
+                if (LoadDefaultSubKeyData(pGamemodeKV, pDefaultGamemodeKV, SPEEDOMETER_KEY_ORDER))
+                {
+                    bShouldSave = true;
+                }
+                else
+                {
+                    Warning("!!! The speedometer ordering for gamemode %s does not exist in the default Speedometer data set. Tell a developer !!!\n", pszGamemode);
+                }
+                g_pSpeedometer->ResetLabelOrder();
+                break;
             }
         }
     }
     else
     {
-        g_pSpeedometer->ResetLabelOrder();
+        KeyValuesAD layoutKVTmp(pLayoutKV->MakeCopy());
+        // get control settings then merge them into the custom layout (keeping its settings)
+        KeyValuesAD pSpeedoSettings("SpeedoSettings");
+        pSpeedoSettings->LoadFromFile(g_pFullFileSystem, g_pSpeedometer->GetResFile());
+        layoutKVTmp->RecursiveMergeKeyValues(pSpeedoSettings);
+        g_pSpeedometer->LoadControlSettings(g_pSpeedometer->GetResFile(), NULL, layoutKVTmp);
     }
 
     // get speedometer label setups
-    FOR_EACH_SUBKEY(pGamemodeKV, pSpeedoItem)
-    {
-        const char *speedoname = pSpeedoItem->GetName();
-        SpeedometerLabel *pLabel = GetLabelFromName(speedoname);
-        KeyValues *pSpeedoKV = pGamemodeKV->FindKey(speedoname);
-        if (!pLabel || !pSpeedoKV)
-            continue;
-
-        pLabel->LoadFromKV(pSpeedoKV);
-    }
-}
-
-void SpeedometerData::SaveGamemodeData() 
-{ 
-    SaveGamemodeData(g_pGameModeSystem->GetGameMode()->GetType());
-}
-
-void SpeedometerData::SaveGamemodeData(int gametype)
-{
-    if (gametype >= 0 && gametype < GAMEMODE_COUNT)
-        SaveGamemodeData(GameMode_t(gametype));
-}
-
-void SpeedometerData::SaveGamemodeData(GameMode_t gametype)
-{
-    if (!g_pFullFileSystem)
-        return;
-
-    KeyValues *pGamemodeKV = m_pGamemodeSetupData->FindKey(g_szGameModes[gametype]);
-
-    if (!pGamemodeKV) // unknown gamemode
-        return;
-
-    // set speedometer label setups
-    FOR_EACH_SUBKEY(pGamemodeKV, pSpeedoItem)
-    {
-        const char *speedoname = pSpeedoItem->GetName();
-        SpeedometerLabel *pLabel = GetLabelFromName(speedoname);
-        KeyValues *pSpeedoKV = pGamemodeKV->FindKey(speedoname, true);
-        if (!pLabel || !pSpeedoKV)
-            continue;
-
-        pLabel->SaveToKV(pSpeedoKV);
-    }
-
-    // set ordering
-    auto pOrderList = g_pSpeedometer->GetLabelOrderListPtr();
-    KeyValues *pOrderKVs = pGamemodeKV->FindKey("order", true);
-    pOrderKVs->Clear();
-    char tmpBuf[BUFSIZELOCL];
-    for (auto i = 0; i < pOrderList->Count(); i++)
-    {
-        Q_snprintf(tmpBuf, BUFSIZELOCL, "%i", i + 1);
-        pOrderKVs->SetString(tmpBuf, (*pOrderList)[i]->GetName());
-    }
-
-    m_pGamemodeSetupData->SaveToFile(g_pFullFileSystem, SPEEDOMETER_FILENAME, "MOD");
-}
-
-SpeedometerLabel *SpeedometerData::GetLabelFromName(const char *name)
-{
-    for (int i = 0; i < SPEEDOMETER_MAX_LABELS; i++)
+    // must be last as it overrides some control settings loaded above
+    for (unsigned int i = 0; i < SPEEDOMETER_LABEL_TYPE_COUNT; i++)
     {
         const auto pSpeedoLabel = g_pSpeedometer->GetLabel(i);
-        if (!Q_strcmp(pSpeedoLabel->GetName(), name))
-            return pSpeedoLabel;
+        const auto pszSpeedo = pSpeedoLabel->GetName();
+        auto pSpeedoKV = pGamemodeKV->FindKey(pszSpeedo);
+
+        if (!pSpeedoKV)
+        {
+            if (!LoadDefaultSubKeyData(pGamemodeKV, pDefaultGamemodeKV, pszSpeedo))
+            {
+                Warning("!!! The speedometer %s for gamemode %s does not exist in the default Speedometer data set. Tell a developer !!!\n", pszSpeedo, pszGamemode);
+                continue;
+            }
+            pSpeedoKV = pGamemodeKV->FindKey(pszSpeedo);
+            bShouldSave = true;
+        }
+
+        pSpeedoLabel->ApplyKV(pSpeedoKV);
     }
-    return nullptr;
+
+    if (bShouldSave)
+        Save();
+}
+
+bool SpeedometerData::LoadDefaultSubKeyData(KeyValues *pGamemodeKV, KeyValues *pDefaultGamemodeKV, const char *pszKeyName)
+{
+    auto pDefaultSubKeyKV = pDefaultGamemodeKV->FindKey(pszKeyName);
+    if (!pDefaultSubKeyKV)
+        return false;
+
+    pGamemodeKV->AddSubKey(pDefaultSubKeyKV->MakeCopy());
+    return true;
+}
+
+void SpeedometerData::SetVisible(GameMode_t gametype, SpeedometerLabel_t speedometerLabelType, bool bVisible) 
+{
+    GetSpeedoKVs(gametype, speedometerLabelType)->SetBool(SPEEDOMETER_KEY_VISIBLE, bVisible);
+}
+
+bool SpeedometerData::GetVisible(GameMode_t gametype, SpeedometerLabel_t speedometerLabelType) const
+{
+    return GetSpeedoKVs(gametype, speedometerLabelType)->GetBool(SPEEDOMETER_KEY_VISIBLE, true);
+}
+
+void SpeedometerData::SetColorize(GameMode_t gametype, SpeedometerLabel_t speedometerLabelType, SpeedometerColorize_t speedometerColorizeType)
+{
+    GetSpeedoKVs(gametype, speedometerLabelType)->SetInt(SPEEDOMETER_KEY_COLORIZE, speedometerColorizeType);
+}
+
+SpeedometerColorize_t SpeedometerData::GetColorize(GameMode_t gametype, SpeedometerLabel_t speedometerLabelType) const
+{
+    return SpeedometerColorize_t(GetSpeedoKVs(gametype, speedometerLabelType)->GetInt(SPEEDOMETER_KEY_COLORIZE, SPEEDOMETER_COLORIZE_COMPARISON));
+}
+
+void SpeedometerData::SetUnits(GameMode_t gametype, SpeedometerLabel_t speedometerLabelType, SpeedometerUnits_t speedometerUnitsType)
+{
+    GetSpeedoKVs(gametype, speedometerLabelType)->SetInt(SPEEDOMETER_KEY_UNITS, speedometerUnitsType);
+}
+
+SpeedometerUnits_t SpeedometerData::GetUnits(GameMode_t gametype, SpeedometerLabel_t speedometerLabelType) const
+{
+    return SpeedometerUnits_t(GetSpeedoKVs(gametype, speedometerLabelType)->GetInt(SPEEDOMETER_KEY_UNITS, SPEEDOMETER_UNITS_UPS));
+}
+
+KeyValues *SpeedometerData::GetSpeedoKVs(GameMode_t gametype, SpeedometerLabel_t speedometerLabelType) const
+{
+    const auto pGamemodeKVs = m_pSpeedoData->FindKey(g_szGameModes[gametype], true);
+    return pGamemodeKVs->FindKey(g_pSpeedometer->GetLabel(speedometerLabelType)->GetName(), true);
 }
 
 SpeedometerData s_SpeedometerData;

@@ -41,9 +41,9 @@ CAmmoPistol::CAmmoPistol()
     m_fRangeModifier = 0.75f;
 }
 
-CAmmoSMG::CAmmoSMG()
+CAmmoMachinegun::CAmmoMachinegun()
 {
-    m_WeaponID = WEAPON_SMG;
+    m_WeaponID = WEAPON_MACHINEGUN;
     m_iDamageAmount = 26;
     m_iMinSplashSize = 4;
     m_iMaxSplashSize = 8;
@@ -51,16 +51,6 @@ CAmmoSMG::CAmmoSMG()
     m_fPenetrationDistance = 2000.0f;
     m_fRange = 4096.0f;
     m_fRangeModifier = 0.84f;
-}
-
-CAmmoRifle::CAmmoRifle()
-{
-    m_WeaponID = WEAPON_RIFLE;
-    m_iDamageAmount = 36;
-    m_iPenetrationAmount = 2;
-    m_fPenetrationPower = 39.0f;
-    m_fPenetrationDistance = 5000.0f;
-    m_fRangeModifier = 0.98f;
 }
 
 CAmmoSniper::CAmmoSniper()
@@ -84,16 +74,6 @@ CAmmoShotgun::CAmmoShotgun()
     m_iNumBullets = 9;
 }
 
-CAmmoLMG::CAmmoLMG()
-{
-    m_WeaponID = WEAPON_LMG;
-    m_iDamageAmount = 35;
-    m_iPenetrationAmount = 2;
-    m_fPenetrationPower = 35.0f;
-    m_fPenetrationDistance = 4000.0f;
-    m_fRangeModifier = 0.97f;
-}
-
 CAmmoGrenade::CAmmoGrenade()
 {
     m_WeaponID = WEAPON_GRENADE;
@@ -103,7 +83,7 @@ CAmmoGrenade::CAmmoGrenade()
 
 CAmmoPaint::CAmmoPaint()
 {
-    m_WeaponID = WEAPON_PAINTGUN;
+    m_WeaponID = WEAPON_NONE;
     m_iDamageAmount = 0;
     m_iPenetrationAmount = 0;
 }
@@ -113,10 +93,8 @@ CAmmoDef::CAmmoDef()
 {
     m_AmmoTypes.EnsureCount(AMMO_TYPE_MAX);
     m_AmmoTypes[AMMO_TYPE_PISTOL] = new CAmmoPistol;
-    m_AmmoTypes[AMMO_TYPE_SMG] = new CAmmoSMG;
-    m_AmmoTypes[AMMO_TYPE_RIFLE] = new CAmmoRifle;
+    m_AmmoTypes[AMMO_TYPE_MACHINEGUN] = new CAmmoMachinegun;
     m_AmmoTypes[AMMO_TYPE_SNIPER] = new CAmmoSniper;
-    m_AmmoTypes[AMMO_TYPE_LMG] = new CAmmoLMG;
     m_AmmoTypes[AMMO_TYPE_SHOTGUN] = new CAmmoShotgun;
     m_AmmoTypes[AMMO_TYPE_GRENADE] = new CAmmoGrenade;
     m_AmmoTypes[AMMO_TYPE_PAINT] = new CAmmoPaint;

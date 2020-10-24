@@ -128,7 +128,7 @@ public:
 	virtual void RereadAllItems(); // updates the view with the new data
 
 	virtual void RemoveAll();		// clears and deletes all the memory used by the data items
-	virtual void DeleteAllItems();	// obselete, use RemoveAll();
+	virtual void DeleteAllItems();	// obsolete, use RemoveAll();
 
 	virtual void GetCellText(int itemID, int column, OUT_Z_BYTECAP(bufferSizeInBytes) wchar_t *buffer, int bufferSizeInBytes); // returns the data held by a specific cell
 	virtual IImage *GetCellImage(int itemID, int column); //, ImagePanel *&buffer); // returns the image held by a specific cell
@@ -266,6 +266,8 @@ public:
 	void SetAutoTallHeaderToFont(bool bTall) { m_bAutoTallHeaderToFont = bTall; }
 
 private:
+	void SetCellRendererBgColor(Panel *pRenderer, int itemID, int col, bool bSelected);
+
 	// Cleans up allocations associated with a particular item
 	void CleanupItem( FastSortListPanelItem *data );
 
@@ -364,7 +366,9 @@ protected:
 	Color		m_DisabledColor;
 	Color 		m_SelectionFgColor, m_SelectionBgColor, m_SelectionOutOfFocusBgColor;
 	Color		m_DisabledSelectionFgColor;
+	Color		m_ListAlternationColor1, m_ListAlternationColor2;
 private:
+	bool		m_bAlternatingColors;
 	ImageList 	*m_pImageList;
 	Label 	*m_pEmptyListText;
 

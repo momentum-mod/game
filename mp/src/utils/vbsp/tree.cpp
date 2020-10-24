@@ -170,7 +170,7 @@ void PruneNodes_r (node_t *node)
 	&& (node->children[1]->contents & CONTENTS_SOLID) )
 	{
 		if (node->faces)
-			Error ("node->faces seperating CONTENTS_SOLID");
+			Error ("node->faces separating CONTENTS_SOLID");
 		if (node->children[0]->faces || node->children[1]->faces)
 			Error ("!node->faces with children");
 

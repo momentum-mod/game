@@ -1,9 +1,9 @@
 "Resource/ui/BaseChat.res"
 {
-	"HudChat"
+	"ChatPanel"
 	{
 		"ControlName"		"EditablePanel"
-		"fieldName" 		"HudChat"
+		"fieldName" 		"ChatPanel"
 		"visible" 		"1"
 		"enabled" 		"1"
 		"xpos"			"10"
@@ -14,10 +14,10 @@
         "HistoryAlpha" "255"
 	}
 
-	"HudChatHistory"
+	"ChatHistory"
 	{
 		"ControlName"		"RichText"
-		"fieldName"		"HudChatHistory"
+		"fieldName"		"ChatHistory"
 		"xpos"			"2"
 		"ypos"			"2"
         "proportionalToParent" "1"
@@ -33,10 +33,10 @@
         "BgColor_Override" "MomGreydientStep4"
 	}
 
-    "ChatInputLine"
+    "ChatEntry"
     {
         "ControlName" "TextEntry"
-        "fieldName" "ChatInputLine"
+        "fieldName" "ChatEntry"
         "visible" "0"
         "enabled" "1"
         "xpos" "0"
@@ -48,9 +48,12 @@
         "textinsety" "0"
         "font" "Default12"
         "TypingText" "White"
-        "pin_to_sibling" "HudChatHistory"
+        "pin_to_sibling" "ChatHistory"
 		"pin_corner_to_sibling"		"0"
 		"pin_to_sibling_corner"		"2"
+        "unicode"   "1"
+        "keyboardinputenabled" "1"
+        "mouseinputenabled" "1"
     }
 
     "ChatFiltersButton"
@@ -73,7 +76,7 @@
         "Default" "0"
         "textinsetx" "6"
         "textinsety" "0"
-        "pin_to_sibling" "ChatInputLine"
+        "pin_to_sibling" "ChatEntry"
 		"pin_corner_to_sibling"		"1"
 		"pin_to_sibling_corner"		"3"
     }
@@ -85,7 +88,7 @@
         "xpos" "-4"
         "ypos" "2"
         "visible" "0"
-        "pin_to_sibling" "ChatInputLine"
+        "pin_to_sibling" "ChatEntry"
 		"pin_corner_to_sibling"		"0"
 		"pin_to_sibling_corner"		"2"
         "auto_wide_tocontents" "1"

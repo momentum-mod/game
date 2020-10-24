@@ -97,7 +97,7 @@ public:
 
 // Static members
 public:
-	// List of dynamically allocated temp entis
+	// List of dynamically allocated temp entities
 	static C_BaseTempEntity			*GetDynamicList();
 
 	// Called at startup to allow temp entities to precache any models/sounds that they need

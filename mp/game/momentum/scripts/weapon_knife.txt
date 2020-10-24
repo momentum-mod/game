@@ -18,8 +18,8 @@ WeaponData
 
     "ModelData"
     {
-        "view"  "models/weapons/v_knife_t.mdl"
-        "world" "models/weapons/w_knife_t.mdl"
+        "view"  "models/weapons/mom_knife/v_mom_knife.mdl"
+        "world" "models/weapons/mom_knife/w_mom_knife.mdl"
     }
 
     SoundData

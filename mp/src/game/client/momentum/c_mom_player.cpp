@@ -12,6 +12,7 @@ RecvPropBool(RECVINFO(m_bIsSprinting)),
 RecvPropBool(RECVINFO(m_bIsWalking)),
 RecvPropBool(RECVINFO(m_bHasPracticeMode)),
 RecvPropBool(RECVINFO(m_bPreventPlayerBhop)),
+RecvPropInt(RECVINFO(m_iJumpTick)),
 RecvPropInt(RECVINFO(m_iLandTick)),
 RecvPropBool(RECVINFO(m_bResumeZoom)),
 RecvPropInt(RECVINFO(m_iShotsFired), SPROP_UNSIGNED),
@@ -22,6 +23,7 @@ RecvPropEHandle(RECVINFO(m_CurrentSlideTrigger)),
 RecvPropBool(RECVINFO(m_bAutoBhop)),
 RecvPropFloat(RECVINFO(m_fDuckTimer)),
 RecvPropBool(RECVINFO(m_bSurfing)),
+RecvPropInt(RECVINFO(m_nButtonsToggled)),
 RecvPropVector(RECVINFO(m_vecRampBoardVel)),
 RecvPropVector(RECVINFO(m_vecRampLeaveVel)),
 RecvPropArray3(RECVINFO_ARRAY(m_iZoneCount), RecvPropInt(RECVINFO(m_iZoneCount[0]), SPROP_UNSIGNED)),
@@ -55,12 +57,20 @@ C_MomentumPlayer::C_MomentumPlayer(): m_pSpecTarget(nullptr)
     m_flStamina = 0.0f;
     m_flGrabbableLadderTime = 0.0f;
 
+    m_iLandTick = 0;
+    m_iJumpTick = 0;
     m_bIsSprinting = false;
     m_bIsWalking = false;
     m_bAutoBhop = true;
     m_CurrentSlideTrigger = nullptr;
     m_RunStats.Init();
     m_fDuckTimer = 0.0f;
+
+    m_bIsPowerSliding = false;
+    m_nWallRunState = WALLRUN_NOT;
+    m_bWasSprinting = false;
+
+    m_nButtonsToggled = 0;
 }
 
 C_MomentumPlayer::~C_MomentumPlayer()
@@ -107,6 +117,15 @@ bool C_MomentumPlayer::CreateMove(float flInputSampleTime, CUserCmd *pCmd)
 
 void C_MomentumPlayer::OnDataChanged(DataUpdateType_t type)
 {
+    // clear the sprint toggle if we just stopped not sprinting
+    /*if (m_bWasSprinting && !m_bIsSprinting)
+    {
+        IN_ClearSpeedToggle();
+    }
+
+    m_bWasSprinting = m_bIsSprinting;*/
+
+
     BaseClass::OnDataChanged(type);
 
     UpdateVisibility();

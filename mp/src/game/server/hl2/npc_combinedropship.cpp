@@ -1389,7 +1389,7 @@ void CNPC_CombineDropship::Flight( void )
 
 
 //------------------------------------------------------------------------------
-// Deals damage to what's behing carried
+// Deals damage to what's being carried
 //------------------------------------------------------------------------------
 int CNPC_CombineDropship::OnTakeDamage_Alive( const CTakeDamageInfo &inputInfo ) 
 {

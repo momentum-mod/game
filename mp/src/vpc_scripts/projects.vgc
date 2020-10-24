@@ -24,6 +24,11 @@ $Project "fgdlib"
 	"fgdlib\fgdlib.vpc" [$WIN32]
 }
 
+$Project "shaderlib"
+{
+	"materialsystem\shaderlib\shaderlib.vpc"
+}
+
 $Project "game_shader_dx9"
 {
 	"materialsystem\stdshaders\game_shader_dx9_momentum.vpc" [($WIN32||$POSIX) && $MOMENTUM]

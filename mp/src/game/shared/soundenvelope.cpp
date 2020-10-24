@@ -1163,7 +1163,7 @@ void CSoundControllerImp::SoundFadeOut( CSoundPatch *pSound, float deltaTime, bo
 // Purpose: Queue a list of envelope points into a sound patch's event list
 // Input  : *pSound - The sound patch to be operated on
 //			soundCommand - Type of operation the envelope describes
-//			*points - List of enevelope points
+//			*points - List of envelope points
 //			numPoints - Number of points provided
 // Output : float - Returns the total duration of the envelope
 //-----------------------------------------------------------------------------

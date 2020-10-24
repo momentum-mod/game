@@ -8,13 +8,13 @@
 
 #include "tier0/memdbgon.h"
 
-ConVar mm_updaterate("mom_ghost_online_updaterate", "25",
+ConVar mm_updaterate("mom_ghost_online_updaterate", "40",
     FCVAR_ARCHIVE | FCVAR_CLIENTCMD_CAN_EXECUTE,
     "Number of updates per second for online ghosts.\n", true, 1.0f, true, 50.0f);
 
 CON_COMMAND(mom_spectate, "Start spectating if there are ghosts currently being played.")
 {
-    if (gpGlobals->eLoadType == MapLoad_Background || FStrEq(gpGlobals->mapname.ToCStr(), "credits"))
+    if (gpGlobals->eLoadType == MapLoad_Background)
         return;
 
     auto pPlayer = CMomentumPlayer::GetLocalPlayer();
@@ -107,12 +107,6 @@ void CMomentumGhostClient::ClearCurrentGhosts(bool bLeavingLobby)
 {
     // MOM_TODO: g_pMomentumServerSystem->ClearCurrentGhosts(bLeavingLobby)
     g_pMomentumLobbySystem->ClearCurrentGhosts(bLeavingLobby);
-}
-
-void CMomentumGhostClient::SendChatMessage(char* pMessage)
-{
-    // MOM_TODO: g_pMomentumServerSystem->SendChatMessage(pMessage)
-    g_pMomentumLobbySystem->SendChatMessage(pMessage);
 }
 
 void CMomentumGhostClient::ResetOtherAppearanceData()

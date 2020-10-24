@@ -473,7 +473,7 @@ public:
 	const Type&	GetPrev( int iArrayIndex=0 ) const;
 	const Type&	GetCurrent( int iArrayIndex=0 ) const;
 	
-	// Returns the time difference betweem the most recent sample and its previous sample.
+	// Returns the time difference between the most recent sample and its previous sample.
 	float	GetInterval() const;
 	bool	IsValidIndex( int i );
 	Type	*GetHistoryValue( int index, float& changetime, int iArrayIndex=0 );
@@ -937,8 +937,8 @@ inline void CInterpolatedVarArrayBase<Type, IS_ARRAY>::DebugInterpolate( Type *p
 		{
 			// At this point, we know we're out of data and we have the ability to get a velocity to extrapolate with.
 			//
-			// However, we only want to extraploate if the server is choking. We don't want to extrapolate if 
-			// the object legimately stopped moving and the server stopped sending updates for it.
+			// However, we only want to extrapolate if the server is choking. We don't want to extrapolate if 
+			// the object legitimately stopped moving and the server stopped sending updates for it.
 			//
 			// The way we know that the server is choking is if we haven't heard ANYTHING from it for a while.
 			// The server's update interval should be at least as often as our interpolation amount (otherwise,
@@ -1007,8 +1007,8 @@ inline int CInterpolatedVarArrayBase<Type, IS_ARRAY>::Interpolate( float current
 		{
 			// At this point, we know we're out of data and we have the ability to get a velocity to extrapolate with.
 			//
-			// However, we only want to extraploate if the server is choking. We don't want to extrapolate if 
-			// the object legimately stopped moving and the server stopped sending updates for it.
+			// However, we only want to extrapolate if the server is choking. We don't want to extrapolate if 
+			// the object legitimately stopped moving and the server stopped sending updates for it.
 			//
 			// The way we know that the server is choking is if we haven't heard ANYTHING from it for a while.
 			// The server's update interval should be at least as often as our interpolation amount (otherwise,
@@ -1102,8 +1102,8 @@ void CInterpolatedVarArrayBase<Type, IS_ARRAY>::GetDerivative_SmoothVelocity( Ty
 		{
 			// At this point, we know we're out of data and we have the ability to get a velocity to extrapolate with.
 			//
-			// However, we only want to extraploate if the server is choking. We don't want to extrapolate if 
-			// the object legimately stopped moving and the server stopped sending updates for it.
+			// However, we only want to extrapolate if the server is choking. We don't want to extrapolate if 
+			// the object legitimately stopped moving and the server stopped sending updates for it.
 			//
 			// The way we know that the server is choking is if we haven't heard ANYTHING from it for a while.
 			// The server's update interval should be at least as often as our interpolation amount (otherwise,
@@ -1546,7 +1546,7 @@ inline bool CInterpolatedVarArrayBase<Type, IS_ARRAY>::ValidOrder()
 			continue;
 		}
 
-		// They should get older as wel walk backwards
+		// They should get older as we walk backwards
 		if ( entry->changetime > newestchangetime )
 		{
 			Assert( 0 );

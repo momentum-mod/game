@@ -8,6 +8,7 @@
 // STATIC: "FLASHLIGHTDEPTHFILTERMODE"  "0..2"
 // STATIC: "LIGHTMAPPED"                "0..1"
 // STATIC: "EMISSIVE"                   "0..1"
+// STATIC: "WVT"                        "0..1"
 
 // DYNAMIC: "WRITEWATERFOGTODESTALPHA"  "0..1"
 // DYNAMIC: "PIXELFOGTYPE"              "0..1"
@@ -39,6 +40,8 @@ const float4 g_FlashlightPos                    : register(PSREG_FLASHLIGHT_POSI
 const float4x4 g_FlashlightWorldToTexture       : register(PSREG_FLASHLIGHT_TO_WORLD_TEXTURE);
 PixelShaderLightInfo cLightInfo[3]              : register(PSREG_LIGHT_INFO_ARRAY);         // 2 registers each - 6 registers total (4th light spread across w's)
 const float4 g_BaseColor                        : register(PSREG_SELFILLUMTINT);
+const float4 g_EmissionScale                    : register(c2);
+const float4 g_MraoScale                        : register(c27);
 
 sampler BaseTextureSampler          : register(s0);     // Base map, selfillum in alpha
 sampler NormalTextureSampler        : register(s1);     // Normal map
@@ -50,6 +53,17 @@ sampler LightmapSampler             : register(s7);     // Lightmap
 sampler MRAOTextureSampler          : register(s10);    // MRAO texture
 #if EMISSIVE
 sampler EmissionTextureSampler      : register(s11);    // Emission texture
+#endif
+
+#if WVT
+const float4 g_Emission2Scale       : register(c3);
+const float4 g_Mrao2Scale           : register(c10);
+sampler Base2TextureSampler         : register(s3);
+sampler Normal2TextureSampler       : register(s12);
+sampler MRAO2TextureSampler         : register(s13);
+#if EMISSIVE
+sampler Emission2TextureSampler     : register(s14);
+#endif
 #endif
 
 #define ENVMAPLOD (g_EyePos.a)
@@ -64,6 +78,9 @@ struct PS_INPUT
     float3 projPos                  : TEXCOORD5;
     float4 lightmapTexCoord1And2    : TEXCOORD6;
     float4 lightmapTexCoord3        : TEXCOORD7;
+#if WVT
+    float blend                     : COLOR0;
+#endif
 };
 
 // Entry point
@@ -71,18 +88,34 @@ float4 main(PS_INPUT i) : COLOR
 {
     float2 correctedTexCoord = i.baseTexCoord;
 
+#if WVT
+    float4 albedo = lerp(tex2D(BaseTextureSampler, correctedTexCoord), tex2D(Base2TextureSampler, correctedTexCoord), i.blend);
+#else
     float4 albedo = tex2D(BaseTextureSampler, correctedTexCoord);
+#endif
     albedo.xyz *= g_BaseColor;
 
-    float3 mrao = tex2D(MRAOTextureSampler, correctedTexCoord).xyz;
+#if WVT
+    float3 mrao = lerp(tex2D(MRAOTextureSampler, correctedTexCoord).xyz * g_MraoScale.xyz, tex2D(MRAO2TextureSampler, correctedTexCoord).xyz * g_Mrao2Scale.xyz, i.blend);
+#else
+    float3 mrao = tex2D(MRAOTextureSampler, correctedTexCoord).xyz * g_MraoScale.xyz;
+#endif
     float metalness = mrao.x, roughness = mrao.y, ambientOcclusion = mrao.z;
 
 #if EMISSIVE
-    float3 emission = tex2D(EmissionTextureSampler, correctedTexCoord).xyz;
+#if WVT
+    float3 emission = lerp(tex2D(EmissionTextureSampler, correctedTexCoord).xyz * g_EmissionScale.xyz, tex2D(Emission2TextureSampler, correctedTexCoord).xyz * g_Emission2Scale.xyz, i.blend);
+#else
+    float3 emission = tex2D(EmissionTextureSampler, correctedTexCoord).xyz * g_EmissionScale.xyz;
+#endif
 #endif
 
     float3x3 normalBasis = float3x3(i.worldTangent, cross(i.worldNormal, i.worldTangent), i.worldNormal);
+#if WVT
+    float3 textureNormal = normalize((lerp(tex2D( NormalTextureSampler, correctedTexCoord).xyz, tex2D( Normal2TextureSampler, correctedTexCoord).xyz, i.blend) - float3(0.5, 0.5, 0.5)) * 2);
+#else
     float3 textureNormal = normalize((tex2D( NormalTextureSampler, correctedTexCoord).xyz - float3(0.5, 0.5, 0.5)) * 2);
+#endif
     float3 normal = normalize(mul(textureNormal, normalBasis)); // World Normal
 
     float3 outgoingLightDirection = normalize(g_EyePos.xyz - i.worldPos); // Lo
@@ -187,5 +220,6 @@ float4 main(PS_INPUT i) : COLOR
     combinedLighting += emission;
 #endif
 
+    alpha *= g_DiffuseModulation.a;
     return FinalOutput(float4(combinedLighting, alpha), fogFactor, PIXELFOGTYPE, TONEMAP_SCALE_LINEAR, bWriteDepthToAlpha, i.projPos.z);
 }

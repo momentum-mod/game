@@ -1871,7 +1871,7 @@ void CNPC_AntlionGuard::HandleAnimEvent( animevent_t *pEvent )
 			m_hChargeTargetPosition = NULL;
 		}
 
-		// Cause a shock wave from this point which will distrupt nearby physics objects
+		// Cause a shock wave from this point which will disrupt nearby physics objects
 		ImpactShock( tr.endpos, 200, 500 );
 		return;
 	}

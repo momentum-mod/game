@@ -52,7 +52,7 @@ private:
 	DECLARE_DATADESC();
 
 	float	m_flNextCharge; 
-	int		m_iReactivate ; // DeathMatch Delay until reactvated
+	int		m_iReactivate ; // DeathMatch Delay until reactivated
 	int		m_iJuice;
 	int		m_iOn;			// 0 = off, 1 = startup, 2 = going
 	float   m_flSoundTime;
@@ -174,7 +174,7 @@ void CRecharge::UpdateJuice( int newJuice )
 	bool reduced = newJuice < m_iJuice;
 	if ( reduced )
 	{
-		// Fire 1/2 way output and/or empyt output
+		// Fire 1/2 way output and/or empty output
 		int oneHalfJuice = (int)(MaxJuice() * 0.5f);
 		if ( newJuice <= oneHalfJuice && m_iJuice > oneHalfJuice )
 		{
@@ -357,7 +357,7 @@ private:
 	DECLARE_DATADESC();
 
 	float	m_flNextCharge; 
-	int		m_iReactivate ; // DeathMatch Delay until reactvated
+	int		m_iReactivate ; // DeathMatch Delay until reactivated
 	int		m_iJuice;
 	int		m_iOn;			// 0 = off, 1 = startup, 2 = going
 	float   m_flSoundTime;
@@ -552,7 +552,7 @@ void CNewRecharge::UpdateJuice( int newJuice )
 	bool reduced = newJuice < m_iJuice;
 	if ( reduced )
 	{
-		// Fire 1/2 way output and/or empyt output
+		// Fire 1/2 way output and/or empty output
 		int oneHalfJuice = (int)(MaxJuice() * 0.5f);
 		if ( newJuice <= oneHalfJuice && m_iJuice > oneHalfJuice )
 		{

@@ -21,6 +21,12 @@
 #define VIEWMODEL_ANIMATION_PARITY_BITS 3
 #define SCREEN_OVERLAY_MATERIAL "vgui/screens/vgui_overlay"
 
+#if defined( CLIENT_DLL )
+	ConVar viewmodel_offset_x( "viewmodel_offset_x", "0.0", FCVAR_ARCHIVE );	 // the viewmodel offset from default in X
+	ConVar viewmodel_offset_y( "viewmodel_offset_y", "0.0", FCVAR_ARCHIVE );	 // the viewmodel offset from default in Y
+	ConVar viewmodel_offset_z( "viewmodel_offset_z", "0.0", FCVAR_ARCHIVE );	 // the viewmodel offset from default in Z
+#endif
+
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
@@ -380,6 +386,12 @@ void CBaseViewModel::CalcViewModelView( CBasePlayer *owner, const Vector& eyePos
 	QAngle vmangoriginal = eyeAngles;
 	QAngle vmangles = eyeAngles;
 	Vector vmorigin = eyePosition;
+
+	Vector vecRight;
+	Vector vecUp;
+	Vector vecForward;
+	AngleVectors( vmangoriginal, &vecForward, &vecRight, &vecUp );
+	vmorigin += (vecForward * viewmodel_offset_y.GetFloat()) + (vecUp * viewmodel_offset_z.GetFloat()) + (vecRight * viewmodel_offset_x.GetFloat());
     
 	CBaseCombatWeapon *pWeapon = m_hWeapon.Get();
 	//Allow weapon lagging
@@ -500,7 +512,7 @@ static void RecvProxy_Weapon( const CRecvProxyData *pData, void *pStruct, void *
 	CBaseViewModel *pViewModel = ((CBaseViewModel*)pStruct);
 	CBaseCombatWeapon *pOldWeapon = pViewModel->GetOwningWeapon();
 
-	// Chain through to the default recieve proxy ...
+	// Chain through to the default receive proxy ...
 	RecvProxy_IntToEHandle( pData, pStruct, pOut );
 
 	// ... and reset our cycle index if the server is switching weapons on us

@@ -6,6 +6,7 @@
 #include "filesystem.h"
 #include "inputsystem/iinputsystem.h"
 #include "IGameUIFuncs.h"
+#include "MessageboxPanel.h"
 
 #include "vgui_controls/CvarComboBox.h"
 #include "vgui_controls/CvarToggleCheckButton.h"
@@ -80,10 +81,7 @@ void InputSettingsPanel::OnPageShow()
     // Keyboard
 
     FillInCurrentBindings();
-    if (IsVisible())
-    {
-        m_pKeyBindList->SetSelectedItem(0);
-    }
+    m_pKeyBindList->ClearSelection();
 }
 
 void InputSettingsPanel::OnCheckboxChecked(Panel *panel)
@@ -108,42 +106,27 @@ void InputSettingsPanel::OnKeyCodePressed(KeyCode code)
         // Check that it's visible
         int x, y, w, h;
         bool visible = m_pKeyBindList->GetCellBounds(r, 1, x, y, w, h);
-        if (visible)
+        if (visible && KEY_DELETE == code)
         {
-            if (KEY_DELETE == code)
+            // find the current binding and remove it
+            KeyValues *kv = m_pKeyBindList->GetItemData(r);
+
+            const char *key = kv->GetString("Key", nullptr);
+            if (key && *key)
             {
-                // find the current binding and remove it
-                KeyValues *kv = m_pKeyBindList->GetItemData(r);
-
-                const char *key = kv->GetString("Key", nullptr);
-                if (key && *key)
-                {
-                    RemoveKeyFromBindItems(nullptr, key);
-                }
-
-                m_pClearBindingButton->SetEnabled(false);
-                m_pKeyBindList->InvalidateItem(r);
-
-                // message handled, don't pass on
-                return;
+                RemoveKeyFromBindItems(nullptr, key);
             }
+
+            m_pClearBindingButton->SetEnabled(false);
+            m_pKeyBindList->InvalidateItem(r);
+
+            // message handled, don't pass on
+            return;
         }
     }
 
     // Allow base class to process message instead
     BaseClass::OnKeyCodePressed(code);
-}
-
-void InputSettingsPanel::OnKeyCodeTyped(KeyCode code)
-{
-    if (code == KEY_ENTER)
-    {
-        OnCommand("ChangeKey");
-    }
-    else
-    {
-        BaseClass::OnKeyCodeTyped(code);
-    }
 }
 
 void InputSettingsPanel::OnThink()
@@ -162,24 +145,21 @@ void InputSettingsPanel::OnThink()
 
 void InputSettingsPanel::OnCommand(const char *command)
 {
-    if (!stricmp(command, "Defaults"))
+    if (FStrEq(command, "Defaults"))
     {
         // open a box asking if we want to restore defaults
-        QueryBox *box = new QueryBox("#GameUI_KeyboardSettings", "#GameUI_KeyboardSettingsText");
-        box->AddActionSignalTarget(this);
-        box->SetOKCommand(new KeyValues("Command", "command", "DefaultsOK"));
-        box->DoModal();
+        g_pMessageBox->CreateConfirmationBox(this, "#GameUI_KeyboardSettings", "#GameUI_KeyboardSettingsText", new KeyValues("Command", "command", "DefaultsOK"), nullptr);
     }
-    else if (!stricmp(command, "DefaultsOK"))
+    else if (FStrEq(command, "DefaultsOK"))
     {
         FillInDefaultBindings();
         m_pKeyBindList->RequestFocus();
     }
-    else if (!m_pKeyBindList->IsCapturing() && !stricmp(command, "ChangeKey"))
+    else if (!m_pKeyBindList->IsCapturing() && FStrEq(command, "ChangeKey"))
     {
         m_pKeyBindList->StartCaptureMode(dc_blank);
     }
-    else if (!m_pKeyBindList->IsCapturing() && !stricmp(command, "ClearKey"))
+    else if (!m_pKeyBindList->IsCapturing() && FStrEq(command, "ClearKey"))
     {
         OnKeyCodePressed(KEY_DELETE);
         m_pKeyBindList->RequestFocus();

@@ -11,7 +11,7 @@
 	#define HARDWAREFOGBLEND 0
 #else
 	#if defined( SHADER_MODEL_PS_2_0 )
-		// Never do pixel for for ps20 (unless we are in water)
+		// Never do pixel for ps20 (unless we are in water)
 		#define DOPIXELFOG 0
 		#define HARDWAREFOGBLEND 1
 	#else

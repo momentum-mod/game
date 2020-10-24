@@ -62,7 +62,7 @@ void WritePortalFile(FILE *pFile, const CUtlVector<cluster_portals_t> &list)
 			// sometimes planes get turned around when they are very near
 			// the changeover point between different axis.  interpret the
 			// plane the same way vis will, and flip the side orders if needed
-			// FIXME: is this still relevent?
+			// FIXME: is this still relevant?
 			WindingPlane (w, normal, &dist);
 			if ( DotProduct (p->plane.normal, normal) < 0.99 )
 			{	// backwards...

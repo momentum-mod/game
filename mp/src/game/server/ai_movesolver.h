@@ -124,7 +124,7 @@ typedef CUtlVector<AI_MoveSuggestion_t> CAI_MoveSuggestions;
 // @Note (toml 06-18-02): Currently, this is a very dopey little structure.
 // However, it will probably eventually incorporate much of the info
 // passed or calculated piecemeal between Move...() and Move...Execute()
-// functions. Once suggestions incorprate more information, the solution
+// functions. Once suggestions incorporate more information, the solution
 // may want to include a copy of the winning suggestion, so that the
 // caller need retain less state. If this is not the case, reduce it to just
 // a yaw.

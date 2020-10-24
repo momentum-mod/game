@@ -1602,7 +1602,7 @@ unsigned int CSentence::ComputeDataCheckSum()
 
 	// Checksum the text
 	CRC32_ProcessBuffer( &crc, GetText(), Q_strlen( GetText() ) );
-	// Checsum words and phonemes
+	// Checksum words and phonemes
 	c = m_Words.Count();
 	for ( i = 0; i < c; ++i )
 	{

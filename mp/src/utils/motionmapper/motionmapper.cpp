@@ -264,7 +264,7 @@ void Build_Reference( s_source_t *psource)
 		else 
 		{
 			// calc compound rotational matrices
-			// FIXME : Hey, it's orthogical so inv(A) == transpose(A)
+			// FIXME : Hey, it's orthogonal so inv(A) == transpose(A)
 			ConcatTransforms( psource->boneToPose[parent], m, psource->boneToPose[i] );
 		}
 		// vprint( 0, "%3d %f %f %f\n", i, psource->bonefixup[i].worldorg[0], psource->bonefixup[i].worldorg[1], psource->bonefixup[i].worldorg[2] );
@@ -435,7 +435,7 @@ void Grab_Animation( s_source_t *psource )
 	{
 		// linecount
 		g_iLinecount++;
-		// split if big enoough
+		// split if big enough
 		if (sscanf( g_szLine, "%d %f %f %f %f %f %f", &index, &pos[0], &pos[1], &pos[2], &rot[0], &rot[1], &rot[2] ) == 7)
 		{
 			// startframe is sanity check for having determined time
@@ -1159,7 +1159,7 @@ void BuildIndividualMeshes( s_source_t *psource )
 	}
 
 	psource->numfaces = g_numfaces;
-	// find first occurance for each material
+	// find first occurrence for each material
 	for (int k = 0; k < MAXSTUDIOSKINS; k++)
 	{
 		psource->mesh[k].numvertices = 0;
@@ -3041,7 +3041,7 @@ s_source_t *MotionMap( s_source_t *pSource, s_source_t *pTarget, s_template_t *p
 char templates[] = 
 "\n\
 #\n\
-# default template file is analogus to not specifying a template file at all\n\
+# default template file is analogous to not specifying a template file at all\n\
 #\n\
 \n\
 rootScaleJoint ValveBiped.Bip01_L_Foot\n\
@@ -3088,7 +3088,7 @@ void UsageAndExit()
 
 void PrintHeader()
 {
-	vprint( 0, "Valve Software - motionmapper.exe ((c) Valve Coroporation %s)\n", __DATE__ );
+	vprint( 0, "Valve Software - motionmapper.exe ((c) Valve Corporation %s)\n", __DATE__ );
 	vprint( 0, "--- Maps motion from one animation/skeleton onto another skeleton ---\n" );
 }
 

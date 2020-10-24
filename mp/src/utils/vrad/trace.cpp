@@ -218,7 +218,7 @@ void DM_ClipBoxToBrush( CToolTrace *trace, const Vector& mins, const Vector& max
 			// FIXME: special case for axial
 
 			// general box case
-			// push the plane out apropriately for mins/maxs
+			// push the plane out appropriately for mins/maxs
 
 			// FIXME: use signbits into 8 way lookup for each mins/maxs
 			ofs.x = (plane->normal.x < 0) ? maxs.x : mins.x;

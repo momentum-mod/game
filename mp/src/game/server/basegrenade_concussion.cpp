@@ -104,7 +104,7 @@ void CBaseGrenadeConcussion::Spawn( void )
 	m_nRenderFX = kRenderFxGlowShell;
 	SetRenderColor( 200, 200, 20, 255 );
 	
-	// make NPCs afaid of it while in the air
+	// make NPCs afraid of it while in the air
 	SetThink( &CBaseGrenadeConcussion::FallThink );
 	SetNextThink( gpGlobals->curtime );
 	

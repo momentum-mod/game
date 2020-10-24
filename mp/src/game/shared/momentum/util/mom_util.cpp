@@ -79,23 +79,23 @@ void MomUtil::MountGameFiles()
         folderLen = SteamApps()->GetAppInstallDir(240, installPath, MAX_PATH);
         if (folderLen)
         {
-            filesystem->AddSearchPath(CFmtStr("%s/cstrike", installPath), "GAME");
             filesystem->AddSearchPath(CFmtStr("%s/cstrike/cstrike_pak.vpk", installPath), "GAME");
             filesystem->AddSearchPath(CFmtStr("%s/cstrike/download", installPath), "GAME");
             filesystem->AddSearchPath(CFmtStr("%s/cstrike/download", installPath), "download");
+            filesystem->AddSearchPath(CFmtStr("%s/cstrike", installPath), "GAME");
         }
 
         // TF2
         folderLen = SteamApps()->GetAppInstallDir(440, installPath, MAX_PATH);
         if (folderLen)
         {
-            filesystem->AddSearchPath(CFmtStr("%s/tf", installPath), "GAME");
             filesystem->AddSearchPath(CFmtStr("%s/tf/tf2_misc.vpk", installPath), "GAME");
             filesystem->AddSearchPath(CFmtStr("%s/tf/tf2_sound_misc.vpk", installPath), "GAME");
             filesystem->AddSearchPath(CFmtStr("%s/tf/tf2_sound_vo_english.vpk", installPath), "GAME");
             filesystem->AddSearchPath(CFmtStr("%s/tf/tf2_textures.vpk", installPath), "GAME");
             filesystem->AddSearchPath(CFmtStr("%s/tf/download", installPath), "GAME");
             filesystem->AddSearchPath(CFmtStr("%s/tf/download", installPath), "download");
+            filesystem->AddSearchPath(CFmtStr("%s/tf", installPath), "GAME");
         }
 
         if (developer.GetInt())
@@ -430,38 +430,6 @@ bool MomUtil::IsInBounds(const Vector2D &source, const Vector2D &bottomLeft, con
 bool MomUtil::IsInBounds(const int x, const int y, const int rectX, const int rectY, const int rectW, const int rectH)
 {
     return IsInBounds(Vector2D(x, y), Vector2D(rectX, rectY), Vector2D(rectX + rectW, rectY + rectH));
-}
-
-#define SAVE_3D_TO_KV(kvInto, pName, toSave)                                                                           \
-    if (!kvInto || !pName)                                                                                             \
-        return;                                                                                                        \
-    char value[512];                                                                                                   \
-    Q_snprintf(value, 512, "%f %f %f", toSave.x, toSave.y, toSave.z);                                                  \
-    kvInto->SetString(pName, value);
-
-#define LOAD_3D_FROM_KV(kvFrom, pName, into)                                                                           \
-    if (!kvFrom || !pName)                                                                                             \
-        return;                                                                                                        \
-    sscanf(kvFrom->GetString(pName), "%f %f %f", &into.x, &into.y, &into.z);
-
-void MomUtil::KVSaveVector(KeyValues *kvInto, const char *pName, const Vector &toSave)
-{
-    SAVE_3D_TO_KV(kvInto, pName, toSave);
-}
-
-void MomUtil::KVLoadVector(KeyValues *kvFrom, const char *pName, Vector &vecInto)
-{
-    LOAD_3D_FROM_KV(kvFrom, pName, vecInto);
-}
-
-void MomUtil::KVSaveQAngles(KeyValues *kvInto, const char *pName, const QAngle &toSave)
-{
-    SAVE_3D_TO_KV(kvInto, pName, toSave);
-}
-
-void MomUtil::KVLoadQAngles(KeyValues *kvFrom, const char *pName, QAngle &angInto)
-{
-    LOAD_3D_FROM_KV(kvFrom, pName, angInto);
 }
 
 bool MomUtil::GetSHA1Hash(const CUtlBuffer& buf, char* pOut, size_t outLen)

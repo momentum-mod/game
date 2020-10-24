@@ -1,0 +1,13 @@
+"Refract"
+{
+	"$model" 1
+	"$dudvmap" "effects/fisheyelens_dudv"
+ 	"$normalmap" "effects/fisheyelens_normal"
+ 	"$refractamount" "-.007"
+	"$vertexalpha" "1"
+	"$vertexcolor" "1"
+	"$translucent" "1"
+	"$forcerefract" 1
+ 	"$bluramount" "0"
+	"$nofog" "1"
+}

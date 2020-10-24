@@ -515,7 +515,7 @@ protected:
 	Vector		m_BBox[2];											// displacement node bounding box (take into account size of children)
 	float		m_ErrorTerm;										// LOD error term (the "precision" of the representation of the surface at this node's level)
 	int			m_VertIndex;										// the node's vertex index (center vertex of node)
-	int			m_NeighborVertIndices[MAX_NEIGHBOR_VERT_COUNT];		// all other vertex indices in node (maximally creates 8 trianglar surfaces)
+	int			m_NeighborVertIndices[MAX_NEIGHBOR_VERT_COUNT];		// all other vertex indices in node (maximally creates 8 triangular surfaces)
 	Vector		m_SurfBBoxes[MAX_SURF_AT_NODE_COUNT][2];			// surface bounding boxes - old method
 	cplane_t	m_SurfPlanes[MAX_SURF_AT_NODE_COUNT];				// surface plane info - old method
 
@@ -661,7 +661,7 @@ inline void CCoreDispNode::GetRayBoundingBox( int index, Vector& bMin, Vector& b
 	
 //=============================================================================
 //
-// CCoreInfoBuilder - the primary data necessay to derive a displacement surface
+// CCoreInfoBuilder - the primary data necessary to derive a displacement surface
 //                    used by WorldCraft (CMapFace, CMapDisp), VRAD (dface_t, ddispinto_t),
 //                    and the engine (msurface_t, CDispInfo)
 //
@@ -934,7 +934,7 @@ private:
 	// render specific data
 	int					m_RenderIndexCount;		// number of indices used in rendering
 	unsigned short		*m_RenderIndices;		// rendering index list (list of triangles)
-	int					m_RenderCounter;		// counter to verify surfaces are renderered/collided with only once per frame
+	int					m_RenderCounter;		// counter to verify surfaces are rendered/collided with only once per frame
 
 	// utility data
 	bool				m_bTouched;				// touched flag

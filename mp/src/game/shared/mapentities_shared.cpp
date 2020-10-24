@@ -102,7 +102,7 @@ const char *MapEntity_SkipToNextEntity( const char *pMapData, char *pWorkBuffer 
 // Input  : char *data - the data to parse
 //			char *newToken - the buffer into which the new token is written
 //			char *braceChars - a string of characters that constitute braces.  this pointer needs to be
-//			distince for each set of braceChars, since the usage is cached.
+//			distinct for each set of braceChars, since the usage is cached.
 // Output : const char * - returns a pointer to the position in the data following the newToken
 //-----------------------------------------------------------------------------
 const char *MapEntity_ParseToken( const char *data, char *newToken )
@@ -322,7 +322,7 @@ bool CEntityMapData::SetValue( const char *keyName, char *NewValue, int nKeyInst
 				int iNewValueLen = Q_strlen(newvaluebuf);
 				int iPadding = iNewValueLen - Q_strlen( token ) - 2;	// -2 for the quotes (token doesn't have them)
 
-				// prevData has a space at the start, seperating the value from the key.
+				// prevData has a space at the start, separating the value from the key.
 				// Add 1 to prevData when pasting in the new Value, to account for the space.
 				Q_strncpy( prevData+1, newvaluebuf, iNewValueLen+1 );	// +1 for the null terminator
 				Q_strcat( prevData, postData, m_nEntDataSize - ((prevData-m_pEntData)+1) );

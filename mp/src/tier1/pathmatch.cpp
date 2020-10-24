@@ -557,7 +557,7 @@ PathMod_t pathmatch( const char *pszIn, char **ppszOut, bool bAllowBasenameMisma
 		// optimization, if the path contained steam somewhere
 		// assume the path up through the component with 'steam' in
 		// is valid (because we almost certainly obtained it
-		// progamatically
+		// programmatically
 		char *p = strcasestr( pPath, "steam" );
 		if ( p )
 		{

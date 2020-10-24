@@ -194,7 +194,7 @@ struct KeyBindingMap_t
 #define KEYBINDING_FUNC_PASSIVE( name, keycode, modifiers, function, help, doc )		_KBMapFuncCommonFunc( name, keycode, modifiers, function, help, doc, true );	virtual void function()
 #define KEYBINDING_FUNC_PASSIVE_NODECLARE( name, keycode, modifiers, function, help, doc )		_KBMapFuncCommonFunc( name, keycode, modifiers, function, help, doc, true );
 
-// For definding additional (non-default) keybindings
+// For defining additional (non-default) keybindings
 #define KEYBINDING_ADDBINDING( name, keycode, modifiers )									_KBBindKeyCommon( name, keycode, modifiers, name );
 #define KEYBINDING_ADDBINDING_MULTIPLE( name, keycode, modifiers, _classname )				_KBBindKeyCommon( name, keycode, modifiers, _classname );
 

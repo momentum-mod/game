@@ -247,7 +247,7 @@ int CMapFile::CreateNewFloatPlane (Vector& normal, vec_t dist)
 
 	nummapplanes += 2;
 
-	// allways put axial planes facing positive first
+	// always put axial planes facing positive first
 	if (p->type < 3)
 	{
 		if (p->normal[0] < 0 || p->normal[1] < 0 || p->normal[2] < 0)
@@ -511,7 +511,7 @@ void CMapFile::AddBrushBevels (mapbrush_t *b)
 	{
 		for (dir=-1 ; dir <= 1 ; dir+=2, order++)
 		{
-			// see if the plane is allready present
+			// see if the plane is already present
 			for (i=0, s=b->original_sides ; i<b->numsides ; i++,s++)
 			{
 				if (mapplanes[s->planenum].normal[axis] == dir)
@@ -595,7 +595,7 @@ void CMapFile::AddBrushBevels (mapbrush_t *b)
 					// behind this plane, it is a proper edge bevel
 					for (k=0 ; k<b->numsides ; k++)
 					{
-						// if this plane has allready been used, skip it
+						// if this plane has already been used, skip it
 						// NOTE: Use a larger tolerance for collision planes than for rendering planes
 						if ( PlaneEqual(&mapplanes[b->original_sides[k].planenum], normal, dist, 0.01f, 0.01f ) )
 							break;
@@ -636,7 +636,7 @@ void CMapFile::AddBrushBevels (mapbrush_t *b)
 ================
 MakeBrushWindings
 
-makes basewindigs for sides and mins / maxs for the brush
+makes basewindings for sides and mins / maxs for the brush
 ================
 */
 qboolean CMapFile::MakeBrushWindings (mapbrush_t *ob)
@@ -2386,7 +2386,7 @@ void CMapFile::MergeBrushSides( entity_t *pInstanceEntity, CMapFile *Instance, V
 // Purpose: this function will look for replace parameters in the function instance
 //			to see if there is anything in the epair that should be replaced.
 // Input  : pPair - the epair with the value
-//			pInstanceEntity - the func_instance that may ahve replace keywords
+//			pInstanceEntity - the func_instance that may have replace keywords
 // Output : pPair - the value field may be updated
 //-----------------------------------------------------------------------------
 void CMapFile::ReplaceInstancePair( epair_t *pPair, entity_t *pInstanceEntity )
@@ -3387,7 +3387,7 @@ mapdispinfo_t *ParseDispInfoChunk( void )
 		pMapDispInfo->maxDispDist = atof( token );
 	}
 
-    // minimum tesselation value
+    // minimum tessellation value
     GetToken( false );
     pMapDispInfo->minTess = atoi( token );
 

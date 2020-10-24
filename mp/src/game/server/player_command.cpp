@@ -165,7 +165,7 @@ void CPlayerMove::SetupMove( CBasePlayer *player, CUserCmd *ucmd, IMoveHelper *p
 
 	move->m_nButtons			= ucmd->buttons;
 
-	// Ingore buttons for movement if at controls
+	// Ignore buttons for movement if at controls
 	if ( player->GetFlags() & FL_ATCONTROLS )
 	{
 		move->m_flForwardMove		= 0;
@@ -390,7 +390,7 @@ void CPlayerMove::RunCommand ( CBasePlayer *player, CUserCmd *ucmd, IMoveHelper 
 
 	if ( player->m_bGamePaused )
 	{
-		// If no clipping and cheats enabled and noclipduring game enabled, then leave
+		// If no clipping and cheats enabled and noclip during game enabled, then leave
 		//  forwardmove and angles stuff in usercmd
 		if ( player->GetMoveType() == MOVETYPE_NOCLIP &&
 			 sv_cheats->GetBool() && 

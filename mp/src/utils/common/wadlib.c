@@ -1,4 +1,4 @@
-//========= Copyright © 1996-2005, Valve LLC, All rights reserved. ============//
+//========= Copyright Â© 1996-2005, Valve LLC, All rights reserved. ============//
 //
 // Purpose: 
 //
@@ -313,14 +313,14 @@ void WriteWad (int wad3)
 	wadinfo_t	header;
 	int			ofs;
 	
-// write the lumpingo
+// write the lumpinfo
 	ofs = ftell(outwad);
 
 	SafeWrite (outwad, outinfo, outlumps*sizeof(lumpinfo_t) );
 		
 // write the header
 
-// a program will be able to tell the ednieness of a wad by the id
+// a program will be able to tell the endianness of a wad by the id
 	ID_TO_STRING( WAD_ID, header.identification );
 	
 	header.numlumps = wadlong(outlumps);

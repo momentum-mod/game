@@ -1,6 +1,6 @@
 //========= Copyright Valve Corporation, All rights reserved. ============//
 //
-// Purpose: win32 dependant ASM code for CPU capability detection
+// Purpose: win32 dependent ASM code for CPU capability detection
 //
 // $Workfile:     $
 // $NoKeywords: $
@@ -117,7 +117,7 @@ bool CheckSSETechnology(void)
 			// Make sure that SSE is supported by executing an inline SSE instruction
 
 // BUGBUG, FIXME - Visual C Version 6.0 does not support SSE inline code YET (No macros from Intel either)
-// Fix this if VC7 supports inline SSE instructinons like "xorps" as shown below.
+// Fix this if VC7 supports inline SSE instructions like "xorps" as shown below.
 #if 1
 			__try
 			{

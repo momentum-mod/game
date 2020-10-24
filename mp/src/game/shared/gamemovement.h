@@ -19,11 +19,10 @@
 #define CTEXTURESMAX		512			// max number of textures loaded
 #define CBTEXTURENAMEMAX	13			// only load first n chars of name
 
-#define GAMEMOVEMENT_DUCK_TIME				1000.0f		// ms
 #define GAMEMOVEMENT_JUMP_TIME				510.0f		// ms approx - based on the 21 unit height jump
 #define GAMEMOVEMENT_JUMP_HEIGHT			21.0f		// units
 #define GAMEMOVEMENT_TIME_TO_UNDUCK			( TIME_TO_UNDUCK * 1000.0f )		// ms
-#define GAMEMOVEMENT_TIME_TO_UNDUCK_INV		( GAMEMOVEMENT_DUCK_TIME - GAMEMOVEMENT_TIME_TO_UNDUCK )
+#define GAMEMOVEMENT_TIME_TO_UNDUCK_INV		( GetDuckTimer() - GAMEMOVEMENT_TIME_TO_UNDUCK )
 
 enum
 {
@@ -94,11 +93,12 @@ protected:
 	virtual void	WaterMove( void );
 	virtual void    CalculateWaterWishVelocityZ(Vector &wishVel, const Vector &forward);
 
-	void			WaterJump( void );
+	virtual void	WaterJump( void );
 
 	// Handles both ground friction and water friction
 	virtual void			Friction( void );
 	virtual void			DoFriction( Vector &velocity );
+	virtual bool			ShouldApplyGroundFriction() { return player->GetGroundEntity() != nullptr; }
 
 	virtual void	AirAccelerate( Vector& wishdir, float wishspeed, float accel );
 
@@ -176,7 +176,7 @@ protected:
 	virtual float	LadderLateralMultiplier( void ) const { return 1.0f; }
 
 	// See if the player has a bogus velocity value.
-	void			CheckVelocity( void );
+	virtual void CheckVelocity( void );
 
 	// Does not change the entities velocity at all
 	void			PushEntity( Vector& push, trace_t *pTrace );
@@ -222,7 +222,8 @@ protected:
 	virtual void	FinishUnDuck( void );
 	virtual void	FinishDuck( void );
 	virtual bool	CanUnduck();
-	virtual float	GetTimeToDuck() { return 0.4f; }
+	virtual float	GetTimeToDuck() { return 0.4f; } // Time it takes to do a duck, in seconds
+	virtual float	GetDuckTimer() { return 1000.0f; } // Timer, how long it takes to be able to duck again 
 	void			UpdateDuckJumpEyeOffset( void );
 	bool			CanUnDuckJump( trace_t &trace );
 	void			StartUnDuckJump( void );
@@ -232,7 +233,7 @@ protected:
 
 	float			SplineFraction( float value, float scale );
 
-	void			CategorizeGroundSurface( trace_t &pm );
+	void			CategorizeGroundSurface( const trace_t &pm );
 
 	bool			InWater( void );
 
@@ -250,7 +251,7 @@ protected:
 	// Figures out how the constraint should slow us down
 	float			ComputeConstraintSpeedFactor( void );
 
-	virtual void	SetGroundEntity( trace_t *pm );
+	virtual void	SetGroundEntity( const trace_t *pm );
 
 	virtual void	StepMove( Vector &vecDestination, trace_t &trace );
 

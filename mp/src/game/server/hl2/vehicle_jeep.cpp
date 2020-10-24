@@ -62,7 +62,7 @@ const char *g_pJeepThinkContext = "JeepSeagullThink";
 #define	JEEP_SEAGULL_THINK_INTERVAL		10.0		// Interval between checks for seagull perches
 #define	JEEP_SEAGULL_POOP_INTERVAL		45.0		// Interval between checks for seagull poopage
 #define JEEP_SEAGULL_HIDDEN_TIME		15.0		// Time for which the player must be hidden from the jeep for a seagull to perch
-#define JEEP_SEAGULL_MAX_TIME			60.0		// Time at which a seagull will definately perch on the jeep
+#define JEEP_SEAGULL_MAX_TIME			60.0		// Time at which a seagull will definitely perch on the jeep
 
 ConVar	sk_jeep_gauss_damage( "sk_jeep_gauss_damage", "15" );
 ConVar	hud_jeephint_numentries( "hud_jeephint_numentries", "10", FCVAR_NONE );
@@ -143,7 +143,7 @@ IMPLEMENT_SERVERCLASS_ST( CPropJeep, DT_PropJeep )
 	SendPropBool( SENDINFO( m_bHeadlightIsOn ) ),
 END_SEND_TABLE();
 
-// This is overriden for the episodic jeep
+// This is overridden for the episodic jeep
 #ifndef HL2_EPISODIC
 LINK_ENTITY_TO_CLASS( prop_vehicle_jeep, CPropJeep );
 #endif
@@ -1188,7 +1188,7 @@ bool CPropJeep::CanExitVehicle( CBaseEntity *pEntity )
 //-----------------------------------------------------------------------------
 void CPropJeep::DampenEyePosition( Vector &vecVehicleEyePos, QAngle &vecVehicleEyeAngles )
 {
-	// Get the frametime. (Check to see if enough time has passed to warrent dampening).
+	// Get the frametime. (Check to see if enough time has passed to warrant dampening).
 	float flFrameTime = gpGlobals->frametime;
 	if ( flFrameTime < JEEP_FRAMETIME_MIN )
 	{

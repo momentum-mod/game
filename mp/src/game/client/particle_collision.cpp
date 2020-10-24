@@ -154,7 +154,7 @@ void CBaseSimpleCollision::TestForPlane( const Vector &start, const Vector &dir,
 	Vector	vStepIncr = dir * ( speed * dStepTime );
 	float	flGravIncr = gravity*dStepTime;
 
-	//Simulate collsions in discreet steps
+	//Simulate collisions in discreet steps
 	for ( int i = 1; i <= NUM_DISCREET_STEPS; i++ )
 	{
 		testEnd		= testStart + vStepIncr;
@@ -230,7 +230,7 @@ CParticleCollision::CParticleCollision( void )
 //			angularSpread - looseness of the spread
 //			minSpeed - minimum speed
 //			maxSpeed - maximum speed
-//			gravity - particle gravity for the sytem
+//			gravity - particle gravity for the system
 //			dampen - dampening amount on collisions
 //-----------------------------------------------------------------------------
 void CParticleCollision::Setup( const Vector &origin, const Vector *dir, float angularSpread, float minSpeed, float maxSpeed, float gravity, float dampen )

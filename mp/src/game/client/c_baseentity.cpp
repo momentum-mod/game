@@ -50,8 +50,6 @@
 	bool g_bRestoreInterpolatedVarValues = false;
 #endif
 
-
-static bool g_bWasSkipping = (bool)-1;
 static bool g_bWasThreaded =(bool)-1;
 static int  g_nThreadModeTicks = 0;
 
@@ -202,7 +200,7 @@ int CPredictableList::GetPredictableCount( void )
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: Searc predictables for previously created entity (by testId)
+// Purpose: Search predictables for previously created entity (by testId)
 // Input  : testId - 
 // Output : static C_BaseEntity
 //-----------------------------------------------------------------------------
@@ -304,7 +302,7 @@ int CRecordingList::Count()
 
 //-----------------------------------------------------------------------------
 // Purpose: Decodes animtime and notes when it changes
-// Input  : *pStruct - ( C_BaseEntity * ) used to flag animtime is changine
+// Input  : *pStruct - ( C_BaseEntity * ) used to flag animtime is changing
 //			*pVarData - 
 //			*pIn - 
 //			objectID - 
@@ -3058,7 +3056,7 @@ void C_BaseEntity::CheckInterpolatedVarParanoidMeasurement()
 		if ( pEnt->entindex() == 1 && engine->Con_IsVisible() )
 			continue;
 			
-		// View models tend to screw up this test unnecesarily because they modify origin,
+		// View models tend to screw up this test unnecessarily because they modify origin,
 		// angles, and 
 		if ( dynamic_cast<C_BaseViewModel*>( pEnt ) )
 			continue;
@@ -3096,7 +3094,7 @@ void C_BaseEntity::ProcessInterpolatedList()
 
 
 //-----------------------------------------------------------------------------
-// Purpose: Add entity to visibile entities list
+// Purpose: Add entity to visible entities list
 //-----------------------------------------------------------------------------
 void C_BaseEntity::AddEntity( void )
 {
@@ -3114,7 +3112,7 @@ void C_BaseEntity::AddEntity( void )
 //-----------------------------------------------------------------------------
 void C_BaseEntity::GetAimEntOrigin( IClientEntity *pAttachedTo, Vector *pOrigin, QAngle *pAngles )
 {
-	// Should be overridden for things that attach to attchment points
+	// Should be overridden for things that attach to attachment points
 
 	// Slam origin to the origin of the entity we are attached to...
 	*pOrigin = pAttachedTo->GetAbsOrigin();
@@ -3198,9 +3196,8 @@ void C_BaseEntity::InterpolateServerEntities()
 		}
 	}
 
-	if ( IsSimulatingOnAlternateTicks() != g_bWasSkipping || IsEngineThreaded() != g_bWasThreaded )
+	if ( IsEngineThreaded() != g_bWasThreaded )
 	{
-		g_bWasSkipping = IsSimulatingOnAlternateTicks();
 		g_bWasThreaded = IsEngineThreaded();
 
 		C_BaseEntityIterator iterator;
@@ -3788,7 +3785,7 @@ void C_BaseEntity::RemoveAllDecals( void )
 bool C_BaseEntity::SnatchModelInstance( C_BaseEntity *pToEntity )
 {
 	if ( !modelrender->ChangeInstance(  GetModelInstance(), pToEntity ) )
-		return false;  // engine could move modle handle
+		return false;  // engine could move model handle
 
 	// remove old handle from toentity if any
 	if ( pToEntity->GetModelInstance() != MODEL_INSTANCE_INVALID )
@@ -4205,13 +4202,14 @@ vec_t C_BaseEntity::GetLocalAnglesDim( int iDim ) const
 // Prevent these for now until hierarchy is properly networked
 void C_BaseEntity::SetLocalAngles( const QAngle& angles )
 {
-	// NOTE: The angle normalize is a little expensive, but we can save
-	// a bunch of time in interpolation if we don't have to invalidate everything
-	// and sometimes it's off by a normalization amount
-
-	// FIXME: The normalize caused problems in server code like momentary_rot_button that isn't
-	//        handling things like +/-180 degrees properly. This should be revisited.
-	//QAngle angleNormalize( AngleNormalize( angles.x ), AngleNormalize( angles.y ), AngleNormalize( angles.z ) );
+	// Safety check against NaN's or really huge numbers
+	// And actually normalize the angles rather than freeze the entity and spam warnings
+	if (!IsEntityQAngleReasonable(angles))
+	{
+		QAngle angleNormalize(AngleNormalize(angles.x), AngleNormalize(angles.y), AngleNormalize(angles.z));
+		SetLocalAngles(angleNormalize);
+		return;
+	}
 
 	if (m_angRotation != angles)
 	{
@@ -5894,11 +5892,6 @@ float C_BaseEntity::GetInterpolationAmount(int flags)
 {
 	// If single player server is "skipping ticks" everything needs to interpolate for a bit longer
 	int serverTickMultiple = 1;
-	if (IsSimulatingOnAlternateTicks())
-	{
-		serverTickMultiple = 2;
-	}
-
 	if (GetPredictable() || IsClientCreated())
 	{
 		return TICK_INTERVAL * serverTickMultiple;

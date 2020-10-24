@@ -4,27 +4,9 @@
 #include "buttons.h"
 #include "mom_player.h"
 #include "mom_system_gamemode.h"
+#include "trigger_trace_enums.h"
 
 #include "tier0/memdbgon.h"
-
-class CTeleportTriggerTraceEnum : public IEntityEnumerator
-{
-  public:
-    CTeleportTriggerTraceEnum(Ray_t *pRay)
-        : m_pRay(pRay), m_pTeleportEnt(nullptr)
-    {
-    }
-
-    bool EnumEntity(IHandleEntity *pHandleEntity) OVERRIDE;
-    CBaseEntity *GetTeleportEntity() { return m_pTeleportEnt; }
-
-  private:
-    void SetTeleportEntity(CBaseEntity *pEnt) { m_pTeleportEnt = pEnt; }
-
-  private:
-    CBaseEntity *m_pTeleportEnt;
-    Ray_t *m_pRay;
-};
 
 CMOMBhopBlockFixSystem::CMOMBhopBlockFixSystem(const char* pName) : CAutoGameSystem(pName)
 {
@@ -185,29 +167,6 @@ void CMOMBhopBlockFixSystem::AddBhopBlock(CBaseEntity* pBlockEnt, CBaseEntity* p
     block.m_bIsDoor = isDoor;
     AlterBhopBlock(block);
     m_mapBlocks.Insert(pBlockEnt->entindex(), block);
-}
-
-// override of IEntityEnumerator's EnumEntity() for our trigger teleport filter
-bool CTeleportTriggerTraceEnum::EnumEntity(IHandleEntity *pHandleEntity)
-{
-    trace_t tr;
-    // store entity that we found on the trace
-    CBaseEntity *pEnt = gEntList.GetBaseEntity(pHandleEntity->GetRefEHandle());
-
-    // Done to avoid hitting an entity that's both solid & a trigger.
-    if (pEnt->IsSolid())
-        return false;
-
-    enginetrace->ClipRayToEntity(*m_pRay, MASK_ALL, pHandleEntity, &tr);
-
-    if (tr.fraction < 1.0f) // tr.fraction = 1.0 means the trace completed
-    {
-        // arguments are initilized in the constructor of CTeleportTriggerTraceEnum
-        SetTeleportEntity(pEnt);
-        return false; // Stop, we hit our target.
-    }
-    // Continue until fraction == 1.0f
-    return true;
 }
 
 static CMOMBhopBlockFixSystem s_MOMBlockFixer("CMOMBhopBlockFixSystem");

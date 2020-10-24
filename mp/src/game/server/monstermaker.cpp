@@ -423,7 +423,7 @@ void CNPCMaker::MakeNPC( void )
 	}
 	
 	// ------------------------------------------------
-	//  Intialize spawned NPC's relationships
+	//  Initialize spawned NPC's relationships
 	// ------------------------------------------------
 	pent->SetRelationshipString( m_RelationshipString );
 
@@ -613,7 +613,7 @@ void CTemplateNPCMaker::Precache()
 
 	Assert( m_iszTemplateData != NULL_STRING );
 
-	// If the mapper marked this as "preload", then instance the entity preache stuff and delete the entity
+	// If the mapper marked this as "preload", then instance the entity precache stuff and delete the entity
 	//if ( !HasSpawnFlags(SF_NPCMAKER_NOPRELOADMODELS) )
 	if ( m_iszTemplateData != NULL_STRING )
 	{
@@ -640,7 +640,7 @@ CNPCSpawnDestination *CTemplateNPCMaker::FindSpawnDestination()
 		return NULL;
 	}
 
-	// Collect all the qualifiying destination ents
+	// Collect all the qualifying destination ents
 	pEnt = gEntList.FindEntityByName( NULL, m_iszDestinationGroup );
 
 	if( !pEnt )

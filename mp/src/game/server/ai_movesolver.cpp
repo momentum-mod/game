@@ -118,9 +118,9 @@ bool CAI_MoveSolver::Solve( const AI_MoveSuggestion_t *pSuggestions, int nSugges
 
 	//---------------------------------
 
-	// The first thing we do is reweight and normalize the weights into a range of [-1..1], where
+	// The first thing we do is reweigh and normalize the weights into a range of [-1..1], where
 	// a negative weight is a repulsion. This becomes a bias for the solver.
-	// @TODO (toml 06-18-02): this can be made sligtly more optimal by precalculating regulation adjusted weights
+	// @TODO (toml 06-18-02): this can be made slightly more optimal by precalculating regulation adjusted weights
 	Assert( suggestions.Count() >= 1 );
 	NormalizeSuggestions( &suggestions[0], (&suggestions[0]) + suggestions.Count() );
 

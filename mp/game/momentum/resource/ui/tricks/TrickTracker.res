@@ -1,0 +1,40 @@
+"resource/ui/tricks/TrickTracker.res"
+{
+    "TrickTrackerHUD"
+    {
+        "ControlName" "TrickTrackerHUD"
+        "fieldName" "TrickTrackerHUD"
+        "visible"		"1"
+        "enabled"		"1"
+        "xpos"          "10"
+        "ypos"          "10"
+        "wide"			"320"
+        "tall"          "200"
+        "paintbackground" "0"
+        "bgcolor_override" "0 0 0 0"
+    }
+
+    "PathNameLabel"
+    {
+        "ControlName"       "Label"
+        "fieldName"         "PathNameLabel"
+        "xpos" "0"
+        "ypos" "0"
+        "wide" "100"
+        "tall" "10"
+        // "pin_to_sibling" ""
+        //"pin_to_sibling_corner" "6"
+        //"pin_corner_to_sibling" "4"
+        "visible"           "1"
+        "enabled"           "1"
+        "tabPosition"       "0"
+        "labelText"         "Path for <trick>"
+        "textAlignment"     "center"
+        "dulltext"          "0"
+        "brighttext"        "0"
+        "font"              "Default"
+        "fgcolor_override" 	"White"
+        "auto_tall_tocontents" "1"
+        "auto_wide_tocontents" "1"
+    }
+}

@@ -97,7 +97,7 @@ END_DATADESC()
 
 
 
-LINK_ENTITY_TO_CLASS( funCBaseFlex, CBaseFlex ); // meaningless independant class!!
+LINK_ENTITY_TO_CLASS( funCBaseFlex, CBaseFlex ); // meaningless independent class!!
 
 CBaseFlex::CBaseFlex( void ) : 
 	m_LocalToGlobal( 0, 0, FlexSettingLessFunc )
@@ -890,7 +890,7 @@ bool CBaseFlex::CheckSceneEventCompletion( CSceneEventInfo *info, float currentt
 void CBaseFlex::ProcessSceneEvents( void )
 {
 	VPROF( "CBaseFlex::ProcessSceneEvents" );
-	// slowly decay to netural expression
+	// slowly decay to neutral expression
 	for ( LocalFlexController_t i = LocalFlexController_t(0); i < GetNumFlexControllers(); i++)
 	{
 		SetFlexWeight( i, GetFlexWeight( i ) * 0.95 );
@@ -935,7 +935,7 @@ void CBaseFlex::ProcessSceneEvents( void )
 	}
 
 
-	// any needed layer priorites have now been reset
+	// any needed layer priorities have now been reset
 	m_bUpdateLayerPriorities = false;
 }
 
@@ -2034,7 +2034,7 @@ bool CBaseFlex::IsSuppressedFlexAnimation( CSceneEventInfo *info )
 		// allow for slight jitter
 		return m_flLastFlexAnimationTime > gpGlobals->curtime - GetAnimTimeInterval() * 1.5;
 	}
-	// keep track of last non-suppressable flex animation
+	// keep track of last non-suppressible flex animation
 	m_flLastFlexAnimationTime = gpGlobals->curtime;
 	return false;
 }

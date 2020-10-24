@@ -556,7 +556,7 @@ bool CServerGameDLL::DLLInit( CreateInterfaceFn appSystemFactory,
 	SteamAPI_Init();
 	s_SteamGameServerAPIContext.Init();
 
-	// init each (seperated for ease of debugging)
+	// init each (separated for ease of debugging)
 	if ( (engine = (IVEngineServer*)appSystemFactory(INTERFACEVERSION_VENGINESERVER, NULL)) == NULL )
 		return false;
 	if ( (g_pVoiceServer = (IVoiceServer*)appSystemFactory(INTERFACEVERSION_VOICESERVER, NULL)) == NULL )
@@ -1121,18 +1121,6 @@ void CServerGameDLL::GameFrame( bool simulating )
 	// Don't run frames until fully restored
 	if ( g_InRestore )
 		return;
-
-	if ( CBaseEntity::IsSimulatingOnAlternateTicks() )
-	{
-		// only run simulation on even numbered ticks
-		if ( gpGlobals->tickcount & 1 )
-		{
-			UpdateAllClientData();
-			return;
-		}
-		// If we're skipping frames, then the frametime is 2x the normal tick
-		gpGlobals->frametime *= 2.0f;
-	}
 
 	float oldframetime = gpGlobals->frametime;
 

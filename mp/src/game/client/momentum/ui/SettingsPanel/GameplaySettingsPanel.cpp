@@ -6,12 +6,22 @@
 #include "vgui_controls/CvarTextEntry.h"
 #include "vgui_controls/CvarToggleCheckButton.h"
 #include "vgui_controls/CvarComboBox.h"
+#include "controls/ColorPicker.h"
+
+#include "PaintPreviewPanel.h"
+#include "util/mom_util.h"
 
 #include "tier0/memdbgon.h"
 
 using namespace vgui;
 
-GameplaySettingsPanel::GameplaySettingsPanel(Panel *pParent, Button *pAssociate) : BaseClass(pParent, "GameplayPage", pAssociate)
+#define SET_BUTTON_COLOR(button, color)       \
+    button->SetDefaultColor(color, color);    \
+    button->SetArmedColor(color, color);      \
+    button->SetSelectedColor(color, color);
+
+GameplaySettingsPanel::GameplaySettingsPanel(Panel *pParent, Button *pAssociate)
+    : BaseClass(pParent, "GameplayPage", pAssociate), m_cvarPaintColor("mom_paint_color")
 {
     // General gameplay settings
     m_pEnableDevConsole = new CvarToggleCheckButton(this, "EnableConsole", "#GameUI_DeveloperConsoleCheck", "con_enable");
@@ -26,6 +36,54 @@ GameplaySettingsPanel::GameplaySettingsPanel(Panel *pParent, Button *pAssociate)
 
     m_pPlayBlockSound = new CvarToggleCheckButton(this, "PlayBlockSound", "#MOM_Settings_Play_BlockSound", "mom_bhop_playblocksound");
     m_pSaveCheckpoints = new CvarToggleCheckButton(this, "SaveCheckpoints", "#MOM_Settings_Save_Checkpoints", "mom_saveloc_save_between_sessions");
+
+    m_pDrawViewmodel = new CvarToggleCheckButton(this, "DrawViewmodel", "#MOM_Settings_Draw_Viewmodel", "r_drawviewmodel");
+
+    // Paint settings
+    m_pPaintDecalScaleSlider = new CvarSlider(this, "PaintScaleSlider", "mom_paint_scale", 2, true);
+    m_pPaintDecalScaleSlider->AddActionSignalTarget(this);
+    m_pPaintDecalScaleEntry = new CvarTextEntry(this, "PaintScaleEntry", "mom_paint_scale", 2);
+    m_pPaintDecalScaleEntry->SetAllowNumericInputOnly(true);
+
+    m_pTogglePaintApplySound = new CvarToggleCheckButton(this, "TogglePaintApplySound", "#MOM_Settings_Paint_Apply_Sound", "mom_paint_apply_sound");
+    m_pTogglePaintLimitToWorld = new CvarToggleCheckButton(this, "TogglePaintLimitToWorld", "#MOM_Settings_Paint_Limit_To_World", "mom_paint_limit_to_world");
+
+    m_pPaintColorPicker = new ColorPicker(this, this);
+    m_pPickPaintColorButton = new Button(this, "PickPaintColorButton", "", this, "picker_paint");
+
+    m_pPaintPreviewPanel = new PaintPreviewPanel(this);
+    m_pPaintPreviewPanel->SetPaintBackgroundEnabled(true);
+    m_pPaintPreviewPanel->SetPaintBackgroundType(2);
+
+    // Safeguard controls
+    m_pPracticeModeSafeguards = new CvarComboBox(this, "PracticeModeSafeguard", "mom_run_safeguard_practicemode");
+    m_pPracticeModeSafeguards->AddItem("#MOM_Settings_Run_Safeguard_Modes_None", nullptr);
+    m_pPracticeModeSafeguards->AddItem("#MOM_Settings_Run_Safeguard_Modes_1", nullptr);
+    m_pPracticeModeSafeguards->AddItem("#MOM_Settings_Run_Safeguard_Modes_2", nullptr);
+
+    m_pRestartMapSafeguards = new CvarComboBox(this, "RestartMapSafeguard", "mom_run_safeguard_restart");
+    m_pRestartMapSafeguards->AddItem("#MOM_Settings_Run_Safeguard_Modes_None", nullptr);
+    m_pRestartMapSafeguards->AddItem("#MOM_Settings_Run_Safeguard_Modes_1", nullptr);
+    m_pRestartMapSafeguards->AddItem("#MOM_Settings_Run_Safeguard_Modes_2", nullptr);
+
+    m_pSavelocTeleSafeguards = new CvarComboBox(this, "SavelocTeleSafeguard", "mom_run_safeguard_saveloc_tele");
+    m_pSavelocTeleSafeguards->AddItem("#MOM_Settings_Run_Safeguard_Modes_None", nullptr);
+    m_pSavelocTeleSafeguards->AddItem("#MOM_Settings_Run_Safeguard_Modes_1", nullptr);
+    m_pSavelocTeleSafeguards->AddItem("#MOM_Settings_Run_Safeguard_Modes_2", nullptr);
+
+    m_pChatOpenSafeguards = new CvarComboBox(this, "ChatOpenSafeguard", "mom_run_safeguard_chat_open");
+    m_pChatOpenSafeguards->AddItem("#MOM_Settings_Run_Safeguard_Modes_None", nullptr);
+    m_pChatOpenSafeguards->AddItem("#MOM_Settings_Run_Safeguard_Modes_1", nullptr);
+    m_pChatOpenSafeguards->AddItem("#MOM_Settings_Run_Safeguard_Modes_2", nullptr);
+
+    m_pRestartStageSafeguards = new CvarComboBox(this, "RestartStageSafeguard", "mom_run_safeguard_restart_stage");
+    m_pRestartStageSafeguards->AddItem("#MOM_Settings_Run_Safeguard_Modes_None", nullptr);
+    m_pRestartStageSafeguards->AddItem("#MOM_Settings_Run_Safeguard_Modes_1", nullptr);
+    m_pRestartStageSafeguards->AddItem("#MOM_Settings_Run_Safeguard_Modes_2", nullptr);
+
+    m_pSafeguardChangeMapToggle = new CvarToggleCheckButton(this, "SafeguardChangeMapToggle", "#MOM_Settings_Run_Safeguard_Change_Map", "mom_run_safeguard_change_map");
+    m_pSafeguardQuitToMenuToggle = new CvarToggleCheckButton(this, "SafeguardQuitToMenuToggle", "#MOM_Settings_Run_Safeguard_Quit_Map", "mom_run_safeguard_quit_map");
+    m_pSafeguardQuitGameToggle = new CvarToggleCheckButton(this, "SafeguardQuitGameToggle", "#MOM_Settings_Run_Safeguard_Quit_Game", "mom_run_safeguard_quit_game");
 
     // Gamemode specific settings
     // Rocket Jump controls
@@ -43,15 +101,19 @@ GameplaySettingsPanel::GameplaySettingsPanel(Panel *pParent, Button *pAssociate)
     m_pSJEnableTrailParticle = new CvarToggleCheckButton(this, "SJEnableTrailParticle", "#MOM_Settings_SJ_Enable_Trail_Particle", "mom_sj_particle_trail_enable");
     m_pSJEnableExplosionParticle = new CvarToggleCheckButton(this, "SJEnableExplosionParticle", "#MOM_Settings_SJ_Enable_Explosion_Particle", "mom_sj_particle_explosion_enable");
     m_pSJToggleStickybombDecals = new CvarToggleCheckButton(this, "SJToggleStickybombDecals", "#MOM_Settings_SJ_Enable_Stickybomb_Decals", "mom_sj_decals_enable");
+
     m_pSJEnableExplosionSound = new CvarToggleCheckButton(this, "SJEnableExplosionSound", "#MOM_Settings_SJ_Enable_Explosion_Sound", "mom_sj_sound_explosion_enable");
     m_pSJEnableDetonateFailSound = new CvarToggleCheckButton(this, "SJEnableDetonateFailSound", "#MOM_Settings_SJ_Enable_Detonation_Fail_Sound", "mom_sj_sound_detonate_fail_enable");
     m_pSJEnableDetonateSuccessSound = new CvarToggleCheckButton(this, "SJEnableDetonateSuccessSound", "#MOM_Settings_SJ_Enable_Detonation_Success_Sound", "mom_sj_sound_detonate_success_enable");
     m_pSJEnableChargeSound = new CvarToggleCheckButton(this, "SJEnableChargeSound", "#MOM_Settings_SJ_Enable_Charge_Sound", "mom_sj_sound_charge_enable");
+    m_pSJEnableShootSound = new CvarToggleCheckButton(this, "SJEnableShootSound", "#MOM_Settings_SJ_Enable_Shoot_Sound", "mom_sj_sound_shot_enable");
+    m_pSJChargedShotSoundThreshold = new CvarTextEntry(this, "SJChargedShotSoundThreshold", "mom_sj_sound_shot_charged_threshold", 2);
+    m_pSJChargedShotSoundThreshold->SetAllowNumericInputOnly(true);
+
     m_pSJEnableChargeMeter = new CvarToggleCheckButton(this, "EnableChargeMeter", "#MOM_Settings_SJ_Enable_Charge_Meter", "mom_hud_sj_chargemeter_enable");
     m_pSJEnableChargeMeter->AddActionSignalTarget(this);
     m_pSJEnableStickyCounter = new CvarToggleCheckButton(this, "EnableStickyCounter", "#MOM_Settings_SJ_Enable_Sticky_Counter", "mom_hud_sj_stickycount_enable");
     m_pSJEnableStickyCounter->AddActionSignalTarget(this);
-    m_pSJStickyCounterAutohide = new CvarToggleCheckButton(this, "EnableStickyCounterAutohide", "#MOM_Settings_SJ_Enable_Sticky_Counter_Autohide", "mom_hud_sj_stickycount_autohide");
 
     m_pSJChargeMeterUnits = new CvarComboBox(this, "ChargeMeterUnits", "mom_hud_sj_chargemeter_units");
     m_pSJChargeMeterUnits->AddItem("#MOM_Settings_SJ_ChargeMeter_Units_Type_None", nullptr);
@@ -61,7 +123,6 @@ GameplaySettingsPanel::GameplaySettingsPanel(Panel *pParent, Button *pAssociate)
     m_pSJStickyDrawDelayEntry = new CvarTextEntry(this, "StickyDrawDelayEntry", "mom_sj_stickybomb_drawdelay", 1);
     m_pSJStickyDrawDelayEntry->SetAllowNumericInputOnly(true);
 
-
     LoadControlSettings("resource/ui/settings/Settings_Gameplay.res");
 }
 
@@ -70,20 +131,64 @@ void GameplaySettingsPanel::OnPageShow()
 {
     BaseClass::OnPageShow();
 
-    // Gamemode
-    m_pSJStickyCounterAutohide->SetEnabled(m_pSJEnableStickyCounter->IsSelected());
     m_pSJChargeMeterUnits->SetEnabled(m_pSJEnableChargeMeter->IsSelected());
+
+    Color paintColor;
+    if (MomUtil::GetColorFromHex(m_cvarPaintColor.GetString(), paintColor))
+    {
+        SET_BUTTON_COLOR(m_pPickPaintColorButton, paintColor);
+    }
 }
 
 void GameplaySettingsPanel::OnCheckboxChecked(Panel *panel)
 {
-    // Gameplay
-    if (panel == m_pSJEnableStickyCounter)
-    {
-        m_pSJStickyCounterAutohide->SetEnabled(m_pSJEnableStickyCounter->IsSelected());
-    }
-    else if (panel == m_pSJEnableChargeMeter)
+    if (panel == m_pSJEnableChargeMeter)
     {
         m_pSJChargeMeterUnits->SetEnabled(m_pSJEnableChargeMeter->IsSelected());
+    }
+}
+
+void GameplaySettingsPanel::ApplySchemeSettings(IScheme *pScheme)
+{
+    BaseClass::ApplySchemeSettings(pScheme);
+
+    Color paintColor;
+    if (MomUtil::GetColorFromHex(m_cvarPaintColor.GetString(), paintColor))
+    {
+        SET_BUTTON_COLOR(m_pPickPaintColorButton, paintColor);
+    }
+}
+
+void GameplaySettingsPanel::OnCommand(const char *command)
+{
+    if (FStrEq(command, "picker_paint"))
+    {
+        Color paintColor;
+        if (MomUtil::GetColorFromHex(m_cvarPaintColor.GetString(), paintColor))
+        {
+            m_pPaintColorPicker->SetPickerColor(paintColor);
+            m_pPaintColorPicker->SetTargetCallback(m_pPickPaintColorButton);
+            m_pPaintColorPicker->DoModal();
+        }
+    }
+    else
+    {
+        BaseClass::OnCommand(command);
+    }
+}
+
+void GameplaySettingsPanel::OnColorSelected(KeyValues *pKv)
+{
+    const auto selected = pKv->GetColor("color");
+
+    Panel *pTarget = static_cast<Panel *>(pKv->GetPtr("targetCallback"));
+
+    if (pTarget == m_pPickPaintColorButton)
+    {
+        SET_BUTTON_COLOR(m_pPickPaintColorButton, selected);
+
+        char buf[32];
+        MomUtil::GetHexStringFromColor(selected, buf, 32);
+        m_cvarPaintColor.SetValue(buf);
     }
 }

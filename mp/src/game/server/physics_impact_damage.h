@@ -29,7 +29,7 @@ struct impactdamagetable_t
 	float		minRotSpeedSqr;
 	float		minMass;		// minimum mass to do damage
 
-	// filter out reall small objects, set all to zero to disable
+	// filter out really small objects, set all to zero to disable
 	float		smallMassMax;
 	float		smallMassCap;
 	float		smallMassMinSpeedSqr;

@@ -113,7 +113,7 @@ void CEntityParticleTrail::UpdateOnRemove()
 
 
 //-----------------------------------------------------------------------------
-// Force our constraint entity to be trasmitted
+// Force our constraint entity to be transmitted
 //-----------------------------------------------------------------------------
 void CEntityParticleTrail::SetTransmit( CCheckTransmitInfo *pInfo, bool bAlways )
 {

@@ -5,12 +5,21 @@
 #include "mom_triggers.h"
 #include "mapzones_build.h"
 #include "fmtstr.h"
+#include "mom_system_gamemode.h"
+#include "mom_system_tricks.h"
 
 #include "tier0/memdbgon.h"
 
 CON_COMMAND_F(mom_zone_generate, "Generates the .zon file for map zones.", FCVAR_MAPPING)
 {
-    g_MapZoneSystem.SaveZonesToFile();
+    if (g_pGameModeSystem->GameModeIs(GAMEMODE_TRICKSURF))
+    {
+        g_pTrickSystem->SaveTrickDataToFile();
+    }
+    else
+    {
+        g_MapZoneSystem.SaveZonesToFile();
+    }
 }
 
 class CMapZone
@@ -138,6 +147,9 @@ bool CMapZoneSystem::ZoneTypeToClass(int type, char *dest, int maxlen)
     case ZONE_TYPE_STAGE:
         Q_strncpy(dest, "trigger_momentum_timer_stage", maxlen);
         return true;
+    case ZONE_TYPE_TRICK:
+        Q_strncpy(dest, "trigger_momentum_trick", maxlen);
+        return true;
     default:
         return false;
     }
@@ -251,7 +263,7 @@ bool CMapZoneSystem::LoadZonesFromKeyValues(KeyValues *pKvTracks, bool bFromSite
     return !m_Zones.IsEmpty();
 }
 
-void CMapZoneSystem::SaveZoneTrigger(CTriggerZone *pZoneTrigger, KeyValues *pKvInto)
+void CMapZoneSystem::SaveZoneTrigger(CBaseMomZoneTrigger *pZoneTrigger, KeyValues *pKvInto)
 {
     bool bSuccess = false;
     const auto pKvTrigger = pKvInto->CreateNewKey();

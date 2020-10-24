@@ -37,7 +37,7 @@
 #define CHAR_TEX_WOOD			'W'
 //#define CHAR_TEX_UNUSED		'X'
 #define CHAR_TEX_GLASS			'Y'
-#define CHAR_TEX_WARPSHIELD		'Z' ///< wierd-looking jello effect for advisor shield.
+#define CHAR_TEX_WARPSHIELD		'Z' ///< weird-looking jello effect for advisor shield.
 
 abstract_class IDecalEmitterSystem
 {

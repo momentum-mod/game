@@ -582,7 +582,7 @@ qboolean GetToken (qboolean crossline)
 {
 	char    *token_p;
 
-	if (tokenready)                         // is a token allready waiting?
+	if (tokenready)                         // is a token already waiting?
 	{
 		tokenready = false;
 		return true;
@@ -766,7 +766,7 @@ qboolean GetExprToken (qboolean crossline)
 {
 	char    *token_p;
 
-	if (tokenready)                         // is a token allready waiting?
+	if (tokenready)                         // is a token already waiting?
 	{
 		tokenready = false;
 		return true;
@@ -883,7 +883,7 @@ qboolean TokenAvailable (void)
 {
 	char    *search_p;
 
-	if (tokenready)                         // is a token allready waiting?
+	if (tokenready)                         // is a token already waiting?
 	{
 		return true;
 	}
@@ -1013,7 +1013,7 @@ bool CScriptLib::WriteBufferToFile( const char *pTargetName, CUtlBuffer &buffer,
 	bool bSuccess = true;
 
 	// create path
-	// prime and skip to first seperator
+	// prime and skip to first separator
 	strcpy( dirPath, pTargetName );
 	ptr = strchr( dirPath, '\\' );
 	while ( ptr )

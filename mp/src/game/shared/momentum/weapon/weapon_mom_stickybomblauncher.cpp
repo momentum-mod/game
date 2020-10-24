@@ -20,9 +20,20 @@
 #define MOM_STICKYBOMB_MAX_CHARGE_TIME 4.0f
 #define MOM_STICKYBOMB_BUFFER_WINDOW 0.05f
 
+#define MOM_STICKYLAUNCHER_SOUND_SHOT "single_shot"
+#define MOM_STICKYLAUNCHER_SOUND_SHOT_CHARGED "charged_shot"
+#define MOM_STICKYLAUNCHER_SOUND_DET_FAIL "deny"
+#define MOM_STICKYLAUNCHER_SOUND_DET_SUCCESS "detonate"
+#define MOM_STICKYLAUNCHER_SOUND_CHARGE "charge"
+#define MOM_STICKYLAUNCHER_SOUND_CHARGE_STOP "chargestop"
+
 MAKE_TOGGLE_CONVAR(mom_sj_sound_detonate_fail_enable, "1", FCVAR_ARCHIVE | FCVAR_REPLICATED, "Toggle the sticky launcher detonate fail sound. 0 = OFF, 1 = ON\n");
 MAKE_TOGGLE_CONVAR(mom_sj_sound_detonate_success_enable, "1", FCVAR_ARCHIVE | FCVAR_REPLICATED, "Toggle the sticky launcher detonate success sound. 0 = OFF, 1 = ON\n");
 MAKE_TOGGLE_CONVAR(mom_sj_sound_charge_enable, "1", FCVAR_ARCHIVE | FCVAR_REPLICATED, "Toggle the sticky launcher charging sound. 0 = OFF, 1 = ON\n");
+MAKE_TOGGLE_CONVAR(mom_sj_sound_shot_enable, "1", FCVAR_ARCHIVE | FCVAR_REPLICATED, "Toggle the sticky launcher firing sound. 0 = OFF, 1 = ON\n");
+
+MAKE_CONVAR(mom_sj_sound_shot_charged_threshold, "2", FCVAR_ARCHIVE | FCVAR_REPLICATED,
+           "Sets the amount of time a sticky needs to be charged before playing a more powerful version of the sticky shot.\n", 0.0f, MOM_STICKYBOMB_MAX_CHARGE_TIME + 1.0f);
 
 IMPLEMENT_NETWORKCLASS_ALIASED(MomentumStickybombLauncher, DT_MomentumStickybombLauncher)
 
@@ -90,6 +101,7 @@ void CMomentumStickybombLauncher::Precache()
 bool CMomentumStickybombLauncher::Holster(CBaseCombatWeapon *pSwitchingTo)
 {
     m_flChargeBeginTime = 0;
+    StopWeaponSound(GetWeaponSound(MOM_STICKYLAUNCHER_SOUND_CHARGE));
 
     return BaseClass::Holster(pSwitchingTo);
 }
@@ -145,9 +157,13 @@ void CMomentumStickybombLauncher::LaunchGrenade()
 
     DoFireEffects();
 
-    StopWeaponSound(GetWeaponSound("charge"));
+    StopWeaponSound(GetWeaponSound(MOM_STICKYLAUNCHER_SOUND_CHARGE));
 
-    WeaponSound(GetWeaponSound("single_shot"));
+    if (mom_sj_sound_shot_enable.GetBool())
+    {
+        const auto bNormalSound = gpGlobals->curtime - m_flChargeBeginTime < mom_sj_sound_shot_charged_threshold.GetFloat() || !m_bIsChargeEnabled.Get();
+        WeaponSound(GetWeaponSound(bNormalSound ? MOM_STICKYLAUNCHER_SOUND_SHOT : MOM_STICKYLAUNCHER_SOUND_SHOT_CHARGED));
+    }
 
     m_flChargeBeginTime = 0;
 }
@@ -190,9 +206,12 @@ void CMomentumStickybombLauncher::ItemPostFrame()
             m_flChargeBeginTime = m_flNextPrimaryAttack;
         }
     }
-    else
+    else if (m_bEarlyPrimaryFire)
     {
+        // rare case:
+        // was just clicked inside buffer but charge begin time was not updated
         m_bEarlyPrimaryFire.Set(false);
+        m_flChargeBeginTime = m_flNextPrimaryAttack;
     }
 
     if (!bPressingM1 && m_flChargeBeginTime > 0.0f && m_flChargeBeginTime <= gpGlobals->curtime)
@@ -222,7 +241,7 @@ void CMomentumStickybombLauncher::PrimaryAttack()
 
             if (mom_sj_sound_charge_enable.GetBool())
             {
-                WeaponSound(GetWeaponSound("charge"));
+                WeaponSound(GetWeaponSound(MOM_STICKYLAUNCHER_SOUND_CHARGE));
             }
         }
     }
@@ -265,7 +284,7 @@ void CMomentumStickybombLauncher::SecondaryAttack()
 
             if (mom_sj_sound_detonate_fail_enable.GetBool())
             {
-                WeaponSound(GetWeaponSound("deny"));
+                WeaponSound(GetWeaponSound(MOM_STICKYLAUNCHER_SOUND_DET_FAIL));
                 bPlayedFail = true;
             }
         }
@@ -275,7 +294,7 @@ void CMomentumStickybombLauncher::SecondaryAttack()
     {
         if (mom_sj_sound_detonate_success_enable.GetBool())
         {
-            WeaponSound(GetWeaponSound("detonate"));
+            WeaponSound(GetWeaponSound(MOM_STICKYLAUNCHER_SOUND_DET_SUCCESS));
         }
     }
 }
@@ -290,10 +309,14 @@ bool CMomentumStickybombLauncher::SetChargeEnabled(bool state)
 {
     if (!state)
     {
-        StopWeaponSound(GetWeaponSound("charge"));
+        StopWeaponSound(GetWeaponSound(MOM_STICKYLAUNCHER_SOUND_CHARGE));
         if (m_flChargeBeginTime > 0) // was charging when disabled
         {
-            WeaponSound(GetWeaponSound("chargestop"));
+            SendWeaponAnim(ACT_VM_PULLBACK_SPECIAL);
+            if (mom_sj_sound_charge_enable.GetBool())
+            {
+                WeaponSound(GetWeaponSound(MOM_STICKYLAUNCHER_SOUND_CHARGE_STOP));
+            }
         }
     }
     return m_bIsChargeEnabled.Set(state); 
@@ -321,8 +344,6 @@ CMomStickybomb *CMomentumStickybombLauncher::FireProjectile(CMomentumPlayer *pPl
         }
 
         AddStickybomb(pProjectile);
-
-        m_iStickybombCount = m_Stickybombs.Count();
     }
 #endif
     return pProjectile;
@@ -374,6 +395,8 @@ void CMomentumStickybombLauncher::AddStickybomb(CMomStickybomb *pBomb)
     pBomb->SetLauncher(this);
     StickybombHandle hHandle = pBomb;
     m_Stickybombs.AddToTail(hHandle);
+
+    m_iStickybombCount = m_Stickybombs.Count();
 }
 
 //-----------------------------------------------------------------------------

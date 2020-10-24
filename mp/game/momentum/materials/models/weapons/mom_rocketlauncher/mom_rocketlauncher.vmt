@@ -1,0 +1,21 @@
+PBR
+{
+	$basetexture        models/weapons/mom_rocketlauncher/mom_rocketlauncher_C
+    $emissionTexture    models/weapons/mom_rocketlauncher/mom_rocketlauncher_E
+	$bumpmap            models/weapons/mom_rocketlauncher/mom_rocketlauncher_N
+	$mraotexture        models/weapons/mom_rocketlauncher/mom_rocketlauncher_MRAO
+    
+    $emissionScale      "[1 1 1]"
+    $mraoscale          "[1 1.5 1]"
+	$envmap             env_cubemap
+	$model              1
+    
+    Proxies
+    {
+        PlayerSpeed
+        {
+            scale 0.001
+            resultVar   $emissionScale
+        }
+    }
+}

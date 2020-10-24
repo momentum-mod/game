@@ -187,14 +187,12 @@ void CWeaponDef::LoadWeaponDefinitions()
 
     m_vecWeaponDefs[WEAPON_NONE] = new WeaponDefinition("none");
     m_vecWeaponDefs[WEAPON_PISTOL]          = ParseWeaponScript(g_szWeaponNames[WEAPON_PISTOL]);
-    m_vecWeaponDefs[WEAPON_RIFLE]           = ParseWeaponScript(g_szWeaponNames[WEAPON_RIFLE]);
     m_vecWeaponDefs[WEAPON_SHOTGUN]         = ParseWeaponScript(g_szWeaponNames[WEAPON_SHOTGUN]);
-    m_vecWeaponDefs[WEAPON_SMG]             = ParseWeaponScript(g_szWeaponNames[WEAPON_SMG]);
+    m_vecWeaponDefs[WEAPON_MACHINEGUN]      = ParseWeaponScript(g_szWeaponNames[WEAPON_MACHINEGUN]);
     m_vecWeaponDefs[WEAPON_SNIPER]          = ParseWeaponScript(g_szWeaponNames[WEAPON_SNIPER]);
-    m_vecWeaponDefs[WEAPON_LMG]             = ParseWeaponScript(g_szWeaponNames[WEAPON_LMG]);
     m_vecWeaponDefs[WEAPON_GRENADE]         = ParseWeaponScript(g_szWeaponNames[WEAPON_GRENADE]);
+    m_vecWeaponDefs[WEAPON_CONCGRENADE]     = ParseWeaponScript(g_szWeaponNames[WEAPON_CONCGRENADE]);
     m_vecWeaponDefs[WEAPON_KNIFE]           = ParseWeaponScript(g_szWeaponNames[WEAPON_KNIFE]);
-    m_vecWeaponDefs[WEAPON_PAINTGUN]        = ParseWeaponScript(g_szWeaponNames[WEAPON_PAINTGUN]);
     m_vecWeaponDefs[WEAPON_ROCKETLAUNCHER]  = ParseWeaponScript(g_szWeaponNames[WEAPON_ROCKETLAUNCHER]);
     m_vecWeaponDefs[WEAPON_STICKYLAUNCHER]  = ParseWeaponScript(g_szWeaponNames[WEAPON_STICKYLAUNCHER]);
 }

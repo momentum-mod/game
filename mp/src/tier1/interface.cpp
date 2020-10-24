@@ -53,7 +53,7 @@ InterfaceReg::InterfaceReg( InstantiateInterfaceFn fn, const char *pName ) :
 // ------------------------------------------------------------------------------------ //
 // CreateInterface.
 // This is the primary exported function by a dll, referenced by name via dynamic binding
-// that exposes an opqaue function pointer to the interface.
+// that exposes an opaque function pointer to the interface.
 //
 // We have the Internal variant so Sys_GetFactoryThis() returns the correct internal 
 // symbol under GCC/Linux/Mac as CreateInterface is DLL_EXPORT so its global so the loaders

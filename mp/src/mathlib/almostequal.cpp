@@ -69,7 +69,7 @@ bool AlmostEqual(float a, float b, int maxUlps)
     // After adjusting floats so their representations are lexicographically
     // ordered as twos-complement integers a very small positive number
     // will compare as 'close' to a very small negative number. If this is
-    // not desireable, and if you are on a platform that supports
+    // not desirable, and if you are on a platform that supports
     // subnormals (which is the only place the problem can show up) then
     // you need this check.
     // The check for a == b is because zero and negative zero have different

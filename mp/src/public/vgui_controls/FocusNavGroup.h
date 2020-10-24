@@ -40,7 +40,7 @@ public:
 	virtual Panel *GetCurrentFocus();
 	virtual VPANEL SetCurrentFocus(VPANEL panel, VPANEL defaultPanel);  // returns the Default panel
 
-	// sets the panel that owns this FocusNavGroup to be the root in the focus traversal heirarchy
+	// sets the panel that owns this FocusNavGroup to be the root in the focus traversal hierarchy
 	// focus change via KEY_TAB will only travel to children of this main panel
 	virtual void SetFocusTopLevel(bool state);
 

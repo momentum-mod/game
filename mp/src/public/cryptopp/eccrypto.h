@@ -1,5 +1,5 @@
 // eccrypto.h - originally written and placed in the public domain by Wei Dai
-//              deterministic signatures added by by Douglas Roark
+//              deterministic signatures added by Douglas Roark
 
 /// \file eccrypto.h
 /// \brief Classes and functions for Elliptic Curves over prime and binary fields
@@ -591,7 +591,7 @@ struct ECGDSA : public DL_SS<
 ///   <A HREF="http://en.wikipedia.org/wiki/ciphertext_indistinguishability">IND-CCA2</A>, which is a strong notion of security.
 ///   You should prefer an Integrated Encryption Scheme over homegrown schemes.
 /// \details The library's original implementation is based on an early P1363 draft, which itself appears to be based on an early Certicom
-///   SEC-1 draft (or an early SEC-1 draft was based on a P1363 draft). Crypto++ 4.2 used the early draft in its Integrated Ecryption
+///   SEC-1 draft (or an early SEC-1 draft was based on a P1363 draft). Crypto++ 4.2 used the early draft in its Integrated Encryption
 ///   Schemes with <tt>NoCofactorMultiplication</tt>, <tt>DHAES_MODE=false</tt> and <tt>LABEL_OCTETS=true</tt>.
 /// \details If you desire an Integrated Encryption Scheme with Crypto++ 4.2 compatibility, then use the ECIES template class with
 ///   <tt>NoCofactorMultiplication</tt>, <tt>DHAES_MODE=false</tt> and <tt>LABEL_OCTETS=true</tt>.

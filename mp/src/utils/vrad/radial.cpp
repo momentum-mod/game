@@ -175,7 +175,7 @@ void AddBouncedToRadial( radial_t *rad,
 	dists = (coordmaxs[0] - coordmins[0]);
 	distt = (coordmaxs[1] - coordmins[1]);
 
-	// patches less than a luxel in size could be mistakeningly filtered, so clamp.
+	// patches less than a luxel in size could be mistakenly filtered, so clamp.
 	dists = max( 1.0, dists );
 	distt = max( 1.0, distt );
 

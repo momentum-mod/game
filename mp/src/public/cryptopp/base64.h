@@ -68,7 +68,7 @@ public:
 	/// \details IsolatedInitialize() is used to initialize or reinitialize an object using a variable
 	///   number of arbitrarily typed arguments. IsolatedInitialize() does not call Initialize() on attached
 	///   transformations. If initialization should be propagated, then use the Initialize() function.
-	/// \details The default decoding alpahbet is RFC 4868. You can change the to RFC 4868 web safe alphabet
+	/// \details The default decoding alphabet is RFC 4868. You can change the to RFC 4868 web safe alphabet
 	///   by performing the following:
 	///   <pre>
 	///     int lookup[256];

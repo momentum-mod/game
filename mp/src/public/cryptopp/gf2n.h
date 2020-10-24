@@ -28,7 +28,7 @@ class CRYPTOPP_DLL PolynomialMod2
 public:
 	/// \name ENUMS, EXCEPTIONS, and TYPEDEFS
 	//@{
-		/// \brief Excpetion thrown when divide by zero is encountered
+		/// \brief Exception thrown when divide by zero is encountered
 		class DivideByZero : public Exception
 		{
 		public:
@@ -77,10 +77,10 @@ public:
 		/// \returns x^(n-1) + ... + x + 1
 		static PolynomialMod2 CRYPTOPP_API AllOnes(size_t n);
 
-		/// \brief The Zero polinomial
+		/// \brief The Zero polynomial
 		/// \returns the zero polynomial
 		static const PolynomialMod2 & CRYPTOPP_API Zero();
-		/// \brief The One polinomial
+		/// \brief The One polynomial
 		/// \returns the one polynomial
 		static const PolynomialMod2 & CRYPTOPP_API One();
 	//@}

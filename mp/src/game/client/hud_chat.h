@@ -1,48 +1,24 @@
 #pragma once
 
-#include <hud_basechat.h>
-#include "steam/steam_api.h"
+#include "hudelement.h"
+#include "vgui_controls/EditablePanel.h"
 
-class CHudSpectatorInfo;
+class ChatContainer;
 
-class CHudChat : public CBaseHudChat
+class CHudChat : public CHudElement, public vgui::EditablePanel
 {
-    DECLARE_CLASS_SIMPLE(CHudChat, CBaseHudChat);
-
   public:
+    DECLARE_CLASS_SIMPLE(CHudChat, EditablePanel);
+
     CHudChat(const char *pElementName);
 
-    void Init() override;
+    void StartMessageMode();
 
-    void MsgFunc_SayText(bf_read &msg) override;
+    void Reset() override;
+    void PerformLayout() override;
 
-    // MOM_TODO: Move these elsewhere. Maybe in clientmode? Something that has access to multiple UI components.
-    STEAM_CALLBACK(CHudChat, OnLobbyEnter, LobbyEnter_t);
-    STEAM_CALLBACK(CHudChat, OnLobbyMessage, LobbyChatMsg_t);
-    STEAM_CALLBACK(CHudChat, OnLobbyDataUpdate, LobbyDataUpdate_t);
+    MESSAGE_FUNC(OnStopMessageMode, "StopMessageMode");
 
-    void GetTimestamp(char *pOut, int maxLen);
-    void Printf(int iFilter, const char *fmt, ...) OVERRIDE;
-
-    void StartMessageMode(int) OVERRIDE;
-    void StopMessageMode() OVERRIDE;
-    void FireGameEvent(IGameEvent *event) OVERRIDE;
-
-    void OnThink() OVERRIDE;
-    Color GetDefaultTextColor() OVERRIDE;
-    void ApplySchemeSettings(vgui::IScheme *pScheme) OVERRIDE;
-
-  private:
-    void SpectatorUpdate(const CSteamID &person, const CSteamID &target);
-
-    CUtlVector<uint64> m_vTypingMembers;
-    CUtlVector<uint64> m_vMomentumOfficers;
-    CSteamID m_LobbyID;
-
-    Color m_cDefaultTextColor;
-    bool m_bTyping;
-    bool m_bIsVisible;
-
-    vgui::Label *m_pTypingMembers;
-    CHudSpectatorInfo *m_pSpectatorInfo;
+private:
+    ChatContainer *m_pChatContainer;
 };

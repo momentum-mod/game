@@ -154,7 +154,7 @@ static void ComputeWorldCenter( DetailObjectLump_t& prop, Vector& center, Vector
 
 
 //-----------------------------------------------------------------------------
-// Computes max direct lighting for a single detal prop
+// Computes max direct lighting for a single detail prop
 //-----------------------------------------------------------------------------
 static void ComputeMaxDirectLighting( DetailObjectLump_t& prop, Vector* maxcolor, int iThread )
 {
@@ -777,7 +777,7 @@ static void ComputeAmbientLighting( int iThread, DetailObjectLump_t& prop, Vecto
 
 
 //-----------------------------------------------------------------------------
-// Computes lighting for a single detal prop
+// Computes lighting for a single detail prop
 //-----------------------------------------------------------------------------
 
 static void ComputeLighting( DetailObjectLump_t& prop, int iThread )

@@ -193,7 +193,7 @@ int Menu::AddMenuItemCharCommand(MenuItem *item, const char *command, Panel *tar
 //-----------------------------------------------------------------------------
 // Purpose: Add a menu item to the menu. 
 // Input  : *itemName - Name of item 
-//			*itemText - Name of item text that will appear in the manu.
+//			*itemText - Name of item text that will appear in the menu.
 //			*message - pointer to the message to send when the item is selected
 //			*target - Target panel of the command
 //			*cascadeMenu - if the menu item opens a cascading menu, this is a 
@@ -211,7 +211,7 @@ int Menu::AddMenuItemKeyValuesCommand( MenuItem *item, KeyValues *message, Panel
 //-----------------------------------------------------------------------------
 // Purpose: Add a menu item to the menu.
 // Input  : *itemName - Name of item 
-//			*itemText - Name of item text that will appear in the manu.
+//			*itemText - Name of item text that will appear in the menu.
 //			*command -  Command text to be sent when menu item is selected	
 //			*target - Target panel of the command
 // Output:  itemID - ID of this item
@@ -230,7 +230,7 @@ int Menu::AddMenuItem( const char *itemName, const wchar_t *wszItemText, const c
 
 //-----------------------------------------------------------------------------
 // Purpose: Add a menu item to the menu. 
-// Input  : *itemText - Name of item text that will appear in the manu.
+// Input  : *itemText - Name of item text that will appear in the menu.
 //						This will also be used as the name of the menu item panel.
 //			*command -  Command text to be sent when menu item is selected	
 //			*target - Target panel of the command
@@ -244,7 +244,7 @@ int Menu::AddMenuItem( const char *itemText, const char *command, Panel *target,
 //-----------------------------------------------------------------------------
 // Purpose: Add a menu item to the menu. 
 // Input  : *itemName - Name of item 
-//			*itemText - Name of item text that will appear in the manu.
+//			*itemText - Name of item text that will appear in the menu.
 //			*message - pointer to the message to send when the item is selected
 //			*target - Target panel of the command
 //			*cascadeMenu - if the menu item opens a cascading menu, this is a 
@@ -264,7 +264,7 @@ int Menu::AddMenuItem( const char *itemName, const wchar_t *wszItemText, KeyValu
 
 //-----------------------------------------------------------------------------
 // Purpose: Add a menu item to the menu. 
-// Input  : *itemText - Name of item text that will appear in the manu.
+// Input  : *itemText - Name of item text that will appear in the menu.
 //						This will also be used as the name of the menu item panel.
 //			*message - pointer to the message to send when the item is selected
 //			*target - Target panel of the command
@@ -278,7 +278,7 @@ int Menu::AddMenuItem( const char *itemText, KeyValues *message, Panel *target, 
 
 //-----------------------------------------------------------------------------
 // Purpose: Add a menu item to the menu. 
-// Input  : *itemText - Name of item text that will appear in the manu.
+// Input  : *itemText - Name of item text that will appear in the menu.
 //						This will also be the text of the command sent when the
 //						item is selected.
 //			*target - Target panel of the command
@@ -293,7 +293,7 @@ int Menu::AddMenuItem( const char *itemText, Panel *target , const KeyValues *us
 //-----------------------------------------------------------------------------
 // Purpose: Add a checkable menu item to the menu.
 // Input  : *itemName - Name of item 
-//			*itemText - Name of item text that will appear in the manu.
+//			*itemText - Name of item text that will appear in the menu.
 //			*command -  Command text to be sent when menu item is selected	
 //			*target - Target panel of the command
 //-----------------------------------------------------------------------------
@@ -311,7 +311,7 @@ int Menu::AddCheckableMenuItem( const char *itemName, const wchar_t *wszItemText
 
 //-----------------------------------------------------------------------------
 // Purpose: Add a checkable menu item to the menu. 
-// Input  : *itemText - Name of item text that will appear in the manu.
+// Input  : *itemText - Name of item text that will appear in the menu.
 //						This will also be used as the name of the menu item panel.
 //			*command -  Command text to be sent when menu item is selected	
 //			*target - Target panel of the command
@@ -326,7 +326,7 @@ int Menu::AddCheckableMenuItem( const char *itemText, const char *command, Panel
 //-----------------------------------------------------------------------------
 // Purpose: Add a checkable menu item to the menu. 
 // Input  : *itemName - Name of item 
-//			*itemText - Name of item text that will appear in the manu.
+//			*itemText - Name of item text that will appear in the menu.
 //			*message - pointer to the message to send when the item is selected
 //			*target - Target panel of the command
 //			*cascadeMenu - if the menu item opens a cascading menu, this is a 
@@ -346,7 +346,7 @@ int Menu::AddCheckableMenuItem( const char *itemName, const wchar_t *wszItemText
 
 //-----------------------------------------------------------------------------
 // Purpose: Add a checkable menu item to the menu. 
-// Input  : *itemText - Name of item text that will appear in the manu.
+// Input  : *itemText - Name of item text that will appear in the menu.
 //						This will also be used as the name of the menu item panel.
 //			*message - pointer to the message to send when the item is selected
 //			*target - Target panel of the command
@@ -360,7 +360,7 @@ int Menu::AddCheckableMenuItem( const char *itemText, KeyValues *message, Panel 
 
 //-----------------------------------------------------------------------------
 // Purpose: Add a checkable menu item to the menu. 
-// Input  : *itemText - Name of item text that will appear in the manu.
+// Input  : *itemText - Name of item text that will appear in the menu.
 //						This will also be the text of the command sent when the
 //						item is selected.
 //			*target - Target panel of the command
@@ -375,7 +375,7 @@ int Menu::AddCheckableMenuItem( const char *itemText, Panel *target, const KeyVa
 //-----------------------------------------------------------------------------
 // Purpose: Add a Cascading menu item to the menu.
 // Input  : *itemName - Name of item 
-//			*itemText - Name of item text that will appear in the manu.
+//			*itemText - Name of item text that will appear in the menu.
 //			*command -  Command text to be sent when menu item is selected	
 //			*target - Target panel of the command
 //			*cascadeMenu - if the menu item opens a cascading menu, this is a 
@@ -395,7 +395,7 @@ int Menu::AddCascadingMenuItem( const char *itemName, const wchar_t *wszItemText
 
 //-----------------------------------------------------------------------------
 // Purpose: Add a Cascading menu item to the menu. 
-// Input  : *itemText - Name of item text that will appear in the manu.
+// Input  : *itemText - Name of item text that will appear in the menu.
 //						This will also be used as the name of the menu item panel.
 //			*command -  Command text to be sent when menu item is selected	
 //			*target - Target panel of the command
@@ -410,7 +410,7 @@ int Menu::AddCascadingMenuItem( const char *itemText, const char *command, Panel
 //-----------------------------------------------------------------------------
 // Purpose: Add a Cascading menu item to the menu. 
 // Input  : *itemName - Name of item 
-//			*itemText - Name of item text that will appear in the manu.
+//			*itemText - Name of item text that will appear in the menu.
 //			*message - pointer to the message to send when the item is selected
 //			*target - Target panel of the command
 //			*cascadeMenu - if the menu item opens a cascading menu, this is a 
@@ -430,7 +430,7 @@ int Menu::AddCascadingMenuItem( const char *itemName, const wchar_t *wszItemText
 
 //-----------------------------------------------------------------------------
 // Purpose: Add a Cascading menu item to the menu. 
-// Input  : *itemText - Name of item text that will appear in the manu.
+// Input  : *itemText - Name of item text that will appear in the menu.
 //						This will also be used as the name of the menu item panel.
 //			*message - pointer to the message to send when the item is selected
 //			*target - Target panel of the command
@@ -444,7 +444,7 @@ int Menu::AddCascadingMenuItem( const char *itemText, KeyValues *message, Panel 
 
 //-----------------------------------------------------------------------------
 // Purpose: Add a Cascading menu item to the menu. 
-// Input  : *itemText - Name of item text that will appear in the manu.
+// Input  : *itemText - Name of item text that will appear in the menu.
 //						This will also be the text of the command sent when the
 //						item is selected.
 //			*target - Target panel of the command
@@ -784,7 +784,7 @@ void Menu::PerformLayout()
 			m_VisibleSortedItems.AddToTail( itemID );
 		}
 
-		// Hide the separators, the needed ones will be readded below
+		// Hide the separators, the needed ones will be read below
 		c = m_SeparatorPanels.Count();
 		for ( i = 0; i < c; ++i )
 		{
@@ -953,7 +953,7 @@ void Menu::CalculateWidth()
 		}
 	}
 	
-	// enfoce a minimumWidth 
+	// enforce a minimumWidth 
 	if (_menuWide < m_iMinimumWidth)
 	{
 		_menuWide = m_iMinimumWidth;
@@ -1059,7 +1059,7 @@ void Menu::SizeMenuItems()
 		MenuItem *child = m_MenuItems[i];
 		if (child )
 		{
-			// labels do thier own sizing. this will size the label to the width of the menu,
+			// labels do their own sizing. this will size the label to the width of the menu,
 			// this will put the cascading menu arrow on the right side automatically.	
 			child->SetWide(_menuWide - ileft - iright);
 		}
@@ -1127,7 +1127,7 @@ void Menu::MakeItemsVisibleInScrollRange( int maxVisibleItems, int nNumPixelsAva
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: Get the approproate menu border
+// Purpose: Get the appropriate menu border
 //-----------------------------------------------------------------------------
 void Menu::LayoutMenuBorder()
 {
@@ -1268,6 +1268,7 @@ void Menu::OnKeyCodeTyped(KeyCode keycode)
 		{
 			// hide the menu on ESC
 			SetVisible(false);
+            BaseClass::OnKeyCodeTyped(keycode);
 			break;
 		}
 		// arrow keys scroll through items on the list.
@@ -2292,7 +2293,7 @@ void Menu::ClearCurrentlyHighlightedItem()
 //-----------------------------------------------------------------------------
 void Menu::SetCurrentlySelectedItem(int itemID)
 {
-	// dont deselect if its the same item
+	// don't deselect if its the same item
 	if (itemID == m_iCurrentlySelectedItemID)
 		return;
 
@@ -2306,7 +2307,7 @@ void Menu::SetCurrentlySelectedItem(int itemID)
 }
 
 //-----------------------------------------------------------------------------
-// This will set the item to be currenly selected and highlight it
+// This will set the item to be currently selected and highlight it
 // will not open cascading menu. This was added for comboboxes
 // to have the combobox item highlighted in the menu when they open the
 // dropdown.
@@ -2498,7 +2499,7 @@ int Menu::GetMenuMode()
 
 //-----------------------------------------------------------------------------
 // Purpose: Set the menu to key mode if a child menu goes into keymode
-// This mode change has to be chained up through the menu heirarchy
+// This mode change has to be chained up through the menu hierarchy
 // so cascading menus will work when you do a bunch of stuff in keymode
 // in high level menus and then switch to keymode in lower level menus.
 //-----------------------------------------------------------------------------
@@ -2524,7 +2525,7 @@ bool Menu::IsChecked(int itemID)
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: Set the minmum width the menu has to be. This
+// Purpose: Set the minimum width the menu has to be. This
 // is useful if you have a menu that is sized to the largest item in it
 // but you don't want the menu to be thinner than the menu button
 //-----------------------------------------------------------------------------
@@ -2534,7 +2535,7 @@ void Menu::SetMinimumWidth(int width)
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: Get the minmum width the menu
+// Purpose: Get the minimum width the menu
 //-----------------------------------------------------------------------------
 int Menu::GetMinimumWidth()
 {

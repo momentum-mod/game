@@ -111,7 +111,7 @@ int CEventAction::s_iNextIDStamp = 0;
 
 //-----------------------------------------------------------------------------
 // Purpose: Creates an event action and assigns it an unique ID stamp.
-// Input  : ActionData - the map file data block descibing the event action.
+// Input  : ActionData - the map file data block describing the event action.
 //-----------------------------------------------------------------------------
 CEventAction::CEventAction( const char *ActionData )
 {
@@ -655,7 +655,7 @@ CEventQueue::~CEventQueue()
 	Clear();
 }
 
-// Robin: Left here for backwards compatability.
+// Robin: Left here for backwards compatibility.
 class CEventQueueSaveLoadProxy : public CLogicalEntity
 {
 	DECLARE_CLASS( CEventQueueSaveLoadProxy, CLogicalEntity );
@@ -719,7 +719,7 @@ public:
 
 	void ReadRestoreHeaders( IRestore *pRestore )
 	{
-		// No reason why any future version shouldn't try to retain backward compatability. The default here is to not do so.
+		// No reason why any future version shouldn't try to retain backward compatibility. The default here is to not do so.
 		short version;
 		pRestore->ReadShort( &version );
 		m_fDoLoad = ( version == EVENTQUEUE_SAVE_RESTORE_VERSION );

@@ -59,7 +59,7 @@ public:
 
 	virtual bool OnOpenNewTab( const char *pchURL, bool bForeground ) { return false; }
 
-    // Called on this browser gettings a JS alert. 
+    // Called on this browser getting a JS alert. 
     // NOTE: If you override this, make sure to call DismissJSDialog()!!!
     virtual void OnJSAlert(HTML_JSAlert_t *pAlert);
     virtual void OnBrowserOpenNewTab(HTML_OpenLinkInNewTab_t *pCmd) {};

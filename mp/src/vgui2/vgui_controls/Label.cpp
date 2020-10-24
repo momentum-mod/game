@@ -79,6 +79,7 @@ Label::~Label()
 void Label::Init()
 {
     InitSettings();
+	m_bAutoClearImageDar = false;
 	_contentAlignment = a_west;
 	_textColorState = CS_NORMAL;
 	_textInset[0] = 0;
@@ -123,7 +124,6 @@ void Label::GetContentSize(int &wide, int &tall)
 		}
 	}
 
-
 	int tx0, ty0, tx1, ty1;
 	ComputeAlignment(tx0, ty0, tx1, ty1);
 
@@ -136,13 +136,15 @@ void Label::GetContentSize(int &wide, int &tall)
 	int iWide, iTall;
 	_textImage->GetSize(iWide, iTall);
 	wide -=  iWide;
-	// get the full, untruncated (no elipsis) size of the text image.
+	// get the full, untruncated (no ellipsis) size of the text image.
 	_textImage->GetContentSize(iWide, iTall);
 	wide += iWide;
 
 	// addin the image offsets as well
-	for (int i=0; i < _imageDar.Size(); i++)
+	for (int i = 0; i < _imageDar.Size(); i++)
+	{
 		wide += _imageDar[i].offset;
+	}
 
 	tall = max((ty1 - ty0) + _textInset[1], iTall);
 }
@@ -1003,17 +1005,20 @@ void Label::ApplySchemeSettings(IScheme *pScheme)
 
 	m_bAutoSizeDirty = m_bAutoWideToContents || m_bAutoTallToContents;
 
-	// clear out any the images, since they will have been invalidated
-	for (int i = 0; i < _imageDar.Count(); i++)
+	// clear out any the images (if we should), since they will have been invalidated
+	if (m_bAutoClearImageDar)
 	{
-		IImage *image = _imageDar[i].image;
-		if (!image)
-			continue; // skip over null images
+		for (int i = 0; i < _imageDar.Count(); i++)
+		{
+			IImage *image = _imageDar[i].image;
+			if (!image)
+				continue; // skip over null images
 
-		if (i == _textImageIndex)
-			continue;
+			if (i == _textImageIndex)
+				continue;
 
-		_imageDar[i].image = NULL;
+			_imageDar[i].image = nullptr;
+		}
 	}
 
 	SetDisabledFgColor1(GetSchemeColor("Label.DisabledFgColor1", pScheme));
@@ -1295,7 +1300,7 @@ void Label::PerformLayout()
 	}
 
 	// assume the images in the dar cannot be resized, and if
-	// the images + the textimage are too wide we shring the textimage part
+	// the images + the textimage are too wide we shrink the textimage part
 	if (_textImageIndex < 0)
 		return;
 	

@@ -262,7 +262,7 @@ const char *CConsolePanel::CompletionItem::GetCommand( void ) const
 
 
 //-----------------------------------------------------------------------------
-// Purpose: Constructor, destuctor
+// Purpose: Constructor, destructor
 //-----------------------------------------------------------------------------
 CConsolePanel::CConsolePanel( vgui::Panel *pParent, const char *pName ) : BaseClass( pParent, pName )
 {
@@ -542,7 +542,7 @@ void CConsolePanel::RebuildCompletionList(const char *text)
 
 void CConsolePanel::SubmitCommand()
 {
-	// submit the entry as a console commmand
+	// submit the entry as a console command
 	char szCommand[256];
 	m_pEntry->GetText(szCommand, sizeof(szCommand));
 
@@ -978,7 +978,7 @@ void CConsolePanel::DumpConsoleTextToFile()
 			int len = strlen(ansi);
 			for (int i = 0; i < len; i++)
 			{
-				// preceed newlines with a return
+				// precede newlines with a return
 				if (ansi[i] == '\n')
 				{
 					char ret = '\r';
@@ -1025,6 +1025,8 @@ CConsoleDialog::CConsoleDialog( vgui::Panel *pParent, const char *pName ) : Base
 	m_pConsolePanel->AddActionSignalTarget( this );
 
 	LoadControlSettings("resource/ui/ConsoleDialog.res");
+
+	SetClipToParent(true);
 }
 
 void CConsoleDialog::SizeToScreen()

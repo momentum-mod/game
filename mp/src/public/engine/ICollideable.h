@@ -30,7 +30,7 @@ public:
 	virtual IHandleEntity	*GetEntityHandle() = 0;
 
 	// These methods return the bounds of an OBB measured in "collision" space
-	// which can be retreived through the CollisionToWorldTransform or
+	// which can be retrieved through the CollisionToWorldTransform or
 	// GetCollisionOrigin/GetCollisionAngles methods
 	virtual const Vector&	OBBMinsPreScaled() const = 0;
 	virtual const Vector&	OBBMaxsPreScaled() const = 0;

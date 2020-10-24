@@ -170,7 +170,7 @@ enum GetNavAreaFlags_t
 
 
 //--------------------------------------------------------------------------------------------------------
-// for nav mesh visibilty computation
+// for nav mesh visibility computation
 struct NavVisPair_t
 {
 	void SetPair( CNavArea *pArea1, CNavArea *pArea2 )
@@ -185,7 +185,7 @@ struct NavVisPair_t
 };
 
 
-// for nav mesh visibilty computation
+// for nav mesh visibility computation
 class CVisPairHashFuncs
 {
 public:
@@ -1005,7 +1005,7 @@ public:
 	/**
 	 * Use the functor to test if an area is needing stitching into the existing nav mesh.
 	 * The functor is different from how we normally use functors - it does no processing,
-	 * and it's return value is true if the area is in the new set to be stiched, and false
+	 * and it's return value is true if the area is in the new set to be stitched, and false
 	 * if it's a pre-existing area.
 	 */
 	template < typename Functor >
@@ -1120,7 +1120,7 @@ private:
 	bool m_splitAlongX;											// direction the selected nav area would be split
 	float m_splitEdge;											// location of the possible split
 
-	bool m_climbableSurface;									// if true, the cursor is pointing at a climable surface
+	bool m_climbableSurface;									// if true, the cursor is pointing at a climbable surface
 	Vector m_surfaceNormal;										// Normal of the surface the cursor is pointing at
 	Vector m_ladderAnchor;										// first corner of a ladder being created
 	Vector m_ladderNormal;										// Normal of the surface of the ladder being created
@@ -1166,7 +1166,7 @@ private:
 	void CreateNavAreasFromNodes( void );						// cover all of the sampled nodes with nav areas
 
 	bool TestArea( CNavNode *node, int width, int height );		// check if an area of size (width, height) can fit, starting from node as upper left corner
-	int BuildArea( CNavNode *node, int width, int height );		// create a CNavArea of size (width, height) starting fom node at upper left corner
+	int BuildArea( CNavNode *node, int width, int height );		// create a CNavArea of size (width, height) starting from node at upper left corner
 	bool CheckObstacles( CNavNode *node, int width, int height, int x, int y );
 
 	void MarkPlayerClipAreas( void );

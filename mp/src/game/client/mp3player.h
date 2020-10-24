@@ -353,7 +353,7 @@ private:
 	int						m_nSongGuid;
 // Song start  time
 	float					m_SongStart;
-// Estimated song diration
+// Estimated song duration
 	float					m_flSongDuration;
 // For the UI
 	int						m_nSongMinutes;

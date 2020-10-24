@@ -17,17 +17,13 @@ public:
 protected:
     void OnCheckboxChecked(Panel *panel) override;
     void OnTextChanged(Panel *panel, const char *text) override;
-    void OnSetFocus() override { OnPageShow(); }
+    void OnMainDialogClosed() override;
 
     // Comparisons panel; listening for when we hover a comparison setting for blinking
     MESSAGE_FUNC_PTR(CursorEnteredCallback, "OnCursorEntered", panel);
     MESSAGE_FUNC_PTR(CursorExitedCallback, "OnCursorExited", panel);
 
 private:
-    // speedo helper methods
-    SpeedometerLabel *GetSpeedoLabelFromType();
-    void LoadSpeedoSetup();
-
     vgui::CvarComboBox *m_pSyncType, *m_pSyncColorize;
 
     vgui::CvarToggleCheckButton *m_pHUDSyncShow, *m_pSyncShowBar, *m_pButtonsShow, *m_pShowVersion, *m_pTimerShow, *m_pTimerSoundFailEnable,

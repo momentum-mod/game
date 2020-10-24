@@ -1,0 +1,10 @@
+SpriteCard
+{
+	$basetexture	effects/circle
+	$additive	    1
+	$vertexcolor	1
+	$vertexalpha	1
+    $ignorez        0
+    $depthBlendScale 1
+    $depthBlend     0
+}

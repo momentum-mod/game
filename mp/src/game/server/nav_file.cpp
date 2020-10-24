@@ -986,7 +986,7 @@ const char *CNavMesh::GetFilename( void ) const
 	char gamePath[256];
 	engine->GetGameDir( gamePath, 256 );
 
-	// persistant return value
+	// persistent return value
 	static char filename[256];
 	Q_snprintf( filename, sizeof( filename ), "%s\\" FORMAT_NAVFILE, gamePath, STRING( gpGlobals->mapname ) );
 

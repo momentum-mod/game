@@ -495,7 +495,7 @@ side_t *FindOriginalSide( mapbrush_t *mb, side_t *pBspSide )
 
 	if ( !bestside )
 	{
-		Error( "Bad detail brush side\n" );
+       Error( "Bad detail brush side, brush ID = %d\n", mb->id);
 	}
 	return bestside;
 }

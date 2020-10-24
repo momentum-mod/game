@@ -98,7 +98,7 @@ public:
 	// Signal the event.
 	bool SetEvent();
 
-	// Unset the event's signalled status.
+	// Unset the event's signaled status.
 	bool ResetEvent();
 
 

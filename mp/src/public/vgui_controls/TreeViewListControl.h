@@ -56,7 +56,7 @@ public:
 
 	// Use this to find out the client area to render in for each grid element.
 	// The returned box is inclusive.
-	// The rule is that the the top and left pixels in each grid element are reserved for lines.
+	// The rule is that the top and left pixels in each grid element are reserved for lines.
 	virtual void GetGridElementBounds( int iColumn, int iRow, int &left, int &top, int &right, int &bottom );
 
 	virtual vgui::TreeView *GetTree();

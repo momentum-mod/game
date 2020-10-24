@@ -1004,7 +1004,7 @@ bool CAI_BaseNPC::FindCoverFromBestSound( Vector *pCoverPos )
 	}
 	else
 	{
-		DevMsg( 2, "Attempting to find cover from best sound, but best sound not founc.\n" );
+		DevMsg( 2, "Attempting to find cover from best sound, but best sound not found.\n" );
 	}
 	
 	return false;
@@ -1520,7 +1520,7 @@ void CAI_BaseNPC::StartTask( const Task_t *pTask )
 			}
 			else
 			{
-				// no coverwhatsoever.
+				// no cover whatsoever.
 				TaskFail(FAIL_NO_COVER);
 			}
 		}
@@ -2252,7 +2252,7 @@ void CAI_BaseNPC::StartTask( const Task_t *pTask )
 		}
 		else
 		{
-			// no coverwhatsoever.
+			// no cover whatsoever.
 			TaskFail(FAIL_NO_SHOOT);
 		}
 		break;
@@ -2435,7 +2435,7 @@ void CAI_BaseNPC::StartTask( const Task_t *pTask )
 		}
 
 
-	case TASK_GET_PATH_TO_RANDOM_NODE:  // Task argument is lenth of path to build
+	case TASK_GET_PATH_TO_RANDOM_NODE:  // Task argument is length of path to build
 		{
 			if ( GetNavigator()->SetRandomGoal( pTask->flTaskData ) )
 				TaskComplete();
@@ -3765,7 +3765,7 @@ void CAI_BaseNPC::RunTask( const Task_t *pTask )
 					}
 					else
 					{
-						// no coverwhatsoever.
+						// no cover whatsoever.
 						TaskFail(FAIL_NO_ROUTE);
 					}
 				}
@@ -4597,7 +4597,7 @@ int CAI_BaseNPC::SelectDeadSchedule()
 		return SCHED_DIE_RAGDOLL;
 	}
 
-	// Adrian - Alread dead (by animation event maybe?)
+	// Adrian - Already dead (by animation event maybe?)
 	// Is it safe to set it to SCHED_NONE?
 	if ( m_lifeState == LIFE_DEAD )
 		 return SCHED_NONE;

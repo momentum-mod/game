@@ -49,7 +49,7 @@ public:
 
 	//-----------------------------------------------------------------------------
 	// True if the current machine is detected as big endian. 
-	// (Endienness is effectively detected at compile time when optimizations are
+	// (Endianness is effectively detected at compile time when optimizations are
 	// enabled)
 	//-----------------------------------------------------------------------------
 	static bool IsMachineBigEndian()
@@ -80,7 +80,7 @@ public:
 		m_bBigEndian = !m_bBigEndian;
 	}
 
-	// Forces byte swapping state, regardless of endianess
+	// Forces byte swapping state, regardless of endianness
 	inline void ActivateByteSwapping( bool bActivate )	
 	{
 		SetTargetBigEndian( IsMachineBigEndian() != bActivate );
@@ -105,7 +105,7 @@ public:
 	// IsByteSwapped()
 	//
 	// When supplied with a chunk of input data and a constant or magic number
-	// (in native format) determines the endienness of the current machine in
+	// (in native format) determines the endianness of the current machine in
 	// relation to the given input data.
 	//
 	// Returns:
@@ -182,7 +182,7 @@ public:
 			inputBuffer = outputBuffer;
 		}
 
-		// Are we already the correct endienness? ( or are we swapping 1 byte items? )
+		// Are we already the correct endianness? ( or are we swapping 1 byte items? )
 		if( !m_bSwapBytes || ( sizeof(T) == 1 ) )
 		{
 			// If we were just going to swap in place then return.

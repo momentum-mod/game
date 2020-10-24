@@ -19,6 +19,7 @@
 
 #include "clientmode.h"
 #include "ienginevgui.h"
+#include "mom_shareddefs.h"
 
 #include "tier0/memdbgon.h"
 
@@ -71,7 +72,7 @@ private:
     int m_iSpacingX;
 };
 
-
+static MAKE_TOGGLE_CONVAR(mom_settings_remember_tab, "1", FCVAR_ARCHIVE, "Toggles remembering the last opened tab in settings. 0 = OFF, 1 = ON.\n");
 static CMomentumSettingsDialog *g_pSettingsDialog = nullptr;
 
 CMomentumSettingsDialog::CMomentumSettingsDialog() : BaseClass(nullptr, "SettingsDialog")
@@ -110,11 +111,9 @@ CMomentumSettingsDialog::CMomentumSettingsDialog() : BaseClass(nullptr, "Setting
     m_pScrollableSettingsPanel = new ScrollableEditablePanel(this, nullptr, "CurrentSettings");
 
     m_pInputButton = new Button(this, "InputButton", "#MOM_Settings_Input", this, "Input");
-    m_pInputButton->SetStaySelectedOnClick(true);
     m_pButtonGroup->AddPanelToGroup(m_pInputButton);
 
     m_pAudioButton = new Button(this, "AudioButton", "#MOM_Settings_Audio", this, "Audio");
-    m_pInputButton->SetStaySelectedOnClick(true);
     m_pButtonGroup->AddPanelToGroup(m_pAudioButton);
 
     m_pVideoButton = new Button(this, "VideoButton", "#MOM_Settings_Video", this, "Video");
@@ -133,11 +132,17 @@ CMomentumSettingsDialog::CMomentumSettingsDialog() : BaseClass(nullptr, "Setting
     SetVisible(false);
 
     m_pInputPage = new InputSettingsPanel(m_pScrollableSettingsPanel, m_pInputButton);
+    AddActionSignalTarget(m_pInputPage);
     m_pAudioPage = new AudioSettingsPanel(m_pScrollableSettingsPanel, m_pAudioButton);
+    AddActionSignalTarget(m_pAudioPage);
     m_pVideoPage = new VideoSettingsPanel(m_pScrollableSettingsPanel, m_pVideoButton);
+    AddActionSignalTarget(m_pVideoPage);
     m_pOnlinePage = new OnlineSettingsPanel(m_pScrollableSettingsPanel, m_pOnlineButton);
+    AddActionSignalTarget(m_pOnlinePage);
     m_pGameplayPage = new GameplaySettingsPanel(m_pScrollableSettingsPanel, m_pGameplayButton);
+    AddActionSignalTarget(m_pGameplayPage);
     m_pHUDPage = new HUDSettingsPanel(m_pScrollableSettingsPanel, m_pHUDButton);
+    AddActionSignalTarget(m_pHUDPage);
 
     SetActivePanel(m_pInputPage);
 }
@@ -162,6 +167,8 @@ void CMomentumSettingsDialog::OnClose()
 
     engine->ClientCmd_Unrestricted("exec userconfig.cfg\nhost_writeconfig\n");
 
+    PostActionSignal(new KeyValues("MainDialogClosed"));
+
     BaseClass::OnClose();
 }
 
@@ -169,7 +176,7 @@ void CMomentumSettingsDialog::Activate()
 {
     BaseClass::Activate();
 
-    SetActivePanel(m_pInputPage);
+    SetActivePanel(mom_settings_remember_tab.GetBool() ? m_pCurrentSettingsPage : m_pInputPage);
 }
 
 void CMomentumSettingsDialog::OnThink()

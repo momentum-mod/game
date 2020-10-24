@@ -50,7 +50,7 @@ public:
 	virtual void GetContentSize(int &wide, int &tall);
 
 	// Set how the content aligns itself within the label
-	// alignment code, used to determine how the images are layed out within the Label
+	// alignment code, used to determine how the images are laid out within the Label
 	enum Alignment
 	{
 		a_northwest = 0,
@@ -117,7 +117,7 @@ public:
 	// fixes the layout bounds of the image within the label
 	virtual void SetImageBounds(int index, int x, int width);
 
-	// Teturns a pointer to the default text image
+	// Returns a pointer to the default text image
 	virtual TextImage *GetTextImage();
 
 	// Moves where the default text image is within the image array (it starts in position 0)
@@ -160,6 +160,8 @@ public:
     void SetAutoTall(bool bTall);
     void InvalidateLayout(bool layoutNow = false, bool reloadScheme = false) OVERRIDE;
 
+	void SetAutoClearImages(bool bClear) { m_bAutoClearImageDar = bClear; }
+
 protected:
 	virtual void PerformLayout();
 	virtual wchar_t CalculateHotkey(const char *text);
@@ -190,7 +192,7 @@ private:
 
 	Alignment  _contentAlignment;
 	TextImage *_textImage; // this is the textImage, if the full text will not
-							// fit we put as much as we can and add an elipsis (...)
+							// fit we put as much as we can and add an ellipsis (...)
 	struct TImageInfo
 	{
 		IImage *image;
@@ -199,6 +201,7 @@ private:
 		short width;
 	};
 	CUtlVector<TImageInfo> _imageDar;
+	bool m_bAutoClearImageDar;
 
 	int		   _textInset[2];
 	Color      _disabledFgColor1;

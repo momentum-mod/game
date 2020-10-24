@@ -392,7 +392,7 @@ static void ComputeConvexHullLeaves_R( int node, int depth, int* pNodeList,
 		else if (DotProduct( pPlane->normal, cornermin ) >= pPlane->dist)
 		{
 			// In this case, we are going in front of the plane. That means that
-			// this plane must have an outward normal facing in the oppisite direction
+			// this plane must have an outward normal facing in the opposite direction
 			// We indicate this be storing a negative node index in the node list
 			pNodeList[depth] = - node - 1;
 			++depth;

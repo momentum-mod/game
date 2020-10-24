@@ -1,0 +1,5 @@
+Spritecard
+{
+	$basetexture    effects/glow
+	$additive       1
+}

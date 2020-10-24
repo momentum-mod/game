@@ -7,10 +7,15 @@
 #include "filesystem.h"
 #include "movevars_shared.h"
 #include "mom_system_gamemode.h"
+#include "run/mom_run_safeguards.h"
 
-#ifndef CLIENT_DLL
+#ifdef CLIENT_DLL
+#include "MessageboxPanel.h"
+#include "gameui/BaseMenuPanel.h"
+#else
 #include "momentum/mapzones.h"
 #include "momentum/mom_player.h"
+#include "momentum/mom_system_tricks.h"
 #endif
 
 #include "tier0/memdbgon.h"
@@ -65,13 +70,47 @@ static CViewVectors g_ViewVectorsAhop(Vector(0, 0, 64),      // eye position
                                       Vector(0, 0, 14)       // dead view height
 );
 
+static CViewVectors g_ViewVectorsParkour(Vector(0, 0, 60),      // eye position
+                                         Vector(-16, -16, 0),   // hull min
+                                         Vector(16, 16, 72),    // hull max
+
+                                         Vector(-16, -16, 0),   // duck hull min
+                                         Vector(16, 16, 47),    // duck hull max
+                                         Vector(0, 0, 38),      // duck view
+
+                                         Vector(-10, -10, -10), // observer hull min
+                                         Vector(10, 10, 10),    // observer hull max
+
+                                         Vector(0, 0, 14)       // dead view height
+);
+
+static CViewVectors g_ViewVectorsConc(Vector(0, 0, 64),      // eye position
+                                      Vector(-16, -16, 0),   // hull min
+                                      Vector(16, 16, 72),    // hull max
+
+                                      Vector(-16, -16, 0),   // duck hull min
+                                      Vector(16, 16, 36),    // duck hull max
+                                      Vector(0, 0, 24),      // duck view
+
+                                      Vector(-10, -10, -10), // observer hull min
+                                      Vector(10, 10, 10),    // observer hull max
+
+                                      Vector(0, 0, 14)       // dead view height
+);
+
 const CViewVectors *CMomentumGameRules::GetViewVectors() const
 {
     if (g_pGameModeSystem->IsTF2BasedMode())
         return &g_ViewVectorsTF2;
 
+    if(g_pGameModeSystem->GameModeIs(GAMEMODE_CONC))
+        return &g_ViewVectorsConc;
+
     if (g_pGameModeSystem->GameModeIs(GAMEMODE_AHOP))
         return &g_ViewVectorsAhop;
+
+    if (g_pGameModeSystem->GameModeIs(GAMEMODE_PARKOUR))
+        return &g_ViewVectorsParkour;
 
     return &g_ViewVectorsMom;
 }
@@ -108,11 +147,47 @@ bool CMomentumGameRules::ShouldCollide(int collisionGroup0, int collisionGroup1)
     return BaseClass::ShouldCollide(collisionGroup0, collisionGroup1);
 }
 
-#ifndef CLIENT_DLL
+#ifdef CLIENT_DLL
+
+bool CMomentumGameRules::PreventDisconnectAttempt()
+{
+    if (g_pRunSafeguards->IsSafeguarded(RUN_SAFEGUARD_QUIT_TO_MENU))
+    {
+        g_pMessageBox->CreateConfirmationBox(g_pBasePanel->GetMainMenu(), "#MOM_MB_Safeguard_Map_Quit_ToMenu_Title", "#MOM_MB_Safeguard_Map_Quit_ToMenu_Msg", new KeyValues("ConfirmDisconnect"), nullptr, "#GameUI_Disconnect", "#GameUI_Cancel");
+
+        return true;
+    }
+
+    return false;
+}
+
+#else
 LINK_ENTITY_TO_CLASS(info_player_terrorist, CPointEntity);
 LINK_ENTITY_TO_CLASS(info_player_counterterrorist, CPointEntity);
 LINK_ENTITY_TO_CLASS(info_player_logo, CPointEntity);
 LINK_ENTITY_TO_CLASS(info_player_teamspawn, CPointEntity);
+
+static MAKE_TOGGLE_CONVAR(__map_change_ok, "0", FCVAR_HIDDEN | FCVAR_CLIENTCMD_CAN_EXECUTE, "");
+
+bool CMomentumGameRules::IsManualMapChangeOkay(const char **pszReason)
+{
+    if (g_pRunSafeguards->IsSafeguarded(RUN_SAFEGUARD_MAP_CHANGE) && !__map_change_ok.GetBool())
+    {
+        CSingleUserRecipientFilter filter(UTIL_GetLocalPlayer());
+        filter.MakeReliable();
+
+        UserMessageBegin(filter, "MB_Safeguard_Map_Change");
+        MessageEnd();
+
+        *pszReason = "You currently safeguard against changing maps while the timer is running.";
+
+        return false;
+    }
+
+    __map_change_ok.SetValue(0);
+
+    return true;
+}
 
 Vector CMomentumGameRules::DropToGround(CBaseEntity *pMainEnt, const Vector &vPos, const Vector &vMins,
                                         const Vector &vMaxs)
@@ -124,7 +199,7 @@ Vector CMomentumGameRules::DropToGround(CBaseEntity *pMainEnt, const Vector &vPo
 
 CBaseEntity *CMomentumGameRules::GetPlayerSpawnSpot(CBasePlayer *pPlayer)
 {
-    // gat valid spwan point
+    // get valid spawn point
     if (pPlayer)
     {
         CBaseEntity *pSpawnSpot = pPlayer->EntSelectSpawnPoint();
@@ -164,18 +239,22 @@ void CMomentumGameRules::ClientCommandKeyValues(edict_t *pEntity, KeyValues *pKe
 {
     BaseClass::ClientCommandKeyValues(pEntity, pKeyValues);
 
-    if (FStrEq(pKeyValues->GetName(), "NoZones"))
+    if (FStrEq(pKeyValues->GetName(), TRICK_DATA_KEY))
+    {
+        g_pTrickSystem->LoadTrickDataFromFile(pKeyValues);
+    }
+    else if (FStrEq(pKeyValues->GetName(), "NoZones"))
     {
         // Load if they're available in a file
         g_MapZoneSystem.LoadZonesFromFile();
     }
     else if (FStrEq(pKeyValues->GetName(), "ZonesFromSite"))
     {
-        if (pKeyValues->FindKey("tracks"))
+        const auto pTrackPtr = pKeyValues->GetPtr("tracks");
+        if (pTrackPtr)
         {
-            KeyValuesAD pTracks(static_cast<KeyValues *>(pKeyValues->GetPtr("tracks")));
-            // Zones loaded, pass them through
-            g_MapZoneSystem.LoadZonesFromSite(pTracks, CBaseEntity::Instance(pEntity));
+            KeyValuesAD pData(static_cast<KeyValues *>(pTrackPtr));
+            g_MapZoneSystem.LoadZonesFromSite(pData, CBaseEntity::Instance(pEntity));
         }
     }
 }
@@ -237,8 +316,7 @@ void CMomentumGameRules::RunPointServerCommandWhitelisted(const char *pCmd)
 static char* const g_szWhitelistedClientCmds[] = {
     "r_screenoverlay",
     "play",
-    "playgamesound",
-    "disconnect",    // for credits
+    "playgamesound"
 };
 
 void CMomentumGameRules::RunPointClientCommandWhitelisted(edict_t* pClient, const char* pCmd)
@@ -274,10 +352,7 @@ void CMomentumGameRules::PlayerSpawn(CBasePlayer *pPlayer)
 {
     if (pPlayer)
     {
-        ConVarRef map("host_map");
-        const char *pMapName = map.GetString();
-
-        if (gpGlobals->eLoadType == MapLoad_Background || !Q_strcmp(pMapName, "credits"))
+        if (gpGlobals->eLoadType == MapLoad_Background)
         {
             // Hide HUD on background maps
             pPlayer->m_Local.m_iHideHUD |= HIDEHUD_ALL;
@@ -299,15 +374,16 @@ void CMomentumGameRules::PlayerSpawn(CBasePlayer *pPlayer)
     }
 }
 
-bool CMomentumGameRules::AllowDamage(CBaseEntity *pVictim, const CTakeDamageInfo &info) 
+bool CMomentumGameRules::AllowDamage(CBaseEntity *pVictim, const CTakeDamageInfo &info)
 {
     // Allow self damage from rockets, generic bombs and stickies
     if (pVictim == info.GetAttacker() && (FClassnameIs(info.GetInflictor(), "momentum_rocket") ||
                                           FClassnameIs(info.GetInflictor(), "momentum_generic_bomb") ||
-                                          FClassnameIs(info.GetInflictor(), "momentum_stickybomb")))
+                                          FClassnameIs(info.GetInflictor(), "momentum_stickybomb")) ||
+                                          FClassnameIs(info.GetInflictor(), "momentum_concgrenade"))
         return true;
 
-    return !pVictim->IsPlayer(); 
+    return !pVictim->IsPlayer();
 }
 
 void CMomentumGameRules::RadiusDamage(const CTakeDamageInfo &info, const Vector &vecSrc, float flRadius, int iClassIgnore, CBaseEntity *pEntityIgnore)
@@ -350,11 +426,23 @@ void CMomentumGameRules::RadiusDamage(const CTakeDamageInfo &info, const Vector 
     {
         CBaseEntity *pInflictor = info.GetInflictor();
 
-        if (g_pGameModeSystem->GameModeIs(GAMEMODE_RJ))
+        if (FClassnameIs(pInflictor, "momentum_rocket"))
         {
-            if (FClassnameIs(pInflictor, "momentum_rocket"))
+            if (g_pGameModeSystem->GameModeIs(GAMEMODE_RJ))
             {
                 flRadius = 121.0f; // Rocket self-damage radius is 121.0f
+            }
+            else if (g_pGameModeSystem->GameModeIs(GAMEMODE_DEFRAG))
+            {
+                flRadius = 120.0f;
+            }
+        }
+
+        if (g_pGameModeSystem->GameModeIs(GAMEMODE_CONC))
+        {
+            if(FClassnameIs(pInflictor, "momentum_concgrenade"))
+            {
+                flRadius = 280.0f;
             }
         }
 
@@ -504,7 +592,7 @@ void InitBodyQue(void)
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: make a body que entry for the given ent so the ent can be respawned elsewhere
+// Purpose: make a body queue entry for the given ent so the ent can be respawned elsewhere
 // GLOBALS ASSUMED SET:  g_eoBodyQueueHead
 //-----------------------------------------------------------------------------
 void CopyToBodyQue(CBaseAnimating *pCorpse)
@@ -528,7 +616,7 @@ void CopyToBodyQue(CBaseAnimating *pCorpse)
     g_pBodyQueueHead = static_cast<CCorpse *>(pHead->GetOwnerEntity());
 }
 
-// Overidden for FOV changes
+// Overridden for FOV changes
 void CMomentumGameRules::ClientSettingsChanged(CBasePlayer *pPlayer)
 {
     const char *pszName = engine->GetClientConVarValue(pPlayer->entindex(), "name");
@@ -580,15 +668,4 @@ ConVar fov_desired("fov_desired", "90", FCVAR_ARCHIVE | FCVAR_USERINFO, "Sets th
     true, 179.0, FovChanged);
 
 int CMomentumGameRules::DefaultFOV() { return fov_desired.GetInt(); }
-
-// override so it we can control who is "spec" from hud_chat instead of the server ...
-const char *CMomentumGameRules::GetChatPrefix(bool bTeamOnly, CBasePlayer *pPlayer)
-{
-    if (pPlayer && pPlayer->IsAlive() == false)
-    {
-        return "*SPEC*";
-    }
-
-    return "";
-}
 #endif

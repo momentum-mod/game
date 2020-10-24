@@ -121,7 +121,7 @@ void CMOMSpectatorGUI::OnMousePressed(MouseCode code)
         if (over == m_pCloseButton->GetVPanel())
         {
             SetMouseInputEnabled(false);
-            engine->ClientCmd("mom_spectate_stop"); //in case the entitiy recieving this event does not exist..
+            engine->ClientCmd("mom_spectate_stop"); //in case the entity receiving this event does not exist..
         }
         else if (over == m_pShowControls->GetVPanel() && m_pReplayControls)
         {

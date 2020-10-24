@@ -266,7 +266,7 @@ int CAI_BaseNPC::TranslateSchedule( int scheduleType )
 
 	switch( scheduleType )
 	{
-	// Hande some special cases
+	// Handle some special cases
 	case SCHED_AISCRIPT:
 		{
 			Assert( m_hCine != NULL );

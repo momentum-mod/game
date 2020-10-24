@@ -254,7 +254,7 @@ public:
 	virtual void		PlaybackTempEntity( IRecipientFilter& filter, float delay, const void *pSender, const SendTable *pST, int classID  ) = 0;
 	// Given a node number and the specified PVS, return with the node is in the PVS
 	virtual int			CheckHeadnodeVisible( int nodenum, const byte *pvs, int vissize ) = 0;
-	// Using area bits, cheeck whether area1 flows into area2 and vice versa (depends on area portal state)
+	// Using area bits, check whether area1 flows into area2 and vice versa (depends on area portal state)
 	virtual int			CheckAreasConnected( int area1, int area2 ) = 0;
 	// Given an origin, determine which area index the origin is within
 	virtual int			GetArea( const Vector &origin ) = 0;
@@ -333,12 +333,12 @@ public:
 	virtual void		NotifyEdictFlagsChange( int iEdict ) = 0;
 	
 	// Only valid during CheckTransmit. Also, only the PVS, networked areas, and
-	// m_pTransmitInfo are valid in the returned strucutre.
+	// m_pTransmitInfo are valid in the returned structure.
 	virtual const CCheckTransmitInfo* GetPrevCheckTransmitInfo( edict_t *pPlayerEdict ) = 0;
 	
 	virtual CSharedEdictChangeInfo* GetSharedEdictChangeInfo() = 0;
 
-	// Tells the engine we can immdiately re-use all edict indices
+	// Tells the engine we can immediately re-use all edict indices
 	// even though we may not have waited enough time
 	virtual void			AllowImmediateEdictReuse( ) = 0;
 
@@ -608,7 +608,7 @@ public:
 	                                                                 float *flProgress = NULL ) = 0;
 
 	// Ask the game DLL to evaluate what it would do with this map name were it passed to PrepareLevelResources.
-	// NOTE That this is this is syncronous and non-blocking, so it is possible that async PrepareLevelResources call
+	// NOTE That this is this is synchronous and non-blocking, so it is possible that async PrepareLevelResources call
 	//      may be able to pull a better match than is immediately available to this call (e.g. blocking lookups of
 	//      cloud maps)
 	enum eCanProvideLevelResult {

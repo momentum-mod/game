@@ -29,7 +29,6 @@
 #include "c_rope.h"
 #include "engine/ishadowmgr.h"
 #include "engine/IStaticPropMgr.h"
-#include "hud_basechat.h"
 #include "hud_crosshair.h"
 #include "view_shared.h"
 #include "env_wind_shared.h"
@@ -139,7 +138,7 @@
 #include "PortalRender.h"
 #endif
 
-#include "GameUI_Interface.h"
+#include "gameui/BaseMenuPanel.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -382,6 +381,11 @@ public:
 	const char *GetHolidayString()
 	{
 		return UTIL_GetActiveHolidayString();
+	}
+
+	vgui::VPANEL GetBasePanel() override
+	{
+	    return g_pBasePanel->GetVPanel();
 	}
 };
 
@@ -2426,13 +2430,7 @@ const char* CHLClient::TranslateEffectForVisionFilter( const char *pchEffectType
 
 bool CHLClient::DisconnectAttempt( void )
 {
-	bool bRet = false;
-
-#if defined( TF_CLIENT_DLL )
-	bRet = HandleDisconnectAttempt();
-#endif
-
-	return bRet;
+	return GameRules()->PreventDisconnectAttempt();
 }
 
 bool CHLClient::IsConnectedUserInfoChangeAllowed( IConVar *pCvar )

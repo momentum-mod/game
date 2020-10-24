@@ -1,4 +1,4 @@
-﻿#include "cbase.h"
+#include "cbase.h"
 
 #include "hudelement.h"
 #include "iclientmode.h"
@@ -6,7 +6,6 @@
 #include "input.h"
 
 #include <vgui/ILocalize.h>
-#include <vgui/IScheme.h>
 #include <vgui/ISurface.h>
 #include <vgui_controls/Frame.h>
 #include <vgui_controls/Panel.h>
@@ -39,18 +38,12 @@ class CHudKeyPressDisplay : public CHudElement, public Panel
 
     CHudKeyPressDisplay(const char *pElementName);
 
-    bool ShouldDraw() OVERRIDE;
-    void OnThink() OVERRIDE;
-    void Paint() OVERRIDE;
-    void Init() OVERRIDE;
-    void Reset() OVERRIDE;
+    bool ShouldDraw() override;
+    void OnThink() override;
+    void Paint() override;
+    void Init() override;
+    void Reset() override;
     void DrawKeyTemplates();
-
-    void ApplySchemeSettings(IScheme *pScheme) OVERRIDE
-    {
-        Panel::ApplySchemeSettings(pScheme);
-        SetBgColor(Color(0, 0, 0, 1)); // empty background, 1 alpha (out of 255) so game text doesnt obscure our text
-    }
 
   protected:
     CPanelAnimationVar(HFont, m_hTextFont, "TextFont", "Default");
@@ -73,6 +66,7 @@ class CHudKeyPressDisplay : public CHudElement, public Panel
     int GetTextCenter(HFont font, wchar_t *wstring);
 
     bool m_bIsDucked;
+    int m_nButtonsToggled;
     int m_nButtons, m_nDisabledButtons, m_nJumps;
     uint32 m_nStrafes;
     bool m_bShouldDrawCounts;
@@ -204,7 +198,7 @@ void CHudKeyPressDisplay::Paint()
     // reset text font for jump/duck
     surface()->DrawSetTextFont(m_hWordTextFont);
 
-    if (nButtons & IN_JUMP || gpGlobals->curtime < m_fJumpColorUntil)
+    if (nButtons & IN_JUMP || m_nButtonsToggled & IN_JUMP || gpGlobals->curtime < m_fJumpColorUntil)
     {
         if (nButtons & IN_JUMP)
         {
@@ -216,7 +210,7 @@ void CHudKeyPressDisplay::Paint()
         surface()->DrawPrintText(STR_JUMP, 4);
     }
 
-    if (nButtons & IN_DUCK || m_bIsDucked || gpGlobals->curtime < m_fDuckColorUntil)
+    if (nButtons & IN_DUCK || m_nButtonsToggled & IN_DUCK || m_bIsDucked || gpGlobals->curtime < m_fDuckColorUntil)
     {
         if (nButtons & IN_DUCK)
         {
@@ -228,7 +222,7 @@ void CHudKeyPressDisplay::Paint()
     }
 
     if (g_pGameModeSystem->GetGameMode()->HasCapability(GameModeHUDCapability_t::CAP_HUD_KEYPRESS_WALK)
-        && (nButtons & IN_WALK))
+        && (nButtons & IN_WALK || m_nButtonsToggled & IN_WALK))
     {
         CHECK_INPUT_P(IN_WALK);
         surface()->DrawSetTextPos(GetTextCenter(m_hWordTextFont, STR_WALK), walk_row_ypos);
@@ -236,7 +230,7 @@ void CHudKeyPressDisplay::Paint()
     }
 
     if (g_pGameModeSystem->GetGameMode()->HasCapability(GameModeHUDCapability_t::CAP_HUD_KEYPRESS_SPRINT)
-        && nButtons & IN_SPEED)
+        && (nButtons & IN_SPEED || m_nButtonsToggled & IN_SPEED))
     {
         CHECK_INPUT_P(IN_SPEED);
         surface()->DrawSetTextPos(GetTextCenter(m_hWordTextFont, STR_SPEED), sprint_row_ypos);
@@ -297,6 +291,7 @@ void CHudKeyPressDisplay::OnThink()
     {
         const auto pUIEnt = pPlayer->GetCurrentUIEntity();
 
+        m_nButtonsToggled = pPlayer->m_nButtonsToggled;
         if (pUIEnt->GetEntType() >= RUN_ENT_GHOST)
         {
             const auto pGhost = static_cast<C_MomentumGhostBaseEntity *>(pUIEnt);

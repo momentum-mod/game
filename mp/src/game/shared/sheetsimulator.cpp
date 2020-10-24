@@ -229,7 +229,7 @@ Vector& CSheetSimulator::GetFixedPoint( int i )
 }
 
 //-----------------------------------------------------------------------------
-// For offseting the control points
+// For offsetting the control points
 //-----------------------------------------------------------------------------
 
 void CSheetSimulator::SetControlPointOffset( const Vector& offset )
@@ -494,7 +494,7 @@ void CSheetSimulator::DetermineBestCollisionPlane( bool bFarTest )
 }
 
 //-----------------------------------------------------------------------------
-// satify collision constraints
+// satisfy collision constraints
 //-----------------------------------------------------------------------------
 
 void CSheetSimulator::SatisfyCollisionConstraints()

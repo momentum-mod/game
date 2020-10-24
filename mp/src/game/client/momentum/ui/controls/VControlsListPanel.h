@@ -24,10 +24,9 @@ public:
 
 	virtual void	OnMousePressed(vgui::MouseCode code);
 	virtual void	OnMouseDoublePressed(vgui::MouseCode code);
+	void OnKeyCodeTyped(vgui::KeyCode code) override;
 
 private:
-	void ApplySchemeSettings(vgui::IScheme *pScheme );
-
 	// Are we showing the prompt?
 	bool			m_bCaptureMode;
 	// If so, where?

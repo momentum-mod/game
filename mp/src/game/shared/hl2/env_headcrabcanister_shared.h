@@ -37,7 +37,7 @@ public:
 	// Returns the position of the object at a given time.
 	void GetPositionAtTime( float flTime, Vector &vecPosition, QAngle &vecAngles );
 
-	// Returns whether or not the object is the the skybox
+	// Returns whether or not the object is in the skybox
 	bool IsInSkybox( );
 
 	// Returns the time at which it enters the world

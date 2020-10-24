@@ -353,7 +353,7 @@ void CVRadDispMgr::DispBuilderInit( CCoreDispInfo *pBuilderDisp, dface_t *pFace,
 		return;
 
 	//
-	// initlialize the displacement base surface
+	// initialize the displacement base surface
 	//
 	CCoreDispSurface *pSurf = pBuilderDisp->GetSurface();
 	pSurf->SetPointCount( 4 );
@@ -1558,7 +1558,7 @@ void CVRadDispMgr::EndTimer( void )
 //-----------------------------------------------------------------------------
 bool CVRadDispMgr::BuildDispSamples( lightinfo_t *pLightInfo, facelight_t *pFaceLight, int ndxFace )
 {
-	// get the tree assosciated with the face
+	// get the tree associated with the face
 	DispCollTree_t &dispTree = m_DispTrees[g_pFaces[ndxFace].dispinfo];
 	CVRADDispColl *pDispTree = dispTree.m_pDispTree;
 	if( !pDispTree )
@@ -1669,7 +1669,7 @@ bool CVRadDispMgr::BuildDispSamples( lightinfo_t *pLightInfo, facelight_t *pFace
 //-----------------------------------------------------------------------------
 bool CVRadDispMgr::BuildDispLuxels( lightinfo_t *pLightInfo, facelight_t *pFaceLight, int ndxFace )
 {
-	// get the tree assosciated with the face
+	// get the tree associated with the face
 	DispCollTree_t &dispTree = m_DispTrees[g_pFaces[ndxFace].dispinfo];
 	CVRADDispColl *pDispTree = dispTree.m_pDispTree;
 	if( !pDispTree )
@@ -1679,7 +1679,7 @@ bool CVRadDispMgr::BuildDispLuxels( lightinfo_t *pLightInfo, facelight_t *pFaceL
 	int width = pLightInfo->face->m_LightmapTextureSizeInLuxels[0]+1;
 	int height = pLightInfo->face->m_LightmapTextureSizeInLuxels[1]+1;
 
-	// calcuate actual luxel points
+	// calculate actual luxel points
 	pFaceLight->numluxels = width * height;
 	pFaceLight->luxel = ( Vector* )calloc( pFaceLight->numluxels, sizeof( *pFaceLight->luxel ) );
 	pFaceLight->luxelNormals = ( Vector* )calloc( pFaceLight->numluxels, sizeof( Vector ) );
@@ -1709,7 +1709,7 @@ bool CVRadDispMgr::BuildDispLuxels( lightinfo_t *pLightInfo, facelight_t *pFaceL
 //-----------------------------------------------------------------------------
 bool CVRadDispMgr::BuildDispSamplesAndLuxels_DoFast( lightinfo_t *pLightInfo, facelight_t *pFaceLight, int ndxFace )
 {
-	// get the tree assosciated with the face
+	// get the tree associated with the face
 	DispCollTree_t &dispTree = m_DispTrees[g_pFaces[ndxFace].dispinfo];
 	CVRADDispColl *pDispTree = dispTree.m_pDispTree;
 	if( !pDispTree )
@@ -1719,7 +1719,7 @@ bool CVRadDispMgr::BuildDispSamplesAndLuxels_DoFast( lightinfo_t *pLightInfo, fa
 	int width = pLightInfo->face->m_LightmapTextureSizeInLuxels[0]+1;
 	int height = pLightInfo->face->m_LightmapTextureSizeInLuxels[1]+1;
 
-	// calcuate actual luxel points
+	// calculate actual luxel points
 	pFaceLight->numsamples = width * height;
 	pFaceLight->sample = ( sample_t* )calloc( pFaceLight->numsamples, sizeof( *pFaceLight->sample ) );
 	if( !pFaceLight->sample )

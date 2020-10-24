@@ -36,7 +36,7 @@ public:
     // The KeyValues here are deleted inside this call!
     // type can control which way the event is fired, see EVENT_FIRE_TYPE
     void FireEvent(KeyValues *pKv, EVENT_FIRE_TYPE type = FIRE_BOTH);
-    void OnEvent(KeyValues *pKv); // The event has been caught by the recieving end
+    void OnEvent(KeyValues *pKv); // The event has been caught by the receiving end
     int ListenForEvent(const char *pName, CUtlDelegate<void (KeyValues *)> listener);
     void RemoveListener(const char *pName, int index);
 

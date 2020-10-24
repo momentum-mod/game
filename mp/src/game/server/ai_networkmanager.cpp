@@ -618,7 +618,7 @@ void CAI_NetworkManager::LoadNetworkGraph( void )
 	}
 
 	// -------------------------------
-	// Load all the links to the fild
+	// Load all the links to the file
 	// -------------------------------
 	int totalNumLinks = buf.GetInt();
 
@@ -818,7 +818,7 @@ void CAI_NetworkManager::LoadNetworkGraph( void )
 	}
 
 	// -------------------------------
-	// Load all the links to the fild
+	// Load all the links to the file
 	// -------------------------------
 	int totalNumLinks;
 	fscanf(file,"%255s",&temps);
@@ -900,7 +900,7 @@ bool g_bAIDisabledByUser = false;
 void CAI_NetworkManager::InitializeAINetworks()
 {
 	// For not just create a single AI Network called "BigNet"
-	// At some later point we may have mulitple AI networks
+	// At some later point we may have multiple AI networks
 	CAI_NetworkManager *pNetwork;
 	g_pAINetworkManager = pNetwork = CREATE_ENTITY( CAI_NetworkManager, "ai_network" );
 	pNetwork->AddEFlags( EFL_KEEP_ON_RECREATE_ENTITIES );
@@ -1536,7 +1536,7 @@ void CAI_NetworkEditTools::DrawAINetworkOverlay(void)
 	// ----------------------------------------------
 	//  So we don't fill up the client message queue
 	//  with node drawing messages, only send them
-	//  in chuncks
+	//  in chunks
 	// ----------------------------------------------
 	static int		startDrawNode	= 0;
 	static int		endDrawNode		= 0;
@@ -1723,7 +1723,7 @@ void CAI_NetworkEditTools::DrawAINetworkOverlay(void)
 								int linkInfo = pAINode[node]->GetLinkByIndex(link)->m_LinkInfo;
 								int moveTypes = pAINode[node]->GetLinkByIndex(link)->m_iAcceptedMoveTypes[m_iHullDrawNum];
 			
-								// when rendering, raise NODE_GROUND off the floor slighty as they seem to clip too much
+								// when rendering, raise NODE_GROUND off the floor slightly as they seem to clip too much
 								if ( srcType == NODE_GROUND)
 								{
 									srcPos.z += 1.0;
@@ -2791,7 +2791,7 @@ void CAI_NetworkBuilder::InitNeighbors(CAI_Network *pNetwork, CAI_Node *pNode)
 			continue;
 		}
 
-		// Only check if already on the neightbor list
+		// Only check if already on the neighbor list
 		if (!m_NeighborsTable[pNode->m_iID].IsBitSet(checknode)) 
 		{
 			continue;
@@ -2807,7 +2807,7 @@ void CAI_NetworkBuilder::InitNeighbors(CAI_Network *pNetwork, CAI_Node *pNode)
 				continue;
 			}
 
-			// Only check if already on the neightbor list
+			// Only check if already on the neighbor list
 			if (!m_NeighborsTable[pNode->m_iID].IsBitSet(testnode)) 
 			{
 				continue;
@@ -2907,7 +2907,7 @@ static bool IsInLineForClimb( const Vector &srcPos, const Vector &srcFacing, con
 	if ( CalcDistanceToLine2D( destPos.AsVector2D(), srcPos.AsVector2D(), srcPos.AsVector2D() + srcFacing.AsVector2D() ) > 0.01 )
 		return false;
 		
-	// Check that the angle between them is either staight up, or on at angle of ladder-stairs
+	// Check that the angle between them is either straight up, or on at angle of ladder-stairs
 	Vector vecDelta = srcPos - destPos;
 
 	VectorNormalize( vecDelta );
@@ -2993,7 +2993,7 @@ int CAI_NetworkBuilder::ComputeConnection( CAI_Node *pSrcNode, CAI_Node *pDestNo
 		Vector srcPos	 = pSrcNode->GetPosition(hull);
 		Vector destPos	 = pDestNode->GetPosition(hull);
 		
-		// If a code genereted climb dismount node the two origins will be the same
+		// If a code generated climb dismount node the two origins will be the same
 		if (pSrcNode->GetOrigin() == pDestNode->GetOrigin())
 		{
 			AI_TraceHull( srcPos, destPos, 
@@ -3064,7 +3064,7 @@ int CAI_NetworkBuilder::ComputeConnection( CAI_Node *pSrcNode, CAI_Node *pDestNo
 				DebugConnectMsg( srcId, destId, "      Failed to walk between nodes\n" );
 		}
 
-		// Add to our list of accepable hulls
+		// Add to our list of acceptable hulls
 		if (!fWalkFailed && !fStandFailed)
 		{
 			result |= bits_CAP_MOVE_GROUND;
@@ -3107,7 +3107,7 @@ int CAI_NetworkBuilder::ComputeConnection( CAI_Node *pSrcNode, CAI_Node *pDestNo
 					fJumpLegal = true;
 				}
 				
-				// Add to our list of accepable hulls
+				// Add to our list of acceptable hulls
 				if (fJumpLegal)
 				{
 					result |= bits_CAP_MOVE_JUMP;
@@ -3188,7 +3188,7 @@ void CAI_NetworkBuilder::InitLinks(CAI_Network *pNetwork, CAI_Node *pNode)
 			else
 				DebugConnectMsg( pNode->m_iID, i, "   No connection: one or both are fallen nodes\n" );
 
-			// If there were any passible hulls create link
+			// If there were any possible hulls create link
 			if (!bAllFailed) 
 			{
 				CAI_Link *pLink = pNetwork->CreateLink( pNode->m_iID, pDestNode->m_iID);

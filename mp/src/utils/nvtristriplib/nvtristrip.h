@@ -44,7 +44,7 @@ struct PrimitiveGroup
 ////////////////////////////////////////////////////////////////////////////////////////
 // SetCacheSize()
 //
-// Sets the cache size which the stripfier uses to optimize the data.
+// Sets the cache size which the stripifier uses to optimize the data.
 // Controls the length of the generated individual strips.
 // This is the "actual" cache size, so 24 for GeForce3 and 16 for GeForce1/2
 // You may want to play around with this number to tweak performance.

@@ -419,7 +419,7 @@ bool ImagePanel::EvictImage()
 
 	if ( !scheme()->DeleteImage( m_pszImageName ) )
 	{
-		// no eviction occured, could have an outstanding reference
+		// no eviction occurred, could have an outstanding reference
 		return false;
 	}
 

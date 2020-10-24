@@ -21,7 +21,7 @@
 #include "vertexlit_and_unlit_generic_bump_vs30.inc"
 #include "vertexlit_and_unlit_generic_bump_ps30.inc"
 
-#include "commandbuilder.h"
+#include "shaderlib/commandbuilder.h"
 #include "convar.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
@@ -149,7 +149,7 @@ void InitParamsVertexLitGeneric_DX9( CBaseVSShader *pShader, IMaterialVar** para
 	InitFloatParam( info.m_nEnvmapSaturation, params, 1.0f );
 	InitFloatParam( info.m_nSeamlessScale, params, 0.0 );
 
-	// handle line art parms
+	// handle line art params
 	InitFloatParam( info.m_nEdgeSoftnessStart, params, 0.5 );
 	InitFloatParam( info.m_nEdgeSoftnessEnd, params, 0.5 );
 	InitFloatParam( info.m_nGlowAlpha, params, 1.0 );
@@ -388,6 +388,9 @@ static void DrawVertexLitGeneric_DX9_Internal( CBaseVSShader *pShader, IMaterial
 		bFlashlightNoLambert = true;
 	}
 
+	int nTreeSwayMode = clamp( GetIntParam( info.m_nTreeSway, params, 0 ), 0, 2 );
+	bool bTreeSway = nTreeSwayMode != 0;
+
 	bool bAmbientOnly = IsBoolSet( info.m_nAmbientOnly, params );
 
 	float fBlendFactor = GetFloatParam( info.m_nDetailTextureBlendFactor, params, 1.0 );
@@ -432,8 +435,8 @@ static void DrawVertexLitGeneric_DX9_Internal( CBaseVSShader *pShader, IMaterial
 	if ( pShader->IsSnapshotting() || (! pContextData ) || ( pContextData->m_bMaterialVarsChanged ) )
 	{
 /*^*/ // 	printf("\t\t[1] snapshotting=%d  pContextData=%08x  pContextData->m_bMaterialVarsChanged=%d \n",(int)pShader->IsSnapshotting(), (int)pContextData, pContextData ? (int)pContextData->m_bMaterialVarsChanged : -1 );
-		bool bSeamlessBase = IsBoolSet( info.m_nSeamlessBase, params );
-		bool bSeamlessDetail = IsBoolSet( info.m_nSeamlessDetail, params );
+		bool bSeamlessBase = IsBoolSet( info.m_nSeamlessBase, params ) && !bTreeSway;
+		bool bSeamlessDetail = IsBoolSet( info.m_nSeamlessDetail, params ) && !bTreeSway;
 		bool bDistanceAlpha = IsBoolSet( info.m_nDistanceAlpha, params );
 		bool bHasSelfIllum = (!bHasFlashlight ) && IS_FLAG_SET( MATERIAL_VAR_SELFILLUM );
 		bool bHasEnvmapMask = (!bHasFlashlight ) && info.m_nEnvmapMask != -1 && params[info.m_nEnvmapMask]->IsTexture();
@@ -684,6 +687,7 @@ static void DrawVertexLitGeneric_DX9_Internal( CBaseVSShader *pShader, IMaterial
 					SET_STATIC_VERTEX_SHADER_COMBO( HALFLAMBERT,  bHalfLambert);
 					SET_STATIC_VERTEX_SHADER_COMBO( USE_WITH_2B,  true );
 					SET_STATIC_VERTEX_SHADER_COMBO( DECAL, bIsDecal );
+					SET_STATIC_VERTEX_SHADER_COMBO( TREESWAY, bTreeSway ? nTreeSwayMode : 0 );
                     SET_STATIC_VERTEX_SHADER(vertexlit_and_unlit_generic_bump_vs30);
 
                     DECLARE_STATIC_PIXEL_SHADER(vertexlit_and_unlit_generic_bump_ps30);
@@ -734,6 +738,7 @@ static void DrawVertexLitGeneric_DX9_Internal( CBaseVSShader *pShader, IMaterial
 					SET_STATIC_VERTEX_SHADER_COMBO( SEPARATE_DETAIL_UVS, IsBoolSet( info.m_nSeparateDetailUVs, params ) );
 					SET_STATIC_VERTEX_SHADER_COMBO( USE_STATIC_CONTROL_FLOW, bUseStaticControlFlow );
 					SET_STATIC_VERTEX_SHADER_COMBO( DONT_GAMMA_CONVERT_VERTEX_COLOR, (! bSRGBWrite ) && bHasVertexColor );
+					SET_STATIC_VERTEX_SHADER_COMBO( TREESWAY, bTreeSway ? nTreeSwayMode : 0 );
                     SET_STATIC_VERTEX_SHADER(vertexlit_and_unlit_generic_vs20);
 
                     DECLARE_STATIC_PIXEL_SHADER(vertexlit_and_unlit_generic_ps20b);
@@ -776,6 +781,7 @@ static void DrawVertexLitGeneric_DX9_Internal( CBaseVSShader *pShader, IMaterial
 					SET_STATIC_VERTEX_SHADER_COMBO( SEPARATE_DETAIL_UVS, IsBoolSet( info.m_nSeparateDetailUVs, params ) );
 					SET_STATIC_VERTEX_SHADER_COMBO( DECAL, bIsDecal );
 					SET_STATIC_VERTEX_SHADER_COMBO( DONT_GAMMA_CONVERT_VERTEX_COLOR, bSRGBWrite ? 0 : 1 );
+					SET_STATIC_VERTEX_SHADER_COMBO( TREESWAY, bTreeSway ? nTreeSwayMode : 0 );
                     SET_STATIC_VERTEX_SHADER(vertexlit_and_unlit_generic_vs30);
 
                     DECLARE_STATIC_PIXEL_SHADER(vertexlit_and_unlit_generic_ps30);
@@ -880,10 +886,13 @@ static void DrawVertexLitGeneric_DX9_Internal( CBaseVSShader *pShader, IMaterial
 			
 			if ( bHasDetailTexture )
 			{
-				if ( IS_PARAM_DEFINED( info.m_nDetailTextureTransform ) )
-					pContextData->m_SemiStaticCmdsOut.SetVertexShaderTextureScaledTransform( VERTEX_SHADER_SHADER_SPECIFIC_CONST_4, info.m_nDetailTextureTransform, info.m_nDetailScale );
-				else
-					pContextData->m_SemiStaticCmdsOut.SetVertexShaderTextureScaledTransform( VERTEX_SHADER_SHADER_SPECIFIC_CONST_4, info.m_nBaseTextureTransform, info.m_nDetailScale );
+				if ( !bTreeSway )
+				{
+					if ( IS_PARAM_DEFINED( info.m_nDetailTextureTransform ) )
+						pContextData->m_SemiStaticCmdsOut.SetVertexShaderTextureScaledTransform( VERTEX_SHADER_SHADER_SPECIFIC_CONST_4, info.m_nDetailTextureTransform, info.m_nDetailScale );
+					else
+						pContextData->m_SemiStaticCmdsOut.SetVertexShaderTextureScaledTransform( VERTEX_SHADER_SHADER_SPECIFIC_CONST_4, info.m_nBaseTextureTransform, info.m_nDetailScale );
+				}
 				//Assert( !bHasBump );
 				if ( info.m_nDetailTint  != -1 )
 					pContextData->m_SemiStaticCmdsOut.SetPixelShaderConstantGammaToLinear( 10, info.m_nDetailTint );
@@ -896,7 +905,7 @@ static void DrawVertexLitGeneric_DX9_Internal( CBaseVSShader *pShader, IMaterial
 			{
 				float flSoftStart = GetFloatParam( info.m_nEdgeSoftnessStart, params );
 				float flSoftEnd = GetFloatParam( info.m_nEdgeSoftnessEnd, params );
-				// set all line art shader parms
+				// set all line art shader params
 				bool bScaleEdges = IsBoolSet( info.m_nScaleEdgeSoftnessBasedOnScreenRes, params );
 				bool bScaleOutline = IsBoolSet( info.m_nScaleOutlineSoftnessBasedOnScreenRes, params );
 
@@ -941,14 +950,14 @@ static void DrawVertexLitGeneric_DX9_Internal( CBaseVSShader *pShader, IMaterial
 					// c6 - glow color
 					0,0,0,										// will be filled in
 					GetFloatParam( info.m_nGlowAlpha, params ),
-					// c7 - mask range parms
+					// c7 - mask range params
 					flSoftStart,
 					flSoftEnd,
 					0,0,
 					// c8 - outline color
 					0,0,0,
 					GetFloatParam( info.m_nOutlineAlpha, params ),
-					// c9 - outline parms. ordered for optimal ps20 .wzyx swizzling
+					// c9 - outline params. ordered for optimal ps20 .wzyx swizzling
 					flOutlineStart0,
 					flOutlineEnd1,
 					flOutlineEnd0,
@@ -1084,6 +1093,36 @@ static void DrawVertexLitGeneric_DX9_Internal( CBaseVSShader *pShader, IMaterial
 			}
 			pContextData->m_SemiStaticCmdsOut.SetPixelShaderConstant_W( 4, info.m_nSelfIllumTint, fBlendFactor );
 			pContextData->m_SemiStaticCmdsOut.SetAmbientCubeDynamicStateVertexShader();
+
+			if ( bTreeSway )
+			{
+				float flParams[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+
+				flParams[0] = GetFloatParam( info.m_nTreeSwaySpeedHighWindMultiplier, params, 2.0f );
+				flParams[1] = GetFloatParam( info.m_nTreeSwayScrumbleFalloffExp, params, 1.0f );
+				flParams[2] = GetFloatParam( info.m_nTreeSwayFalloffExp, params, 1.0f );
+				flParams[3] = GetFloatParam( info.m_nTreeSwayScrumbleSpeed, params, 3.0f );
+				pContextData->m_SemiStaticCmdsOut.SetVertexShaderConstant( VERTEX_SHADER_SHADER_SPECIFIC_CONST_3, flParams );
+
+				flParams[0] = GetFloatParam( info.m_nTreeSwaySpeedLerpStart, params, 3.0f );
+				flParams[1] = GetFloatParam( info.m_nTreeSwaySpeedLerpEnd, params, 6.0f );
+				flParams[2] = 0;
+				flParams[3] = 0;
+				pContextData->m_SemiStaticCmdsOut.SetVertexShaderConstant( VERTEX_SHADER_SHADER_SPECIFIC_CONST_4, flParams );
+
+				flParams[0] = GetFloatParam( info.m_nTreeSwayHeight, params, 1000.0f );
+				flParams[1] = GetFloatParam( info.m_nTreeSwayStartHeight, params, 0.1f );
+				flParams[2] = GetFloatParam( info.m_nTreeSwayRadius, params, 300.0f );
+				flParams[3] = GetFloatParam( info.m_nTreeSwayStartRadius, params, 0.2f );
+				pContextData->m_SemiStaticCmdsOut.SetVertexShaderConstant( VERTEX_SHADER_SHADER_SPECIFIC_CONST_10, flParams );
+
+				flParams[0] = GetFloatParam( info.m_nTreeSwaySpeed, params, 1.0f );
+				flParams[1] = GetFloatParam( info.m_nTreeSwayStrength, params, 10.0f );
+				flParams[2] = GetFloatParam( info.m_nTreeSwayScrumbleFrequency, params, 12.0f );
+				flParams[3] = GetFloatParam( info.m_nTreeSwayScrumbleStrength, params, 10.0f );
+				pContextData->m_SemiStaticCmdsOut.SetVertexShaderConstant( VERTEX_SHADER_SHADER_SPECIFIC_CONST_11, flParams );
+			}
+
 			pContextData->m_SemiStaticCmdsOut.End();
 		}
 	}
@@ -1327,6 +1366,17 @@ static void DrawVertexLitGeneric_DX9_Internal( CBaseVSShader *pShader, IMaterial
 
 			DynamicCmdsOut.SetPixelShaderConstant( 24, worldToTexture.Base(), 4 );
 		}
+
+		if ( bTreeSway )
+		{
+			float fTempConst[4] = { 0 };
+			fTempConst[1] = pShaderAPI->CurrentTime();
+			const Vector& windDir = pShaderAPI->GetVectorRenderingParameter( VECTOR_RENDERPARM_WIND_DIRECTION );
+			fTempConst[2] = windDir.x;
+			fTempConst[3] = windDir.y;
+			DynamicCmdsOut.SetVertexShaderConstant( 218, fTempConst );
+		}
+
 		DynamicCmdsOut.End();
 		pShaderAPI->ExecuteCommandBuffer( DynamicCmdsOut.Base() );
 	}

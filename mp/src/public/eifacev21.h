@@ -120,9 +120,9 @@ public:
 
 	//---------------------------------------------------------------------
 	// Apply the terrain modifier to the surface.  The vertex should from 
-	// its original position toward the target position bassed on the
+	// its original position toward the target position based on the
 	// morph time.
-	// Return true if the posistion is modified.
+	// Return true if the position is modified.
 	//---------------------------------------------------------------------
 	virtual	bool	ApplyModAtMorphTime( Vector &vecTargetPos, const Vector&vecOriginalPos, 
 		                                 float flCurrentTime, float flMorphTime ) = 0;
@@ -316,7 +316,7 @@ public:
 	virtual void		PlaybackTempEntity( IRecipientFilter& filter, float delay, const void *pSender, const SendTable *pST, int classID  ) = 0;
 	// Given a node number and the specified PVS, return with the node is in the PVS
 	virtual int			CheckHeadnodeVisible( int nodenum, const byte *pvs, int vissize ) = 0;
-	// Using area bits, cheeck whether area1 flows into area2 and vice versa (depends on area portal state)
+	// Using area bits, check whether area1 flows into area2 and vice versa (depends on area portal state)
 	virtual int			CheckAreasConnected( int area1, int area2 ) = 0;
 	// Given an origin, determine which area index the origin is within
 	virtual int			GetArea( const Vector &origin ) = 0;

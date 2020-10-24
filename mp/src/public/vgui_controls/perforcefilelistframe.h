@@ -69,7 +69,7 @@ public:
 	const char *GetFileName( int i );
 	const char *GetOperation( int i );
 
-	// Retreives the description (only if it was shown)
+	// Retrieves the description (only if it was shown)
 	const char *GetDescription();
 
 private:

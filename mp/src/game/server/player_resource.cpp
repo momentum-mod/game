@@ -106,7 +106,7 @@ void CPlayerResource::UpdatePlayerData( void )
 			m_bAlive.Set( i, pPlayer->IsAlive()?1:0 );
 			m_iHealth.Set(i, MAX( 0, pPlayer->GetHealth() ) );
 
-			// Don't update ping / packetloss everytime
+			// Don't update ping / packetloss every time
 
 			if ( !(m_nUpdateCounter%20) )
 			{

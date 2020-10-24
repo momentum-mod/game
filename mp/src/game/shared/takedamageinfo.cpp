@@ -281,7 +281,7 @@ void CalculateExplosiveDamageForce( CTakeDamageInfo *info, const Vector &vecDir,
 	// victim gets a slightly different trajectory. 
 	// This simulates features that usually vary from
 	// person-to-person variables such as bodyweight,
-	// which are all indentical for characters using the same model.
+	// which are all identical for characters using the same model.
 	flForceScale *= random->RandomFloat( 0.85, 1.15 );
 
 	// Calculate the vector and stuff it into the takedamageinfo
@@ -334,7 +334,7 @@ void GuessDamageForce( CTakeDamageInfo *info, const Vector &vecForceDir, const V
 {
 	if ( info->GetDamageType() & DMG_BULLET )
 	{
-		CalculateBulletDamageForce( info, AMMO_TYPE_SMG, vecForceDir, vecForceOrigin, flScale );
+		CalculateBulletDamageForce( info, AMMO_TYPE_MACHINEGUN, vecForceDir, vecForceOrigin, flScale );
 	}
 	else if ( info->GetDamageType() & DMG_BLAST )
 	{

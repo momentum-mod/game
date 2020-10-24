@@ -14,6 +14,7 @@
 #include "c_mom_replay_entity.h"
 #include "mom_shareddefs.h"
 #include "mom_map_cache.h"
+#include "mom_system_gamemode.h"
 
 #include "tier0/memdbgon.h"
 
@@ -69,6 +70,7 @@ C_HudMapInfo::C_HudMapInfo(const char *pElementName): CHudElement(pElementName),
     ListenForGameEvent("spec_stop");
     ListenForGameEvent("player_spawn");
     ListenForGameEvent("mapfinished_panel_closed");
+    ListenForGameEvent("saveloc_upd8");
 
     m_pMainStatusLabel = new Label(this, "MainStatusLabel", "");
     m_pMapNameLabel = new Label(this, "MapNameLabel", "");
@@ -85,64 +87,67 @@ void C_HudMapInfo::OnThink()
     m_pMapNameLabel->SetVisible(mom_hud_mapinfo_show_mapname.GetBool());
     m_pMapAuthorLabel->SetVisible(mom_hud_mapinfo_show_author.GetBool());
     m_pMapDifficultyLabel->SetVisible(mom_hud_mapinfo_show_difficulty.GetBool());
-    m_pMainStatusLabel->SetVisible(mom_hud_mapinfo_show_status.GetBool());
+    m_pMainStatusLabel->SetVisible(mom_hud_mapinfo_show_status.GetBool() && !g_pGameModeSystem->GameModeIs(GAMEMODE_TRICKSURF));
+
+    if (g_pGameModeSystem->GameModeIs(GAMEMODE_TRICKSURF))
+        return;
 
     const auto pPlayer = C_MomentumPlayer::GetLocalMomPlayer();
-    if (pPlayer)
+    if (!pPlayer)
+        return;
+
+    m_pRunData = pPlayer->GetCurrentUIEntData();
+
+    if (!(m_bNeedsUpdate && m_pRunData))
+        return;
+
+    if (m_pRunData->m_bIsInZone)
     {
-        m_pRunData = pPlayer->GetCurrentUIEntData();
-
-        if (m_bNeedsUpdate && m_pRunData)
+        if (m_pRunData->m_iCurrentZone == 1) // Start zone
         {
-            if (m_pRunData->m_bIsInZone)
-            {
-                if (m_pRunData->m_iCurrentZone == 1) // Start zone
-                {
-                    m_pMainStatusLabel->SetText(m_pRunData->m_iCurrentTrack == 0 ?
-                                                m_wMainStart :
-                                                CConstructLocalizedString(m_wBonusStart, m_pRunData->m_iCurrentTrack.Get()));
-                }
-                else if (m_pRunData->m_iCurrentZone == 0) // End zone
-                {
-                    m_pMainStatusLabel->SetText(m_pRunData->m_iCurrentTrack == 0 ?
-                                                m_wMainEnd :
-                                                CConstructLocalizedString(m_wBonusEnd, m_pRunData->m_iCurrentTrack.Get()));
-                }
-                else if (m_pRunData->m_bMapFinished) // MOM_TODO does this even need to be here anymore? "Main End Zone" covers this
-                {
-                    // End zone
-                    m_pMainStatusLabel->SetText(m_wMapFinished);
-                }
-                else if (!pPlayer->m_iLinearTracks.Get(m_pRunData->m_iCurrentTrack)) // Note: The player will never be inside a "checkpoint" zone
-                {
-                    // Some # stage start
-                    m_pMainStatusLabel->SetText(CConstructLocalizedString(m_wStageStart, m_pRunData->m_iCurrentZone.Get()));
-                }
-                else
-                {
-                    // It's linear, just draw the current checkpoint
-                    SetCurrentZoneLabel(pPlayer);
-                }
-            }
-            else
-            {
-                if (m_pRunData->m_iCurrentTrack > 0)
-                {
-                    m_pMainStatusLabel->SetText(CConstructLocalizedString(m_wBonus, m_pRunData->m_iCurrentTrack.Get()));
-                }
-                else if (pPlayer->m_iZoneCount[m_pRunData->m_iCurrentTrack] > 0)
-                {
-                    SetCurrentZoneLabel(pPlayer);
-                }
-                else
-                {
-                    m_pMainStatusLabel->SetText(m_wNoZones);
-                }
-            }
-
-            m_bNeedsUpdate = false;
+            m_pMainStatusLabel->SetText(m_pRunData->m_iCurrentTrack == 0 ?
+                                        m_wMainStart :
+                                        CConstructLocalizedString(m_wBonusStart, m_pRunData->m_iCurrentTrack.Get()));
+        }
+        else if (m_pRunData->m_iCurrentZone == 0) // End zone
+        {
+            m_pMainStatusLabel->SetText(m_pRunData->m_iCurrentTrack == 0 ?
+                                        m_wMainEnd :
+                                        CConstructLocalizedString(m_wBonusEnd, m_pRunData->m_iCurrentTrack.Get()));
+        }
+        else if (m_pRunData->m_bMapFinished) // MOM_TODO does this even need to be here anymore? "Main End Zone" covers this
+        {
+            // End zone
+            m_pMainStatusLabel->SetText(m_wMapFinished);
+        }
+        else if (!pPlayer->m_iLinearTracks.Get(m_pRunData->m_iCurrentTrack)) // Note: The player will never be inside a "checkpoint" zone
+        {
+            // Some # stage start
+            m_pMainStatusLabel->SetText(CConstructLocalizedString(m_wStageStart, m_pRunData->m_iCurrentZone.Get()));
+        }
+        else
+        {
+            // It's linear, just draw the current checkpoint
+            SetCurrentZoneLabel(pPlayer);
         }
     }
+    else
+    {
+        if (m_pRunData->m_iCurrentTrack > 0)
+        {
+            m_pMainStatusLabel->SetText(CConstructLocalizedString(m_wBonus, m_pRunData->m_iCurrentTrack.Get()));
+        }
+        else if (m_pRunData->m_iCurrentTrack == 0 && pPlayer->m_iZoneCount[m_pRunData->m_iCurrentTrack] > 0)
+        {
+            SetCurrentZoneLabel(pPlayer);
+        }
+        else
+        {
+            m_pMainStatusLabel->SetText(m_wNoZones);
+        }
+    }
+
+    m_bNeedsUpdate = false;
 }
 
 void C_HudMapInfo::Reset()

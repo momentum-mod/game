@@ -25,6 +25,8 @@
         "alt1" "#MOM_Tip_General_Alt_1"
         "alt2" "#MOM_Tip_General_Alt_2"
         "alt3" "#MOM_Tip_General_Alt_3"
+        "alt4" "#MOM_Tip_General_Alt_4"
+        "alt5" "#MOM_Tip_General_Alt_5"
     }
     "#MOM_GameType_Surf"
     {
@@ -32,6 +34,15 @@
         "2" "#MOM_Tip_Surf_2"
         "3" "#MOM_Tip_Surf_3"
         "4" "#MOM_Tip_Surf_4"
+        "5" "#MOM_Tip_Surf_5"
+        "6" "#MOM_Tip_Surf_6"
+        "7" "#MOM_Tip_Surf_7"
+        "8" "#MOM_Tip_Surf_8"
+        "9" "#MOM_Tip_Surf_9"
+        "10" "#MOM_Tip_Surf_10"
+        "11" "#MOM_Tip_Surf_11"
+
+        "shared1" "#MOM_Tip_Bhop_11"
     }
     "#MOM_GameType_Tricksurf"
     {
@@ -44,8 +55,13 @@
         "7" "#MOM_Tip_Surf_7"
         "8" "#MOM_Tip_Surf_8"
         "9" "#MOM_Tip_Surf_9"
-
+        "10" "#MOM_Tip_Surf_10"
+        "11" "#MOM_Tip_Surf_11"
+        
         "alt1" "#MOM_Tip_Surf_Alt_1"
+        "alt2" "#MOM_Tip_Surf_Alt_2"
+        
+        "shared1" "#MOM_Tip_Bhop_11"
     }
     "#MOM_GameType_Bhop"
     {
@@ -59,6 +75,7 @@
         "8" "#MOM_Tip_Bhop_8"
         "9" "#MOM_Tip_Bhop_9"
         "10" "#MOM_Tip_Bhop_10"
+        "11" "#MOM_Tip_Bhop_11"
     }
     "#MOM_GameType_KZ"
     {
@@ -77,6 +94,7 @@
         "7" "#MOM_Tip_RJ_7"
         "8" "#MOM_Tip_RJ_8"
         "9" "#MOM_Tip_RJ_9"
+        "10" "#MOM_Tip_RJ_10"
     }
     "#MOM_GameType_SJ"
     {
@@ -84,6 +102,7 @@
         "2" "#MOM_Tip_SJ_2"
         "3" "#MOM_Tip_SJ_3"
         "4" "#MOM_Tip_SJ_4"
+        "5" "#MOM_Tip_SJ_5"
 
         "shared1" "#MOM_Tip_RJ_8"
     }
@@ -92,7 +111,24 @@
         "1" "#MOM_Tip_Ahop_1"
         "2" "#MOM_Tip_Ahop_2"
         "3" "#MOM_Tip_Ahop_3"
-
+        "4" "#MOM_Tip_Ahop_4"
+        "5" "#MOM_Tip_Ahop_5"
+        "6" "#MOM_Tip_Ahop_6"
+        "7" "#MOM_Tip_Ahop_7"
+        "8" "#MOM_Tip_Ahop_8"
+        
         "shared1" "#MOM_Tip_Bhop_3"
+    }
+    "#MOM_GameType_Parkour"
+    {
+        "1" "TODO: Gamemode is still work in progress! Tips are to come with the full implementation of the mode."
+    }
+    "#MOM_GameType_Conc"
+    {
+        "1" "TODO: Gamemode is still work in progress! Tips are to come with the full implementation of the mode."
+    }
+    "#MOM_GameType_Defrag"
+    {
+        "1" "TODO: Gamemode is still work in progress! Tips are to come with the full implementation of the mode."
     }
 }

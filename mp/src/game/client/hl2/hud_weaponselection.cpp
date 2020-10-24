@@ -7,7 +7,7 @@
 #include "cbase.h"
 #include "weapon_selection.h"
 #include "iclientmode.h"
-#include "../momentum/ui/HUD/hud_menu_static.h"
+#include "../momentum/ui/menus/hud_menu_static.h"
 #include "history_resource.h"
 #include "input.h"
 #include "../hud_crosshair.h"
@@ -24,7 +24,7 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-ConVar hud_showemptyweaponslots( "hud_showemptyweaponslots", "1", FCVAR_ARCHIVE, "Shows slots for missing weapons when recieving weapons out of order" );
+ConVar hud_showemptyweaponslots( "hud_showemptyweaponslots", "1", FCVAR_ARCHIVE, "Shows slots for missing weapons when receiving weapons out of order" );
 
 #define SELECTION_TIMEOUT_THRESHOLD		0.5f	// Seconds
 #define SELECTION_FADEOUT_TIME			0.75f

@@ -185,9 +185,9 @@ public:
 
 	virtual bool IsLocalPlayer( int nEntIndex );
 
-	virtual void ModifySentChat( char *pBuf, int iBufSize ) { return; }
-
 	virtual bool ShouldWarnOfAbandonOnQuit() { return false; }
+
+	virtual bool PreventDisconnectAttempt() { return false; }
 	
 #else
 
@@ -306,7 +306,7 @@ public:
 	virtual int ItemShouldRespawn( CItem *pItem ) = 0;// Should this item respawn?
 	virtual float FlItemRespawnTime( CItem *pItem ) = 0;// when may this item respawn?
 	virtual Vector VecItemRespawnSpot( CItem *pItem ) = 0;// where in the world should this item respawn?
-	virtual QAngle VecItemRespawnAngles( CItem *pItem ) = 0;// what angles should this item use when respawing?
+	virtual QAngle VecItemRespawnAngles( CItem *pItem ) = 0;// what angles should this item use when respawning?
 
 // Ammo retrieval
 	virtual bool CanHaveAmmo( CBaseCombatCharacter *pPlayer, int iAmmoIndex ); // can this player take more of this ammo?
@@ -330,7 +330,6 @@ public:
 	virtual const char *GetTeamID( CBaseEntity *pEntity ) = 0;// what team is this entity on?
 	virtual int PlayerRelationship( CBaseEntity *pPlayer, CBaseEntity *pTarget ) = 0;// What is the player's relationship with this entity?
 	virtual bool PlayerCanHearChat( CBasePlayer *pListener, CBasePlayer *pSpeaker ) = 0;
-	virtual void CheckChatText( CBasePlayer *pPlayer, char *pText ) { return; }
 
 	virtual int GetTeamIndex( const char *pTeamName ) { return -1; }
 	virtual const char *GetIndexedTeamName( int teamIndex ) { return ""; }
@@ -354,15 +353,6 @@ public:
 
 	// Setup g_pPlayerResource (some mods use a different entity type here).
 	virtual void CreateStandardEntities();
-
-	// Team name, etc shown in chat and dedicated server console
-	virtual const char *GetChatPrefix( bool bTeamOnly, CBasePlayer *pPlayer );
-
-	// Location name shown in chat
-	virtual const char *GetChatLocation( bool bTeamOnly, CBasePlayer *pPlayer ) { return NULL; }
-
-	// VGUI format string for chat, if desired
-	virtual const char *GetChatFormat( bool bTeamOnly, CBasePlayer *pPlayer ) { return NULL; }
 
 	// Whether props that are on fire should get a DLIGHT.
 	virtual bool ShouldBurningPropsEmitLight() { return false; }

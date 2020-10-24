@@ -1321,17 +1321,6 @@
 	"wave"			"weapons/hegrenade/he_bounce-1.wav"
 }
 
-"Default.ClipEmpty_Rifle"
-{
-	"channel"		"CHAN_WEAPON"
-	"volume"		"1.0"
-	"CompatibilityAttenuation"	"1.0"
-	"pitch"		"PITCH_NORM"
-
-	"wave"			"weapons/ClipEmpty_Rifle.wav"
-}
-
-
 "Default.ClipEmpty_Pistol"
 {
 	"channel"		"CHAN_WEAPON"

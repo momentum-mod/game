@@ -760,7 +760,7 @@ CBaseEntity* CNPC_CScanner::BestInspectTarget(void)
 
 //------------------------------------------------------------------------------
 // Purpose: Clears any previous inspect target and set inspect target to
-//			 the given entity and set the durection of the inspection
+//			 the given entity and set the duration of the inspection
 //------------------------------------------------------------------------------
 void CNPC_CScanner::SetInspectTargetToEnt(CBaseEntity *pEntity, float fInspectDuration)
 {
@@ -773,7 +773,7 @@ void CNPC_CScanner::SetInspectTargetToEnt(CBaseEntity *pEntity, float fInspectDu
 
 //------------------------------------------------------------------------------
 // Purpose: Clears any previous inspect target and set inspect target to
-//			 the given hint node and set the durection of the inspection
+//			 the given hint node and set the duration of the inspection
 //------------------------------------------------------------------------------
 void CNPC_CScanner::SetInspectTargetToHint(CAI_Hint *pHint, float fInspectDuration)
 {
@@ -816,7 +816,7 @@ void CNPC_CScanner::SetInspectTargetToHint(CAI_Hint *pHint, float fInspectDurati
 
 //------------------------------------------------------------------------------
 // Purpose: Clears any previous inspect target and set inspect target to
-//			 the given position and set the durection of the inspection
+//			 the given position and set the duration of the inspection
 // Input   :
 // Output  :
 //------------------------------------------------------------------------------
@@ -1697,7 +1697,7 @@ Vector CNPC_CScanner::SpotlightCurrentPos(void)
 	}
 	// -------------------------------------------------
 	//  Beam has momentum relative to it's ground speed
-	//  so sclae the turn rate based on its distance
+	//  so scale the turn rate based on its distance
 	//  from the beam source
 	// -------------------------------------------------
 	float	fBeamDist		= (m_hSpotlightTarget->GetLocalOrigin() - GetLocalOrigin()).Length();
@@ -1821,7 +1821,7 @@ void CNPC_CScanner::SpotlightUpdate(void)
 
 	m_hSpotlightTarget->m_vSpotlightOrg = GetAbsOrigin();
 
-	// Avoid sudden change in where beam fades out when cross disconinuities
+	// Avoid sudden change in where beam fades out when cross discontinuities
 	m_hSpotlightTarget->m_vSpotlightDir = m_hSpotlightTarget->GetLocalOrigin() - m_hSpotlightTarget->m_vSpotlightOrg;
 	float flBeamLength	= VectorNormalize( m_hSpotlightTarget->m_vSpotlightDir );
 	m_flSpotlightCurLength = (0.80*m_flSpotlightCurLength) + (0.2*flBeamLength);
@@ -2663,7 +2663,7 @@ void CNPC_CScanner::MoveToPhotograph(float flInterval)
 //-----------------------------------------------------------------------------
 bool CNPC_CScanner::HandleInteraction(int interactionType, void *data, CBaseCombatCharacter* pSourceEnt)
 {
-	//	TODO:: - doing this by just an interrupt contition would be a lot better!
+	//	TODO:: - doing this by just an interrupt condition would be a lot better!
 	if (interactionType ==	g_interactionScannerSupportEntity)
 	{
 		// Only accept help request if I'm not already busy

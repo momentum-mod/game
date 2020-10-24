@@ -716,7 +716,7 @@ bool GameData::RemapNameField( const char *pszInValue, char *pszOutValue, TNameF
 	strcpy( pszOutValue, pszInValue );
 
 	if ( pszInValue[ 0 ] && pszInValue[ 0 ] != '@' )
-	{	// ! at the start of a value means it is global and should not be remaped
+	{	// ! at the start of a value means it is global and should not be remapped
 		switch( NameFixup )
 		{
 			case NAME_FIXUP_PREFIX:

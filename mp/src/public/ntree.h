@@ -11,7 +11,7 @@
 #include "List.h"
 #include "ArrayStack.h"
 
-// NTreeNode: Class decleration and definition
+// NTreeNode: Class declaration and definition
 template <class T> class NTreeNode
 {
 public:

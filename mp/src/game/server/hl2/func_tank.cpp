@@ -1134,7 +1134,7 @@ ConVar hap_turret_mag("hap_turret_mag", "5", 0);
 
 void CFuncTank::ControllerPostFrame( void )
 {
-	// Make sure we have a contoller.
+	// Make sure we have a controller.
 	Assert( m_hController != NULL );
 
 	// Control the firing rate.
@@ -4224,7 +4224,7 @@ void CFuncTankCombineCannon::FuncTankPostThink()
 
 			if( flDot >= 0.9f && m_bShouldHarrass )
 			{
-				//Msg("%s Harrassing player\n", GetDebugName() );
+				//Msg("%s Harassing player\n", GetDebugName() );
 				vecTargetPosition = pPlayer->EyePosition();
 				bHarass = true;
 			}

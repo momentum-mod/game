@@ -314,7 +314,7 @@ int Splitter::GetSubPanelCount() const
 
 
 //-----------------------------------------------------------------------------
-// Purpose: Applies resouce settings
+// Purpose: Applies resource settings
 //-----------------------------------------------------------------------------
 void Splitter::ApplySettings(KeyValues *inResourceData)
 {

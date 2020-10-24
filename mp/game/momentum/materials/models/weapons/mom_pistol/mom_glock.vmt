@@ -1,0 +1,21 @@
+PBR
+{
+	$baseTexture		models\weapons\mom_pistol\glock_C
+    $emissionTexture    models\weapons\mom_pistol\glock_E
+	$bumpmap			models\weapons\mom_pistol\glock_N
+	$MRAOTexture		models\weapons\mom_pistol\glock_MRAO
+	$envMap			    env_cubemap
+    $emissionScale      "[1 1 1]"
+
+	$model			1
+    $surfaceProp    "weapon"
+    
+    Proxies
+	{
+		PlayerSpeed
+		{
+			scale		0.003
+			resultvar	$emissionScale
+		}
+	}
+}

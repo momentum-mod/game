@@ -8,22 +8,11 @@
 #include "mom_system_gamemode.h"
 #include "mom_triggers.h"
 #include "movevars_shared.h"
+#include "run/mom_run_safeguards.h"
+#include "trigger_trace_enums.h"
 
 #include "tier0/memdbgon.h"
 
-class CTimeTriggerTraceEnum : public IEntityEnumerator
-{
-  public:
-    CTimeTriggerTraceEnum(Ray_t *pRay, Vector velocity) : m_vecVelocity(velocity), m_pRay(pRay) { m_flOffset = 0.0f; }
-
-    bool EnumEntity(IHandleEntity *pHandleEntity) OVERRIDE;
-    float GetOffset() { return m_flOffset; }
-
-  private:
-    float m_flOffset;
-    Vector m_vecVelocity;
-    Ray_t *m_pRay;
-};
 
 CMomentumTimer::CMomentumTimer() : CAutoGameSystemPerFrame("CMomentumTimer"),
       m_iStartTick(0), m_iEndTick(0), m_bIsRunning(false),
@@ -82,7 +71,7 @@ bool CMomentumTimer::Start(CMomentumPlayer *pPlayer)
     }
 
     // Perform all the checks to ensure player can start
-    if (g_pMOMSavelocSystem->IsUsingSaveLocMenu())
+    if (g_pSavelocSystem->IsUsingSaveLocMenu())
     {
         // MOM_TODO: Allow it based on gametype
         Warning("Cannot start timer while using save loc menu!\n");
@@ -163,7 +152,7 @@ void CMomentumTimer::Stop(CMomentumPlayer *pPlayer, bool bFinished /* = false */
 void CMomentumTimer::Reset(CMomentumPlayer *pPlayer)
 {
     // It'll get set to true if they teleport to a CP out of here
-    g_pMOMSavelocSystem->SetUsingSavelocMenu(false);
+    g_pSavelocSystem->SetUsingSavelocMenu(false);
     pPlayer->ResetRunStats();
     pPlayer->m_Data.m_bMapFinished = false;
     pPlayer->m_Data.m_bTimerRunning = false;
@@ -311,38 +300,6 @@ void CMomentumTimer::CalculateTickIntervalOffset(CMomentumPlayer *pPlayer, const
     SetIntervalOffset(zoneNumber, endTriggerTraceEnum.GetOffset());
 }
 
-// override of IEntityEnumerator's EnumEntity() in order for our trace to hit zone triggers
-bool CTimeTriggerTraceEnum::EnumEntity(IHandleEntity *pHandleEntity)
-{
-    trace_t tr;
-    // store entity that we found on the trace
-    CBaseEntity *pEnt = gEntList.GetBaseEntity(pHandleEntity->GetRefEHandle());
-
-    // Stop the trace if this entity is solid.
-    if (pEnt->IsSolid())
-        return false;
-
-    // if we aren't hitting a momentum trigger
-    // the return type of EnumEntity tells the engine whether to continue enumerating future entities
-    // or not.
-    if (Q_strnicmp(pEnt->GetClassname(), "trigger_momentum_", Q_strlen("trigger_momentum_")) == 1)
-        return false;
-
-    // In this case, we want to continue in case we hit another type of trigger.
-
-    enginetrace->ClipRayToEntity(*m_pRay, MASK_ALL, pHandleEntity, &tr);
-    if (tr.fraction > 0.0f)
-    {
-        m_flOffset = tr.startpos.DistTo(tr.endpos) / m_vecVelocity.Length();
-
-        // Account for slowmotion/timescale
-        m_flOffset /= gpGlobals->interval_per_tick / gpGlobals->frametime;
-        return true; // We hit our target
-    }
-
-    return false;
-}
-
 // Practice mode that stops the timer and allows the player to noclip.
 void CMomentumTimer::EnablePractice(CMomentumPlayer *pPlayer)
 {
@@ -397,102 +354,49 @@ CON_COMMAND_F(mom_restart,
               FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_SERVER_CAN_EXECUTE)
 {
     const auto pPlayer = CMomentumPlayer::GetLocalPlayer();
-    if (pPlayer)
-    {
-        int track = pPlayer->m_Data.m_iCurrentTrack;
-        if (args.ArgC() > 1)
-        {
-            track = Q_atoi(args[1]);
-        }
+    if (!pPlayer)
+        return;
 
-        pPlayer->TimerCommand_Restart(track);
-    }
+    if (g_pRunSafeguards->IsSafeguarded(RUN_SAFEGUARD_RESTART))
+        return;
+
+    int track = args.ArgC() > 1 ? Q_atoi(args[1]) : pPlayer->m_Data.m_iCurrentTrack;
+    pPlayer->TimerCommand_Restart(track);
 }
 
-CON_COMMAND_F(mom_reset, "Teleports the player back to the start of the current stage.\n",
+CON_COMMAND_F(mom_restart_stage, 
+              "Teleports the player back to the start of the current stage.\n"
+              "Optionally takes a stage or stage/track arguments which teleport the player to the desired "
+              "stage on the default (current) or desired track, but stops the timer.\n"
+              "Usage: mom_restart_stage [stage] [track]\n",
               FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_SERVER_CAN_EXECUTE)
 {
+    if (g_pGameModeSystem->GameModeIs(GAMEMODE_TRICKSURF))
+    {
+        Warning("This command deliberately does nothing in this gamemode!\n");
+        return;
+    }
+
     const auto pPlayer = CMomentumPlayer::GetLocalPlayer();
-    if (pPlayer)
+    if (!pPlayer)
+        return;
+
+    if (g_pRunSafeguards->IsSafeguarded(RUN_SAFEGUARD_RESTART_STAGE))
+        return;
+
+    int stage = 0, track = 0;
+    if (args.ArgC() > 1)
     {
-        pPlayer->TimerCommand_Reset();
+        stage = Q_atoi(args[1]);
+        track = args.ArgC() > 2 ? Q_atoi(args[2]) : pPlayer->m_Data.m_iCurrentTrack;
     }
-}
-
-CON_COMMAND_F(mom_stage_tele,
-              "Teleports the player to the desired stage. Stops the timer (Useful for mappers)\n"
-              "Usage: mom_stage_tele <stage> [track]\nThe default track is the current track the player is on.",
-              FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_SERVER_CAN_EXECUTE)
-{
-    CMomentumPlayer *pPlayer = CMomentumPlayer::GetLocalPlayer();
-    const Vector *pVec = nullptr;
-    const QAngle *pAng = nullptr;
-    if (pPlayer && pPlayer->AllowUserTeleports() && args.ArgC() >= 2)
+    else
     {
-        int track = pPlayer->m_Data.m_iCurrentTrack;
-        if (args.ArgC() > 2)
-        {
-            track = Q_atoi(args[2]);
-        }
-
-        // We get the desired index from the command (Remember that for us, args are 1 indexed)
-        const auto desiredIndex = Q_atoi(args[1]);
-        if (desiredIndex == 1)
-        {
-            // Index 1 is the start. If the timer has a mark, we use it
-            const auto pStartMark = pPlayer->GetStartMark(track);
-            if (pStartMark)
-            {
-                pVec = &pStartMark->pos;
-                pAng = &pStartMark->ang;
-            }
-            else
-            {
-                // If no mark was found, we teleport to the center of the start trigger
-                CBaseEntity *pEnt = g_pMomentumTimer->GetStartTrigger(track);
-                if (pEnt)
-                {
-                    pVec = &pEnt->GetAbsOrigin();
-
-                    if (track != pPlayer->m_Data.m_iCurrentTrack)
-                    {
-                        pPlayer->ResetRunStats();
-                        pPlayer->m_Data.m_iCurrentTrack = track;
-                    }
-                }
-            }
-        }
-        else
-        {
-            // Every other index is probably a stage (What about < 1 indexes? Mappers are weird and do "weirder"
-            // stuff so...)
-            CTriggerStage *pStage = nullptr;
-
-            while ((pStage = static_cast<CTriggerStage *>(
-                        gEntList.FindEntityByClassname(pStage, "trigger_momentum_timer_stage"))) != nullptr)
-            {
-                if (pStage && pStage->GetZoneNumber() == desiredIndex && pStage->GetTrackNumber() == track)
-                {
-                    pVec = &pStage->GetAbsOrigin();
-                    pAng = &pStage->GetAbsAngles();
-                    break;
-                }
-            }
-        }
-
-        // Teleport if we have a destination
-        if (pVec)
-        {
-            // pAng can be null here, it's okay
-            pPlayer->Teleport(pVec, pAng, &vec3_origin);
-            // Stop *after* the teleport
-            g_pMomentumTimer->Stop(pPlayer);
-        }
-        else
-        {
-            Warning("Could not teleport to stage %i! Perhaps it doesn't exist?\n", desiredIndex);
-        }
+        stage = pPlayer->m_Data.m_iCurrentZone;
+        track = pPlayer->m_Data.m_iCurrentTrack;
     }
+
+    pPlayer->TimerCommand_RestartStage(stage, track);
 }
 
 static CMomentumTimer s_Timer;

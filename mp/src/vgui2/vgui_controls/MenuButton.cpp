@@ -242,7 +242,7 @@ void MenuButton::OnCursorEntered()
 	ivgui()->PostMessage(GetVParent(), msg, NULL);
 }
 
-// This style is like the IE "back" button where the left side acts like a regular button, the the right side has a little
+// This style is like the IE "back" button where the left side acts like a regular button, and the right side has a little
 //  combo box dropdown indicator and presents and submenu
 void MenuButton::SetDropMenuButtonStyle( bool state )
 {

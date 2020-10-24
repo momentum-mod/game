@@ -33,38 +33,25 @@ $Project "GameUI"
 {
     $Folder "Source Files"
     {
-        $File   "BasePanel.cpp"
         $File   "GameConsole.cpp"
         $File   "GameUI_Interface.cpp"
-        $File   "ModInfo.cpp"
         $File   "MouseMessageForwardingPanel.cpp"
         $File   "PanelListPanel.cpp"
-        $File   "RunGameEngine.cpp"
-        $File   "TextEntryBox.cpp"
         $File   "$SRCDIR\public\vgui_controls\vgui_controls.cpp"
         $File   "$SRCDIR\common\language.cpp"
-        $File   "MainMenu.cpp"
-        $File   "MainMenuButton.cpp"
     }
 
     $Folder "Header Files"
     {
-        $File   "BasePanel.h"
-        $File   "EngineInterface.h"
         $File   "GameConsole.h"
         $File   "GameUI_Interface.h"
-        $File   "ModInfo.h"
         $File   "MouseMessageForwardingPanel.h"
         $File   "PanelListPanel.h"
-        $File   "TextEntryBox.h"
-        $File   "MainMenu.h"
-        $File   "MainMenuButton.h"
         $File   "$SRCDIR\game\shared\momentum\mom_shareddefs.h"
     }
 
     $Folder "Public Header Files"
     {
-        $File   "$SRCDIR\public\iachievementmgr.h"
         $File   "$SRCDIR\public\game\client\IGameClientExports.h"
         $File   "$SRCDIR\common\GameUI\IGameUI.h"
         $File   "$SRCDIR\public\IGameUIFuncs.h"
@@ -106,19 +93,5 @@ $Project "GameUI"
         $Lib       tier2
         $Lib       tier3
         $Lib       vgui_controls
-        $Lib       vtf
-        $ImpLib    steam_api
-        
-        $Lib $LIBCOMMON/libcrypto [$POSIX]
-
-        $ImpLib "$LIBCOMMON\curl" [$OSXALL]
-
-        $Lib   "$LIBCOMMON\libcurl" [$WIN32]
-        $Lib   "libz" [$WIN32]
-
-        $Libexternal libz [$LINUXALL]
-        $Libexternal "$LIBCOMMON/libcurl" [$LINUXALL]
-        $Libexternal "$LIBCOMMON/libcurlssl" [$LINUXALL]
-        $Libexternal "$LIBCOMMON/libssl" [$LINUXALL]
     }
 }

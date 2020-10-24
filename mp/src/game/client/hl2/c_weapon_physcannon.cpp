@@ -210,7 +210,7 @@ void ComputeRenderInfo( mstudiobbox_t *pHitBox, const matrix3x4_t &hitboxToWorld
 //-----------------------------------------------------------------------------
 int C_WeaponPhysCannon::DrawModel( int flags )
 {
-	// If we're not ugrading, don't do anything special
+	// If we're not upgrading, don't do anything special
 	if ( m_bIsCurrentlyUpgrading == false && m_bWasUpgraded == false )
 		return BaseClass::DrawModel( flags );
 

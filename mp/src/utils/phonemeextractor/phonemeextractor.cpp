@@ -1195,8 +1195,8 @@ void ComputeMissingByteSpans( int numsamples, CSentence& outwords )
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: Given a wavfile and a list of inwords, determines the word/phonene 
-//  sample counts for the sentce
+// Purpose: Given a wavfile and a list of inwords, determines the word/phoneme 
+//  sample counts for the sentence
 // Input  : *wavfile - 
 //			*inwords - 
 //			*outphonemes{	text.Clear( - 
@@ -1289,7 +1289,7 @@ static SR_RESULT SAPI_ExtractPhonemes(
 
 				const CWordTag *fromTag = inwords.m_Words[ frompos ];
 
-				// Reached end of destination list, just copy words over from from source list until
+				// Reached end of destination list, just copy words over from source list until
 				//  we run out of source words
 				if ( topos >= outwords.m_Words.Size() )
 				{
@@ -1345,7 +1345,7 @@ static SR_RESULT SAPI_ExtractPhonemes(
 				}
 				else
 				{
-					// Copy words from from source list into destination
+					// Copy words from source list into destination
 					// 
 					int skipCount = skipAhead - frompos;
 

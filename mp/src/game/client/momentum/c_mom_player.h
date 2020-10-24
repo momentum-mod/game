@@ -8,7 +8,7 @@ class C_MomentumReplayGhostEntity;
 
 class C_MomentumPlayer : public C_BasePlayer, public CMomRunEntity
 {
-  public:
+public:
     DECLARE_CLASS(C_MomentumPlayer, C_BasePlayer);
     DECLARE_CLIENTCLASS();
     DECLARE_PREDICTABLE();
@@ -29,7 +29,7 @@ class C_MomentumPlayer : public C_BasePlayer, public CMomRunEntity
     void OnDataChanged(DataUpdateType_t type) OVERRIDE;
     bool CreateMove(float flInputSampleTime, CUserCmd *pCmd) OVERRIDE;
 
-    bool HasAutoBhop() { return m_bAutoBhop; }
+    bool HasAutoBhop() const { return m_bAutoBhop; }
     // void ResetStrafeSync();
 
     // Ramp stuff
@@ -52,6 +52,7 @@ class C_MomentumPlayer : public C_BasePlayer, public CMomRunEntity
     CNetworkVar(int, m_iDirection); // Used in kickback effects for player
     CNetworkVar(int, m_iLastZoomFOV); // Last FOV when zooming
     CNetworkVar(bool, m_bSurfing);
+    CNetworkVar(int, m_nButtonsToggled); // Used by keypress hud
     CNetworkVector(m_vecRampBoardVel);
     CNetworkVector(m_vecRampLeaveVel);
 
@@ -60,6 +61,7 @@ class C_MomentumPlayer : public C_BasePlayer, public CMomRunEntity
 
     float m_fDuckTimer;
     int m_afButtonDisabled;
+    int m_iJumpTick;
     CNetworkVar(bool, m_bAutoBhop);
     bool m_bIsSprinting, m_bIsWalking;
 
@@ -73,7 +75,7 @@ class C_MomentumPlayer : public C_BasePlayer, public CMomRunEntity
     virtual float GetCurrentRunTime() OVERRIDE;
     uint64 GetSteamID() override;
 
-    CNetworkHandle(C_TriggerSlide, m_CurrentSlideTrigger); 
+    CNetworkHandle(C_TriggerSlide, m_CurrentSlideTrigger);
 
     void FireBullet(Vector vecSrc, const QAngle &shootAngles, float vecSpread, int iBulletType, CBaseEntity *pevAttacker, bool bDoEffects,
                     float x, float y);
@@ -88,17 +90,59 @@ class C_MomentumPlayer : public C_BasePlayer, public CMomRunEntity
     float GetGrabbableLadderTime() const { return m_flGrabbableLadderTime; }
     void SetGrabbableLadderTime(float new_time) { m_flGrabbableLadderTime = new_time; }
 
-    // Last collision
-    void SetLastCollision(const trace_t &tr);
-    int GetLastCollisionTick() const { return m_iLastCollisionTick; }
-    trace_t& GetLastCollisionTrace() { return m_trLastCollisionTrace; }
-  private:
+    // Surface interactions
+    int GetInteractionIndex(SurfInt::Type type) const;
+    const SurfInt& GetInteraction(int index) const;
+    bool SetLastInteraction(const trace_t &tr, const Vector &velocity, SurfInt::Type type);
+    void UpdateLastAction(SurfInt::Action action);
+
+    // Mobility sound functions
+    void PlayStepSound(const Vector &vecOrigin, surfacedata_t *psurface, float fvol, bool force) override;
+    virtual void PlayAirjumpSound(const Vector &vecOrigin);
+    virtual void PlayPowerSlideSound(const Vector &vecOrigin);
+    virtual void StopPowerSlideSound();
+    virtual void PlayWallRunSound(const Vector &vecOrigin);
+    virtual void StopWallRunSound();
+
+    Vector GetEscapeVel() const { return m_vecCornerEscapeVel; }
+    void SetEscapeVel(const Vector &vecNewYaw) { m_vecCornerEscapeVel = vecNewYaw; }
+
+private:
+    // Mobility mod (parkour)
+    bool m_bWasSprinting;
+    bool m_bIsPowerSliding;
+    WallRunState m_nWallRunState;
+    Vector m_vecWallNorm;
+    float m_flAutoViewTime; // if wallrunning, when should start adjusting the view 
+    bool m_bWallRunBumpAhead; // are we moving out from the wall anticipating a bump?
+    Vector m_vecLastWallRunPos; // Position when we ended the last wallrun
+    AirJumpState m_nAirJumpState; // Is the airjump ready, in progress, or done?
+    // Is the player allowed to jump while in the air
+    bool CanAirJump() const
+    {
+        return m_nAirJumpState != AIRJUMP_DONE &&
+            m_nAirJumpState != AIRJUMP_NORM_JUMPING;
+    }
+    HSOUNDSCRIPTHANDLE m_hssPowerSlideSound;
+    HSOUNDSCRIPTHANDLE m_hssWallRunSound;
+
+    // When a wallrun ends or we go over a cliff, allow a window when
+    // jumping counts as a normal jump off the ground/wall, even though
+    // technically airborn. Compensating for player's perception/reflexes.
+    // This is the absolute time until which we allow the special jump
+    float m_flCoyoteTime; 
+
+    // Sometimes we want to have a little cooldown for wallrunning - 
+    // mostly if a wallrun ended because it was above a doorway
+    float m_flNextWallRunTime;
+    Vector m_vecCornerEscapeVel;
+
     // Ladder stuff
     float m_flGrabbableLadderTime;
 
-    // Last collision
-    int m_iLastCollisionTick; // Tick at which the player last collided with a non-vertical surface
-    trace_t m_trLastCollisionTrace; // (startpos and endpos raised up to player head for ceilings)
+    // List of airborne surface interations and start and end ground interactions
+    SurfInt m_surfIntList[SurfInt::TYPE_COUNT]; // Stores interactions by type
+    SurfInt::Type m_surfIntHistory[SurfInt::TYPE_COUNT]; // Keeps track of the history of interactions
 
     float m_flStamina;
 

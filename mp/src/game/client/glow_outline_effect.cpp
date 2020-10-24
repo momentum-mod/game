@@ -12,11 +12,12 @@
 #include "materialsystem/itexture.h"
 #include "view_shared.h"
 #include "viewpostprocess.h"
+#include "clienteffectprecachesystem.h"
 
 #define FULL_FRAME_TEXTURE "_rt_FullFrameFB"
 
 ConVar mat_glow_outline_enable( "mat_glow_outline_enable", "1", FCVAR_ARCHIVE, "Enable entity outline glow effects." );
-ConVar mat_glow_outline_width( "mat_glow_outline_width", "3.0f", FCVAR_CHEAT, "Width of glow outline effect in screen space." );
+ConVar mat_glow_outline_width( "mat_glow_outline_width", "6.0f", FCVAR_CHEAT, "Width of glow outline effect in screen space." );
 
 extern bool g_bDumpRenderTargets; // in viewpostprocess.cpp
 
@@ -55,7 +56,15 @@ struct ShaderStencilState_t
 	}
 };
 
-void CGlowObjectManager::RenderGlowEffects( const CViewSetup *pSetup, int nSplitScreenSlot )
+CLIENTEFFECT_REGISTER_BEGIN(PrecachePostProcessingEffectsGlow)
+CLIENTEFFECT_MATERIAL("dev/glow_color")
+CLIENTEFFECT_MATERIAL("dev/glow_downsample")
+CLIENTEFFECT_MATERIAL("dev/glow_blur_x")
+CLIENTEFFECT_MATERIAL("dev/glow_blur_y")
+CLIENTEFFECT_MATERIAL("dev/halo_add_to_screen")
+CLIENTEFFECT_REGISTER_END()
+
+void CGlowObjectManager::RenderGlowEffects( const CViewSetup *pSetup )
 {
 	if ( g_pMaterialSystemHardwareConfig->SupportsPixelShaders_2_0() )
 	{
@@ -63,23 +72,13 @@ void CGlowObjectManager::RenderGlowEffects( const CViewSetup *pSetup, int nSplit
 		{
 			CMatRenderContextPtr pRenderContext( materials );
 
-			int nX, nY, nWidth, nHeight;
-			pRenderContext->GetViewport( nX, nY, nWidth, nHeight );
-
 			PIXEvent _pixEvent( pRenderContext, "EntityGlowEffects" );
-			ApplyEntityGlowEffects( pSetup, nSplitScreenSlot, pRenderContext, mat_glow_outline_width.GetFloat(), nX, nY, nWidth, nHeight );
+			ApplyEntityGlowEffects( pSetup, pRenderContext, mat_glow_outline_width.GetFloat() );
 		}
 	}
 }
 
-static void SetRenderTargetAndViewPort( ITexture *rt, int w, int h )
-{
-	CMatRenderContextPtr pRenderContext( materials );
-	pRenderContext->SetRenderTarget(rt);
-	pRenderContext->Viewport(0,0,w,h);
-}
-
-void CGlowObjectManager::RenderGlowModels( const CViewSetup *pSetup, int nSplitScreenSlot, CMatRenderContextPtr &pRenderContext )
+void CGlowObjectManager::RenderGlowModels( const CViewSetup *pSetup, CMatRenderContextPtr &pRenderContext )
 {
 	//==========================================================================================//
 	// This renders solid pixels with the correct coloring for each object that needs the glow.	//
@@ -97,7 +96,7 @@ void CGlowObjectManager::RenderGlowModels( const CViewSetup *pSetup, int nSplitS
 	ITexture *pRtFullFrame = NULL;
 	pRtFullFrame = materials->FindTexture( FULL_FRAME_TEXTURE, TEXTURE_GROUP_RENDER_TARGET );
 
-	SetRenderTargetAndViewPort( pRtFullFrame, pSetup->width, pSetup->height );
+	SetRenderTargetAndViewPort( pRtFullFrame );
 
 	pRenderContext->ClearColor3ub( 0, 0, 0 );
 	pRenderContext->ClearBuffers( true, false, false );
@@ -124,7 +123,7 @@ void CGlowObjectManager::RenderGlowModels( const CViewSetup *pSetup, int nSplitS
 	//==================//
 	for ( int i = 0; i < m_GlowObjectDefinitions.Count(); ++ i )
 	{
-		if ( m_GlowObjectDefinitions[i].IsUnused() || !m_GlowObjectDefinitions[i].ShouldDraw( nSplitScreenSlot ) )
+		if ( m_GlowObjectDefinitions[i].IsUnused() || !m_GlowObjectDefinitions[i].ShouldDraw() )
 			continue;
 
 		render->SetBlend( m_GlowObjectDefinitions[i].m_flGlowAlpha );
@@ -150,7 +149,114 @@ void CGlowObjectManager::RenderGlowModels( const CViewSetup *pSetup, int nSplitS
 	pRenderContext->PopRenderTargetAndViewport();
 }
 
-void CGlowObjectManager::ApplyEntityGlowEffects( const CViewSetup *pSetup, int nSplitScreenSlot, CMatRenderContextPtr &pRenderContext, float flGlowWidth, int x, int y, int w, int h )
+void CGlowObjectManager::DownSampleAndBlurRT( const CViewSetup *pSetup, IMatRenderContext *pRenderContext, float flBloomScale, ITexture *pRtFullFrame, ITexture *pRtQuarterSize0, ITexture *pRtQuarterSize1 )
+{
+	static bool s_bFirstPass = true;
+
+	//===================================
+	// Setup state for downsample/bloom
+	//===================================
+
+	pRenderContext->PushRenderTargetAndViewport();
+
+	// Get viewport
+	int nSrcWidth = pSetup->width;
+	int nSrcHeight = pSetup->height;
+	int nViewportX, nViewportY, nViewportWidth, nViewportHeight;
+	pRenderContext->GetViewport( nViewportX, nViewportY, nViewportWidth, nViewportHeight );
+
+	// Get material and texture pointers
+	IMaterial *pMatDownsample = materials->FindMaterial( "dev/glow_downsample", TEXTURE_GROUP_OTHER, true);
+	IMaterial *pMatBlurX = materials->FindMaterial( "dev/glow_blur_x", TEXTURE_GROUP_OTHER, true );
+	IMaterial *pMatBlurY = materials->FindMaterial( "dev/glow_blur_y", TEXTURE_GROUP_OTHER, true );
+
+	//============================================
+	// Downsample _rt_FullFrameFB to _rt_SmallFB0
+	//============================================
+
+	// First clear the full target to black if we're not going to touch every pixel
+	if ( ( pRtQuarterSize0->GetActualWidth() != ( pSetup->width / 4 ) ) || ( pRtQuarterSize0->GetActualHeight() != ( pSetup->height / 4 ) ) )
+	{
+		SetRenderTargetAndViewPort( pRtQuarterSize0 );
+		pRenderContext->ClearColor3ub( 0, 0, 0 );
+		pRenderContext->ClearBuffers( true, false, false );
+	}
+
+	// Set the viewport
+	SetRenderTargetAndViewPort( pRtQuarterSize0 );
+
+	IMaterialVar *pbloomexpvar = pMatDownsample->FindVar( "$bloomexp", 0 );
+	if ( pbloomexpvar != NULL )
+	{
+		pbloomexpvar->SetFloatValue( 2.5f );
+	}
+
+	IMaterialVar *pbloomsaturationvar = pMatDownsample->FindVar( "$bloomsaturation", 0 );
+	if ( pbloomsaturationvar != NULL )
+	{
+		pbloomsaturationvar->SetFloatValue( 1.0f );
+	}
+
+	// note the -2's below. Thats because we are downsampling on each axis and the shader
+	// accesses pixels on both sides of the source coord
+	int nFullFbWidth = nSrcWidth;
+	int nFullFbHeight = nSrcHeight;
+
+	pRenderContext->DrawScreenSpaceRectangle( pMatDownsample, 0, 0, nSrcWidth/4, nSrcHeight/4,
+		0, 0, nFullFbWidth - 4, nFullFbHeight - 4,
+		pRtFullFrame->GetActualWidth(), pRtFullFrame->GetActualHeight() );
+
+	if ( g_bDumpRenderTargets )
+	{
+		DumpTGAofRenderTarget( nSrcWidth/4, nSrcHeight/4, "QuarterSizeFB" );
+	}
+
+	//============================//
+	// Guassian blur x rt0 to rt1 //
+	//============================//
+
+	// First clear the full target to black if we're not going to touch every pixel
+	if ( s_bFirstPass || ( pRtQuarterSize1->GetActualWidth() != ( pSetup->width / 4 ) ) || ( pRtQuarterSize1->GetActualHeight() != ( pSetup->height / 4 ) ) )
+	{
+		// On the first render, this viewport may require clearing
+		s_bFirstPass = false;
+		SetRenderTargetAndViewPort( pRtQuarterSize1 );
+		pRenderContext->ClearColor3ub( 0, 0, 0 );
+		pRenderContext->ClearBuffers( true, false, false );
+	}
+
+	// Set the viewport
+	SetRenderTargetAndViewPort( pRtQuarterSize1 );
+
+	pRenderContext->DrawScreenSpaceRectangle( pMatBlurX, 0, 0, nSrcWidth/4, nSrcHeight/4,
+		0, 0, nSrcWidth/4-1, nSrcHeight/4-1,
+		pRtQuarterSize0->GetActualWidth(), pRtQuarterSize0->GetActualHeight() );
+
+	if ( g_bDumpRenderTargets )
+	{
+		DumpTGAofRenderTarget( nSrcWidth/4, nSrcHeight/4, "GlowX" );
+	}
+
+	//============================//
+	// Gaussian blur y rt1 to rt0 //
+	//============================//
+	SetRenderTargetAndViewPort( pRtQuarterSize0 );
+	IMaterialVar *pBloomAmountVar = pMatBlurY->FindVar( "$bloomamount", NULL );
+	pBloomAmountVar->SetFloatValue( flBloomScale );
+	pRenderContext->DrawScreenSpaceRectangle( pMatBlurY, 0, 0, nSrcWidth / 4, nSrcHeight / 4,
+		0, 0, nSrcWidth / 4 - 1, nSrcHeight / 4 - 1,
+		pRtQuarterSize1->GetActualWidth(), pRtQuarterSize1->GetActualHeight() );
+
+	if ( g_bDumpRenderTargets )
+	{
+		DumpTGAofRenderTarget( nSrcWidth/4, nSrcHeight/4, "GlowYAndBloom" );
+	}
+
+	// Pop RT
+	pRenderContext->PopRenderTargetAndViewport();
+}
+
+void CGlowObjectManager::ApplyEntityGlowEffects( const CViewSetup *pSetup, CMatRenderContextPtr &pRenderContext, float flGlowWidth )
 {
 	//=======================================================//
 	// Render objects into stencil buffer					 //
@@ -171,7 +277,7 @@ void CGlowObjectManager::ApplyEntityGlowEffects( const CViewSetup *pSetup, int n
 
 	for ( int i = 0; i < m_GlowObjectDefinitions.Count(); ++ i )
 	{
-		if ( m_GlowObjectDefinitions[i].IsUnused() || !m_GlowObjectDefinitions[i].ShouldDraw( nSplitScreenSlot ) )
+		if ( m_GlowObjectDefinitions[i].IsUnused() || !m_GlowObjectDefinitions[i].ShouldDraw() )
 			continue;
 
 		if ( m_GlowObjectDefinitions[i].m_bRenderWhenOccluded || m_GlowObjectDefinitions[i].m_bRenderWhenUnoccluded )
@@ -228,7 +334,7 @@ void CGlowObjectManager::ApplyEntityGlowEffects( const CViewSetup *pSetup, int n
 	// Need to do a 2nd pass to warm stencil for objects which are rendered only when occluded
 	for ( int i = 0; i < m_GlowObjectDefinitions.Count(); ++ i )
 	{
-		if ( m_GlowObjectDefinitions[i].IsUnused() || !m_GlowObjectDefinitions[i].ShouldDraw( nSplitScreenSlot ) )
+		if ( m_GlowObjectDefinitions[i].IsUnused() || !m_GlowObjectDefinitions[i].ShouldDraw() )
 			continue;
 
 		if ( m_GlowObjectDefinitions[i].m_bRenderWhenOccluded && !m_GlowObjectDefinitions[i].m_bRenderWhenUnoccluded )
@@ -260,10 +366,8 @@ void CGlowObjectManager::ApplyEntityGlowEffects( const CViewSetup *pSetup, int n
 	//=============================================
 	// Render the glow colors to _rt_FullFrameFB 
 	//=============================================
-	{
-		PIXEvent pixEvent( pRenderContext, "RenderGlowModels" );
-		RenderGlowModels( pSetup, nSplitScreenSlot, pRenderContext );
-	}
+	PIXEvent pixEvent( pRenderContext, "RenderGlowModels" );
+	RenderGlowModels( pSetup, pRenderContext );
 	
 	// Get viewport
 	int nSrcWidth = pSetup->width;
@@ -272,54 +376,55 @@ void CGlowObjectManager::ApplyEntityGlowEffects( const CViewSetup *pSetup, int n
 	pRenderContext->GetViewport( nViewportX, nViewportY, nViewportWidth, nViewportHeight );
 
 	// Get material and texture pointers
+	ITexture *pRtFullFrame = materials->FindTexture( FULL_FRAME_TEXTURE, TEXTURE_GROUP_RENDER_TARGET );
+	ITexture *pRtQuarterSize0 = materials->FindTexture( "_rt_SmallFB0", TEXTURE_GROUP_RENDER_TARGET );
 	ITexture *pRtQuarterSize1 = materials->FindTexture( "_rt_SmallFB1", TEXTURE_GROUP_RENDER_TARGET );
+	
+	DownSampleAndBlurRT( pSetup, pRenderContext, flGlowWidth, pRtFullFrame, pRtQuarterSize0, pRtQuarterSize1 );
 
-	{
-		//=======================================================================================================//
-		// At this point, pRtQuarterSize0 is filled with the fully colored glow around everything as solid glowy //
-		// blobs. Now we need to stencil out the original objects by only writing pixels that have no            //
-		// stencil bits set in the range we care about.                                                          //
-		//=======================================================================================================//
-		IMaterial *pMatHaloAddToScreen = materials->FindMaterial( "dev/halo_add_to_screen", TEXTURE_GROUP_OTHER, true );
+	//=======================================================================================================//
+	// At this point, pRtQuarterSize0 is filled with the fully colored glow around everything as solid glowy //
+	// blobs. Now we need to stencil out the original objects by only writing pixels that have no            //
+	// stencil bits set in the range we care about.                                                          //
+	//=======================================================================================================//
+	IMaterial *pMatHaloAddToScreen = materials->FindMaterial( "dev/halo_add_to_screen", TEXTURE_GROUP_OTHER, true );
 
-		// Do not fade the glows out at all (weight = 1.0)
-		IMaterialVar *pDimVar = pMatHaloAddToScreen->FindVar( "$C0_X", nullptr );
-		pDimVar->SetFloatValue( 1.0f );
+	// Do not fade the glows out at all (weight = 1.0)
+	IMaterialVar *pDimVar = pMatHaloAddToScreen->FindVar( "$C0_X", nullptr );
+	pDimVar->SetFloatValue( 1.0f );
 
-		float flSampleOffsetX = flGlowWidth * ( 1.0f / nSrcWidth );
-		float flSampleOffsetY = flGlowWidth * ( 1.0f / nSrcHeight );
+	float flSampleOffsetX = flGlowWidth * ( 1.0f / nSrcWidth );
+	float flSampleOffsetY = flGlowWidth * ( 1.0f / nSrcHeight );
 
-		IMaterialVar *pSampleOffsetX = pMatHaloAddToScreen->FindVar( "$C1_X", nullptr );
-		pSampleOffsetX->SetFloatValue( flSampleOffsetX );
-		IMaterialVar *pSampleOffsetY = pMatHaloAddToScreen->FindVar( "$C1_Y", nullptr );
-		pSampleOffsetY->SetFloatValue( flSampleOffsetY );
+	IMaterialVar *pSampleOffsetX = pMatHaloAddToScreen->FindVar( "$C1_X", nullptr );
+	pSampleOffsetX->SetFloatValue( flSampleOffsetX );
+	IMaterialVar *pSampleOffsetY = pMatHaloAddToScreen->FindVar( "$C1_Y", nullptr );
+	pSampleOffsetY->SetFloatValue( flSampleOffsetY );
 
-		// Set stencil state
-		ShaderStencilState_t stencilState;
-		stencilState.m_bEnable = true;
-		stencilState.m_nWriteMask = 0x0; // We're not changing stencil
-		stencilState.m_nTestMask = 0xFF;
-		stencilState.m_nReferenceValue = 0x0;
-		stencilState.m_CompareFunc = STENCILCOMPARISONFUNCTION_EQUAL;
-		stencilState.m_PassOp = STENCILOPERATION_KEEP;
-		stencilState.m_FailOp = STENCILOPERATION_KEEP;
-		stencilState.m_ZFailOp = STENCILOPERATION_KEEP;
-		stencilState.SetStencilState( pRenderContext );
+	// Set stencil state
+	ShaderStencilState_t stencilState;
+	stencilState.m_bEnable = true;
+	stencilState.m_nWriteMask = 0x0; // We're not changing stencil
+	stencilState.m_nTestMask = 0xFF;
+	stencilState.m_nReferenceValue = 0x0;
+	stencilState.m_CompareFunc = STENCILCOMPARISONFUNCTION_EQUAL;
+	stencilState.m_PassOp = STENCILOPERATION_KEEP;
+	stencilState.m_FailOp = STENCILOPERATION_KEEP;
+	stencilState.m_ZFailOp = STENCILOPERATION_KEEP;
+	stencilState.SetStencilState( pRenderContext );
 
-		// Draw quad
-		pRenderContext->DrawScreenSpaceRectangle( pMatHaloAddToScreen, 0, 0, nViewportWidth, nViewportHeight,
-			0.0f, -0.5f, nSrcWidth / 4 - 1, nSrcHeight / 4 - 1,
-			pRtQuarterSize1->GetActualWidth(),
-			pRtQuarterSize1->GetActualHeight() );
+	// Draw quad
+	pRenderContext->DrawScreenSpaceRectangle( pMatHaloAddToScreen, 0, 0, nViewportWidth, nViewportHeight,
+		0.0f, -0.5f, nSrcWidth / 4 - 1, nSrcHeight / 4 - 1,
+		pRtQuarterSize1->GetActualWidth(),
+		pRtQuarterSize1->GetActualHeight() );
 
-		stencilStateDisable.SetStencilState( pRenderContext );
-	}
+	stencilStateDisable.SetStencilState( pRenderContext );
 }
 
-bool CGlowObjectManager::GlowObjectDefinition_t::ShouldDraw(int nSlot) const
+bool CGlowObjectManager::GlowObjectDefinition_t::ShouldDraw()
 {
     return m_hEntity.Get() &&
-        (m_nSplitScreenSlot == GLOW_FOR_ALL_SPLIT_SCREEN_SLOTS || m_nSplitScreenSlot == nSlot) &&
         (m_bRenderWhenOccluded || m_bRenderWhenUnoccluded) &&
         m_hEntity->ShouldDraw() &&
         !m_hEntity->IsDormant();

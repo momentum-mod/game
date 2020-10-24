@@ -109,7 +109,6 @@ class CMapSelectorDialog : public vgui::Frame
     void OnMapDownloadEnd(KeyValues *pKv);
 
     bool IsMapDownloading(uint32 uMapID) const;
-    MapDownloadProgress *GetDownloadProgressPanel(uint32 uMapID);
 
     // Called when map should be added to/removed from library
     MESSAGE_FUNC_INT(OnAddMapToLibrary, "AddToLibrary", id);

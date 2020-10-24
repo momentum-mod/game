@@ -346,7 +346,7 @@ void CWeaponAR2::FireNPCPrimaryAttack( CBaseCombatCharacter *pOperator, bool bUs
 
 	pOperator->FireBullets( 1, vecShootOrigin, vecShootDir, VECTOR_CONE_PRECALCULATED, MAX_TRACE_LENGTH, m_iPrimaryAmmoType, 2 );
 
-	// NOTENOTE: This is overriden on the client-side
+	// NOTENOTE: This is overridden on the client-side
 	// pOperator->DoMuzzleFlash();
 
 	m_iClip1 = m_iClip1 - 1;

@@ -1394,7 +1394,7 @@ void HTML::BrowserOpenNewTab( HTML_OpenLinkInNewTab_t *pCmd )
         return;
 
     OnBrowserOpenNewTab(pCmd);
-	// Not suppored by default, if a child class overrides us and knows how to handle tabs, then it can do this.
+	// Not supported by default, if a child class overrides us and knows how to handle tabs, then it can do this.
 }
 
 //-----------------------------------------------------------------------------
@@ -1789,9 +1789,9 @@ void HTML::BrowserJSConfirm( HTML_JSConfirm_t *pCmd )
 {
     if (IsCurrentBrowser(pCmd->unBrowserHandle))
     {
-        QueryBox *pDlg = new QueryBox(m_sCurrentURL, (const char *) pCmd->pchMessage, this);
+        QueryBox *pDlg = new QueryBox(m_sCurrentURL, pCmd->pchMessage, this);
         pDlg->AddActionSignalTarget(this);
-        pDlg->SetOKCommand(new KeyValues("DismissJSDialog", "result", true));
+        pDlg->SetCommand(new KeyValues("DismissJSDialog", "result", true));
         pDlg->SetCancelCommand(new KeyValues("DismissJSDialog", "result", false));
         pDlg->DoModal();
     }

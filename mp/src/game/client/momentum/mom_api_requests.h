@@ -124,6 +124,7 @@ public:
     bool GetMapInfo(uint32 mapID, CallbackFunc func);
     bool GetMapByName(const char *pMapName, CallbackFunc func);
     bool GetMapZones(uint32 uMapID, CallbackFunc func);
+    bool GetMapTrickData(uint32 uMapID, CallbackFunc func);
     bool GetUserMapLibrary(CallbackFunc func);
     // bAddToLibrary being false means "remove from library"
     bool SetMapInLibrary(uint32 mapID, bool bAddToLibrary, CallbackFunc func);
@@ -152,6 +153,7 @@ public:
      * @param func      The callback function
      */
     bool GetUserStatsAndMapRank(uint64 profileID, uint32 mapID, CallbackFunc func);
+    bool GetUserRunHistory(uint32 userID, CallbackFunc func, KeyValues *pKvFilters = nullptr);
 
     // ==== File Downloading ====
     /**

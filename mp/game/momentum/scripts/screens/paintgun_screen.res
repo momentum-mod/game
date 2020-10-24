@@ -1,4 +1,0 @@
-"paintgun_screen.res"
-{
-	
-}

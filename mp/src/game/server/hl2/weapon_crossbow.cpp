@@ -188,7 +188,7 @@ void CCrossbowBolt::Precache( void )
 {
 	PrecacheModel( BOLT_MODEL );
 
-	// This is used by C_TEStickyBolt, despte being different from above!!!
+	// This is used by C_TEStickyBolt, despite being different from above!!!
 	PrecacheModel( "models/crossbow_bolt.mdl" );
 
 	PrecacheModel( "sprites/light_glow02_noz.vmt" );

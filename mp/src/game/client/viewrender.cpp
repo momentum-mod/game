@@ -782,6 +782,8 @@ CLIENTEFFECT_REGISTER_BEGIN(PrecachePostProcessingEffects)
 	CLIENTEFFECT_MATERIAL( "dev/copyfullframefb_vanilla" )
 	CLIENTEFFECT_MATERIAL( "dev/copyfullframefb" )
 	CLIENTEFFECT_MATERIAL( "dev/engine_post" )
+	CLIENTEFFECT_MATERIAL( "dev/depth_of_field" )
+	CLIENTEFFECT_MATERIAL( "dev/blurgaussian_3x3" )
 	CLIENTEFFECT_MATERIAL( "dev/motion_blur" )
 	CLIENTEFFECT_MATERIAL( "dev/upscale" )
 
@@ -1973,8 +1975,18 @@ void CViewRender::RenderView( const CViewSetup &viewSetup, int nClearFlags, int 
 		RenderPlayerSprites();
 
 		// Image-space motion blur
-		if ( !building_cubemaps.GetBool() && viewSetup.m_bDoBloomAndToneMapping ) // We probably should use a different view. variable here
+		if ( !building_cubemaps.GetBool() ) // We probably should use a different view. variable here
 		{
+			if ( IsDepthOfFieldEnabled() )
+			{
+				pRenderContext.GetFrom( materials );
+				{
+					PIXEVENT( pRenderContext, "DoDepthOfField()" );
+					DoDepthOfField( viewSetup );
+				}
+				pRenderContext.SafeRelease();
+			}
+
 			if ( ( mat_motion_blur_enabled.GetInt() ) && ( g_pMaterialSystemHardwareConfig->GetDXSupportLevel() >= 90 ) )
 			{
 				pRenderContext.GetFrom( materials );
@@ -2011,7 +2023,7 @@ void CViewRender::RenderView( const CViewSetup &viewSetup, int nClearFlags, int 
 		// Prevent sound stutter if going slow
 		engine->Sound_ExtraUpdate();	
 	
-		if ( !building_cubemaps.GetBool() && viewSetup.m_bDoBloomAndToneMapping )
+		if ( !building_cubemaps.GetBool() )
 		{
 			pRenderContext.GetFrom( materials );
 			{
@@ -2100,10 +2112,12 @@ void CViewRender::RenderView( const CViewSetup &viewSetup, int nClearFlags, int 
 		UpscaleRect.width = viewSetup.m_nUnscaledWidth;
 		UpscaleRect.height = viewSetup.m_nUnscaledHeight;
 
+		pRenderContext.GetFrom( materials );
 		pRenderContext->CopyRenderTargetToTextureEx( pFullFrameFB1, 0, &DownscaleRect, &DownscaleRect );
 		pRenderContext->DrawScreenSpaceRectangle( pCopyMaterial, UpscaleRect.x, UpscaleRect.y, UpscaleRect.width, UpscaleRect.height,
 			DownscaleRect.x, DownscaleRect.y, DownscaleRect.x+DownscaleRect.width-1, DownscaleRect.y+DownscaleRect.height-1, 
 			pFullFrameFB1->GetActualWidth(), pFullFrameFB1->GetActualHeight() );
+		pRenderContext.SafeRelease();
 
 		pCopyMaterial->DecrementReferenceCount();
 	}
@@ -4667,7 +4681,7 @@ bool CSkyboxView::Setup( const CViewSetup &viewSetup, int *pClearFlags, SkyboxVi
 	// The next path will need to clear depth, though.
 	m_ClearFlags = *pClearFlags;
 	*pClearFlags &= ~( VIEW_CLEAR_COLOR | VIEW_CLEAR_DEPTH | VIEW_CLEAR_STENCIL | VIEW_CLEAR_FULL_TARGET );
-	*pClearFlags |= VIEW_CLEAR_DEPTH; // Need to clear depth after rednering the skybox
+	*pClearFlags |= VIEW_CLEAR_DEPTH; // Need to clear depth after rendering the skybox
 
 	m_DrawFlags = DF_RENDER_UNDERWATER | DF_RENDER_ABOVEWATER | DF_RENDER_WATER;
 	if( r_skybox.GetBool() )
@@ -5695,7 +5709,7 @@ void CUnderWaterView::Setup( const CViewSetup &viewSetup, bool bDrawSkybox, cons
 	CalcWaterEyeAdjustments( fogInfo, m_waterHeight, m_waterZAdjust, m_bSoftwareUserClipPlane );
 
 	IMaterial *pWaterMaterial = fogInfo.m_pFogVolumeMaterial;
-	if (engine->GetDXSupportLevel() >= 90 )					// screen voerlays underwater are a dx9 feature
+	if (engine->GetDXSupportLevel() >= 90 )					// screen overlays underwater are a dx9 feature
 	{
 		IMaterialVar *pScreenOverlayVar = pWaterMaterial->FindVar( "$underwateroverlay", NULL, false );
 		if ( pScreenOverlayVar && ( pScreenOverlayVar->IsDefined() ) )

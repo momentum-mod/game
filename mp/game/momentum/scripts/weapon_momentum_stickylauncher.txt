@@ -17,16 +17,17 @@ WeaponData
 
     "ModelData"
     {
-        "view"      "models/weapons/mom_stickylauncher_classic/mom_stickylauncher_classic.mdl"
-        "world"     "models/weapons/mom_stickylauncher_classic/mom_stickylauncher_classic.mdl"
+        "view"      "models/weapons/mom_stickylauncher/v_mom_stickylauncher.mdl"
+        "world"     "models/weapons/mom_stickylauncher/w_mom_stickylauncher.mdl"
 
-        "sticky"    "models/weapons/mom_stickybomb_classic/mom_stickybomb_classic.mdl"
+        "sticky"    "models/weapons/mom_stickylauncher/mom_stickybomb/mom_stickybomb.mdl"
     }
 
     // Sounds for the weapon.
     SoundData
     {
         "single_shot"       "StickybombLauncher.Single"
+        "charged_shot"      "StickybombLauncher.ChargedShot"
         "explosion"         "StickybombLauncher.Explosion"
         "detonate"          "StickybombLauncher.Detonate"
         "deny"              "StickybombLauncher.Deny"
@@ -35,15 +36,14 @@ WeaponData
     }
     
     // Weapon particles
-    // MOM_TODO: Add Momentum versions of the trail and pulse particles and blue versions of TF2 particles
     ParticleData
     {
         "ExplosionEffect"          "mom_rocket_explosion_c"
         "ExplosionMidAirEffect"    "mom_rocket_explosion_b"
         "ExplosionWaterEffect"     "mom_rocket_explosion_b_"
 
-        "StickybombTrail"       "mom_sticky_blue"
-        "StickybombPulse"       "mom_stickypulse_blue"
+        "StickybombTrail"       "mom_sticky_regular"     // or mom_sticky_helper / mom_sticky_rainbow / mom_sticky_white Default: mom_sticky_regular
+        "StickybombPulse"       "mom_stickypulse_blue"  // or mom_stickypulse_red Default: mom_stickypulse_blue
     }
 
     // Weapon Sprite data is loaded by the Client DLL.

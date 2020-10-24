@@ -45,7 +45,7 @@ struct Bitmap_t
 	/// as appropriate.
 	void SetBuffer( int nWidth, int nHeight, ImageFormat imageFormat, unsigned char *pBits, bool bAssumeOwnership, int nStride = 0 );
 
-	/// Sets / releases ownershp of the buffer.  This does not otherwise alter the
+	/// Sets / releases ownership of the buffer.  This does not otherwise alter the
 	/// state of the bitmap.
 	void SetOwnsBuffer( bool bOwnsBuffer )
 	{

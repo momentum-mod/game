@@ -14,7 +14,7 @@
 
 //-----------------------------------------------------------------------------
 // Purpose: iterates through a typedescript data block, so it can insert key/value data into the block
-// Input  : *pObject - pointer to the struct or class the data is to be insterted into
+// Input  : *pObject - pointer to the struct or class the data is to be inserted into
 //			*pFields - description of the data
 //			iNumFields - number of fields contained in pFields
 //			char *szKeyName - name of the variable to look for
@@ -124,7 +124,7 @@ bool ParseKeyvalue( void *pObject, typedescription_t *pFields, int iNumFields, c
 
 //-----------------------------------------------------------------------------
 // Purpose: iterates through a typedescript data block, so it can insert key/value data into the block
-// Input  : *pObject - pointer to the struct or class the data is to be insterted into
+// Input  : *pObject - pointer to the struct or class the data is to be inserted into
 //			*pFields - description of the data
 //			iNumFields - number of fields contained in pFields
 //			char *szKeyName - name of the variable to look for

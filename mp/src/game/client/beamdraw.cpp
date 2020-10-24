@@ -282,7 +282,7 @@ void DrawSegs( int noise_divisions, float *prgNoise, const model_t* spritemodel,
 		vStep = length*div;	
 	}
 	
-	// UNDONE: Expose this paramter as well(3.5)?  Texture scroll rate along beam
+	// UNDONE: Expose this parameter as well(3.5)?  Texture scroll rate along beam
 	vLast = fmod(freq*speed,1);	// Scroll speed 3.5 -- initial texture position, scrolls 3.5/sec (1.0 is entire texture)
 
 	if ( flags & FBEAM_SINENOISE )
@@ -385,7 +385,7 @@ void DrawSegs( int noise_divisions, float *prgNoise, const model_t* spritemodel,
 				float	s, c;
 				SinCos( fraction*M_PI*length + freq, &s, &c );
 				VectorMA( curSeg.m_vPos, factor * s, CurrentViewUp(), curSeg.m_vPos );
-				// Rotate the noise along the perpendicluar axis a bit to keep the bolt from looking diagonal
+				// Rotate the noise along the perpendicular axis a bit to keep the bolt from looking diagonal
 				VectorMA( curSeg.m_vPos, factor * c, CurrentViewRight(), curSeg.m_vPos );
 			}
 			else
@@ -510,7 +510,7 @@ void DrawTeslaSegs( int noise_divisions, float *prgNoise, const model_t* spritem
 	// UNDONE: Expose texture length scale factor to control "fuzziness"
 	vStep = length*div;	// Texture length texels per space pixel
 
-	// UNDONE: Expose this paramter as well(3.5)?  Texture scroll rate along beam
+	// UNDONE: Expose this parameter as well(3.5)?  Texture scroll rate along beam
 	vLast = fmod(freq*speed,1);	// Scroll speed 3.5 -- initial texture position, scrolls 3.5/sec (1.0 is entire texture)
 
 	brightness = 1.0;
@@ -773,7 +773,7 @@ void DrawSplineSegs( int noise_divisions, float *prgNoise,
 		// UNDONE: Expose texture length scale factor to control "fuzziness"
 		vStep = length*div;	// Texture length texels per space pixel
 
-		// UNDONE: Expose this paramter as well(3.5)?  Texture scroll rate along beam
+		// UNDONE: Expose this parameter as well(3.5)?  Texture scroll rate along beam
 		vLast = fmod(freq*speed,1);	// Scroll speed 3.5 -- initial texture position, scrolls 3.5/sec (1.0 is entire texture)
 
 		if ( flags & FBEAM_SINENOISE )
@@ -820,7 +820,7 @@ void DrawSplineSegs( int noise_divisions, float *prgNoise,
 			fraction = i * div;
 
 			// Fade in our out beam to fadeLength
-			// BUG BUG: should be based on total lengh of beam not this particular fraction
+			// BUG BUG: should be based on total length of beam not this particular fraction
 			if ( flags & FBEAM_SHADEIN )
 			{
 				brightness = fraction/fadeFraction;
@@ -885,13 +885,13 @@ void DrawSplineSegs( int noise_divisions, float *prgNoise,
 					float	s, c;
 					SinCos( fraction*M_PI*length + freq, &s, &c );
 					VectorMA( seg.m_vPos, factor * s, CurrentViewUp(), seg.m_vPos );
-					// Rotate the noise along the perpendicluar axis a bit to keep the bolt from looking diagonal
+					// Rotate the noise along the perpendicular axis a bit to keep the bolt from looking diagonal
 					VectorMA( seg.m_vPos, factor * c, CurrentViewRight(), seg.m_vPos );
 				}
 				else
 				{
 					VectorMA( seg.m_vPos, factor, CurrentViewUp(), seg.m_vPos );
-					// Rotate the noise along the perpendicluar axis a bit to keep the bolt from looking diagonal
+					// Rotate the noise along the perpendicular axis a bit to keep the bolt from looking diagonal
 					factor = prgNoise[noiseIndex>>16] * scale * cos(fraction*M_PI*3+freq);
 					VectorMA( seg.m_vPos, factor, CurrentViewRight(), seg.m_vPos );
 				}
@@ -1040,7 +1040,7 @@ void DrawDisk( int noise_divisions, float *prgNoise, const model_t* spritemodel,
 	// UNDONE: Expose texture length scale factor to control "fuzziness"
 	vStep = length*div;	// Texture length texels per space pixel
 	
-	// UNDONE: Expose this paramter as well(3.5)?  Texture scroll rate along beam
+	// UNDONE: Expose this parameter as well(3.5)?  Texture scroll rate along beam
 	vLast = fmod(freq*speed,1);	// Scroll speed 3.5 -- initial texture position, scrolls 3.5/sec (1.0 is entire texture)
 	scale = scale * length;
 
@@ -1138,7 +1138,7 @@ void DrawCylinder( int noise_divisions, float *prgNoise, const model_t* spritemo
 	// UNDONE: Expose texture length scale factor to control "fuzziness"
 	vStep = length*div;	// Texture length texels per space pixel
 	
-	// UNDONE: Expose this paramter as well(3.5)?  Texture scroll rate along beam
+	// UNDONE: Expose this parameter as well(3.5)?  Texture scroll rate along beam
 	vLast = fmod(freq*speed,1);	// Scroll speed 3.5 -- initial texture position, scrolls 3.5/sec (1.0 is entire texture)
 	scale = scale * length;
 	
@@ -1231,7 +1231,7 @@ void DrawRing( int noise_divisions, float *prgNoise, void (*pfnNoise)( float *no
 	// UNDONE: Expose texture length scale factor to control "fuzziness"
 	vStep = length*div/8.0;	// Texture length texels per space pixel
 	
-	// UNDONE: Expose this paramter as well(3.5)?  Texture scroll rate along beam
+	// UNDONE: Expose this parameter as well(3.5)?  Texture scroll rate along beam
 	vLast = fmod(freq*speed,1);	// Scroll speed 3.5 -- initial texture position, scrolls 3.5/sec (1.0 is entire texture)
 	scale = amplitude * length / 8.0;
 
@@ -1288,7 +1288,7 @@ void DrawRing( int noise_divisions, float *prgNoise, void (*pfnNoise)( float *no
 			factor = prgNoise[(noiseIndex>>16) & 0x7F] * scale;
 			VectorMA( point, factor, CurrentViewUp(), point );
 
-			// Rotate the noise along the perpendicluar axis a bit to keep the bolt from looking diagonal
+			// Rotate the noise along the perpendicular axis a bit to keep the bolt from looking diagonal
 			factor = prgNoise[(noiseIndex>>16) & 0x7F] * scale * cos(fraction*M_PI*3*8+freq);
 			VectorMA( point, factor, CurrentViewRight(), point );
 		}
@@ -1303,7 +1303,7 @@ void DrawRing( int noise_divisions, float *prgNoise, void (*pfnNoise)( float *no
 			// We don't need Z, we're in screen space
 			tmp[2] = 0;
 			VectorNormalize( tmp );
-			VectorScale( CurrentViewUp(), tmp[0], normal );	// Build point along noraml line (normal is -y, x)
+			VectorScale( CurrentViewUp(), tmp[0], normal );	// Build point along normal line (normal is -y, x)
 			VectorMA( normal, -tmp[1], CurrentViewRight(), normal );
 			
 			// Make a wide line
@@ -1386,7 +1386,7 @@ void DrawBeamFollow( const model_t* spritemodel, BeamTrail_t* pHead, int frame, 
 	// We don't need Z, we're in screen space
 	tmp[2] = 0;
 	VectorNormalize( tmp );
-	VectorScale( CurrentViewUp(), tmp[0], normal );	// Build point along noraml line (normal is -y, x)
+	VectorScale( CurrentViewUp(), tmp[0], normal );	// Build point along normal line (normal is -y, x)
 	VectorMA( normal, -tmp[1], CurrentViewRight(), normal );
 	
 	// Make a wide line
@@ -1437,7 +1437,7 @@ void DrawBeamFollow( const model_t* spritemodel, BeamTrail_t* pHead, int frame, 
 		// We don't need Z, we're in screen space
 		tmp[2] = 0;
 		VectorNormalize( tmp );
-		VectorScale( CurrentViewUp(), tmp[0], normal );	// Build point along noraml line (normal is -y, x)
+		VectorScale( CurrentViewUp(), tmp[0], normal );	// Build point along normal line (normal is -y, x)
 		VectorMA( normal, -tmp[1], CurrentViewRight(), normal );
 		
 		// Make a wide line

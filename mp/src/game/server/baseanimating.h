@@ -141,7 +141,7 @@ public:
 	virtual void Teleport( const Vector *newPosition, const QAngle *newAngles, const Vector *newVelocity );
 
 	bool HasAnimEvent( int nSequence, int nEvent );
-	virtual	void DispatchAnimEvents ( CBaseAnimating *eventHandler ); // Handle events that have happend since last time called up until X seconds into the future
+	virtual	void DispatchAnimEvents ( CBaseAnimating *eventHandler ); // Handle events that have happened since last time called up until X seconds into the future
 	virtual void HandleAnimEvent( animevent_t *pEvent );
 
 	int		LookupPoseParameter( CStudioHdr *pStudioHdr, const char *szName );
@@ -161,7 +161,7 @@ public:
 
 protected:
 	// The modus operandi for pose parameters is that you should not use the const char * version of the functions
-	// in general code -- it causes many many string comparisons, which is slower than you think. Better is to 
+	// in general code -- it causes many string comparisons, which is slower than you think. Better is to 
 	// save off your pose parameters in member variables in your derivation of this function:
 	virtual void	PopulatePoseParameters( void );
 
@@ -380,7 +380,7 @@ public:
 	QAngle	GetStepAngles( void ) const;
 
 private:
-	bool				m_bSequenceFinished;// flag set when StudioAdvanceFrame moves across a frame boundry
+	bool				m_bSequenceFinished;// flag set when StudioAdvanceFrame moves across a frame boundary
 	bool				m_bSequenceLoops;	// true if the sequence loops
 	bool				m_bResetSequenceInfoOnLoad; // true if a ResetSequenceInfo was queued up during dynamic load
 	float				m_flDissolveStartTime;
@@ -448,7 +448,7 @@ friend class CBlendingCycler;
 };
 
 //-----------------------------------------------------------------------------
-// Purpose: return a pointer to an updated studiomdl cache cache
+// Purpose: return a pointer to an updated studiomdl cache
 //-----------------------------------------------------------------------------
 inline CStudioHdr *CBaseAnimating::GetModelPtr( void ) 
 { 

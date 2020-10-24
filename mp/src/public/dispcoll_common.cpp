@@ -166,9 +166,9 @@ FORCEINLINE int IntersectRayWithFourBoxes( const FourVectors &rayStart, const Fo
 	hitMins *= invDelta;
 	hitMaxs *= invDelta;
 
-	// Find the exit parametric intersection distance in each dimesion, for each box
+	// Find the exit parametric intersection distance in each dimension, for each box
 	FourVectors exitT = maximum(hitMins,hitMaxs);
-	// Find the entry parametric intersection distance in each dimesion, for each box
+	// Find the entry parametric intersection distance in each dimension, for each box
 	FourVectors entryT = minimum(hitMins,hitMaxs);
 
 	// now find the max overall entry distance across all dimensions for each box
@@ -231,7 +231,7 @@ FORCEINLINE int IntersectFourBoxSpherePairs( const FourVectors &center, const fl
 	totalDist.x = MaxSIMD(dist.x, maxDist.x);
 	totalDist.y = MaxSIMD(dist.y, maxDist.y);
 	totalDist.z = MaxSIMD(dist.z, maxDist.z);
-	// get the total squred distance between each box & sphere center by summing the squares of each
+	// get the total squared distance between each box & sphere center by summing the squares of each
 	// component/dimension
 	fltx4 distSq = totalDist * totalDist;
 
@@ -300,7 +300,7 @@ bool CDispCollTree::AABBTree_Create( CCoreDispInfo *pDisp )
 	// Copy necessary displacement data.
 	AABBTree_CopyDispData( pDisp );
 	
-	// Setup/create the leaf nodes first so the recusion can use this data to stop.
+	// Setup/create the leaf nodes first so the recursion can use this data to stop.
 	AABBTree_CreateLeafs();
 
 	// Create the bounding box of the displacement surface + the base face.
@@ -1189,7 +1189,7 @@ bool CDispCollTree::Cache_EdgeCrossAxisY( const Vector &vecEdge, const Vector &v
 	float flOffDist = ( vecNormal.x * vecOffEdge.x ) + ( vecNormal.z * vecOffEdge.z );
 	if ( !( FloatMakePositive( flOffDist - flDist ) < DISPCOLL_DIST_EPSILON ) && ( flOffDist > flDist ) )
 	{
-		// Adjust plane facing if necessay - triangle should be behind the plane.
+		// Adjust plane facing if necessary - triangle should be behind the plane.
 		vecNormal.x = -vecNormal.x;
 		vecNormal.y = -flDist;
 		vecNormal.z = -vecNormal.z;
@@ -1237,7 +1237,7 @@ bool CDispCollTree::Cache_EdgeCrossAxisZ( const Vector &vecEdge, const Vector &v
 	float flOffDist = ( vecNormal.x * vecOffEdge.x ) + ( vecNormal.y * vecOffEdge.y );
 	if ( !( FloatMakePositive( flOffDist - flDist ) < DISPCOLL_DIST_EPSILON ) && ( flOffDist > flDist ) )
 	{
-		// Adjust plane facing if necessay - triangle should be behind the plane.
+		// Adjust plane facing if necessary - triangle should be behind the plane.
 		vecNormal.x = -vecNormal.x;
 		vecNormal.y = -vecNormal.y;
 		vecNormal.z = -flDist;
@@ -1278,7 +1278,7 @@ bool CDispCollTree::EdgeCrossAxis( const Ray_t &ray, unsigned short iPlane, CDis
 	const int OTHER_AXIS1 = ( AXIS + 1 ) % 3;
 	const int OTHER_AXIS2 = ( AXIS + 2 ) % 3;
 
-	// Get the pland distance are "fix" the normal.
+	// Get the plane distance and "fix" the normal.
 	float flDist = vecNormal[AXIS];
 	vecNormal[AXIS] = 0.0f;
 

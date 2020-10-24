@@ -1324,7 +1324,7 @@ Vector CNPC_MetroPolice::StitchAimTarget( const Vector &posSrc, bool bNoisy )
 		return trace.endpos;
 	}
 
-	// NOTE: HACK! Ths 0.08 is where the water level happens to be.
+	// NOTE: HACK! The 0.08 is where the water level happens to be.
 	// We probably want to find the exact water level and use that as the z position.
 	Vector vecBodyTarget;
 	if ( !bNoisy )
@@ -2033,7 +2033,7 @@ void CNPC_MetroPolice::SteerBurstTowardTargetUseSpeedOnly( const Vector &vecShoo
 	const Vector &vecShootAtVelocity, float flPredictTime, int nShotsTillPredict )
 {
 	// Only account for changes in *speed*; ignore all changes in velocity direction, etc.
-	// This one only hits the player if there is *no* steering, just acceleration or decceleration
+	// This one only hits the player if there is *no* steering, just acceleration or deceleration
 	Vector vecBurstDir = m_vecBurstPredictedVelocityDir;
 	float flActualSpeed = DotProduct( vecShootAtVelocity, vecBurstDir );
 
@@ -2117,7 +2117,7 @@ void CNPC_MetroPolice::SteerBurstWithinLineOfDeath( )
 	}
 	else
 	{
-		// Just make the burst go back and forth alont the line of death...
+		// Just make the burst go back and forth along the line of death...
 		Vector vecNext = m_vecBurstTargetPos + m_vecBurstDelta;
 
 		float t;
@@ -2869,7 +2869,7 @@ void CNPC_MetroPolice::OnAnimEventShove( void )
 			//Push the target back
 			pHurt->ApplyAbsVelocityImpulse( forward * 250.0f );
 
-			// Force the player to drop anyting they were holding
+			// Force the player to drop anything they were holding
 			pPlayer->ForceDropOfCarriedPhysObjects();
 		}
 

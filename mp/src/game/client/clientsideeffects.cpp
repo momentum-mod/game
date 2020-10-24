@@ -37,7 +37,7 @@ bool FXCreationAllowed( void )
 	return g_FXCreationAllowed;
 }
 
-// TODO:  Sort effects and their children back to front from view positon?  At least with buckets or something.
+// TODO:  Sort effects and their children back to front from view position?  At least with buckets or something.
 
 //
 //-----------------------------------------------------------------------------

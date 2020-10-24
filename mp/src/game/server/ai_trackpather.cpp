@@ -758,7 +758,7 @@ void CAI_TrackPather::ComputePointFromPerpDistance( const Vector &vecPointOnPath
 
 //-----------------------------------------------------------------------------
 // Finds the closest point on the path, returns a signed perpendicular distance
-// where negative means on the left side of the path (when travelled from prev to next)
+// where negative means on the left side of the path (when traveled from prev to next)
 // and positive means on the right side
 //-----------------------------------------------------------------------------
 CPathTrack *CAI_TrackPather::FindClosestPointOnPath( CPathTrack *pPath, 
@@ -1123,7 +1123,7 @@ void CAI_TrackPather::UpdateTargetPositionLeading( void )
 		// NOTE: This is really tricky + subtle
 		// For leading, we don't want to ever change direction when the current target == the
 		// adjusted destination target. Namely, if we're going forward, both dest + curr
-		// mean the "next"most node so we can compare them directly against eath other.
+		// mean the "next"most node so we can compare them directly against each other.
 		// If we're moving backward, dest means "next"most, but curr means "prev"most.
 		// We first have to adjust the dest to mean "prev"most, and then do the comparison.
 		// If the adjusted dest == curr, then maintain direction. Otherwise, use the forward along path test.
@@ -1471,7 +1471,7 @@ float CAI_TrackPather::ComputePathDistance( CPathTrack *pPath, CPathTrack *pDest
 	BEGIN_PATH_TRACK_ITERATION();
 	while ( CPathTrack::ValidPath( pPath ) )
 	{
-		// Ciruclar loop checking
+		// Circular loop checking
 		if ( pPath->HasBeenVisited() )
 			return FLT_MAX;
 

@@ -1099,7 +1099,7 @@ void CNotifyList::AddEntity( CBaseEntity *pNotify, CBaseEntity *pWatched )
 	notify.pWatched = pWatched;
 }
 
-// Remove noitfication for an entity
+// Remove notification for an entity
 void CNotifyList::RemoveEntity( CBaseEntity *pNotify, CBaseEntity *pWatched )
 {
 	for ( int i = m_notifyList.Count(); --i >= 0; )

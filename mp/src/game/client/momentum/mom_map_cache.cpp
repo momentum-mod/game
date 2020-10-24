@@ -724,6 +724,9 @@ void CMapCache::PreLevelInit(KeyValues* pKv)
 
 void CMapCache::LevelInitPreEntity()
 {
+    if (g_pGameModeSystem->GameModeIs(GAMEMODE_TRICKSURF))
+        return; // Tricksurf system handles getting zones and tricks
+
     if (m_pCurrentMapData && m_pCurrentMapData->m_bInLibrary)
     {
         g_pAPIRequests->GetMapZones(m_pCurrentMapData->m_uID, UtlMakeDelegate(this, &CMapCache::OnFetchMapZones));

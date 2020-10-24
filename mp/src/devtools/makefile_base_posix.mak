@@ -13,8 +13,8 @@
 #  @	command is not printed to stdout before being executed
 #  +	command is executed even if Make is invoked in "do not exec" mode
 
-OS := $(shell uname)
-HOSTNAME := $(shell hostname)
+OS := $(shell /bin/uname)
+HOSTNAME := $(shell /bin/hostname)
 
 -include $(SRCROOT)/devtools/steam_def.mak
 -include $(SRCROOT)/devtools/sourcesdk_def.mak
@@ -267,21 +267,21 @@ ifeq ($(BUILDING_MULTI_ARCH),1)
 	COMPILE_FILE = \
 		$(QUIET_PREFIX) \
 		echo "---- $(lastword $(subst /, ,$<)) as MULTIARCH----";\
-		mkdir -p $(OBJ_DIR) && \
+		/bin/mkdir -p $(OBJ_DIR) && \
 		$(CXX) $(SINGLE_ARCH_CXXFLAGS) $(GENDEP_CXXFLAGS) -o $@ -c $< && \
 		$(CXX) $(CXXFLAGS) -o $@ -c $<
 else
 	COMPILE_FILE = \
 		$(QUIET_PREFIX) \
 		echo "---- $(lastword $(subst /, ,$<)) ----";\
-		mkdir -p $(OBJ_DIR) && \
+		/bin/mkdir -p $(OBJ_DIR) && \
 		$(CXX) $(CXXFLAGS) $(GENDEP_CXXFLAGS) -o $@ -c $<
 endif
 
 ifneq "$(origin VALVE_NO_AUTO_P4)" "undefined"
-	P4_EDIT_START = chmod -R +w
-	P4_EDIT_END = || true
-	P4_REVERT_START = true
+	P4_EDIT_START = /bin/chmod -R +w
+	P4_EDIT_END = || /bin/true
+	P4_REVERT_START = /bin/true
 	P4_REVERT_END =
 else
 	ifndef P4_EDIT_CHANGELIST
@@ -290,7 +290,7 @@ else
 		# export P4_EDIT_CHANGELIST_CMD="echo 1424335"
 		# ?= means that if P4_EDIT_CHANGELIST_CMD is already set it won't be changed.
 		P4_EDIT_CHANGELIST_CMD ?= $(P4BIN) changes -c `$(P4BIN) client -o | grep ^Client | cut -f 2` -s pending | fgrep 'POSIX Auto Checkout' | cut -d' ' -f 2 | tail -n 1
-		P4_EDIT_CHANGELIST := $(shell $(P4_EDIT_CHANGELIST_CMD))
+		P4_EDIT_CHANGELIST := $(shell /bin/$(P4_EDIT_CHANGELIST_CMD))
 	endif
 	ifeq ($(P4_EDIT_CHANGELIST),)
 		# If we haven't found a changelist to check out to then create one. The name must match the one from a few
@@ -298,7 +298,7 @@ else
 		# Warning: the behavior of 'echo' is not consistent. In bash you need the "-e" option in order for \n to be
 		# interpreted as a line-feed, but in dash you do not, and if "-e" is passed along then it is printed, which
 		# confuses p4. So, if you run this command from the bash shell don't forget to add "-e" to the echo command.
-		P4_EDIT_CHANGELIST = $(shell echo -e "Change: new\nDescription: POSIX Auto Checkout" | $(P4BIN) change -i | cut -f 2 -d ' ')
+		P4_EDIT_CHANGELIST = $(shell /bin/echo -e "Change: new\nDescription: POSIX Auto Checkout" | $(P4BIN) change -i | cut -f 2 -d ' ')
 	endif
 
 	P4_EDIT_START := for f in
@@ -327,7 +327,7 @@ rebuild :
 relink: RemoveOutputFile all
 
 RemoveOutputFile:
-	rm -f $(OUTPUTFILE)
+	/bin/rm -f $(OUTPUTFILE)
 
 
 # This rule is so you can say "make SingleFile SingleFilename=/home/myname/valve_main/src/engine/language.cpp" and have it only build that file.
@@ -336,12 +336,12 @@ SingleFile : RemoveSingleFile $(OBJ_DIR)/$(basename $(notdir $(SingleFilename)))
 	@echo ""
 
 RemoveSingleFile:
-	$(QUIET_PREFIX) rm -f $(OBJ_DIR)/$(basename $(notdir $(SingleFilename))).o
+	$(QUIET_PREFIX) /bin/rm -f $(OBJ_DIR)/$(basename $(notdir $(SingleFilename))).o
 
 clean:
 ifneq "$(OBJ_DIR)" ""
 	$(QUIET_PREFIX) echo "rm -rf $(OBJ_DIR)"
-	$(QUIET_PREFIX) rm -rf $(OBJ_DIR)
+	$(QUIET_PREFIX) /bin/rm -rf $(OBJ_DIR)
 endif
 ifneq "$(OUTPUTFILE)" ""
 	$(QUIET_PREFIX) if [ -e $(OUTPUTFILE) ]; then \
@@ -351,7 +351,7 @@ ifneq "$(OUTPUTFILE)" ""
 endif
 ifneq "$(OTHER_DEPENDENCIES)" ""
 	$(QUIET_PREFIX) echo "rm -f $(OTHER_DEPENDENCIES)"
-	$(QUIET_PREFIX) rm -f $(OTHER_DEPENDENCIES)
+	$(QUIET_PREFIX) /bin/rm -f $(OTHER_DEPENDENCIES)
 endif
 ifneq "$(GAMEOUTPUTFILE)" ""
 	$(QUIET_PREFIX) echo "$(P4BIN) revert $(GAMEOUTPUTFILE)"
@@ -370,7 +370,7 @@ ifneq "$(OBJ_DIR)" ""
 endif
 ifneq "$(OUTPUTFILE)" ""
 	$(QUIET_PREFIX) if [ -e $(OUTPUTFILE) ]; then \
-		echo "$(P4BIN) edit and rm -f $(OUTPUTFILE) $(OUTPUTFILE)$(SYM_EXT)"; \
+		echo "$(P4BIN) edit and /bin/rm -f $(OUTPUTFILE) $(OUTPUTFILE)$(SYM_EXT)"; \
 		$(P4_EDIT_START) $(OUTPUTFILE) $(OUTPUTFILE)$(SYM_EXT) $(P4_EDIT_END); \
 	fi;
 	$(QUIET_PREFIX) -rm -f $(OUTPUTFILE) $(OUTPUTFILE)$(SYM_EXT);
@@ -380,7 +380,7 @@ ifneq "$(OTHER_DEPENDENCIES)" ""
 	$(QUIET_PREFIX) -rm -f $(OTHER_DEPENDENCIES)
 endif
 ifneq "$(GAMEOUTPUTFILE)" ""
-	$(QUIET_PREFIX) echo "$(P4BIN) edit and rm -f $(GAMEOUTPUTFILE) $(GAMEOUTPUTFILE)$(SYM_EXT)"
+	$(QUIET_PREFIX) echo "$(P4BIN) edit and /bin/rm -f $(GAMEOUTPUTFILE) $(GAMEOUTPUTFILE)$(SYM_EXT)"
 	$(QUIET_PREFIX) $(P4_EDIT_START) $(GAMEOUTPUTFILE) $(GAMEOUTPUTFILE)$(SYM_EXT) $(P4_EDIT_END)
 	$(QUIET_PREFIX) -rm -f $(GAMEOUTPUTFILE)
 endif
@@ -388,7 +388,7 @@ endif
 
 # This just deletes the final targets so it'll do a relink next time we build.
 cleantargets:
-	$(QUIET_PREFIX) rm -f $(OUTPUTFILE) $(GAMEOUTPUTFILE)
+	$(QUIET_PREFIX) /bin/rm -f $(OUTPUTFILE) $(GAMEOUTPUTFILE)
 
 
 $(LIB_File): $(OTHER_DEPENDENCIES) $(OBJS) 
@@ -406,9 +406,9 @@ $(SO_GameOutputFile): $(SO_File)
 	echo "---- COPYING TO $@ [$(CFG)] ----";\
 	echo "----" $(QUIET_ECHO_POSTFIX);
 	$(QUIET_PREFIX) -$(P4_EDIT_START) $(GAMEOUTPUTFILE) $(P4_EDIT_END);
-	$(QUIET_PREFIX) -mkdir -p `dirname $(GAMEOUTPUTFILE)` > /dev/null;
-	$(QUIET_PREFIX) rm -f $(GAMEOUTPUTFILE) $(QUIET_ECHO_POSTFIX);
-	$(QUIET_PREFIX) cp -v $(OUTPUTFILE) $(GAMEOUTPUTFILE) $(QUIET_ECHO_POSTFIX);
+	$(QUIET_PREFIX) -/bin/mkdir -p `dirname $(GAMEOUTPUTFILE)` > /dev/null;
+	$(QUIET_PREFIX) /bin/rm -f $(GAMEOUTPUTFILE) $(QUIET_ECHO_POSTFIX);
+	$(QUIET_PREFIX) /bin/cp -v $(OUTPUTFILE) $(GAMEOUTPUTFILE) $(QUIET_ECHO_POSTFIX);
 	$(QUIET_PREFIX) -$(P4_EDIT_START) $(GAMEOUTPUTFILE)$(SYM_EXT) $(P4_EDIT_END);
 	$(QUIET_PREFIX) $(GEN_SYM) $(GAMEOUTPUTFILE); 
 	$(QUIET_PREFIX) -$(STRIP) $(GAMEOUTPUTFILE);
@@ -417,16 +417,16 @@ $(SO_GameOutputFile): $(SO_File)
 		echo "----" $(QUIET_ECHO_POSTFIX);\
 		echo "---- COPYING TO $(Srv_GAMEOUTPUTFILE) ----";\
 		echo "----" $(QUIET_ECHO_POSTFIX);\
-		cp -v $(GAMEOUTPUTFILE) $(Srv_GAMEOUTPUTFILE) $(QUIET_ECHO_POSTFIX);\
-		cp -v $(GAMEOUTPUTFILE)$(SYM_EXT) $(Srv_GAMEOUTPUTFILE)$(SYM_EXT) $(QUIET_ECHO_POSTFIX);\
+		/bin/cp -v $(GAMEOUTPUTFILE) $(Srv_GAMEOUTPUTFILE) $(QUIET_ECHO_POSTFIX);\
+		/bin/cp -v $(GAMEOUTPUTFILE)$(SYM_EXT) $(Srv_GAMEOUTPUTFILE)$(SYM_EXT) $(QUIET_ECHO_POSTFIX);\
 	fi;
 	$(QUIET_PREFIX) if [ "$(IMPORTLIBRARY)" != "" ]; then\
 		echo "----" $(QUIET_ECHO_POSTFIX);\
 		echo "---- COPYING TO IMPORT LIBRARY $(IMPORTLIBRARY) ----";\
 		echo "----" $(QUIET_ECHO_POSTFIX);\
 		$(P4_EDIT_START) $(IMPORTLIBRARY) $(P4_EDIT_END) && \
-		mkdir -p `dirname $(IMPORTLIBRARY)` > /dev/null && \
-		cp -v $(OUTPUTFILE) $(IMPORTLIBRARY); \
+		/bin/mkdir -p `dirname $(IMPORTLIBRARY)` > /dev/null && \
+		/bin/cp -v $(OUTPUTFILE) $(IMPORTLIBRARY); \
 	fi;
 
 

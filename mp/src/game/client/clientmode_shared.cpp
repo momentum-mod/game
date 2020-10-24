@@ -13,7 +13,6 @@
 #include "iinput.h"
 #include "view_shared.h"
 #include "iviewrender.h"
-#include "hud_basechat.h"
 #include "weapon_selection.h"
 #include <vgui/IVGui.h>
 #include <vgui/Cursor.h>
@@ -37,6 +36,10 @@
 #include "hud_vote.h"
 #include "ienginevgui.h"
 #include "viewpostprocess.h"
+
+#include "chat/ChatPanel.h"
+#include "chat/ChatFilterPanel.h"
+#include "chat/ChatEntry.h"
 
 #if defined USES_ECON_ITEMS
 #include "econ_item_view.h"
@@ -245,7 +248,6 @@ static void __MsgFunc_VGUIMenu( bf_read &msg )
 ClientModeShared::ClientModeShared()
 {
 	m_pViewport = NULL;
-	m_pChatElement = NULL;
 	m_pWeaponSelection = NULL;
 	m_nRootSize[ 0 ] = m_nRootSize[ 1 ] = -1;
 
@@ -280,9 +282,6 @@ void ClientModeShared::ReloadScheme( bool flushLowLevel )
 //-----------------------------------------------------------------------------
 void ClientModeShared::Init()
 {
-	m_pChatElement = ( CBaseHudChat * )GET_HUDELEMENT( CHudChat );
-	Assert( m_pChatElement );
-
 	m_pWeaponSelection = ( CBaseHudWeaponSelection * )GET_HUDELEMENT( CHudWeaponSelection );
 	Assert( m_pWeaponSelection );
 
@@ -565,28 +564,6 @@ int	ClientModeShared::KeyInput( int down, ButtonCode_t keynum, const char *pszCu
 		return 0;
 	}
 	
-	// Should we start typing a message?
-	if ( pszCurrentBinding &&
-		( Q_strcmp( pszCurrentBinding, "messagemode" ) == 0 ||
-		  Q_strcmp( pszCurrentBinding, "say" ) == 0 ) )
-	{
-		if ( down )
-		{
-			StartMessageMode( MM_SAY );
-		}
-		return 0;
-	}
-	else if ( pszCurrentBinding &&
-				( Q_strcmp( pszCurrentBinding, "messagemode2" ) == 0 ||
-				  Q_strcmp( pszCurrentBinding, "say_team" ) == 0 ) )
-	{
-		if ( down )
-		{
-			StartMessageMode( MM_SAY_TEAM );
-		}
-		return 0;
-	}
-	
 	// If we're voting...
 #ifdef VOTING_ENABLED
 	CHudVote *pHudVote = GET_HUDELEMENT( CHudVote );
@@ -681,6 +658,7 @@ int ClientModeShared::HudElementKeyInput( int down, ButtonCode_t keynum, const c
 //-----------------------------------------------------------------------------
 bool ClientModeShared::DoPostScreenSpaceEffects( const CViewSetup *pSetup )
 {
+	g_GlowObjectManager.RenderGlowEffects(pSetup);
 	return true;
 }
 
@@ -690,10 +668,11 @@ bool ClientModeShared::DoPostScreenSpaceEffects( const CViewSetup *pSetup )
 //-----------------------------------------------------------------------------
 Panel *ClientModeShared::GetMessagePanel()
 {
-	if ( m_pChatElement && m_pChatElement->GetInputPanel() && m_pChatElement->GetInputPanel()->IsVisible() )
-		return m_pChatElement->GetInputPanel();
+	const auto pChatInput = g_pChatPanel->GetChatInput();
+	if ( pChatInput->IsVisible() )
+		return pChatInput;
 
-	return NULL;
+	return g_pChatPanel;
 }
 
 //-----------------------------------------------------------------------------
@@ -701,20 +680,7 @@ Panel *ClientModeShared::GetMessagePanel()
 //-----------------------------------------------------------------------------
 void ClientModeShared::StartMessageMode( int iMessageModeType )
 {
-	// Can only show chat UI in multiplayer!!!
-	/*if ( gpGlobals->maxClients == 1 )
-	{
-		return;
-	}*/
-
-    // avoid softlock of starting message mode when hud/viewport isn't visible
-    if ( !m_pViewport->IsVisible() )
-        return;
-
-	if ( m_pChatElement )
-	{
-		m_pChatElement->StartMessageMode( iMessageModeType );
-	}
+	g_pChatPanel->StartMessageMode( iMessageModeType );
 }
 
 //-----------------------------------------------------------------------------
@@ -880,8 +846,6 @@ void ClientModeShared::UpdatePostProcessingEffects()
     SetPostProcessParams(&m_CurrentPostProcessParameters);
 }
 
-class CHudChat;
-
 bool PlayerNameNotSetYet( const char *pszName )
 {
 	if ( pszName && pszName[0] )
@@ -898,14 +862,10 @@ bool PlayerNameNotSetYet( const char *pszName )
 
 void ClientModeShared::FireGameEvent( IGameEvent *event )
 {
-	CBaseHudChat *hudChat = (CBaseHudChat *)GET_HUDELEMENT( CHudChat );
-
 	const char *eventname = event->GetName();
 
 	if ( Q_strcmp( "player_connect_client", eventname ) == 0 )
 	{
-		if ( !hudChat )
-			return;
 		if ( PlayerNameNotSetYet(event->GetString("name")) )
 			return;
 
@@ -919,14 +879,14 @@ void ClientModeShared::FireGameEvent( IGameEvent *event )
 			char szLocalized[100];
 			g_pVGuiLocalize->ConvertUnicodeToANSI( wszLocalized, szLocalized, sizeof(szLocalized) );
 
-			hudChat->Printf( CHAT_FILTER_JOINLEAVE, "%s", szLocalized );
+			g_pChatPanel->Printf( CHAT_FILTER_JOINLEAVE, "%s", szLocalized );
 		}
 	}
 	else if ( Q_strcmp( "player_disconnect", eventname ) == 0 )
 	{
 		C_BasePlayer *pPlayer = USERID2PLAYER( event->GetInt("userid") );
 
-		if ( !hudChat || !pPlayer )
+		if ( !pPlayer )
 			return;
 		if ( PlayerNameNotSetYet(event->GetString("name")) )
 			return;
@@ -953,13 +913,13 @@ void ClientModeShared::FireGameEvent( IGameEvent *event )
 			char szLocalized[100];
 			g_pVGuiLocalize->ConvertUnicodeToANSI( wszLocalized, szLocalized, sizeof(szLocalized) );
 
-			hudChat->Printf( CHAT_FILTER_JOINLEAVE, "%s", szLocalized );
+			g_pChatPanel->Printf( CHAT_FILTER_JOINLEAVE, "%s", szLocalized );
 		}
 	}
 	else if ( Q_strcmp( "player_team", eventname ) == 0 )
 	{
 		C_BasePlayer *pPlayer = USERID2PLAYER( event->GetInt("userid") );
-		if ( !hudChat )
+		if (!pPlayer)
 			return;
 
 		bool bDisconnected = event->GetBool("disconnect");
@@ -1006,11 +966,11 @@ void ClientModeShared::FireGameEvent( IGameEvent *event )
 				char szLocalized[100];
 				g_pVGuiLocalize->ConvertUnicodeToANSI( wszLocalized, szLocalized, sizeof(szLocalized) );
 
-				hudChat->Printf( CHAT_FILTER_TEAMCHANGE, "%s", szLocalized );
+				g_pChatPanel->Printf( CHAT_FILTER_TEAMCHANGE, "%s", szLocalized );
 			}
 		}
 
-		if ( pPlayer && pPlayer->IsLocalPlayer() )
+		if ( pPlayer->IsLocalPlayer() )
 		{
 			// that's me
 			pPlayer->TeamChange( team );
@@ -1018,9 +978,6 @@ void ClientModeShared::FireGameEvent( IGameEvent *event )
 	}
 	else if ( Q_strcmp( "player_changename", eventname ) == 0 )
 	{
-		if ( !hudChat )
-			return;
-
 		const char *pszOldName = event->GetString("oldname");
 		if ( PlayerNameNotSetYet(pszOldName) )
 			return;
@@ -1037,7 +994,7 @@ void ClientModeShared::FireGameEvent( IGameEvent *event )
 		char szLocalized[100];
 		g_pVGuiLocalize->ConvertUnicodeToANSI( wszLocalized, szLocalized, sizeof(szLocalized) );
 
-		hudChat->Printf( CHAT_FILTER_NAMECHANGE, "%s", szLocalized );
+		g_pChatPanel->Printf( CHAT_FILTER_NAMECHANGE, "%s", szLocalized );
 	}
 	else if (Q_strcmp( "teamplay_broadcast_audio", eventname ) == 0 )
 	{
@@ -1100,7 +1057,7 @@ void ClientModeShared::FireGameEvent( IGameEvent *event )
 			char szLocalized[256];
 			g_pVGuiLocalize->ConvertUnicodeToANSI( wszLocalized, szLocalized, sizeof(szLocalized) );
 
-			hudChat->Printf( CHAT_FILTER_SERVERMSG, "%s", szLocalized );
+			g_pChatPanel->Printf( CHAT_FILTER_SERVERMSG, "%s", szLocalized );
 		}
 	}
 	else if ( Q_strcmp( "achievement_earned", eventname ) == 0 )
@@ -1109,7 +1066,7 @@ void ClientModeShared::FireGameEvent( IGameEvent *event )
 		C_BasePlayer *pPlayer = UTIL_PlayerByIndex( iPlayerIndex );
 		int iAchievement = event->GetInt( "achievement" );
 
-		if ( !hudChat || !pPlayer )
+		if ( !pPlayer )
 			return;
 
 		if ( !IsInCommentaryMode() )
@@ -1149,7 +1106,7 @@ void ClientModeShared::FireGameEvent( IGameEvent *event )
 						char szLocalized[128];
 						g_pVGuiLocalize->ConvertUnicodeToANSI( wszLocalizedString, szLocalized, sizeof( szLocalized ) );
 
-						hudChat->ChatPrintf( iPlayerIndex, CHAT_FILTER_SERVERMSG, "%s", szLocalized );
+						g_pChatPanel->ChatPrintf( iPlayerIndex, CHAT_FILTER_SERVERMSG, "%s", szLocalized );
 					}
 				}
 			}

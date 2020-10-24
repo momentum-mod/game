@@ -90,7 +90,7 @@ CBasePlayer *CBaseEntity::m_pPredictionPlayer = NULL;
 // Used to make sure nobody calls UpdateTransmitState directly.
 int g_nInsideDispatchUpdateTransmitState = 0;
 
-// When this is false, throw an assert in debug when GetAbsAnything is called. Used when hierachy is incomplete/invalid.
+// When this is false, throw an assert in debug when GetAbsAnything is called. Used when hierarchy is incomplete/invalid.
 bool CBaseEntity::s_bAbsQueriesValid = true;
 
 
@@ -479,7 +479,7 @@ void CBaseEntity::PostConstructor( const char *szClassname )
 
 	Assert( m_iClassname != NULL_STRING && STRING(m_iClassname) != NULL );
 
-	// Possibly get an edict, and add self to global list of entites.
+	// Possibly get an edict, and add self to global list of entities.
 	if ( IsEFlagSet( EFL_SERVER_ONLY ) )
 	{
 		gEntList.AddNonNetworkableEntity( this );
@@ -1006,7 +1006,7 @@ void CBaseEntity::SetParent( string_t newParent, CBaseEntity *pActivator, int iA
 		// make sure there isn't any ambiguity
 		if ( gEntList.FindEntityByName( pParent, newParent, NULL, pActivator ) )
 		{
-			Msg( "Entity %s(%s) has ambigious parent %s\n", STRING(m_iClassname), GetDebugName(), STRING(newParent) );
+			Msg( "Entity %s(%s) has ambiguous parent %s\n", STRING(m_iClassname), GetDebugName(), STRING(newParent) );
 		}
 		SetParent( pParent, iAttachment );
 	}
@@ -2218,7 +2218,7 @@ static void CheckPushedEntity( CBaseEntity *pEntity, pushblock_t &params )
 	if ( !pPhysics->IsMoveable() || !pPhysics->GetShadowController() )
 	{
 #if DEBUG_PUSH_MESSAGES
-		Msg("Blocking %s, not moveable!\n", pEntity->GetClassname());
+		Msg("Blocking %s, not movable!\n", pEntity->GetClassname());
 #endif
 		return;
 	}
@@ -2389,7 +2389,7 @@ void CBaseEntity::VPhysicsUpdatePusher( IPhysicsObject *pPhysics )
 	QAngle shadowAngles;
 
 	// physics updated the shadow, so check to see if I got blocked
-	// NOTE: SOLID_BSP cannont compute consistent collisions wrt vphysics, so 
+	// NOTE: SOLID_BSP cannot compute consistent collisions wrt vphysics, so 
 	// don't allow vphysics to block.  Assume game physics has handled it.
 	if ( GetSolid() != SOLID_BSP && pPhysics->GetShadowPosition( &shadowOrigin, &shadowAngles) )
 	{
@@ -3157,7 +3157,7 @@ int CBaseEntity::Restore( IRestore &restore )
 		SetModelIndex( modelinfo->GetModelIndex( STRING(GetModelName() ) ) );
 	}
 
-	// Restablish ground entity
+	// Reestablish ground entity
 	if ( m_hGroundEntity != NULL )
 	{
 		m_hGroundEntity->AddEntityToGroundList( this );
@@ -3235,7 +3235,7 @@ void CBaseEntity::OnRestore()
 		{
 #if _DEBUG
 			// generally this means you've got something marked FCAP_DONT_SAVE
-			// in a hierarchy.  That's probably ok given this fixup, but the hierarhcy
+			// in a hierarchy.  That's probably ok given this fixup, but the hierarchy
 			// linked list is just saved/loaded in-place
 			Warning("Fixing up parent on %s\n", GetClassname() );
 #endif
@@ -3577,7 +3577,7 @@ void CBaseEntity::SetTransmit( CCheckTransmitInfo *pInfo, bool bAlways )
 	// HLTV/Replay need to know if this entity is culled by PVS limits
 	if ( pInfo->m_pTransmitAlways )
 	{
-		// in HLTV/Replay mode always transmit entitys with move-parents
+		// in HLTV/Replay mode always transmit entities with move-parents
 		// HLTV/Replay can't resolve the mode-parents relationships 
 		if ( bAlways || pNetworkParent )
 		{
@@ -3731,7 +3731,7 @@ void CBaseEntity::DrawOutputOverlay(CEventAction *ev)
 
 
 //-----------------------------------------------------------------------------
-// Entity events... these are events targetted to a particular entity
+// Entity events... these are events targeted to a particular entity
 // Each event defines its own well-defined event data structure
 //-----------------------------------------------------------------------------
 void CBaseEntity::OnEntityEvent( EntityEvent_t event, void *pEventData )
@@ -4182,7 +4182,7 @@ void CBaseEntity::InputClearParent( inputdata_t &inputdata )
 
 
 //------------------------------------------------------------------------------
-// Purpose : Returns velcocity of base entity.  If physically simulated gets
+// Purpose : Returns velocity of base entity.  If physically simulated gets
 //			 velocity from physics object
 // Input   :
 // Output  :
@@ -4662,7 +4662,7 @@ void CBaseEntity::PrecacheModelComponents( int nModelIndex )
 		{
 			if ( !extension[ 0 ] )
 			{
-				Warning( "Precache of %s ambigious (no extension specified)\n", name );
+				Warning( "Precache of %s ambiguous (no extension specified)\n", name );
 			}
 			else
 			{
@@ -4790,7 +4790,7 @@ void CBaseEntity::Remove( )
 	UTIL_Remove( this );
 }
 
-//   Entity degugging console commands
+//   Entity debugging console commands
 extern CBaseEntity *FindPickerEntity( CBasePlayer *pPlayer );
 extern void			SetDebugBits( CBasePlayer* pPlayer, const char *name, int bit );
 extern CBaseEntity *GetNextCommandEntity( CBasePlayer *pPlayer, const char *name, CBaseEntity *ent );
@@ -5495,7 +5495,7 @@ static ConCommand ent_pause("ent_pause", CC_Ent_Pause, "Toggles pausing of input
 
 
 //------------------------------------------------------------------------------
-// Purpose : Enables the entity picker, revelaing debug information about the 
+// Purpose : Enables the entity picker, revealing debug information about the 
 //           entity under the crosshair.
 // Input   : an optional command line argument "full" enables all debug info.
 // Output  :
@@ -6313,7 +6313,7 @@ void CBaseEntity::InputIncrementContext(inputdata_t &inputdata)
 //-----------------------------------------------------------------------------
 // Purpose: User inputs. These fire the corresponding user outputs, and are
 //			a means of forwarding messages through !activator to a target known
-//			known by !activator but not by the targetting entity.
+//			known by !activator but not by the targeting entity.
 //
 //			For example, say you have three identical trains, following the same
 //			path. Each train has a sprite in hierarchy with it that needs to

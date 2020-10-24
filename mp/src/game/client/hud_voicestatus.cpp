@@ -301,7 +301,7 @@ void CHudVoiceStatus::OnThink( void )
 
 			if ( activeSpeaker.fAlpha <= 0.0f )
 			{
-				// completely faded, remove them them from the list
+				// completely faded, remove them from the list
 				delete activeSpeaker.pAvatar;
 				int iNext = m_SpeakingList.Next(i);
 				m_SpeakingList.Remove(i);

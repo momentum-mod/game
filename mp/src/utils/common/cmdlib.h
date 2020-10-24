@@ -66,7 +66,7 @@ CreateInterfaceFn	CmdLib_GetFileSystemFactory();
 #pragma warning(disable : 4018)     // signed/unsigned mismatch
 #pragma warning(disable : 4305)     // truncate from double to float
 
-#pragma warning(disable : 4389)     // singned/unsigned mismatch in ==
+#pragma warning(disable : 4389)     // signed/unsigned mismatch in ==
 #pragma warning(disable: 4512) // assignment operator could not be generated
 #endif
 

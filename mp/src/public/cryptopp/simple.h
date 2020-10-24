@@ -18,7 +18,7 @@
 
 NAMESPACE_BEGIN(CryptoPP)
 
-/// \brief Base class for identifying alogorithm
+/// \brief Base class for identifying algorithm
 /// \tparam BASE base class from which to derive
 /// \tparam DERIVED class which to clone
 template <class DERIVED, class BASE>
@@ -44,7 +44,7 @@ public:
 	/// \brief The algorithm name
 	/// \returns the algorithm name
 	/// \details AlgorithmName returns the algorithm's name as a member function.
-	///    The name is is acquired by calling StaticAlgorithmName.
+	///    The name is acquired by calling StaticAlgorithmName.
 	std::string AlgorithmName() const {return ALGORITHM_INFO::StaticAlgorithmName();}
 };
 
@@ -208,7 +208,7 @@ public:
 	/// \param propagation the number of attached transformations the Initialize() signal should be passed
 	/// \details Initialize() is used to initialize or reinitialize an object using a variable number of
 	///   arbitrarily typed arguments. The function avoids the need for multiple constructors providing
-	///   all possible combintations of configurable parameters.
+	///   all possible combinations of configurable parameters.
 	/// \details propagation count includes this object. Setting propagation to <tt>1</tt> means this
 	///   object only. Setting propagation to <tt>-1</tt> means unlimited propagation.
 	virtual void Initialize(const NameValuePairs &parameters=g_nullNameValuePairs, int propagation=-1) =0;
@@ -326,12 +326,12 @@ protected:
 };
 
 /// \brief Implementation of BufferedTransformation's attachment interface
-/// \details Sink is a cornerstone of the Pipeline trinitiy. Data flows from
+/// \details Sink is a cornerstone of the Pipeline trinity. Data flows from
 ///   Sources, through Filters, and then terminates in Sinks. The difference
 ///   between a Source and Filter is a Source \a pumps data, while a Filter does
 ///   not. The difference between a Filter and a Sink is a Filter allows an
 ///   attached transformation, while a Sink does not.
-/// \details A Sink doesnot produce any retrievable output.
+/// \details A Sink does not produce any retrievable output.
 /// \details See the discussion of BufferedTransformation in cryptlib.h for
 ///   more details.
 class CRYPTOPP_DLL CRYPTOPP_NO_VTABLE Sink : public BufferedTransformation

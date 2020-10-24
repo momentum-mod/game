@@ -438,7 +438,7 @@ void CAI_ScriptConditions::EvaluationThink()
 #ifdef HL2_DLL
 	if( AI_GetSinglePlayer()->GetFlags() & FL_NOTARGET )
 	{
-		ScrCondDbgMsg( ("%s WARNING: Player is NOTARGET. This will affect all LOS conditiosn involving the player!\n", GetDebugName()) );
+		ScrCondDbgMsg( ("%s WARNING: Player is NOTARGET. This will affect all LOS conditions involving the player!\n", GetDebugName()) );
 	}
 #endif
 
@@ -469,7 +469,7 @@ void CAI_ScriptConditions::EvaluationThink()
 		{
 			if ( m_ElementList.Count() == 1 )
 			{
-				DevMsg( "Warning: Active AI script conditions associated with an non-existant or destroyed NPC\n" );
+				DevMsg( "Warning: Active AI script conditions associated with an non-existent or destroyed NPC\n" );
 				m_NoValidActors.FireOutput( this, this, 0 );
 			}
 
@@ -574,7 +574,7 @@ void CAI_ScriptConditions::Enable( void )
 	{
 		if ( m_Actor != NULL_STRING && pActor == NULL )
 		{
-			DevMsg( "Warning: Spawning AI script conditions (%s) associated with an non-existant NPC\n", GetDebugName() );
+			DevMsg( "Warning: Spawning AI script conditions (%s) associated with an non-existent NPC\n", GetDebugName() );
 			m_NoValidActors.FireOutput( this, this, 0 );
 			Disable();
 			return;

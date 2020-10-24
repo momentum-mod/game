@@ -5,7 +5,7 @@
 //						 as doing so would require overriding the operators
 //						 to allocate memory for the returned bitstring.  This method
 //						 would be prone to memory leaks as the calling party
-//						 would have to remember to delete the memory.  Funtions
+//						 would have to remember to delete the memory.  Functions
 //						 are used instead to require the calling party to allocate
 //						 and destroy their own memory
 //

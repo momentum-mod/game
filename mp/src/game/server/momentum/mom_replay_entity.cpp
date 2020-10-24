@@ -223,7 +223,7 @@ void CMomentumReplayGhostEntity::Think()
         else
         {
             // MOM_TODO: IMPORTANT! Remember, this is probably not the proper way of speeding up the replay.
-            // Because it skips the steps that normaly the engine would have "compensated".
+            // Because it skips the steps that normally the engine would have "compensated".
             // So it can results to unsmooth results, but this is probably the best you can get.
             // Until we can find something else to modify timescale properly.
             // We do it this way, because SetNextThink / engine doesn't allow faster updates at this timescale.
@@ -240,7 +240,7 @@ void CMomentumReplayGhostEntity::Think()
                 UpdateStep(iNextStep - 1);
             }
 
-            // Otherwhise if it's 1 we must run the next step
+            // Otherwise if it's 1 we must run the next step
             else if (fTicksAverage == 1.0f)
             {
                 UpdateStep(iNextStep);
@@ -253,7 +253,7 @@ void CMomentumReplayGhostEntity::Think()
                 // If we should first update on the next step or not
                 bool bShouldNextStepInstead = false;
 
-                // If the next step that must be runned is higher than the current steps:
+                // If the next step that must be run is higher than the current steps:
                 // We invert roles between current steps and next steps.
                 if (fTicksAverage > 0.5f)
                 {
@@ -273,7 +273,7 @@ void CMomentumReplayGhostEntity::Think()
                     // BLOCK1
 
                     // If the average of next steps are higher than current steps, the current step must be called here.
-                    // Otherwhise the next step must be called.
+                    // Otherwise the next step must be called.
 
                     UpdateStep(bShouldNextStepInstead ? (iNextStep - 1) : iNextStep);
 
@@ -284,7 +284,7 @@ void CMomentumReplayGhostEntity::Think()
                     /* --------------------------------------------------------------------------------------------------------------------------
                     For example if m_flTimeScale = 3,5 -> then iInvTicksAverage is equal to 2 (1/0.5), and that we're
                     resetting iTickElapsed on 0, it means that we will wait 2 ticks before being on that BLOCK1. And we
-                    dont want that because, we want the 1/2 of time the code running on both blocks and not 1/3 on
+                    don't want that because, we want the 1/2 of time the code running on both blocks and not 1/3 on
                     BLOCK1 then 2/3 on BLOCK2, when timescale is 3,5. If we wait 2 ticks on BLOCK2 and only 1 on BLOCK1,
                     logically, it won't correspond to 3,5 of m_flTimeScale. So we're doing like this way: iTickElapsed =
                     1, or iInvTicksAverage = iInvTicksAverage - 1, to make it correspond perfectly to timescale. I hope
@@ -301,7 +301,7 @@ void CMomentumReplayGhostEntity::Think()
                     // BLOCK2
 
                     // If the average of next steps are higher than current steps, the next step must be called here.
-                    // Otherwhise the current step must be called.
+                    // Otherwise the current step must be called.
 
                     UpdateStep(bShouldNextStepInstead ? (iNextStep) : (iNextStep - 1));
 
@@ -347,7 +347,7 @@ void CMomentumReplayGhostEntity::HandleGhostFirstPerson()
             m_SrvData.m_bHasPracticeMode = true;
             // To get the real tick of where the practice mode have been enabled, we need to add the tick remainder,
             // but since we want to be stuck at the start of the timestamp and not in the end of our timestamp, we need
-            // to get how many ticks have elapsed between those two, and substract it. Usually this calculation is
+            // to get how many ticks have elapsed between those two, and subtract it. Usually this calculation is
             // useless if m_iTickRemainder had only increment once in the loop for getting the timestamps.
             nextStep = currentStep = m_pPlaybackReplay->GetFrame(
                 m_iPracticeTimeStampStart - (m_iTickRemainder - (m_iPracticeTimeStampEnd - m_iPracticeTimeStampStart)));
@@ -452,14 +452,14 @@ void CMomentumReplayGhostEntity::HandleGhost()
         m_SrvData.m_bHasPracticeMode = true;
         // To get the real tick of where the practice mode have been enabled, we need to add the tick remainder,
         // but since we want to be stuck at the start of the timestamp and not in the end of our timestamp, we need to
-        // get how many ticks have elapsed between those two, and substract it. Usually this calculation is useless if
+        // get how many ticks have elapsed between those two, and subtract it. Usually this calculation is useless if
         // m_iTickRemainder had only increment once in the loop for getting the timestamps.
         currentStep = m_pPlaybackReplay->GetFrame(
             m_iPracticeTimeStampStart - (m_iTickRemainder - (m_iPracticeTimeStampEnd - m_iPracticeTimeStampStart)));
     }
     else*/
     {
-        // Otherwhise process normally.
+        // Otherwise process normally.
         currentStep = GetCurrentStep();
 
     }

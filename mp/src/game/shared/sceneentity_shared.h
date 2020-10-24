@@ -27,7 +27,7 @@ class CSceneEntity;
 //-----------------------------------------------------------------------------
 // Purpose: One of a number of currently playing scene events for this actor
 //-----------------------------------------------------------------------------
-// FIXME: move this, it's only used in in baseflex and baseactor
+// FIXME: move this, it's only used in baseflex and baseactor
 class CSceneEventInfo
 {
 public:

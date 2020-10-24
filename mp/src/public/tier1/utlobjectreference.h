@@ -25,7 +25,7 @@
 //
 //  NOTE : You can still happily use pointers instead of references where you want to - these
 //  pointers will not magically become null like references would, but if you know no one is going
-//  to delete the underlying object during a partcular section of code, it doesn't
+//  to delete the underlying object during a particular section of code, it doesn't
 //  matter. Basically, CUtlReferences don't rely on every use of an object using one.
 
 

@@ -1791,7 +1791,7 @@ inline bool PoseIsAllZeros(
 
 //-----------------------------------------------------------------------------
 // Purpose: turn a 2x2 blend into a 3 way triangle blend
-// Returns: returns the animination indices and barycentric coordinates of a triangle
+// Returns: returns the animation indices and barycentric coordinates of a triangle
 //			the triangle is a right triangle, and the diagonal is between elements [0] and [2]
 //-----------------------------------------------------------------------------
 
@@ -2585,14 +2585,14 @@ public:
          X[i] = P[i];
       normalize(X);
 
-// Its y axis is perpendicular to P, so Y = unit( E - X(E·X) ).
+// Its y axis is perpendicular to P, so Y = unit( E - X(EÂ·X) ).
 
       float dDOTx = dot(D,X);
       for (i = 0 ; i < 3 ; i++)
          Y[i] = D[i] - dDOTx * X[i];
       normalize(Y);
 
-// Its z axis is perpendicular to both X and Y, so Z = X×Y.
+// Its z axis is perpendicular to both X and Y, so Z = XÃ—Y.
 
       cross(X,Y,Z);
 
@@ -2757,7 +2757,7 @@ bool Studio_SolveIK( int iThigh, int iKnee, int iFoot, Vector &targetFoot, Vecto
 	float l2 = (worldFoot-worldKnee).Length();
 
 	// exaggerate knee targets for legs that are nearly straight
-	// FIXME: should be configurable, and the ikKnee should be from the original animation, not modifed
+	// FIXME: should be configurable, and the ikKnee should be from the original animation, not modified
 	float d = (targetFoot-worldThigh).Length() - min( l1, l2 );
 	d = max( l1 + l2, d );
 	// FIXME: too short knee directions cause trouble

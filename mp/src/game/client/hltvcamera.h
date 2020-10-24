@@ -62,7 +62,7 @@ protected:
 	int			m_iTraget2; // second tracked target or 0
 	float		m_flFOV; // current FOV
 	float		m_flOffset;  // z-offset from target origin
-	float		m_flDistance; // distance to traget origin+offset
+	float		m_flDistance; // distance to target origin+offset
 	float		m_flLastDistance; // too smooth distance
 	float		m_flTheta; // view angle horizontal 
 	float		m_flPhi; // view angle vertical

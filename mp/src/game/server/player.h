@@ -463,7 +463,7 @@ public:
 	virtual int				GetObserverMode( void ); // returns observer mode or OBS_NONE
 	virtual bool			SetObserverTarget(CBaseEntity * target);
 	virtual void			ObserverUse( bool bIsPressed ); // observer pressed use
-	virtual CBaseEntity		*GetObserverTarget( void ); // returns players targer or NULL
+	virtual CBaseEntity		*GetObserverTarget( void ); // returns players target or NULL
 	virtual CBaseEntity		*FindNextObserverTarget( bool bReverse ); // returns next/prev player to follow or NULL
 	virtual int				GetNextObserverSearchStartPoint( bool bReverse ); // Where we should start looping the player list in a FindNextObserverTarget call
 	virtual bool			IsValidObserverTarget(CBaseEntity * target); // true, if player is allowed to see this target
@@ -571,8 +571,6 @@ public:
 	virtual void DoMuzzleFlash();
 
 	const char *GetLastKnownPlaceName( void ) const	{ return m_szLastPlaceName; }	// return the last nav place name the player occupied
-
-	virtual void			CheckChatText( char *p, int bufsize ) {}
 
 	virtual void			CreateRagdollEntity( void ) { return; }
 
@@ -718,10 +716,6 @@ public:
 	void	ActivateMovementConstraint( CBaseEntity *pEntity, const Vector &vecCenter, float flRadius, float flConstraintWidth, float flSpeedFactor );
 	void	DeactivateMovementConstraint( );
 
-	// talk control
-	void	NotePlayerTalked() { m_fLastPlayerTalkTime = gpGlobals->curtime; }
-	float	LastTimePlayerTalked() { return m_fLastPlayerTalkTime; }
-
 	void	DisableButtons( int nButtons );
 	void	EnableButtons( int nButtons );
 	void	ForceButtons( int nButtons );
@@ -773,7 +767,7 @@ private:
 	// How much of a movement time buffer can we process from this user?
 	float				m_flMovementTimeForUserCmdProcessingRemaining;
 
-	// For queueing up CUserCmds and running them from PhysicsSimulate
+	// For queuing up CUserCmds and running them from PhysicsSimulate
 	int					GetCommandContextCount( void ) const;
 	CCommandContext		*GetCommandContext( int index );
 	CCommandContext		*AllocCommandContext( void );
@@ -848,7 +842,7 @@ public:
 
 	int						m_nUpdateRate;		// user snapshot rate cl_updaterate
 	float					m_fLerpTime;		// users cl_interp
-	bool					m_bLagCompensation;	// user wants lag compenstation
+	bool					m_bLagCompensation;	// user wants lag compensation
 	bool					m_bPredictWeapons; //  user has client side predicted weapons
 	
 	float		GetDeathTime( void ) { return m_flDeathTime; }
@@ -893,7 +887,7 @@ protected:
 	int						m_iTrain;				// Train control position
 
 	float					m_iRespawnFrames;	// used in PlayerDeathThink() to make sure players can always respawn
- 	unsigned int			m_afPhysicsFlags;	// physics flags - set when 'normal' physics should be revisited or overriden
+ 	unsigned int			m_afPhysicsFlags;	// physics flags - set when 'normal' physics should be revisited or overridden
 
 	void					UpdateButtonState( int nUserCmdButtonMask );
 
@@ -1046,11 +1040,8 @@ private:
 	int						m_nDrownDmgRate;		// Drowning damage in points per second without air.
 
 	int						m_nNumCrouches;			// Number of times we've crouched (for hinting)
-	bool					m_bDuckToggled;		// If true, the player is crouching via a toggle
 
 public:
-	bool					GetToggledDuckState( void ) { return m_bDuckToggled; }
-	void					ToggleDuck( void );
 	float					GetStickDist( void );
 
 	float					m_flForwardMove;
@@ -1067,7 +1058,6 @@ private:
 	CNetworkVar( int, m_nTickBase );
 
 	bool					m_bGamePaused;
-	float					m_fLastPlayerTalkTime;
 	
 	CNetworkVar( CBaseCombatWeaponHandle, m_hLastWeapon );
 

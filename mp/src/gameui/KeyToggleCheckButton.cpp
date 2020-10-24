@@ -6,14 +6,17 @@
 //=============================================================================//
 
 #include "KeyToggleCheckButton.h"
-#include "EngineInterface.h"
 #include <vgui/IVGui.h>
 #include "IGameUIFuncs.h"
+#include "cdll_int.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include <tier0/memdbgon.h>
 
 using namespace vgui;
+
+extern IGameUIFuncs *gameuifuncs;
+extern IVEngineClient *engine;
 
 CKeyToggleCheckButton::CKeyToggleCheckButton( Panel *parent, const char *panelName, const char *text, 
 	char const *key, char const *cmdname )
@@ -49,7 +52,7 @@ void CKeyToggleCheckButton::Paint()
 	bool isdown;
 	if ( gameuifuncs->IsKeyDown( m_pszKeyName, isdown ) )
 	{
-		// if someone changed the value using the consoel
+		// if someone changed the value using the console
 		if ( m_bStartValue != isdown )
 		{
 			SetSelected( isdown );

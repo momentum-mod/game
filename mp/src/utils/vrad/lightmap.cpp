@@ -235,7 +235,7 @@ void PairEdges (void)
                 if (vertexface[n][k] == i)
                     continue;
 
-				// if this face doens't have a displacement -- don't consider displacement neighbors
+				// if this face doesn't have a displacement -- don't consider displacement neighbors
 				if( ( !fn->bHasDisp ) && ( faceneighbor[vertexface[n][k]].bHasDisp ) )
 					continue;
 
@@ -450,8 +450,16 @@ void CalcFaceVectors(lightinfo_t *l)
 	float det = -DotProduct( l->facenormal, luxelSpaceCross );
 	if ( fabs( det ) < 1.0e-20 )
 	{
-		Warning(" warning - face vectors parallel to face normal. bad lighting will be produced\n" );
-		l->luxelOrigin = vec3_origin;
+        int edge = l->face->firstedge;
+        short vertex = dedges[edge].v[0];
+        Vector v0 = dvertexes[vertex].point;
+
+        int texdata = texinfo[l->face->texinfo].texdata;
+        const char *texname = TexDataStringTable_GetString(dtexdata[texdata].nameStringTableID);
+
+        Warning( "Warning - face vectors parallel to face normal, bad lighting will be produced near %.2f %.2f %.2f\nTexture: %s\n", v0.x, v0.y, v0.z, texname );
+
+        l->luxelOrigin = vec3_origin;
 	}
 	else
 	{
@@ -850,7 +858,7 @@ bool BuildFaceLuxels( lightinfo_t *pLightInfo, facelight_t *pFaceLight )
 	int width = pLightInfo->face->m_LightmapTextureSizeInLuxels[0]+1;
 	int height = pLightInfo->face->m_LightmapTextureSizeInLuxels[1]+1;
 
-	// calcuate actual luxel points
+	// calculate actual luxel points
 	pFaceLight->numluxels = width * height;
 	pFaceLight->luxel = ( Vector* )calloc( pFaceLight->numluxels, sizeof( *pFaceLight->luxel ) );
 	if( !pFaceLight->luxel )
@@ -1129,7 +1137,7 @@ static void ParseLightGeneric( entity_t *e, directlight_t *dl )
 
 	dl->light.style = (int)FloatForKey (e, "style");
 	
-	// get intenfsity
+	// get intensity
 	if( g_bHDR && LightForKey( e, "_lightHDR", dl->light.intensity ) ) 
 	{
 	}
@@ -1187,7 +1195,7 @@ static void SetLightFalloffParams( entity_t * e, directlight_t * dl )
 		{
 			Warning( "can't solve quadratic for light %f %f\n", d50, d0 );
 		}
-		// it it possible that the parameters couldn't be used because of enforing monoticity. If so, rescale so at
+		// it is possible that the parameters couldn't be used because of enforcing monotonicity. If so, rescale so at
 		// least the 50 percent value is right
 //		printf("50 percent=%f 0 percent=%f\n",d50,d0);
 // 		printf("a=%f b=%f c=%f\n",a,b,c);
@@ -1213,9 +1221,9 @@ static void SetLightFalloffParams( entity_t * e, directlight_t * dl )
 		else
 		{
 			// now, we will find the point at which the 1/x term reaches its maximum value, and
-			// prevent the light from going past there. If a user specifes an extreme falloff, the
+			// prevent the light from going past there. If a user specifies an extreme falloff, the
 			// quadratic will start making the light brighter at some distance. We handle this by
-			// fading it from the minimum brightess point down to zero at 10x the minimum distance
+			// fading it from the minimum brightness point down to zero at 10x the minimum distance
 			if ( fabs( a ) > 0. )
 			{
 				float flMax = b / ( - 2.0 * a );				// where f' = 0
@@ -1662,7 +1670,7 @@ void ExportDirectLightsToWorldLights()
   GatherSampleLight
   =============
 */
-#define NORMALFORMFACTOR	40.156979 // accumuated dot products for hemisphere
+#define NORMALFORMFACTOR	40.156979 // accumulated dot products for hemisphere
 
 #define CONSTANT_DOT (.7/2)
 
@@ -1706,7 +1714,7 @@ void GatherSampleSkyLightSSE( SSE_sampleLightOutput_t &out, directlight_t *dl, i
 	for ( int d = 0; d < nsamples; d++ )
 	{
 		// determine visibility of skylight
-		// serach back to see if we can hit a sky brush
+		// search back to see if we can hit a sky brush
 		Vector delta;
 		VectorScale( dl->light.normal, -MAX_TRACE_LENGTH, delta );
 		if ( d )
@@ -2053,7 +2061,7 @@ void GatherSampleLightSSE( SSE_sampleLightOutput_t &out, directlight_t *dl, int 
   AddSampleToPatch
 
   Take the sample's collected light and
-  add it back into the apropriate patch
+  add it back into the appropriate patch
   for the radiosity pass.
   =============
 */

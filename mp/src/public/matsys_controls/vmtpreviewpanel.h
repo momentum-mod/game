@@ -53,7 +53,7 @@ private:
 	void SetupProjectionMatrix( int nWidth, int nHeight );
 	void SetupOrthoMatrix( int nWidth, int nHeight );
 
-	// Sets the camera to look at the the thing we're spinning around
+	// Sets the camera to look at the thing we're spinning around
 	void LookAt( const Vector &vecLookAt, float flRadius );
 
 	// Sets up lighting state

@@ -243,7 +243,7 @@ void CAI_Squad::RemoveFromSquad( CAI_BaseNPC *pNPC, bool bDeath )
 }
 
 //-------------------------------------
-// Purpose: Addes the given NPC to the squad
+// Purpose: Adds the given NPC to the squad
 //-------------------------------------
 void CAI_Squad::AddToSquad(CAI_BaseNPC *pNPC)
 {
@@ -460,7 +460,7 @@ CAI_BaseNPC *CAI_Squad::GetNextMember( AISquadIter_t *pIter, bool bIgnoreSilentM
 }
 
 //-------------------------------------
-// Purpose: Alert everyone in the squad to the presence of a new enmey
+// Purpose: Alert everyone in the squad to the presence of a new enemy
 //-------------------------------------
 
 int	CAI_Squad::NumMembers( bool bIgnoreSilentMembers )
@@ -478,7 +478,7 @@ int	CAI_Squad::NumMembers( bool bIgnoreSilentMembers )
 }
 
 //-------------------------------------
-// Purpose: Alert everyone in the squad to the presence of a new enmey
+// Purpose: Alert everyone in the squad to the presence of a new enemy
 //-------------------------------------
 
 void CAI_Squad::SquadNewEnemy( CBaseEntity *pEnemy )
@@ -494,7 +494,7 @@ void CAI_Squad::SquadNewEnemy( CBaseEntity *pEnemy )
 		CAI_BaseNPC *pMember = m_SquadMembers[i];
 		if (pMember)
 		{
-			// reset members who aren't activly engaged in fighting (only do this if the NPC's using the squad memory, or it'll fail)
+			// reset members who aren't actively engaged in fighting (only do this if the NPC's using the squad memory, or it'll fail)
 			if ( !pMember->GetEnemy() || 
 				 ( pMember->GetEnemy() != pEnemy && 
 				   !pMember->HasCondition( COND_SEE_ENEMY) &&

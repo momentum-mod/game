@@ -1,0 +1,22 @@
+PBR
+{
+	$basetexture        models/weapons/mom_knife/mom_knife_C
+    $emissionTexture    models/weapons/mom_knife/mom_knife_E
+	$bumpmap            models/weapons/mom_knife/mom_knife_N
+	$mraoTexture        models/weapons/mom_knife/mom_knife_MRAO
+    $emissionScale      "[1 1 1]"
+    
+	$envmap             env_cubemap
+	$surfaceprop        weapon
+    $model              1
+    
+    Proxies
+    {
+        PlayerSpeed
+        {
+            scale 0.003
+            resultVar   $emissionScale
+        }
+    }
+    
+}

@@ -81,8 +81,8 @@ struct CRYPTOPP_DLL EC2NPoint
 
 CRYPTOPP_DLL_TEMPLATE_CLASS AbstractGroup<EC2NPoint>;
 
-/// \brief Abstract class for encoding and decoding ellicptic curve points
-/// \tparam Point ellicptic curve point
+/// \brief Abstract class for encoding and decoding elliptic curve points
+/// \tparam Point elliptic curve point
 /// \details EncodedPoint is an interface for encoding and decoding elliptic curve points.
 ///   The template parameter <tt>Point</tt> should be a class like ECP or EC2N.
 /// \since Crypto++ 6.0

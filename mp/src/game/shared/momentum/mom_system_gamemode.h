@@ -149,12 +149,14 @@ class CGameMode_Tricksurf : public CGameModeBase
 {
 public:
     GameMode_t GetType() override { return GAMEMODE_TRICKSURF; }
-    const char* GetStatusString() override { return "Surfing"; }
+    const char* GetStatusString() override { return "Tricksurfing"; }
     const char* GetDiscordIcon() override { return "mom_icon_tricksurf"; }
-    const char* GetMapPrefix() override { return "tricksurf_"; }
-    const char* GetGameModeCfg() override { return "tricksurf.cfg"; }
+    const char* GetMapPrefix() override { return "tsurf_"; }
+    const char* GetGameModeCfg() override { return "tsurf.cfg"; }
     float GetIntervalPerTick() override { return 0.01f; }
     void SetGameModeVars() override;
+
+    bool HasCapability(GameModeHUDCapability_t capability) override;
 };
 
 // Ahop-specific defines
@@ -177,6 +179,81 @@ public:
 
     float GetViewScale() override { return 1.0f; }
     float GetJumpFactor() override;
+};
+
+// Parkour-specific defines
+#define PK_NORM_SPEED       162.5f
+#define PK_SPRINT_SPEED     242.5f
+
+#define PK_POWERSLIDE_MIN_SPEED (PK_NORM_SPEED + 5.0f) // must be going faster than this to powerslide
+#define PK_WALLRUN_MAX_Z        20.0f
+#define PK_WALLRUN_MIN_Z        -50.0f
+
+#define PK_SLIDE_TIME           2000.0f // in ms
+#define PK_SLIDE_SPEED_BOOST    75.0f
+#define PK_WALLRUN_TIME         2000.0f
+#define PK_WALLRUN_SPEED        300.0f
+#define PK_WALLRUN_BOOST        60.0f
+
+#define PK_CORNER_ESC_SPEED 80.0f
+#define PK_WALLRUN_OUT_TIME 500.0f // start easing out of the wallrun for last 500 ms
+
+#define PK_WALLRUN_PLANE_MAX_Z 0.5
+
+class CGameMode_Parkour : public CGameModeBase
+{
+public:
+    GameMode_t GetType() override { return GAMEMODE_PARKOUR; }
+    const char *GetStatusString() override { return "Parkouring"; }
+    const char *GetDiscordIcon() override { return "mom_icon_parkour"; }
+    const char *GetMapPrefix() override { return "pk_"; }
+    const char *GetGameModeCfg() override { return "pk.cfg"; }
+    void SetGameModeVars() override;
+    void OnPlayerSpawn(CMomentumPlayer *pPlayer) override;
+    bool WeaponIsAllowed(WeaponID_t weapon) override;
+    bool HasCapability(GameModeHUDCapability_t capability) override;
+
+    float GetViewScale() override { return 1.0f; }
+    float GetJumpFactor() override { return 300.0f; } // sqrt( 60 * 2 * 750 )
+};
+
+class CGameMode_Conc : public CGameModeBase
+{
+public:
+    GameMode_t GetType() override { return GAMEMODE_CONC; }
+    const char *GetStatusString() override { return "Concussion Grenade Jumping"; }
+    const char *GetDiscordIcon() override { return "mom_icon_conc"; }
+    const char *GetMapPrefix() override { return "conc_"; }
+    const char *GetGameModeCfg() override { return "conc.cfg"; }
+    float GetViewScale() override { return 1.0f; }
+    bool CanBhop() override { return true; }
+
+    float GetJumpFactor() override { return 268.6261f; } // sqrt(2 * 800.0f * 45.1f)
+
+    void SetGameModeVars() override;
+    bool PlayerHasAutoBhop() override { return true; }
+    void OnPlayerSpawn(CMomentumPlayer *pPlayer) override;
+    bool WeaponIsAllowed(WeaponID_t weapon) override;
+};
+
+class CGameMode_Defrag : public CGameModeBase
+{
+public:
+    GameMode_t GetType() override { return GAMEMODE_DEFRAG; }
+    const char *GetStatusString() override { return "Defragging"; }
+    const char *GetDiscordIcon() override { return "mom_icon_dfrag"; }
+    const char *GetMapPrefix() override { return "df_"; }
+    const char *GetGameModeCfg() override { return "df.cfg"; }
+    float GetViewScale() override { return 1.0f; }
+    bool CanBhop() override { return true; }
+
+    float GetIntervalPerTick() override { return 0.01f; }
+
+    void SetGameModeVars() override;
+    bool PlayerHasAutoBhop() override { return true; }
+    void OnPlayerSpawn(CMomentumPlayer *pPlayer) override;
+    bool WeaponIsAllowed(WeaponID_t weapon) override;
+    bool HasCapability(GameModeHUDCapability_t capability) override;
 };
 
 class CGameModeSystem : public CAutoGameSystem

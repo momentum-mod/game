@@ -38,7 +38,7 @@ public:
     CEnginePatch(const char*, char*, char*, size_t, bool);
     CEnginePatch(const char*, char*, char*, size_t, bool, int);
     CEnginePatch(const char*, char*, char*, size_t, bool, float);
-    CEnginePatch(const char*, char*, char*, size_t, bool, char*);
+    CEnginePatch(const char*, char*, char*, size_t, bool, char*, size_t);
 
     void ApplyPatch();
 

@@ -488,7 +488,7 @@ void CPointSpotlight::SpotlightUpdate(void)
 	m_hSpotlightTarget->SetAbsVelocity( vecNewVelocity );
 	m_hSpotlightTarget->m_vSpotlightOrg = GetAbsOrigin();
 
-	// Avoid sudden change in where beam fades out when cross disconinuities
+	// Avoid sudden change in where beam fades out when cross discontinuities
 	VectorSubtract( m_hSpotlightTarget->GetAbsOrigin(), m_hSpotlightTarget->m_vSpotlightOrg, m_hSpotlightTarget->m_vSpotlightDir );
 	float flBeamLength	= VectorNormalize( m_hSpotlightTarget->m_vSpotlightDir );
 	m_flSpotlightCurLength = (0.60*m_flSpotlightCurLength) + (0.4*flBeamLength);

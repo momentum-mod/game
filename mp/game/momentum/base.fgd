@@ -29,9 +29,14 @@
     model(studio) : "World Model"
     skin(integer) : "Skin" : 0 : "Some models have multiple versions of their textures, called skins. Set this to a number other than 0 to use that skin instead of the default."
     modelscale(float) : "Model Scale" : "1.0" : "A multiplier for the size of the model."
+    
+    glowenabled(choices) : "Glow Enabled" : 0 =
+    [
+        0 : "No"
+        1 : "Yes"
+    ]
     glowdist(integer) : "Glow Max Distance" : 0 : "The distance for glow falloff, 0 is infinite."
-    glowenabled(boolean) : "Enable glow effect" : 0
-    glowcolor(color255) : "Glow Color (R G B)" : "255 255 255" : "The color of the glow (if enabled)."
+    glowcolor(color255) : "Glow Color (R G B)" : "255 255 255" : "The color of the glow effect (if enabled)."
 
     disableshadows(choices) : "Disable Shadows" : 0 : "Used to disable dynamic shadows on this entity." =
     [
@@ -6276,7 +6281,6 @@
     ]
 
     speed(integer) : "Speed of Push" : 40 : "The speed at which to push entities away, in inches / second."
-    alternateticksfix(float) : "Scale force for alternate ticks" : "0" : "If nonzero, scale the force by this amount when running with alternate ticks. This fixes problems with an overly large force due to the longer frametime on when running with sv_alternateticks 1."
 ]
 
 @SolidClass base(Trigger, Angles) = trigger_wind : 
@@ -6455,18 +6459,6 @@
     model(studio) : "Model"
     input DisablePlayerCollision(void) : "Disable collisions against the player."
     input EnablePlayerCollision(void) : "Enable collisions against the player."
-]
-
-@PointClass base(Targetname) size(-8 -8 -8, 8 8 8) = env_credits : 
-    "An entity to control the rolling credits."
-[
-    // Inputs
-    input RollCredits(void) : "Start the intro credits rolling."
-    input RollOutroCredits(void) : "Start the outro credits rolling."
-    input ShowLogo(void) : "Show the HL2 logo."
-    
-    // Outputs
-    output OnCreditsDone(void)  : "Fired when the credits having finished rolling."
 ]
 
 @PointClass base(Parentname, Targetname) size(-8 -8 -8, 8 8 8 ) = material_modify_control : 
@@ -6733,4 +6725,30 @@
     [
         1 : "Master (Has priority if multiple postprocess_controllers exist)" : 0
     ]
+]
+
+@PointClass base(Targetname) iconsprite("editor/env_dof_controller.vmt") = env_dof_controller : 
+    "An entity that controls the depth of field settings for the player. Depth of field simulates camera blur of out-of-focus regions of the scene."
+[
+    enabled(boolean) : "Enabled" : 0 : "Whether the effect should be active"
+    
+    near_blur(float) : "Near blur depth" : 20 : "Distance that the blurriness is at its peak near the viewpoint."
+    near_focus(float) : "Near focus depth" : 100 : "Distance that the focus is in full effect near the viewpoint."
+    near_radius(float) : "Near blur radius" : 0 : "Radius (in pixels) to blur the surrounding pixels."
+
+    far_blur(float) : "Far blur depth" : 1000 : "Distance where blurriness is at its peak far from the viewpoint."
+    far_focus(float) : "Far focus depth" : 250 : "Distance that the focus is in full effect far from the viewpoint."
+    far_radius(float) : "Far blur radius" : 10 : "Radius (in pixels) to blur the surrounding pixels."
+    focus_target(target_source) : "Focus target" : "" : "Entity to use as a focal point."
+    focus_range(float) : "Focus target range" : "200" : "Distance behind the focal plane to remain in focus."
+
+    // Inputs
+    input SetNearBlurDepth(float) : "Set the distance in front of the focus region at which the scene will be completely blurred using the near blur radius. Must be smaller than NearFocusDepth."
+    input SetNearFocusDepth(float) : "The area between the near focus and far focus distances is perfectly in focus. Must be smaller than FarFocusDepth."
+    input SetFarFocusDepth(float) : "The area between the near focus and far focus distances is perfectly in focus. Must be smaller than FarBlurDepth."
+    input SetFarBlurDepth(float) : "Set the distance beyond the focus region at which the scene will be completely blurred using the far blur radius. Must be larger than FarFocusDepth."
+    input SetNearBlurRadius(float) : "Set the blur radius (in pixels) to use at the near blur distance. Set to 0 to disable near blur."
+    input SetFarBlurRadius(float) : "Set the blur radius (in pixels) to use at the far blur distance. Set to 0 to disable far blur."
+    input SetFocusTarget(string) : "Set the focal target for the effect."
+    input SetFocusTargetRange(float) : "Set the distance behind the focal point that will remain in focus."
 ]

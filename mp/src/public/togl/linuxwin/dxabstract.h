@@ -291,7 +291,7 @@ struct TOGL_CLASS IDirect3DPixelShader9 : public IDirect3DResource9	//was IUnkno
 {
 	CGLMProgram				*m_pixProgram;
 	uint					m_pixHighWater;		// count of active constant slots referenced by shader.
-	uint					m_pixSamplerMask;	// (1<<n) mask of samplers referemnced by this pixel shader
+	uint					m_pixSamplerMask;	// (1<<n) mask of samplers referenced by this pixel shader
 												// this can help FlushSamplers avoid SRGB flipping on textures not being referenced...
 	uint					m_pixSamplerTypes;  // SAMPLER_TYPE_2D, etc.
 	uint					m_pixFragDataMask;  // (1<<n) mask of gl_FragData[n] referenced by this pixel shader

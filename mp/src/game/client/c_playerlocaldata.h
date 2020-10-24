@@ -28,11 +28,13 @@ public:
 
 	CPlayerLocalData() :
 		m_iv_vecPunchAngle( "CPlayerLocalData::m_iv_vecPunchAngle" ),
-		m_iv_vecPunchAngleVel( "CPlayerLocalData::m_iv_vecPunchAngleVel" )
+		m_iv_vecPunchAngleVel( "CPlayerLocalData::m_iv_vecPunchAngleVel" ),
+		m_iv_vecTargetPunchAngle("CPlayerLocalData::m_iv_vecTargetPunchAngle")
 	{
 		//Animation, because they aren't really anymore based on viewangle change or position FIX: Oh yeh because punchangle doesn't use angles and viewoffset use origin?!
 		m_iv_vecPunchAngle.Setup(&m_vecPunchAngle.m_Value, LATCH_SIMULATION_VAR);
 		m_iv_vecPunchAngleVel.Setup(&m_vecPunchAngleVel.m_Value, LATCH_SIMULATION_VAR);
+		m_iv_vecTargetPunchAngle.Setup(&m_vecTargetPunchAngle.m_Value, LATCH_SIMULATION_VAR);
 		m_flFOVRate = 0;
 	}
 
@@ -47,9 +49,17 @@ public:
 	bool					m_bDucked;
 	bool					m_bDucking;
 	bool					m_bInDuckJump;
-	float					m_flDucktime;
+	float					m_flDucktime; // Timer, gets set & decremented in gamemovement, usually used to measure how much of a duck action the player has done
 	float					m_flDuckJumpTime;
 	float					m_flJumpTime;
+
+	// Parkour
+	float					m_slideBoostCooldown;
+	float					m_lurchTimer;
+	float					m_flWallRunTime;
+	float					m_punchRollOverride;
+	float					m_punchRollOverrideTarget;
+
 	int						m_nStepside;
 	float					m_flFallVelocity;
 	int						m_nOldButtons;
@@ -58,6 +68,9 @@ public:
 	Vector					m_vecClientBaseVelocity;  
 	CNetworkQAngle( m_vecPunchAngle );		// auto-decaying view angle adjustment
 	CInterpolatedVar< QAngle >	m_iv_vecPunchAngle;
+
+	CNetworkQAngle(m_vecTargetPunchAngle);// punch angle decays toward target angle	
+	CInterpolatedVar< QAngle >	m_iv_vecTargetPunchAngle;
 
 	CNetworkQAngle( m_vecPunchAngleVel );		// velocity of auto-decaying view angle adjustment
 	CInterpolatedVar< QAngle >	m_iv_vecPunchAngleVel;

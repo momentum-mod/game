@@ -265,8 +265,8 @@ void CChoreoChannel::ReconcileGestureTimes()
 			// I think this fixes the issue with abutting past NULL gestures on paste:
 			// Here's the bug report:
 			// -------------------------
-			// When copying and pasteing posture and gesture clips in face poser the beginings of the clips stretch 
-			//  to the begining of the scene even if there is a null gesture in place at the begining.
+			// When copying and pasting posture and gesture clips in face poser the beginnings of the clips stretch 
+			//  to the beginning of the scene even if there is a null gesture in place at the beginning.
 			// -------------------------
 			/*
 			else if ( pEntryTag && !Q_stricmp( previous->GetName(), "NULL" ) )
@@ -278,7 +278,7 @@ void CChoreoChannel::ReconcileGestureTimes()
 			}
 			*/
 
-			// The previous event decays from it's end dispaly end time to the current event's display start time
+			// The previous event decays from it's end display end time to the current event's display start time
 			// The next event starts just after the display end time of the previous event
 		}
 

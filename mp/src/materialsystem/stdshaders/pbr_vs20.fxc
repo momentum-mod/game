@@ -4,6 +4,8 @@
 //
 //==================================================================================================
 
+//  STATIC: "WVT"                       "0..1"
+
 //  DYNAMIC: "COMPRESSED_VERTS"         "0..1"
 //  DYNAMIC: "DOWATERFOG"               "0..1"
 //  DYNAMIC: "SKINNING"                 "0..1"
@@ -30,6 +32,9 @@ struct VS_INPUT
     float2 vTexCoord0               : TEXCOORD0;
     float4 vLightmapTexCoord        : TEXCOORD1;
     float4 vLightmapTexCoordOffset  : TEXCOORD2;
+#if WVT
+    float4 vColor                   : COLOR0;
+#endif
 };
 
 struct VS_OUTPUT
@@ -46,6 +51,9 @@ struct VS_OUTPUT
     float3 projPos                  : TEXCOORD5;
     float4 lightmapTexCoord1And2    : TEXCOORD6;
     float4 lightmapTexCoord3        : TEXCOORD7;
+#if WVT
+    float blend                     : COLOR0;
+#endif
 };
 
 //-----------------------------------------------------------------------------
@@ -106,6 +114,10 @@ VS_OUTPUT main( const VS_INPUT v )
 
     #if (NUM_LIGHTS > 3)
         o.lightAtten.w = GetVertexAttenForLight(worldPos, 3, false);
+    #endif
+
+    #if WVT
+        o.blend = v.vColor.a;
     #endif
 
     // Base texture coordinate transform

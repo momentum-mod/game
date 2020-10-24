@@ -371,7 +371,7 @@ void CHudDamageIndicator::MsgFunc_Damage( bf_read &msg )
 
 	if ( damageTaken > 0 || armor > 0 )
 	{
-		// see which quandrant the effect is in
+		// see which quadrant the effect is in
 		float angle;
 		GetDamagePosition( vecDelta, &angle );
 

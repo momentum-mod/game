@@ -8,6 +8,7 @@
 #include "iclientmode.h"
 #include "momentum/util/mom_util.h"
 #include "mom_player_shared.h"
+#include "fmtstr.h"
 
 #include "tier0/memdbgon.h"
 
@@ -24,31 +25,17 @@ using namespace vgui;
 extern ConVar sv_gravity;
 
 SpeedometerLabel::SpeedometerLabel(Panel *parent, const char *panelName, SpeedometerColorize_t colorizeType)
-    : Label(parent, panelName, ""), m_eColorizeType(colorizeType), m_pflAlpha(nullptr),
-      m_bSupportsEnergyUnits(false), m_bDoneFading(false),
+    : DoubleLabel(parent, panelName, CFmtStr("%sComparison", panelName).Get()), m_eColorizeType(colorizeType),
+      m_pflAlpha(nullptr), m_bSupportsEnergyUnits(false), m_bDoneFading(false),
       m_eUnitType(SPEEDOMETER_UNITS_UPS), m_bDrawComparison(true), m_bSupportsSeparateComparison(true)
 {
-    // create a separate label for the comparison & pin it to this
-    char name[BUFSIZELOCL];
-    Q_snprintf(name, sizeof(name), "%sComparison", GetName());
-    m_pComparisonLabel = new Label(GetParent(), name, "");
-    m_pComparisonLabel->SetName(name);
-    m_pComparisonLabel->SetPos(0, 0);
-    m_pComparisonLabel->PinToSibling(GetName(), PIN_TOPLEFT, PIN_TOPRIGHT);
-    m_pComparisonLabel->SetFont(GetFont());
-    m_pComparisonLabel->SetAutoTall(true);
-    m_pComparisonLabel->SetAutoWide(true);
-    m_pComparisonLabel->SetContentAlignment(a_center);
-    m_pComparisonLabel->SetPinCorner(PIN_TOPLEFT, 0, 0);
-
     Reset();
 }
 
 void SpeedometerLabel::SetVisible(bool bVisible)
 {
-    m_pComparisonLabel->SetVisible(bVisible && m_bDrawComparison);
-    BaseClass::SetVisible(bVisible);
-    // parent's layout depends on the visiblity of this, so invalidate it
+    BaseClass::SetVisible(bVisible, bVisible && m_bDrawComparison);
+    // parent's layout depends on the visibility of this, so invalidate it
     GetParent()->InvalidateLayout();
 }
 
@@ -64,30 +51,7 @@ void SpeedometerLabel::ApplySchemeSettings(IScheme *pScheme)
     m_NormalColor = GetSchemeColor("MOM.Speedometer.Normal", pScheme);
     m_IncreaseColor = GetSchemeColor("MOM.Speedometer.Increase", pScheme);
     m_DecreaseColor = GetSchemeColor("MOM.Speedometer.Decrease", pScheme);
-    m_pComparisonLabel->SetFont(GetFont());
     Reset();
-}
-
-void SpeedometerLabel::PerformLayout()
-{
-    BaseClass::PerformLayout();
-
-    // keep centered in parent
-    char szMain[BUFSIZELOCL];
-    GetText(szMain, BUFSIZELOCL);
-
-    HFont labelFont = GetFont();
-    int combinedLength = UTIL_ComputeStringWidth(labelFont, szMain);
-
-    if (m_eColorizeType == SPEEDOMETER_COLORIZE_COMPARISON_SEPARATE && m_bDrawComparison)
-    {
-        char szComparison[BUFSIZELOCL];
-        m_pComparisonLabel->GetText(szComparison, BUFSIZELOCL);
-        combinedLength += UTIL_ComputeStringWidth(labelFont, szComparison);
-    }
-
-    int xOffset = (GetParent()->GetWide() - combinedLength) / 2;
-    SetPos(xOffset, GetYPos());
 }
 
 void SpeedometerLabel::OnThink()
@@ -98,7 +62,6 @@ void SpeedometerLabel::OnThink()
         return;
 
     SetAlpha(*m_pflAlpha);
-    m_pComparisonLabel->SetAlpha(*m_pflAlpha);
 
     if (CloseEnough(*m_pflAlpha, 0.0f, FLT_EPSILON))
     {
@@ -118,17 +81,14 @@ void SpeedometerLabel::Reset()
     m_bDrawComparison = true;
     m_bDoneFading = true;
 
-    m_pComparisonLabel->SetText("");
-    BaseClass::SetText("");
+    BaseClass::SetText("", "");
 
     SetAlpha(HasFadeOutAnimation() ? 0 : 255);
 }
 
 void SpeedometerLabel::SetText(int value)
 {
-    char szValue[BUFSIZELOCL];
-    Q_snprintf(szValue, sizeof(szValue), "%i", value);
-    BaseClass::SetText(szValue);
+    SetPrimaryText(CFmtStr("%i", value).Get());
 }
 
 void SpeedometerLabel::Update(float value)
@@ -206,7 +166,7 @@ void SpeedometerLabel::Colorize()
         ColorizeComparisonSeparate();
         break;
     default:
-        SetFgColor(m_NormalColor);
+        SetPrimaryFgColor(m_NormalColor);
         break;
     }
 
@@ -241,23 +201,23 @@ void SpeedometerLabel::ColorizeRange()
             break;
         }
     }
-    SetFgColor(newColor);
+    SetPrimaryFgColor(newColor);
 }
 
 void SpeedometerLabel::ColorizeComparison()
 {
     m_flDiff = m_flCurrentValue - m_flPastValue;
-    SetFgColor(MomUtil::GetColorFromVariation(m_flDiff, COLORIZE_DEADZONE, m_NormalColor, m_IncreaseColor, m_DecreaseColor));
+    SetPrimaryFgColor(MomUtil::GetColorFromVariation(m_flDiff, COLORIZE_DEADZONE, m_NormalColor, m_IncreaseColor, m_DecreaseColor));
 }
 
 void SpeedometerLabel::ColorizeComparisonSeparate()
 {
-    SetFgColor(m_NormalColor);
+    SetPrimaryFgColor(m_NormalColor);
 
     if (!m_bDrawComparison)
         return;
 
-    if (!m_bCustomDiff) // calculate diff unless explicity told not to
+    if (!m_bCustomDiff) // calculate diff unless explicitly told not to
     {
         m_flDiff = m_flCurrentValue - m_flPastValue;
     }
@@ -267,35 +227,16 @@ void SpeedometerLabel::ColorizeComparisonSeparate()
     g_pMOMRunCompare->GetDiffColor(m_flDiff, &compareColor, true);
 
     char diffChar = m_flDiff > 0.0f ? '+' : '-';
-    char szText[BUFSIZELOCL];
-    Q_snprintf(szText, BUFSIZELOCL, " (%c %i)", diffChar, RoundFloatToInt(fabs(m_flDiff)));
 
-    m_pComparisonLabel->SetText(szText);
-    m_pComparisonLabel->SetFgColor(compareColor);
+    SetSecondaryText(CFmtStr(" (%c %i)", diffChar, RoundFloatToInt(fabs(m_flDiff))).Get());
+    SetSecondaryFgColor(compareColor);
 }
 
-void SpeedometerLabel::SaveToKV(KeyValues* pOut)
+void SpeedometerLabel::ApplyKV(KeyValues *pIn)
 {
-    pOut->Clear();
-    pOut->SetBool("visible", IsVisible());
-    pOut->SetInt("colorize", GetColorizeType());
-    KeyValues *pRangesKV = pOut->FindKey("ranges", true);
-    char tmp[BUFSIZELOCL];
+    if (!pIn)
+        return;
 
-    FOR_EACH_VEC(m_vecRangeList, i)
-    {
-        Range_t range = m_vecRangeList[i];
-        Q_snprintf(tmp, BUFSIZELOCL, "%i", i + 1);
-        KeyValues *rangeKV = pRangesKV->FindKey(tmp, true);
-        rangeKV->SetInt("min", range.min);
-        rangeKV->SetInt("max", range.max);
-        rangeKV->SetColor("color", range.color);
-    }
-    pOut->SetInt("units", GetUnitType());
-}
-
-void SpeedometerLabel::LoadFromKV(KeyValues* pIn)
-{
     SetVisible(pIn->GetBool("visible", false));
     if (!IsVisible())
         return;

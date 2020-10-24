@@ -1070,7 +1070,7 @@ void CNPC_Advisor::RunTask( const Task_t *pTask )
 
 #endif
 
-// helper function for testing whether or not an avisor is allowed to grab an object
+// helper function for testing whether or not an advisor is allowed to grab an object
 static bool AdvisorCanPickObject(CBasePlayer *pPlayer, CBaseEntity *pEnt)
 {
 	Assert( pPlayer != NULL );
@@ -1293,7 +1293,7 @@ void CNPC_Advisor::PreHurlClearTheWay( CBaseEntity *pThrowable, const Vector &to
 			Assert(pPhys); 
 
 			// this is an object we want to push out of the way. Compute a vector perpendicular
-			// to the path of the throwables's travel, and thrust the object along that vector.
+			// to the path of the throwable's travel, and thrust the object along that vector.
 			Vector thrust;
 			CalcClosestPointOnLine( obstruction->GetAbsOrigin(),
 									pThrowable->GetAbsOrigin(), 

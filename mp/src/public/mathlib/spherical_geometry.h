@@ -39,7 +39,7 @@ FORCEINLINE float UnitSphereTriangleArea( Vector const &a, Vector const &b , Vec
 	if ( ( flLengthA == 0. ) || ( flLengthB == 0. ) || ( flLengthC == 0. ) )
 		return 0.;											// zero area triangle
 			
-	// now, find the 3 incribed angles for the triangle
+	// now, find the 3 inscribed angles for the triangle
 	float flHalfSumLens = 0.5 * ( flLengthA + flLengthB + flLengthC );
 	float flSinSums = sin( flHalfSumLens );
 	float flSinSMinusA= sin( flHalfSumLens - flLengthA );

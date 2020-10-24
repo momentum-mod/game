@@ -396,7 +396,7 @@ I CUtlMultiList<T,I>::Alloc( )
 	I elem;
 	if (m_FirstFree == InvalidIndex())
 	{
-		// We can overflow before the utlmemory overflows, since we have have I != int
+		// We can overflow before the utlmemory overflows, since we have I != int
 		if ( !IndexInRange( m_MaxElementIndex ) )
 		{
 			// We rarely if ever handle alloc failure. Continuing leads to corruption.

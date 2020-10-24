@@ -248,7 +248,7 @@ public:
 		return StandardReallocate(*this, oldPtr, oldSize, newSize, preserve);
 	}
 
-	/// \brief Template class memeber Rebind
+	/// \brief Template class member Rebind
 	/// \tparam V bound class or type
 	/// \details Rebind allows a container class to allocate a different type of object
 	///   to store elements. For example, a std::list will allocate std::list_node to
@@ -322,7 +322,7 @@ template <class T, size_t S, class A = NullAllocator<T>, bool T_Align16 = false>
 class FixedSizeAllocatorWithCleanup : public AllocatorBase<T>
 {
 	// The body of FixedSizeAllocatorWithCleanup is provided in the two
-	// partial specializations that follow. The two specialiations
+	// partial specializations that follow. The two specializations
 	// pivot on the boolean template parameter T_Align16. AIX, Solaris,
 	// IBM XLC and SunCC receive a little extra help. We managed to
 	// clear most of the warnings.
@@ -411,7 +411,7 @@ public:
 			// If the m_allocated assert fires then the bit twiddling for
 			// GetAlignedArray() is probably incorrect for the platform.
 			// Be sure to check CRYPTOPP_ALIGN_DATA(8). The platform may
-			// not have a way to declaritively align data to 8.
+			// not have a way to declaratively align data to 8.
 			CRYPTOPP_ASSERT(size <= S);
 			CRYPTOPP_ASSERT(m_allocated);
 			m_allocated = false;
@@ -813,7 +813,7 @@ public:
 	///    before throwing an exception. In this case, the attacker provides a large
 	///    BER encoded length (say 64MB) but only a small number of content octets
 	///    (say 16). If the allocator zeroized all 64MB, then a transient DoS could
-	///    occur as CPU cycles are spent zeroizing unintialized memory.
+	///    occur as CPU cycles are spent zeroizing uninitialized memory.
 	/// \details Generally speaking, any operation which changes the size of the SecBlock
 	///    results in the mark being reset to <tt>ELEMS_MAX</tt>. In particular, if Assign(),
 	///    New(), Grow(), CleanNew(), CleanGrow() are called, then the count is reset to
@@ -905,7 +905,7 @@ public:
 
 	/// \brief Construct a SecBlock from this and another SecBlock
 	/// \param t the other SecBlock
-	/// \returns a newly constructed SecBlock that is a conacentation of this and t
+	/// \returns a newly constructed SecBlock that is a concatenation of this and t
 	/// \details Internally, a new SecBlock is created from this and a concatenation of t.
 	SecBlock<T, A> operator+(const SecBlock<T, A> &t)
 	{

@@ -743,7 +743,7 @@ void TextEntry::PaintBackground()
 
 	bool highlight_composition = ( nCompStart != -1 && nCompEnd != -1 ) ? true : false;
 
-	// draw text with an elipsis
+	// draw text with an ellipsis
 	if ( (!_multiline) && (!_horizScrollingAllowed) )
 	{	
 		int endIndex = m_TextStream.Count();
@@ -828,7 +828,7 @@ void TextEntry::PaintBackground()
 			surface()->DrawSetTextColor(col);
 
 		}
-		if (endIndex < m_TextStream.Count()) // add an elipsis
+		if (endIndex < m_TextStream.Count()) // add an ellipsis
 		{
 			x += DrawChar('.', useFont, i, x, y);
 			i++;
@@ -922,7 +922,7 @@ void TextEntry::PaintBackground()
 		}
 		else
 		{
-			// Draw language identififer
+			// Draw language identifier
 			x = wide - m_nLangInset;
 		}
 
@@ -1404,7 +1404,7 @@ void TextEntry::CreateEditMenu()
 }
 
 //-----------------------------------------------------------------------------
-// Purpsoe: Returns state of _editable flag
+// Purpose: Returns state of _editable flag
 //-----------------------------------------------------------------------------
 bool TextEntry::IsEditable()
 {
@@ -1425,13 +1425,13 @@ void TextEntry::OnMouseFocusTicked()
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: If a cursor enters the window, we are not elegible for 
+// Purpose: If a cursor enters the window, we are not eligible for 
 //          MouseFocusTicked events
 //-----------------------------------------------------------------------------
 void TextEntry::OnCursorEntered()
 {
     BaseClass::OnCursorEntered();
-	_mouseDragSelection = false; // outside of window dont recieve drag scrolling ticks
+	_mouseDragSelection = false; // outside of window don't receive drag scrolling ticks
 }
 
 //-----------------------------------------------------------------------------
@@ -1439,7 +1439,7 @@ void TextEntry::OnCursorEntered()
 //			button down, then we want the window to scroll the text one char at a time
 //			using Ticks
 //-----------------------------------------------------------------------------
-void TextEntry::OnCursorExited() // outside of window recieve drag scrolling ticks
+void TextEntry::OnCursorExited() // outside of window receive drag scrolling ticks
 {
     BaseClass::OnCursorExited();
 	if (_mouseSelection)
@@ -2260,7 +2260,7 @@ void TextEntry::GotoLeft()
 	// if we are on a line break just move the cursor to the prev line
 	if (IsLineBreak(_cursorPos))
 	{
-		// if we're already on the prev line at the end dont put it on the end
+		// if we're already on the prev line at the end don't put it on the end
 		if (!_cursorIsAtEnd)
 			_putCursorAtEnd = true;
 	}
@@ -2358,7 +2358,7 @@ void TextEntry::GotoUp()
 		{
 			// stay at end of line
 			_putCursorAtEnd = true;
-			return;	 // dont move the cursor
+			return;	 // don't move the cursor
 		}
 		else
 			_cursorPos--;  
@@ -2403,7 +2403,7 @@ void TextEntry::GotoDown()
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: Set the starting ypixel positon for a walk through the window
+// Purpose: Set the starting ypixel position for a walk through the window
 //-----------------------------------------------------------------------------
 int TextEntry::GetYStart()
 {
@@ -2493,7 +2493,7 @@ void TextEntry::MoveCursor(int line, int pixelsAcross)
 
 //-----------------------------------------------------------------------------
 // Purpose: Turn horizontal scrolling on or off.
-//			Horizontal scrolling is disabled in multline windows. 
+//			Horizontal scrolling is disabled in multiline windows. 
 //		    Toggling this will disable it in single line windows as well.
 //-----------------------------------------------------------------------------
 void TextEntry::SetHorizontalScrolling(bool status) 
@@ -2520,7 +2520,7 @@ void TextEntry::ScrollLeft()
 	
 	if(_cursorPos < _currentStartIndex)	 // scroll left if we need to
 	{
-		if (_cursorPos < 0)// dont scroll past the Start of buffer
+		if (_cursorPos < 0)// don't scroll past the Start of buffer
 		{
 			_cursorPos=0;			
 		}
@@ -2558,7 +2558,7 @@ void TextEntry::ScrollLeftForResize()
         }
 
         // IsCursorOffRightSideOfWindow actually fixes the _currentStartIndex, 
-        // so if our value changed that menas we really are off the screen
+        // so if our value changed that means we really are off the screen
 		if (nVal != _currentStartIndex)
 			break;
     }
@@ -2633,7 +2633,7 @@ int TextEntry::GetWordRight()
             break;
     }
 
-    // search right until we hit an nonspace character
+    // search right until we hit a nonspace character
     while (++ret < m_TextStream.Count())
     {
         if (!iswspace(m_TextStream[ret]))
@@ -2677,6 +2677,9 @@ int TextEntry::GetWordLeft()
         if (!iswspace(m_TextStream[ret]))
             break;
     }
+
+	if (ret < 0)
+		return 0;
 
     // search left until we hit a whitespace character
     while (--ret >= 0)
@@ -2770,7 +2773,7 @@ void TextEntry::GotoFirstOfLine()
 //-----------------------------------------------------------------------------
 int TextEntry::GetCurrentLineStart()
 {
-	if (!_multiline)			// quick out for non multline buffers
+	if (!_multiline)			// quick out for non multiline buffers
 		return _currentStartIndex;
 	
 	int i;
@@ -3121,7 +3124,7 @@ void TextEntry::Backspace()
 	if (_cursorPos==_currentStartIndex)
 	{
 		// windows tabs over 6 chars
-		if (_currentStartIndex-6 >= 0) // dont scroll if there are not enough chars to scroll
+		if (_currentStartIndex-6 >= 0) // don't scroll if there are not enough chars to scroll
 		{
 			_currentStartIndex-=6; 
 		}
@@ -3345,7 +3348,7 @@ void TextEntry::OpenEditMenu()
 	}
 	panel->ScreenToLocal(cursorX, cursorY);
 	int x, y;
-	// get base panel's postition
+	// get base panel's position
 	panel->GetPos(x, y);	  
 	
 	// adjust our cursor position accordingly
@@ -3509,7 +3512,7 @@ void TextEntry::Paste()
 		InsertChar(buf[i]);
 	}
 
-	// restore the original clipboard text if neccessary
+	// restore the original clipboard text if necessary
 	if (m_bAutoProgressOnHittingCharLimit)
 	{
 		system()->SetClipboardText(buf.Base(), bufferSize);
@@ -3588,7 +3591,7 @@ int TextEntry::GetStartDrawIndex(int &lineBreakIndexIndex)
 				if (_vertScrollBar)
 				{
 					MoveScrollBar( 1 ); // should be calibrated for speed 
-					// adjust startline incase we hit a limit
+					// adjust startline in case we hit a limit
 					startLine = _vertScrollBar->GetValue(); 
 				}
 			}
@@ -3640,7 +3643,7 @@ int TextEntry::GetStartDrawIndex(int &lineBreakIndexIndex)
 				
 				if ( x <= 0 )
 				{
-					// dont go past the Start of buffer
+					// don't go past the Start of buffer
 					if (_currentStartIndex > 0)
 						_currentStartIndex--;
 				}

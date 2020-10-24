@@ -100,10 +100,6 @@
         "player"      "byte"    // entindex of the player
         "achievement" "short"   // achievement ID
     }
-    "paintgun_panel"
-    {
-        "show" "bool"
-    }
     "invalid_mdl_cache"
     {
     }
@@ -144,5 +140,14 @@
     "player_explosive_hit"
     {
         "speed" "float"
+    }
+    "trick_data_loaded"
+    {
+        
+    }
+    "tricks_tracking"
+    {
+        "type" "byte"
+        "num" "short"
     }
 }

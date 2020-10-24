@@ -78,7 +78,7 @@ void CBaseFilter::InputTestActivator( inputdata_t &inputdata )
 // ###################################################################
 //	> FilterMultiple
 //
-//   Allows one to filter through mutiple filters
+//   Allows one to filter through multiple filters
 // ###################################################################
 #define MAX_FILTERS 5
 enum filter_t

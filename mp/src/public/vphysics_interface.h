@@ -24,7 +24,7 @@
 // ------------------------------------------------------------------------------------
 // NOTE:  Coordinates are in HL units.  1 unit == 1 inch.  X is east (forward), Y is north (left), Z is up (up)
 // QAngle are pitch (around y), Yaw (around Z), Roll (around X)
-// AngularImpulse are exponetial maps (an axis in HL units scaled by a "twist" angle in degrees)
+// AngularImpulse are exponential maps (an axis in HL units scaled by a "twist" angle in degrees)
 //		They can be transformed like normals/covectors and added linearly
 // mass is kg, volume is in^3, acceleration is in/s^2, velocity is in/s
 
@@ -263,7 +263,7 @@ public:
 
 	// loads a set of solids into a vcollide_t
 	virtual void			VCollideLoad( vcollide_t *pOutput, int solidCount, const char *pBuffer, int size, bool swap = false ) = 0;
-	// destroyts the set of solids created by VCollideLoad
+	// destroys the set of solids created by VCollideLoad
 	virtual void			VCollideUnload( vcollide_t *pVCollide ) = 0;
 
 	// begins parsing a vcollide.  NOTE: This keeps pointers to the text
@@ -594,7 +594,7 @@ public:
 	virtual IPhysicsVehicleController	*CreateVehicleController( IPhysicsObject *pVehicleBodyObject, const vehicleparams_t &params, unsigned int nVehicleType, IPhysicsGameTrace *pGameTrace ) = 0;
 	virtual void						DestroyVehicleController( IPhysicsVehicleController * ) = 0;
 
-	// install a function to filter collisions/penentration
+	// install a function to filter collisions/penetration
 	virtual void			SetCollisionSolver( IPhysicsCollisionSolver *pSolver ) = 0;
 
 	// run the simulator for deltaTime seconds
@@ -675,7 +675,7 @@ enum callbackflags
 	CALLBACK_ENABLING_COLLISION = 0x0800,	// This is active during the time an object is enabling collisions
 											// allows us to skip collisions between "new" objects and objects marked for delete
 	CALLBACK_DO_FLUID_SIMULATION = 0x1000,  // remove this to opt out of fluid simulations
-	CALLBACK_IS_PLAYER_CONTROLLER= 0x2000,	// HACKHACK: Set this on players until player cotrollers are unified with shadow controllers
+	CALLBACK_IS_PLAYER_CONTROLLER= 0x2000,	// HACKHACK: Set this on players until player controllers are unified with shadow controllers
 	CALLBACK_CHECK_COLLISION_DISABLE = 0x4000,
 	CALLBACK_MARKED_FOR_TEST	= 0x8000,	// debug -- marked object is being debugged
 };
@@ -685,7 +685,7 @@ abstract_class IPhysicsObject
 public:
 	virtual ~IPhysicsObject( void ) {}
 
-	// returns true if this object is static/unmoveable
+	// returns true if this object is static/unmovable
 	// NOTE: returns false for objects that are not created static, but set EnableMotion(false);
 	// Call IsMoveable() to find if the object is static OR has motion disabled
 	virtual bool			IsStatic() const = 0;
@@ -748,7 +748,7 @@ public:
 
 	// coefficients are optional, pass either
 	virtual void			SetDragCoefficient( float *pDrag, float *pAngularDrag ) = 0;
-	virtual void			SetBuoyancyRatio( float ratio ) = 0;			// Override bouyancy
+	virtual void			SetBuoyancyRatio( float ratio ) = 0;			// Override buoyancy
 
 	// material index
 	virtual int				GetMaterialIndex() const = 0;
@@ -1008,7 +1008,7 @@ public:
 
 //-----------------------------------------------------------------------------
 // Purpose: parameter block for creating fluid dynamic motion
-// UNDONE: Expose additional fluid model paramters?
+// UNDONE: Expose additional fluid model parameters?
 //-----------------------------------------------------------------------------
 struct fluidparams_t
 {
@@ -1035,7 +1035,7 @@ struct fluidparams_t
 
 //-----------------------------------------------------------------------------
 // Purpose: parameter block for creating linear springs
-// UNDONE: Expose additional spring model paramters?
+// UNDONE: Expose additional spring model parameters?
 //-----------------------------------------------------------------------------
 struct springparams_t
 {

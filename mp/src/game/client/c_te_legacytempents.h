@@ -21,7 +21,7 @@ struct model_t;
 
 
 //-----------------------------------------------------------------------------
-// Purpose: Interface for lecacy temp entities
+// Purpose: Interface for legacy temp entities
 //-----------------------------------------------------------------------------
 abstract_class ITempEnts
 {
@@ -147,8 +147,6 @@ private:
 	struct model_t			*m_pCS_9MMShell;
 	struct model_t			*m_pCS_57Shell;
 	struct model_t			*m_pCS_12GaugeShell;
-	struct model_t			*m_pCS_556Shell;
-	struct model_t			*m_pCS_762NATOShell;
 	struct model_t			*m_pCS_338MAGShell;
 #endif
 

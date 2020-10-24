@@ -1,0 +1,21 @@
+PBR
+{
+
+	$basetexture 			models/weapons/mom_stickylauncher/mom_stickybomb/mom_stickybomb_classic_C
+	$bumpMap				models/weapons/mom_stickylauncher/mom_stickybomb/mom_stickybomb_classic_N
+    $mraoTexture            lights/white001
+    $mraoScale              "{255 100 255}"
+    $emissionTexture        models/weapons/mom_stickylauncher/mom_stickybomb/mom_stickybomb_classic_E
+    $emissionScale          "[0 0 0]"
+	$envMap					cubemaps/cubemap_TheseLights
+
+    $model                  1
+	$surfaceprop            "weapon"
+    Proxies
+    {
+        ArmTime
+        {
+			resultvar	$emissionScale
+        }
+    }
+}

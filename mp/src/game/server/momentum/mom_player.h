@@ -30,8 +30,8 @@ struct SavedState_t
 
 // The player can spend this many ticks in the air inside the start zone before their speed is limited
 #define MAX_AIRTIME_TICKS 15
-#define NUM_TICKS_TO_BHOP 10 // The number of ticks a player can be on a ground before considered "not bunnyhopping"
-#define MAX_PREVIOUS_ORIGINS 3 // The number of previous origins saved
+#define NUM_TICKS_TO_BHOP 10     // The number of ticks a player can be on a ground before considered "not bunnyhopping"
+#define MAX_PREVIOUS_ORIGINS 3   // The number of previous origins saved
 
 class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CMomRunEntity
 {
@@ -115,11 +115,13 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
     CNetworkVar(bool, m_bHasPracticeMode); // Does the player have practice mode enabled?
     CNetworkVar(bool, m_bPreventPlayerBhop); // Used by trigger_limitmovement's BHOP flag
     CNetworkVar(int, m_iLandTick); // Tick at which the player landed on the ground
+    CNetworkVar(int, m_iJumpTick); // Tick at which the player jumped off the ground
     CNetworkVar(bool, m_bResumeZoom); // Used by various weapon code
     CNetworkVar(int, m_iShotsFired); // Used in various weapon code
     CNetworkVar(int, m_iDirection); // Used in kickback effects for player
     CNetworkVar(int, m_iLastZoomFOV); // Last FOV when zooming
     CNetworkVar(bool, m_bSurfing);
+    CNetworkVar(int, m_nButtonsToggled); // Used by keypress hud
     CNetworkVector(m_vecRampBoardVel);
     CNetworkVector(m_vecRampLeaveVel);
 
@@ -167,7 +169,7 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
 
     // Timer commands
     void TimerCommand_Restart(int track);
-    void TimerCommand_Reset(); // To the current stage, if any
+    void TimerCommand_RestartStage(int stage, int track);
 
     // Practice mode
     void TogglePracticeMode();
@@ -199,14 +201,14 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
     int GetAccelTicks() const { return m_nAccelTicks; }
     void SetAccelTicks(int ticks) { m_nAccelTicks = ticks; }
 
+    bool CanTeleport();
+    void ManualTeleport(const Vector *newPosition, const QAngle *newAngles, const Vector *newVelocity);
+
     // Trail Methods
     void Teleport(const Vector *newPosition, const QAngle *newAngles, const Vector *newVelocity) OVERRIDE;
     bool KeyValue(const char *szKeyName, const char *szValue) OVERRIDE;
     bool KeyValue(const char *szKeyName, float flValue) OVERRIDE;
     bool KeyValue(const char *szKeyName, const Vector &vecValue) OVERRIDE;
-
-    // Catches any messages the player sends through "say"
-    void CheckChatText(char *p, int bufsize) OVERRIDE;
 
     // Adds the give Onehop to the hopped list.
     // Returns: Its new index.
@@ -224,11 +226,11 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
     void SetCurrentZoneTrigger(CTriggerZone *pZone) { return m_CurrentZoneTrigger.Set(pZone); }
     CTriggerZone *GetCurrentZoneTrigger() const { return m_CurrentZoneTrigger.Get(); }
 
-    void CreateStartMark();
+    bool CreateStartMark();
+    bool SetStartMark(int track, SavedLocation_t *saveloc);
     SavedLocation_t *GetStartMark(int track) const { return (track >= 0 && track < MAX_TRACKS) ? m_pStartZoneMarks[track] : nullptr; }
-    void ClearStartMark(int track);
+    bool ClearStartMark(int track, bool bPrintMsg = true);
 
-    void DoMuzzleFlash() OVERRIDE;
     void PreThink() override;
     void PostThink() OVERRIDE;
 
@@ -240,10 +242,11 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
     float GetGrabbableLadderTime() const { return m_flGrabbableLadderTime; }
     void SetGrabbableLadderTime(float new_time) { m_flGrabbableLadderTime = new_time; }
 
-    // Last collision
-    void SetLastCollision(const trace_t &tr);
-    int GetLastCollisionTick() const { return m_iLastCollisionTick; }
-    trace_t& GetLastCollisionTrace() { return m_trLastCollisionTrace; }
+    // Surface interactions
+    int GetInteractionIndex(SurfInt::Type type) const;
+    const SurfInt& GetInteraction(int index) const;
+    bool SetLastInteraction(const trace_t &tr, const Vector &velocity, SurfInt::Type type);
+    void UpdateLastAction(SurfInt::Action action);
 
     void SetLastEyeAngles(const QAngle &ang) { m_qangLastAngle = ang; }
     const QAngle &LastEyeAngles() const { return m_qangLastAngle; }
@@ -263,12 +266,65 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
     bool CanSprint() const;
     void ToggleSprint(bool bShouldSprint);
     void ToggleWalk(bool bShouldWalk);
+    void DeriveMaxSpeed();
+
+    // Mobility mod (parkour)
+    void PlayStepSound(const Vector &vecOrigin, surfacedata_t *psurface, float fvol, bool force) override;
+    virtual void PlayAirjumpSound(const Vector &vecOrigin);
+    virtual void PlayPowerSlideSound(const Vector &vecOrigin);
+    virtual void StopPowerSlideSound();
+    virtual void PlayWallRunSound(const Vector &vecOrigin);
+    virtual void StopWallRunSound();
+
+    bool m_bIsPowerSliding;
+    WallRunState m_nWallRunState;
+    Vector m_vecWallNorm;
+    float m_flAutoViewTime; // if wallrunning, when should start adjusting the view 
+    bool m_bWallRunBumpAhead; // are we moving out from the wall anticipating a bump?
+    Vector m_vecLastWallRunPos; // Position when we ended the last wallrun
+    AirJumpState m_nAirJumpState; // Is the airjump ready, in progress, or done?
+    // Is the player allowed to jump while in the air
+    bool CanAirJump() const
+    {
+        return m_nAirJumpState != AIRJUMP_DONE &&
+            m_nAirJumpState != AIRJUMP_NORM_JUMPING;
+    }
+    HSOUNDSCRIPTHANDLE m_hssPowerSlideSound;
+    HSOUNDSCRIPTHANDLE m_hssWallRunSound;
+
+    // When a wallrun ends or we go over a cliff, allow a window when
+    // jumping counts as a normal jump off the ground/wall, even though
+    // technically airborn. Compensating for player's perception/reflexes.
+    // This is the absolute time until which we allow the special jump
+    float m_flCoyoteTime; 
+
+    // Some times we want to have a little cooldown for wallrunning - 
+    // mostly if a wallrun ended because it was above a doorway
+    float m_flNextWallRunTime;
+
+    Vector GetEscapeVel() const
+    {
+        return m_vecCornerEscapeVel;
+    }
+    void SetEscapeVel(const Vector &vecNewVel)
+    {
+        m_vecCornerEscapeVel = vecNewVel;
+    }
 
     // Ramp stuff
     void SetRampBoardVelocity(const Vector &vecVel);
     void SetRampLeaveVelocity(const Vector &vecVel);
 
+    // allows us to add jump/duck/etc buttons if they're toggled
+    void PlayerRunCommand(CUserCmd *ucmd, IMoveHelper *moveHelper) override;
+
+    void ToggleInput(int nInput);
+    void ResetToggledInput(int nInput);
+
   private:
+    // Replace wishdir to escape if we are stuck in a small corner 
+    Vector m_vecCornerEscapeVel;
+
     // Player think function called every tick
     // Used to update run stats
     void PlayerThink();
@@ -313,9 +369,9 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
     // Ladder stuff
     float m_flGrabbableLadderTime;
 
-    // Last collision
-    int m_iLastCollisionTick; // Tick at which the player last collided with a non-vertical surface
-    trace_t m_trLastCollisionTrace; // (startpos and endpos raised up to player head for ceilings)
+    // List of airborne surface interations and start and end ground interactions
+    SurfInt m_surfIntList[SurfInt::TYPE_COUNT]; // Stores interactions by type
+    SurfInt::Type m_surfIntHistory[SurfInt::TYPE_COUNT]; // Keeps track of the history of interactions
 
     // Trigger stuff
     CUtlVector<CTriggerOnehop*> m_vecOnehops;

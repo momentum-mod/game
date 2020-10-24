@@ -1,4 +1,4 @@
-//===== Copyright © 1996-2005, Valve Corporation, All rights reserved. ======//
+//===== Copyright Â© 1996-2005, Valve Corporation, All rights reserved. ======//
 //
 // Purpose: Depth of field material
 //
@@ -12,8 +12,9 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-ConVar mat_dof_max_blur_radius( "mat_dof_max_blur_radius", "10" );
-ConVar mat_dof_quality( "mat_dof_quality", "0" );
+ConVar mat_dof_max_blur_radius( "mat_dof_max_blur_radius", "50" );
+ConVar mat_dof_quality( "mat_dof_quality", "3" );
+ConVar mat_dof_constant( "mat_dof_constant", "512" );
 
 // 8 samples
 static const float s_flPoissonConstsQuality0[16] = {
@@ -191,7 +192,7 @@ BEGIN_VS_SHADER_FLAGS( DepthOfField_dx9, "Depth of Field", SHADER_NOT_EDITABLE )
 			vConst[1] = params[NEARFOCUSDEPTH]->GetFloatValue();
 			vConst[2] = params[FARFOCUSDEPTH]->GetFloatValue();
 			vConst[3] = params[FARBLURDEPTH]->GetFloatValue();;
-			// max blur radius will need to be set based on qulity level and screen res
+			// max blur radius will need to be set based on quality level and screen res
 			vConst[4] = mat_dof_max_blur_radius.GetFloat();
 			vConst[5] = MIN( params[NEARBLURRADIUS]->GetFloatValue(), vConst[4] ) / vConst[4];	// near and far blur radius as fraction of max radius
 			vConst[6] = MIN( params[FARBLURRADIUS]->GetFloatValue(), vConst[4] ) / vConst[4];
@@ -199,8 +200,7 @@ BEGIN_VS_SHADER_FLAGS( DepthOfField_dx9, "Depth of Field", SHADER_NOT_EDITABLE )
 			vConst[8] = params[NEARPLANE]->GetFloatValue();
 			vConst[9] = params[FARPLANE]->GetFloatValue();
 			
-			// 8192 is the magic number for HDR mode 3 (see FLOAT_RENDERPARM_DEST_ALPHA_DEPTH_SCALE in shaderapidx8.cpp)
-			vConst[10] = 8192.0f * ( vConst[9] - vConst[8] ) / vConst[9]; 
+			vConst[10] = mat_dof_constant.GetFloat() * ( vConst[9] - vConst[8] ) / vConst[9]; 
 
 			vConst[12] = vConst[10] / ( vConst[0] - vConst[1] );
 			vConst[13] = ( vConst[8] - vConst[1] ) / ( vConst[0] - vConst[1] );

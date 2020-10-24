@@ -189,7 +189,7 @@ private:
 	short			m_iStartAttachment;	// StartAttachment/EndAttachment are attachment points.
 	short			m_iEndAttachment;
 
-	unsigned char	m_Subdiv;			// Number of subdivions in between segments.
+	unsigned char	m_Subdiv;			// Number of subdivisions in between segments.
 
 	int				m_RopeLength;		// Length of the rope, used for tension.
 	int				m_Slack;			// Extra length the rope is given.

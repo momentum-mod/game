@@ -1,6 +1,7 @@
 #pragma once
 
 #include "weapon_base_gun.h"
+#include "ai_activity.h"
 
 #ifdef CLIENT_DLL
 #define CMomentumPistol C_MomentumPistol
@@ -21,6 +22,7 @@ class CMomentumPistol : public CWeaponBaseGun
     void SecondaryAttack() OVERRIDE;
     bool Deploy() OVERRIDE;
 
+    virtual Activity GetDrawActivity() OVERRIDE;
     void ItemPostFrame() OVERRIDE;
 
     void FireRemaining(int &shotsFired, float &shootTime) const;

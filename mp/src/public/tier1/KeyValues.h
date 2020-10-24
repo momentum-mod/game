@@ -271,7 +271,7 @@ private:
 
 	/// Create a child key, given that we know which child is currently the last child.
 	/// This avoids the O(N^2) behaviour when adding children in sequence to KV,
-	/// when CreateKey() wil have to re-locate the end of the list each time.  This happens,
+	/// when CreateKey() will have to re-locate the end of the list each time.  This happens,
 	/// for example, every time we load any KV file whatsoever.
 	KeyValues* CreateKeyUsingKnownLastChild( const char *keyName, KeyValues *pLastChild );
 	void AddSubkeyUsingKnownLastChild( KeyValues *pSubKey, KeyValues *pLastChild );

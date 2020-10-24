@@ -12,8 +12,6 @@ void RegisterUserMessages(void)
     usermessages->Register("Geiger", 1);
     usermessages->Register("Train", 1);
     usermessages->Register("HudText", -1);
-    usermessages->Register("SayText", -1);
-    usermessages->Register("SayText2", -1);
     usermessages->Register("TextMsg", -1);
     usermessages->Register("HudMsg", -1);
     usermessages->Register("ResetHUD", 1);      // called every respawn
@@ -32,7 +30,6 @@ void RegisterUserMessages(void)
     usermessages->Register("KeyHintText", -1);  // Displays hint text display
     //usermessages->Register("SquadMemberDied", 0);
     usermessages->Register("AmmoDenied", 2);
-    usermessages->Register("CreditsMsg", 1);
     usermessages->Register("LogoTimeMsg", 4);
     usermessages->Register("AchievementEvent", -1);
     //usermessages->Register("UpdateJalopyRadar", -1);
@@ -49,6 +46,7 @@ void RegisterUserMessages(void)
     usermessages->Register("ZoneInfo", 8);
     //usermessages->Register("Timer_GameMode", 4);
     usermessages->Register("MB_PlayerTriedSaveOrLoad", 0);
+    usermessages->Register("MB_Safeguard_Map_Change", 0);
 
     usermessages->Register("DamageIndicator", -1);
 }

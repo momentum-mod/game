@@ -12,14 +12,12 @@ enum WeaponID_t
     WEAPON_NONE = 0,
 
     WEAPON_PISTOL,
-    WEAPON_RIFLE,
     WEAPON_SHOTGUN,
-    WEAPON_SMG,
+    WEAPON_MACHINEGUN,
     WEAPON_SNIPER,
-    WEAPON_LMG,
     WEAPON_GRENADE,
+    WEAPON_CONCGRENADE,
     WEAPON_KNIFE,
-    WEAPON_PAINTGUN,
     WEAPON_ROCKETLAUNCHER,
     WEAPON_STICKYLAUNCHER,
 
@@ -33,14 +31,12 @@ static const char *const g_szWeaponNames[WEAPON_MAX] =
 {
     "weapon_none",
     "weapon_momentum_pistol",
-    "weapon_momentum_rifle",
     "weapon_momentum_shotgun",
-    "weapon_momentum_smg",
+    "weapon_momentum_machinegun",
     "weapon_momentum_sniper",
-    "weapon_momentum_lmg",
     "weapon_momentum_grenade",
+    "weapon_momentum_concgrenade",
     "weapon_knife",
-    "weapon_momentum_paintgun",
     "weapon_momentum_rocketlauncher",
     "weapon_momentum_stickylauncher"
 };
@@ -82,10 +78,8 @@ enum AmmoType_t
 {
     AMMO_TYPE_NONE = -1,
     AMMO_TYPE_PISTOL,
-    AMMO_TYPE_SMG,
-    AMMO_TYPE_RIFLE,
+    AMMO_TYPE_MACHINEGUN,
     AMMO_TYPE_SNIPER,
-    AMMO_TYPE_LMG,
     AMMO_TYPE_SHOTGUN,
     AMMO_TYPE_GRENADE,
     AMMO_TYPE_PAINT,

@@ -115,8 +115,8 @@ void CMomentumDiscord::LevelInitPostEntity()
     if (!m_bValid)
         return;
 
-    // Ignore background map(s) and credits
-    if (!Q_strncmp(MapName(), "bg_", 3) || FStrEq(MapName(), "credits"))
+    // Ignore background map(s)
+    if (!Q_strncmp(MapName(), "bg_", 3))
     {
         V_strncpy(m_szDiscordState, MAIN_MENU_STR, sizeof(m_szDiscordState));
         V_strncpy(m_szDiscordLargeImageKey, MOM_ICON_LOGO, sizeof(m_szDiscordLargeImageKey));
@@ -202,11 +202,8 @@ void CMomentumDiscord::HandleLobbyEnter(LobbyEnter_t *pParam)
 
 void CMomentumDiscord::HandleLobbyDataUpdate(LobbyDataUpdate_t *pParam)
 {
-    if (CSteamID(pParam->m_ulSteamIDLobby) != m_sSteamLobbyID)
-    {
-        m_sSteamLobbyID = CSteamID(pParam->m_ulSteamIDLobby);
-        UpdateDiscordPartyIdFromSteam();
-    }
+    if (pParam->m_ulSteamIDLobby != m_sSteamLobbyID.ConvertToUint64())
+        return;
 
     OnSteamLobbyUpdate();
 }
@@ -214,10 +211,7 @@ void CMomentumDiscord::HandleLobbyDataUpdate(LobbyDataUpdate_t *pParam)
 void CMomentumDiscord::HandleLobbyChatUpdate(LobbyChatUpdate_t *pParam)
 {
     if (pParam->m_ulSteamIDLobby != m_sSteamLobbyID.ConvertToUint64())
-    {
-        m_sSteamLobbyID = CSteamID(pParam->m_ulSteamIDLobby);
-        UpdateDiscordPartyIdFromSteam();
-    }
+        return;
 
     OnSteamLobbyUpdate();
 }
@@ -446,7 +440,7 @@ void CMomentumDiscord::UpdateDiscordPartyIdFromSteam()
         // We could do something to further "encrypt" the secrets but it's probably fine
         if (m_sSteamUserID.IsValid())
         {
-            // If we found a vaid steam user ID add it into the secret
+            // If we found a valid steam user ID add it into the secret
             V_snprintf(m_szDiscordJoinSecret, sizeof(m_szDiscordJoinSecret), "J%lld;%lld", lobbyID, m_sSteamUserID.ConvertToUint64());
         }
         else
@@ -661,7 +655,7 @@ void CMomentumDiscord::HandleDiscordSpectate(const char *secret)
     }
 }
 
-// When a differnt user is requesting to join the current user's lobby
+// When a different user is requesting to join the current user's lobby
 void CMomentumDiscord::HandleDiscordJoinRequest(const DiscordUser *request)
 {
     DevLog("\nDiscord-RPC: join request from %s#%s - %s\n", request->username, request->discriminator, request->userId);

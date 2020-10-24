@@ -2848,7 +2848,7 @@ void CNavMesh::CommandNavEndArea( void )
 				newArea->ConnectTo( GetMarkedArea(), SOUTH );
 			}
 
-			// propogate marked area to new area
+			// propagate marked area to new area
 			SetMarkedArea( newArea );
 		}
 

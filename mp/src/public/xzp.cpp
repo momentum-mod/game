@@ -183,7 +183,7 @@ bool CXZip::Load( FILE* handle, int nOffset, int nSize, bool bPreload )	// Load 
 	// Read the header:
 	m_pRead( &m_Header, 0, -1, sizeof(m_Header), m_hUser );
 
-	// Validate the Magic number and at the same time determine if I am reading a regular or swappped xZip file:
+	// Validate the Magic number and at the same time determine if I am reading a regular or swapped xZip file:
 	switch( m_Swap.SourceIsNativeEndian<int>( m_Header.Magic, xZipHeader_t::MAGIC ) )
 	{
 		// Does the magic match exactly?
@@ -220,7 +220,7 @@ bool CXZip::Load( FILE* handle, int nOffset, int nSize, bool bPreload )	// Load 
 	// Validate the archive version:
 	if( m_Header.Version != xZipHeader_t::VERSION )
 	{
-		// Backward compatable support for version 1
+		// Backward compatible support for version 1
 		Msg("Incorrect xZip version found %u - expected %u\n", m_Header.Version, xZipHeader_t::VERSION );
 		if( m_hZip )
 		{
@@ -239,7 +239,7 @@ bool CXZip::Load( FILE* handle, int nOffset, int nSize, bool bPreload )	// Load 
 		m_pDirectory = (xZipDirectoryEntry_t*)malloc( sizeof(xZipDirectoryEntry_t) * m_Header.DirectoryEntries );
 		m_pRead( m_pDirectory, m_Header.HeaderLength, -1, sizeof( xZipDirectoryEntry_t ) * m_Header.DirectoryEntries, m_hUser );
 
-		// Swap the directory entries if nessecary
+		// Swap the directory entries if necessary
 		if( m_bByteSwapped )
 		{
 			for( unsigned nDirectoryEntry = 0; nDirectoryEntry < m_Header.DirectoryEntries; nDirectoryEntry++ )
@@ -818,8 +818,8 @@ bool xZipAddFile( const char* filename, CUtlBuffer &fileBuff, bool bPrecacheEnti
 
 	WriteFileBytes( hTempFileData, fileBuff, entry.Length );
 
-	// Align the data region to a 512 byte boundry:  (has to be on last entry as well to ensure enough space to perform the final read,
-	// and initial alignment is taken careof by assembexzip)
+	// Align the data region to a 512 byte boundary:  (has to be on last entry as well to ensure enough space to perform the final read,
+	// and initial alignment is taken care of by assembexzip)
 	int nPadding = ( XBOX_HDD_SECTORSIZE - ( ftell( hTempFileData ) % XBOX_HDD_SECTORSIZE) ) % XBOX_HDD_SECTORSIZE;
 
 	PadFileBytes( hTempFileData, nPadding );
@@ -958,7 +958,7 @@ bool xZipEnd()
 		Header.PreloadBytes = 0;
 	}
 
-	// Number of bytes preceeding the preloaded section:
+	// Number of bytes preceding the preloaded section:
 	int nPreloadOffset = sizeof( Header ) + ( sizeof( xZipDirectoryEntry_t ) * Header.DirectoryEntries );
 
 	// Number of bytes to pad between the end of the preload section and the start of the data section:
@@ -1027,14 +1027,14 @@ bool xZipEnd()
 					break;
 			}
 
-			// If I couldn't find it mark it as non-existant:
+			// If I couldn't find it mark it as non-existent:
 			if( j == Header.PreloadDirectoryEntries )
 				j = 0xFFFF;
 
 			Regular2Preload[i] = j;
 		}
 
-		printf("Writing preloaded directory entreis...\n" );
+		printf("Writing preloaded directory entries...\n" );
 
 		// Swap the preload directory entries:
 		for( unsigned i=0; i < Header.PreloadDirectoryEntries; i++ )

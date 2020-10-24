@@ -6,11 +6,11 @@
 #include "cbase.h"
 
 #include "leaderboards/ClientTimesDisplay.h"
-#include "lobby/LobbyMembersPanel.h"
-#include "HUD/hud_menu_static.h"
+#include "menus/hud_menu_static.h"
 #include "HUD/hud_mapfinished.h"
 #include "spectate/mom_spectator_gui.h"
 #include "spectate/mom_replayui.h"
+#include "tricks/TrickList.h"
 
 #include "IGameUIFuncs.h"
 #include "clientmode_mom_normal.h"
@@ -21,15 +21,8 @@
 #include "ZoneMenu/ZoneMenu.h"
 #include "c_mom_player.h"
 
-#include "clienteffectprecachesystem.h"
-
-#include "loadingscreen/LoadingScreen.h"
-#include "GameUI/IGameUI.h"
-
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
-
-extern bool g_bRollingCredits;
 
 using namespace vgui;
 
@@ -56,10 +49,6 @@ extern ConVar cl_forwardspeed;
 extern ConVar cl_sidespeed;
 
 HScheme g_hVGuiCombineScheme = 0;
-
-static CDllDemandLoader g_GameUI("GameUI");
-
-CLoadingScreen *g_pLoadingScreen = nullptr;
 
 // Instance the singleton and expose the interface to it.
 IClientMode *GetClientModeNormal()
@@ -92,6 +81,10 @@ class CHudViewport : public CBaseViewport
         {
             return new CClientTimesDisplay(this);
         }
+        if (FStrEq(PANEL_TRICK_LIST, pzName))
+        {
+            return new TrickList(this);
+        }
         if (FStrEq(PANEL_REPLAY, pzName))
         {
             return new C_MOMReplayUI(this);
@@ -100,20 +93,16 @@ class CHudViewport : public CBaseViewport
         {
             return new CMOMSpectatorGUI(this);
         }
-        if (FStrEq(PANEL_LOBBY_MEMBERS, pzName))
-        {
-            return new LobbyMembersPanel(this);
-        }
 
         return BaseClass::CreatePanelByName(pzName);
     }
 
-    void CreateDefaultPanels(void) OVERRIDE
+    void CreateDefaultPanels() OVERRIDE
     {
         AddNewPanel(CreatePanelByName(PANEL_REPLAY), "PANEL_REPLAY");
         AddNewPanel(CreatePanelByName(PANEL_TIMES), "PANEL_TIMES");
         AddNewPanel(CreatePanelByName(PANEL_SPECGUI), "PANEL_SPECGUI");
-        AddNewPanel(CreatePanelByName(PANEL_LOBBY_MEMBERS), "PANEL_LOBBY_MEMBERS");
+        AddNewPanel(CreatePanelByName(PANEL_TRICK_LIST), "PANEL_TRICK_LIST");
         // BaseClass::CreateDefaultPanels(); // MOM_TODO: do we want the other panels?
     }
 
@@ -135,6 +124,7 @@ ClientModeMOMNormal::ClientModeMOMNormal()
     m_pLeaderboards = nullptr;
     m_pSpectatorGUI = nullptr;
     m_pLobbyMembers = nullptr;
+    m_pTrickList = nullptr;
     m_pViewport = new CHudViewport();
     m_pViewport->Start(gameuifuncs, gameeventmanager);
 }
@@ -160,20 +150,7 @@ void ClientModeMOMNormal::Init()
     {
         Warning("Couldn't load combine panel scheme!\n");
     }
-
-    const auto gameUIFactory = g_GameUI.GetFactory();
-    if (gameUIFactory)
-    {
-        const auto pGameUI = static_cast<IGameUI*>(gameUIFactory(GAMEUI_INTERFACE_VERSION, nullptr));
-        if (pGameUI)
-        {
-            g_pLoadingScreen = new CLoadingScreen();
-            pGameUI->SetLoadingBackgroundDialog(g_pLoadingScreen->GetVPanel());
-        }
-    }
 }
-
-bool ClientModeMOMNormal::ShouldDrawCrosshair(void) { return (g_bRollingCredits == false); }
 
 int ClientModeMOMNormal::HudElementKeyInput(int down, ButtonCode_t keynum, const char *pszCurrentBinding)
 {
@@ -193,20 +170,15 @@ int ClientModeMOMNormal::HudElementKeyInput(int down, ButtonCode_t keynum, const
         if (keynum == MOUSE_RIGHT)
         {
             m_pLeaderboards->SetMouseInputEnabled(true);
-            // MOM_TODO: Consider toggling the leaderboards open with this
-            // m_pLeaderboards->SetKeyBoardInputEnabled(!prior);
-            // ButtonCode_t close = gameuifuncs->GetButtonCodeForBind("showtimes");
-            // gViewPortInterface->PostMessageToPanel(PANEL_TIMES, new KeyValues("PollHideCode", "code", close));
             return 0;
         }
     }
 
-    // Detach for the lobby members panel as well
-    if (m_pLobbyMembers && m_pLobbyMembers->IsVisible())
+    if (m_pTrickList && m_pTrickList->IsVisible())
     {
         if (keynum == MOUSE_RIGHT)
         {
-            m_pLobbyMembers->SetMouseInputEnabled(true);
+            m_pTrickList->SetMouseInputEnabled(true);
             return 0;
         }
     }
@@ -245,16 +217,13 @@ int ClientModeMOMNormal::HandleSpectatorKeyInput(int down, ButtonCode_t keynum, 
             m_pSpectatorGUI->SetMouseInputEnabled(!bMouseState);
             if (m_pHudMapFinished && m_pHudMapFinished->IsVisible())
                 m_pHudMapFinished->SetMouseInputEnabled(!bMouseState);
-            if (m_pLobbyMembers && m_pLobbyMembers->IsVisible())
-                m_pLobbyMembers->SetMouseInputEnabled(!bMouseState);
             // MOM_TODO: re-enable this in alpha+ when we add movie-style controls to the spectator menu!
             // m_pViewport->ShowPanel(PANEL_SPECMENU, true);
 
             return 0; // we handled it, don't handle twice or send to server
         }
 
-        bool shouldEatSpecInput = (m_pHudMapFinished && m_pHudMapFinished->IsVisible()) ||
-            (m_pLobbyMembers && m_pLobbyMembers->IsVisible()) || m_pSpectatorGUI->IsMouseInputEnabled();
+        bool shouldEatSpecInput = (m_pHudMapFinished && m_pHudMapFinished->IsVisible()) || m_pSpectatorGUI->IsMouseInputEnabled();
         if (down && pszCurrentBinding && FStrEq(pszCurrentBinding, "+attack") && !shouldEatSpecInput)
         {
             engine->ClientCmd("spec_next");
@@ -275,25 +244,13 @@ int ClientModeMOMNormal::HandleSpectatorKeyInput(int down, ButtonCode_t keynum, 
     return 1;
 }
 
-CLIENTEFFECT_REGISTER_BEGIN(PrecachePostProcessingEffectsGlow)
-CLIENTEFFECT_MATERIAL("dev/glow_color")
-CLIENTEFFECT_MATERIAL("dev/halo_add_to_screen")
-CLIENTEFFECT_REGISTER_END_CONDITIONAL(engine->GetDXSupportLevel() >= 90)
-
-bool ClientModeMOMNormal::DoPostScreenSpaceEffects(const CViewSetup* pSetup)
-{
-    g_GlowObjectManager.RenderGlowEffects(pSetup, 0);
-
-    return BaseClass::DoPostScreenSpaceEffects(pSetup);
-}
-
 void ClientModeMOMNormal::SetupPointers()
 {
     m_pHudMenuStatic = GET_HUDELEMENT(CHudMenuStatic);
     m_pHudMapFinished = GET_HUDELEMENT(CHudMapFinishedDialog);
     m_pLeaderboards = dynamic_cast<CClientTimesDisplay *>(m_pViewport->FindPanelByName(PANEL_TIMES));
     m_pSpectatorGUI = dynamic_cast<CMOMSpectatorGUI *>(m_pViewport->FindPanelByName(PANEL_SPECGUI));
-    m_pLobbyMembers = dynamic_cast<LobbyMembersPanel*>(m_pViewport->FindPanelByName(PANEL_LOBBY_MEMBERS));
+    m_pTrickList = dynamic_cast<TrickList*>(m_pViewport->FindPanelByName(PANEL_TRICK_LIST));
 }
 
 int ClientModeMOMNormal::MovementDirection(const QAngle viewangles, const Vector velocity)
@@ -357,7 +314,7 @@ int ClientModeMOMNormal::MovementDirection(const QAngle viewangles, const Vector
             return MD_Backwards; // Backwards
         }
     }
-    return MD_NONE; // Unknown should never happend
+    return MD_NONE; // Unknown should never happen
 }
 
 bool ClientModeMOMNormal::CreateMove(float flInputSampleTime, CUserCmd *cmd)
@@ -371,14 +328,12 @@ bool ClientModeMOMNormal::CreateMove(float flInputSampleTime, CUserCmd *cmd)
     static int dominant_buttons = 0;
     static int prev_flags = 0;
 
-    int mdir;
-
     if (!local_player)
     {
         return false;
     }
 
-    mdir = MovementDirection(cmd->viewangles, local_player->GetAbsVelocity());
+    int mdir = MovementDirection(cmd->viewangles, local_player->GetAbsVelocity());
 
     if (mom_release_forward_on_jump.GetBool() && prev_flags & FL_ONGROUND && FL_ONGROUND & local_player->GetFlags() &&
         local_player->GetGroundEntity() &&
@@ -417,7 +372,7 @@ bool ClientModeMOMNormal::CreateMove(float flInputSampleTime, CUserCmd *cmd)
         }
     }
 
-    if (!mom_enable_overlapping_keys.GetBool())
+    if (mom_enable_overlapping_keys.GetBool())
     {
         cmd->buttons &= ~local_player->m_afButtonDisabled;
 

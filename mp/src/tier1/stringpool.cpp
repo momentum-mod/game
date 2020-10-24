@@ -197,7 +197,7 @@ unsigned short CCountedStringPool::ReferenceStringHandle( const char* pIntrinsic
 		{
 			if( !Q_stricmp( pIntrinsic, m_Elements[nCurrentBucket].pString ) )
 			{
-				// Anyone who hits 65k references is permanant
+				// Anyone who hits 65k references is permanent
 				if( m_Elements[nCurrentBucket].nReferenceCount < MAX_REFERENCE )
 				{
 					m_Elements[nCurrentBucket].nReferenceCount ++ ;
@@ -255,7 +255,7 @@ void CCountedStringPool::DereferenceString( const char* pIntrinsic )
 	{
 		if( !Q_stricmp( pIntrinsic, m_Elements[nCurrentBucket].pString ) )
 		{
-			// Anyone who hits 65k references is permanant
+			// Anyone who hits 65k references is permanent
 			if( m_Elements[nCurrentBucket].nReferenceCount < MAX_REFERENCE )
 			{
 				m_Elements[nCurrentBucket].nReferenceCount --;

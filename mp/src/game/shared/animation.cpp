@@ -729,7 +729,7 @@ int FindTransitionSequence( CStudioHdr *pstudiohdr, int iCurrentSequence, int iG
 
 	int iInternNode = pstudiohdr->GetTransition( iEndNode, pstudiohdr->EntryNode( iGoalSequence ) );
 
-	// if there is no transitionial node, just go to the goal sequence
+	// if there is no transitional node, just go to the goal sequence
 	if (iInternNode == 0)
 		return iGoalSequence;
 
@@ -826,7 +826,7 @@ bool GotoSequence( CStudioHdr *pstudiohdr, int iCurrentSequence, float flCurrent
 
 	int iInternNode = pstudiohdr->GetTransition( iEndNode, pstudiohdr->EntryNode( iGoalSequence ) );
 
-	// if there is no transitionial node, just go to the goal sequence
+	// if there is no transitional node, just go to the goal sequence
 	if (iInternNode == 0)
 	{
 		iNextDir = 1;

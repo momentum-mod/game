@@ -17,7 +17,7 @@ bool bOrigFacesTouched[MAX_MAP_FACES];
 
 
 //-----------------------------------------------------------------------------
-// Pupose: clear (reset) the bOrigFacesTouched list -- parellels the original
+// Purpose: clear (reset) the bOrigFacesTouched list -- parallels the original
 //         face list allowing an original face to only be processed once in 
 //         pairing edges!
 //-----------------------------------------------------------------------------

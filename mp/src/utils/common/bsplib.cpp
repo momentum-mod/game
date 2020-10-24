@@ -1614,7 +1614,7 @@ static void SwapPhyscollideLump( byte *pDestBase, byte *pSrcBase, unsigned int &
 					pPhysModel->dataSize += padBytes;
 				}
 
-				// Copy data and size into alligned buffer
+				// Copy data and size into aligned buffer
 				int newsize = size + padBytes;
 				if ( g_bSwapOnLoad )
 					newsize = SwapLong( newsize );
@@ -2828,12 +2828,12 @@ int ArrayUsage( const char *szItem, int items, int maxitems, int itemsize )
 
     Msg("%-17.17s %8i/%-8i %8i/%-8i (%4.1f%%) ", 
 		   szItem, items, maxitems, items * itemsize, maxitems * itemsize, percentage );
-	if ( percentage > 80.0 )
-		Msg( "VERY FULL!\n" );
+	if ( percentage > 99.9 )
+		Msg( "SIZE OVERFLOW!!!\n" );
 	else if ( percentage > 95.0 )
 		Msg( "SIZE DANGER!\n" );
-	else if ( percentage > 99.9 )
-		Msg( "SIZE OVERFLOW!!!\n" );
+	else if (percentage > 80.0)
+		Msg( "VERY FULL!\n" );
 	else
 		Msg( "\n" );
 	return items * itemsize;
@@ -2844,12 +2844,12 @@ int GlobUsage( const char *szItem, int itemstorage, int maxstorage )
 	float	percentage = maxstorage ? itemstorage * 100.0 / maxstorage : 0.0;
     Msg("%-17.17s     [variable]    %8i/%-8i (%4.1f%%) ", 
 		   szItem, itemstorage, maxstorage, percentage );
-	if ( percentage > 80.0 )
-		Msg( "VERY FULL!\n" );
+	if ( percentage > 99.9 )
+		Msg( "SIZE OVERFLOW!!!\n" );
 	else if ( percentage > 95.0 )
 		Msg( "SIZE DANGER!\n" );
-	else if ( percentage > 99.9 )
-		Msg( "SIZE OVERFLOW!!!\n" );
+	else if (percentage > 80.0)
+		Msg( "VERY FULL!\n" );
 	else
 		Msg( "\n" );
 	return itemstorage;

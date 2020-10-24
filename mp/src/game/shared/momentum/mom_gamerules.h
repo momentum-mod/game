@@ -22,6 +22,8 @@ class CMomentumGameRules : public CSingleplayRules
 
     DECLARE_CLIENTCLASS_NOBASE(); // This makes datatables able to access our private vars.
 
+    bool PreventDisconnectAttempt() override;
+
 #else
     DECLARE_SERVERCLASS_NOBASE();
 
@@ -34,7 +36,6 @@ class CMomentumGameRules : public CSingleplayRules
     CBaseEntity *GetPlayerSpawnSpot(CBasePlayer *pPlayer) OVERRIDE;
 
     const char *GetGameDescription(void) OVERRIDE { return "Momentum"; }
-    const char *GetChatPrefix(bool bTeamOnly, CBasePlayer *pPlayer) OVERRIDE;
 
     // Ammo
     void PlayerThink(CBasePlayer *pPlayer) OVERRIDE {}
@@ -54,6 +55,8 @@ class CMomentumGameRules : public CSingleplayRules
     void ClientSettingsChanged(CBasePlayer *) OVERRIDE;
 
     bool FAllowNPCs() OVERRIDE { return false; }
+
+    bool IsManualMapChangeOkay(const char **pszReason) override;
 
   private:
     // void AdjustPlayerDamageTaken(CTakeDamageInfo *pInfo);

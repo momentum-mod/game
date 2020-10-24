@@ -23,6 +23,13 @@ static MAKE_CONVAR(mom_hud_sj_chargemeter_units, "0", FCVAR_ARCHIVE,
                    " 2 = Speed in percent (0% = 900u/s, 100% = 2400u/s)",
                    0, 2);
 
+enum ChargeMeterUnits_t
+{
+    CHARGEMETER_UNITS_NONE = 0,
+    CHARGEMETER_UNITS_UPS,
+    CHARGEMETER_UNITS_PERCENT
+};
+
 class CHudStickyCharge : public CHudElement, public EditablePanel
 {
   public:
@@ -30,9 +37,10 @@ class CHudStickyCharge : public CHudElement, public EditablePanel
 
     CHudStickyCharge(const char *pElementName);
 
-    bool ShouldDraw() OVERRIDE;
-    void OnThink() OVERRIDE;
-    void Reset() OVERRIDE;
+    bool ShouldDraw() override;
+    void OnThink() override;
+    void Reset() override;
+    void FireGameEvent(IGameEvent *pEvent) override;
 
     CPanelAnimationVar(Color, m_cChargeColor, "ChargeColor", "MomGreydientStep8");
     CPanelAnimationVar(Color, m_cChargeDisabled, "ChargeDisabledColor", "MomentumRed");
@@ -48,6 +56,9 @@ DECLARE_HUDELEMENT(CHudStickyCharge);
 CHudStickyCharge::CHudStickyCharge(const char *pElementName)
     : CHudElement(pElementName), EditablePanel(g_pClientMode->GetViewport(), "HudStickyCharge")
 {
+    ListenForGameEvent("zone_exit");
+    ListenForGameEvent("zone_enter");
+
     SetHiddenBits(HIDEHUD_LEADERBOARDS);
 
     m_pLauncher = nullptr;
@@ -57,9 +68,41 @@ CHudStickyCharge::CHudStickyCharge(const char *pElementName)
     LoadControlSettings("resource/ui/HudStickyCharge.res");
 }
 
+void CHudStickyCharge::FireGameEvent(IGameEvent* pEvent)
+{
+    const auto pLocal = C_MomentumPlayer::GetLocalMomPlayer();
+    if (!pLocal)
+        return; 
+
+    if (pEvent->GetInt("ent") != pLocal->GetCurrentUIEntity()->GetEntIndex())
+        return;
+
+    if (pEvent->GetInt("num") != 1)
+        return;
+
+    if (FStrEq(pEvent->GetName(), "zone_enter"))
+    {
+        // Turn charge meter red while inside start zone to indicate that stickies can't be charged
+        m_pChargeLabel->SetVisible(false);
+        m_pChargeMeter->SetSubdivMarksVisible(false);
+        m_pChargeMeter->SetFgColor(m_cChargeDisabled);
+        m_pChargeMeter->SetProgress(1.0f);
+    }
+    else
+    {
+        m_pChargeLabel->SetVisible(true);
+        m_pChargeMeter->SetSubdivMarksVisible(true);
+        m_pChargeMeter->SetFgColor(m_cChargeColor);
+    }
+}
+
 void CHudStickyCharge::Reset()
 {
     m_pLauncher = nullptr;
+
+    m_pChargeLabel->SetVisible(true);
+    m_pChargeMeter->SetSubdivMarksVisible(true);
+    m_pChargeMeter->SetFgColor(m_cChargeColor);
 }
 
 bool CHudStickyCharge::ShouldDraw()
@@ -84,7 +127,7 @@ bool CHudStickyCharge::ShouldDraw()
 
 void CHudStickyCharge::OnThink()
 {
-    if (!m_pLauncher)
+    if (!m_pLauncher || !m_pLauncher->IsChargeEnabled())
         return;
 
     // Reset the charge label when player stops charging
@@ -93,53 +136,39 @@ void CHudStickyCharge::OnThink()
         m_pChargeLabel->SetText("CHARGE");
     }
 
-    // Turn charge meter red while inside start zone to indicate that stickies can't be charged
-    if (!m_pLauncher->IsChargeEnabled())
+    // Set progress of charge meter
+    float flChargeMaxTime = m_pLauncher->GetChargeMaxTime();
+
+    if (!CloseEnough(flChargeMaxTime, 0.0f, FLT_EPSILON))
     {
-        m_pChargeMeter->SetFgColor(m_cChargeDisabled);
-        m_pChargeMeter->SetProgress(1.0f);
+        float flChargeBeginTime = m_pLauncher->GetChargeBeginTime();
 
-        m_pChargeLabel->SetVisible(false);
-    }
-    else
-    {
-        // If charge label was disabled by start zone, enable it again
-        if (!m_pChargeLabel->IsVisible())
-            m_pChargeLabel->SetVisible(true);
-
-        m_pChargeMeter->SetFgColor(m_cChargeColor);
-        float flChargeMaxTime = m_pLauncher->GetChargeMaxTime();
-
-        if (!CloseEnough(flChargeMaxTime, 0.0f, FLT_EPSILON))
+        if (flChargeBeginTime > 0)
         {
-            float flChargeBeginTime = m_pLauncher->GetChargeBeginTime();
+            float flTimeCharged = max(0, gpGlobals->curtime - flChargeBeginTime);
+            float flPercentCharged = min(1.0, flTimeCharged / flChargeMaxTime);
 
-            if (flChargeBeginTime > 0)
+            m_pChargeMeter->SetProgress(flPercentCharged);
+
+            if (!mom_hud_sj_chargemeter_units.GetInt())
+                return;
+
+            char buf[64];
+            switch (mom_hud_sj_chargemeter_units.GetInt())
             {
-                float flTimeCharged = max(0, gpGlobals->curtime - flChargeBeginTime);
-                float flPercentCharged = min(1.0, flTimeCharged / flChargeMaxTime);
-
-                m_pChargeMeter->SetProgress(flPercentCharged);
-
-                if (mom_hud_sj_chargemeter_units.GetInt() == 1)
-                {
-                    char buf[64];
-                    Q_snprintf(buf, sizeof(buf), "%du/s", (int) m_pLauncher->CalculateProjectileSpeed(flTimeCharged));
-
-                    m_pChargeLabel->SetText(buf);
-                }
-                else if (mom_hud_sj_chargemeter_units.GetInt() == 2)
-                {
-                    char buf[64];
-                    Q_snprintf(buf, sizeof(buf), "%d%%", (int) (flPercentCharged * 100));
-
-                    m_pChargeLabel->SetText(buf);
-                }
+            case CHARGEMETER_UNITS_UPS:
+                Q_snprintf(buf, sizeof(buf), "%du/s", static_cast<int>(m_pLauncher->CalculateProjectileSpeed(flTimeCharged)));
+                break;
+            case CHARGEMETER_UNITS_PERCENT:
+            default:
+                Q_snprintf(buf, sizeof(buf), "%d%%", static_cast<int>(flPercentCharged * 100.0f));
+                break;
             }
-            else
-            {
-                m_pChargeMeter->SetProgress(0.0f);
-            }
+            m_pChargeLabel->SetText(buf);
+        }
+        else
+        {
+            m_pChargeMeter->SetProgress(0.0f);
         }
     }
 }

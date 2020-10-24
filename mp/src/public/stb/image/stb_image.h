@@ -257,7 +257,7 @@ RECENT REVISION HISTORY:
 //
 // By default we convert iphone-formatted PNGs back to RGB, even though
 // they are internally encoded differently. You can disable this conversion
-// by by calling stbi_convert_iphone_png_to_rgb(0), in which case
+// by calling stbi_convert_iphone_png_to_rgb(0), in which case
 // you will always just get the native iphone "format" through (which
 // is BGR stored in RGB).
 //
@@ -4453,13 +4453,13 @@ static int stbi__create_png_image_raw(stbi__png *a, stbi_uc *raw, stbi__uint32 r
 
    // we make a separate pass to expand bits to pixels; for performance,
    // this could run two scanlines behind the above code, so it won't
-   // intefere with filtering but will still be in the cache.
+   // interfere with filtering but will still be in the cache.
    if (depth < 8) {
       for (j=0; j < y; ++j) {
          stbi_uc *cur = a->out + stride*j;
          stbi_uc *in  = a->out + stride*j + x*out_n - img_width_bytes;
          // unpack 1/2/4-bit into a 8-bit buffer. allows us to keep the common 8-bit path optimal at minimal cost for 1/2/4-bit
-         // png guarante byte alignment, if width is not multiple of 8/4/2 we'll decode dummy trailing data that will be skipped in the later loop
+         // png guarantee byte alignment, if width is not multiple of 8/4/2 we'll decode dummy trailing data that will be skipped in the later loop
          stbi_uc scale = (color == 0) ? stbi__depth_scale_table[depth] : 1; // scale grayscale values to 0..255 range
 
          // note that the final byte might overshoot and write more data than desired.
@@ -4641,7 +4641,7 @@ static int stbi__expand_png_palette(stbi__png *a, stbi_uc *palette, int len, int
    p = (stbi_uc *) stbi__malloc_mad2(pixel_count, pal_img_n, 0);
    if (p == NULL) return stbi__err("outofmem", "Out of memory");
 
-   // between here and free(out) below, exitting would leak
+   // between here and free(out) below, exiting would leak
    temp_out = p;
 
    if (pal_img_n == 3) {
@@ -5029,7 +5029,7 @@ static int stbi__bitcount(unsigned int a)
 
 // extract an arbitrarily-aligned N-bit value (N=bits)
 // from v, and then make it 8-bits long and fractionally
-// extend it to full full range.
+// extend it to full range.
 static int stbi__shiftsigned(int v, int shift, int bits)
 {
    static unsigned int mul_table[9] = {
@@ -5789,7 +5789,7 @@ static void *stbi__psd_load(stbi__context *s, int *x, int *y, int *comp, int req
       //     Else if n is 128, noop.
       // Endloop
 
-      // The RLE-compressed data is preceeded by a 2-byte data count for each row in the data,
+      // The RLE-compressed data is preceded by a 2-byte data count for each row in the data,
       // which we're going to just skip.
       stbi__skip(s, h * channelCount * 2 );
 
@@ -6352,15 +6352,15 @@ static stbi_uc *stbi__gif_load_next(stbi__context *s, stbi__gif *g, int *comp, i
       g->history = (stbi_uc *) stbi__malloc(g->w * g->h); 
       if (g->out == 0)                      return stbi__errpuc("outofmem", "Out of memory");
 
-      // image is treated as "tranparent" at the start - ie, nothing overwrites the current background; 
+      // image is treated as "transparent" at the start - ie, nothing overwrites the current background; 
       // background colour is only used for pixels that are not rendered first frame, after that "background"
-      // color refers to teh color that was there the previous frame. 
+      // color refers to the color that was there the previous frame. 
       memset( g->out, 0x00, 4 * g->w * g->h ); 
       memset( g->background, 0x00, 4 * g->w * g->h ); // state of the background (starts transparent)
       memset( g->history, 0x00, g->w * g->h );        // pixels that were affected previous frame
       first_frame = 1; 
    } else {
-      // second frame - how do we dispoase of the previous one?
+      // second frame - how do we dispose of the previous one?
       dispose = (g->eflags & 0x1C) >> 2; 
       pcount = g->w * g->h; 
 
@@ -6382,13 +6382,13 @@ static stbi_uc *stbi__gif_load_next(stbi__context *s, stbi__gif *g, int *comp, i
             }
          }
       } else {
-         // This is a non-disposal case eithe way, so just 
+         // This is a non-disposal case either way, so just 
          // leave the pixels as is, and they will become the new background
          // 1: do not dispose
          // 0:  not specified.
       }
 
-      // background is what out is after the undoing of the previou frame; 
+      // background is what out is after the undoing of the previous frame; 
       memcpy( g->background, g->out, 4 * g->w * g->h ); 
    }
 
@@ -7339,7 +7339,7 @@ STBIDEF int stbi_is_16_bit_from_callbacks(stbi_io_callbacks const *c, void *user
       1.31  (2011-06-20)
               a few more leak fixes, bug in PNG handling (SpartanJ)
       1.30  (2011-06-11)
-              added ability to load files via callbacks to accomidate custom input streams (Ben Wenger)
+              added ability to load files via callbacks to accommodate custom input streams (Ben Wenger)
               removed deprecated format-specific test/load functions
               removed support for installable file formats (stbi_loader) -- would have been broken for IO callbacks anyway
               error cases in bmp and tga give messages and don't leak (Raymond Barbiero, grisha)

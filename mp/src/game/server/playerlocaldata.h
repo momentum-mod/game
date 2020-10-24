@@ -50,13 +50,19 @@ public:
 	CNetworkVar( bool, m_bDucking );
 	// In process of duck-jumping
 	CNetworkVar( bool, m_bInDuckJump );
-	// During ducking process, amount of time before full duc
+	// During ducking process, amount of time before full duck
 	CNetworkVar( float, m_flDucktime );
 	CNetworkVar( float, m_flDuckJumpTime );
 	// Jump time, time to auto unduck (since we auto crouch jump now).
 	CNetworkVar( float, m_flJumpTime );
+	// Mobility - power slide time
+	CNetworkVar(float, m_slideBoostCooldown); // MOM_TODO: Network these??
+	CNetworkVar(float, m_lurchTimer);
+	CNetworkVar(float, m_flWallRunTime);
+	CNetworkVar(float, m_punchRollOverride);
+	CNetworkVar(float, m_punchRollOverrideTarget);
 	// Step sound side flip/flip
-	int m_nStepside;;
+	int m_nStepside;
 	// Velocity at time when we hit ground
 	CNetworkVar( float, m_flFallVelocity );
 	// Previous button state
@@ -65,7 +71,8 @@ public:
 	// Base velocity that was passed in to server physics so 
 	//  client can predict conveyors correctly.  Server zeroes it, so we need to store here, too.
 	// auto-decaying view angle adjustment
-	CNetworkQAngle( m_vecPunchAngle );		
+	CNetworkQAngle( m_vecPunchAngle );
+	CNetworkQAngle(m_vecTargetPunchAngle);
 	CNetworkQAngle( m_vecPunchAngleVel );
 	// Draw view model for the player
 	CNetworkVar( bool, m_bDrawViewmodel );

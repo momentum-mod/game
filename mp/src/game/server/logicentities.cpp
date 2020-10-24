@@ -24,7 +24,7 @@ extern CServerGameDLL g_ServerGameDLL;
 
 //-----------------------------------------------------------------------------
 // Purpose: Compares a set of integer inputs to the one main input
-//			Outputs true if they are all equivalant, false otherwise
+//			Outputs true if they are all equivalent, false otherwise
 //-----------------------------------------------------------------------------
 class CLogicCompareInteger : public CLogicalEntity
 {

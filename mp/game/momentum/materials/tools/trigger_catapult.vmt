@@ -1,0 +1,10 @@
+UnlitGeneric
+{
+	"$basetexture" "tools/tools_catapult"
+
+	"$translucent" "1"
+
+	"%keywords" "momentum,tools,trigger,catapult"
+
+	"%compiletrigger" "1"
+}

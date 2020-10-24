@@ -16,7 +16,7 @@
 using namespace vgui;
 
 //-----------------------------------------------------------------------------
-// Purpose: blank image, intentially draws nothing
+// Purpose: blank image, intentionally draws nothing
 //-----------------------------------------------------------------------------
 class BlankImage : public IImage
 {

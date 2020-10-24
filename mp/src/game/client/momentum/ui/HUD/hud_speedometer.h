@@ -4,8 +4,6 @@
 
 #include <vgui_controls/EditablePanel.h>
 
-#define SPEEDOMETER_MAX_LABELS 8
-
 class SpeedometerLabel;
 class C_MomRunStats;
 class C_MomRunEntityData;
@@ -33,15 +31,22 @@ class CHudSpeedMeter : public CHudElement, public vgui::EditablePanel
 
     void ResetLabelOrder();
 
+    void SetAutoLayout(bool bEnabled) { m_bAutoLayout = bEnabled; }
+    bool GetAutoLayout() const { return m_bAutoLayout; }
+
+    const char* GetResFile() const { return "resource/ui/Speedometer.res"; }
+
   private:
     int m_iLastZone;
+
+    bool m_bAutoLayout;
 
     SpeedometerLabel *m_pAbsSpeedoLabel, *m_pHorizSpeedoLabel, *m_pVertSpeedoLabel, *m_pExplosiveJumpVelLabel,
                      *m_pLastJumpVelLabel, *m_pRampBoardVelLabel, *m_pRampLeaveVelLabel, *m_pStageEnterExitVelLabel;
 
     SpeedoLabelList m_LabelOrderList;
 
-    SpeedometerLabel *m_Labels[SPEEDOMETER_MAX_LABELS];
+    CUtlVector<SpeedometerLabel *> m_Labels;
 
     C_MomRunStats *m_pRunStats;
     C_MomRunEntityData *m_pRunEntData;

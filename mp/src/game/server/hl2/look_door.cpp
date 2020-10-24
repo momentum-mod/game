@@ -157,7 +157,7 @@ void CLookDoor::MoveThink(void)
 	}
 
 	//--------------------------------------
-	// Calculate an orgin for the door
+	// Calculate an origin for the door
 	//--------------------------------------
 	Vector vOrigin = WorldSpaceCenter() - GetAbsOrigin();
 

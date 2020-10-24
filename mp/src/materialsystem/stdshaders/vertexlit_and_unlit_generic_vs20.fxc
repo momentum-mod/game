@@ -10,6 +10,8 @@
 //  STATIC: "DECAL"						"0..1" [vs30]
 //  STATIC: "USE_STATIC_CONTROL_FLOW"	"0..1" [vs20]
 //  STATIC: "DONT_GAMMA_CONVERT_VERTEX_COLOR" "0..1"
+//	STATIC: "TREESWAY"              	"0..2"
+
 //  DYNAMIC: "COMPRESSED_VERTS"			"0..1"
 //	DYNAMIC: "DYNAMIC_LIGHT"			"0..1"
 //	DYNAMIC: "STATIC_LIGHT_VERTEX"		"0..1"
@@ -25,6 +27,10 @@
 // SKIP: $USE_STATIC_CONTROL_FLOW && ( $NUM_LIGHTS > 0 ) [vs20]
 // SKIP: ($SEPARATE_DETAIL_UVS) && ($SEAMLESS_DETAIL)
 // SKIP: ($DONT_GAMMA_CONVERT_VERTEX_COLOR && ( ! $VERTEXCOLOR ) )
+
+//	SKIP: ($TREESWAY) && ($MORPHING)
+//	SKIP: ( $TREESWAY ) && ( $SEAMLESS_DETAIL || $SEAMLESS_BASE )
+
 #include "common_vs_fxc.h"
  
 static const bool g_bSkinning		= SKINNING ? true : false;
@@ -46,6 +52,35 @@ const float cSeamlessScale					: register( SHADER_SPECIFIC_CONST_2);
 #endif
 
 const float4 cDetailTexCoordTransform[2]	:  register( SHADER_SPECIFIC_CONST_4 );
+
+#if ( TREESWAY )
+const float4 g_vMiscParams1					: register( SHADER_SPECIFIC_CONST_3 );
+const float4 g_vMiscParams2					: register( c218 ); // SHADER_SPECIFIC_CONST_12
+const float4 g_vMiscParams3					: register( SHADER_SPECIFIC_CONST_10 );
+const float4 g_vMiscParams4					: register( SHADER_SPECIFIC_CONST_11 );
+#define g_flTime g_vMiscParams2.y
+#define g_vWindDir g_vMiscParams2.zw
+
+#define g_flFastSwaySpeedScale g_vMiscParams1.x
+#define g_flScrumbleFalloffCurve g_vMiscParams1.y
+#define g_flSwayFalloffCurve g_vMiscParams1.z
+#define g_flScrumbleSpeed g_vMiscParams1.w
+
+#define g_flHeight g_vMiscParams3.x
+#define g_flStartHeight g_vMiscParams3.y
+#define g_flRadius g_vMiscParams3.z
+#define g_flStartRadius g_vMiscParams3.w
+
+#define g_flSwaySpeed g_vMiscParams4.x
+#define g_flSwayIntensity g_vMiscParams4.y
+#define g_flScrumbleWaveCount g_vMiscParams4.z
+#define g_flScrumbleIntensity g_vMiscParams4.w
+
+#define g_flWindSpeedLerpStart cDetailTexCoordTransform[0].x
+#define g_flWindSpeedLerpEnd cDetailTexCoordTransform[0].y
+
+#include "tree_sway.h"
+#endif
 
 #ifdef SHADER_MODEL_VS_3_0
 // NOTE: cMorphTargetTextureDim.xy = target dimensions,
@@ -139,7 +174,11 @@ VS_OUTPUT main( const VS_INPUT v )
 	ApplyMorph( morphSampler, cMorphTargetTextureDim, cMorphSubrect, 
 		v.vVertexID, v.vTexCoord2, vPosition.xyz, vNormal );
 #endif
-	  
+
+#if TREESWAY
+	vPosition.xyz = ComputeTreeSway( vPosition.xyz, g_flTime );
+#endif
+
 	// Perform skinning
 	float3 worldNormal, worldPos;
 	SkinPositionAndNormal( 

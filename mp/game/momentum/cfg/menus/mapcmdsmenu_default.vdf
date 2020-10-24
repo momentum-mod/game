@@ -1,0 +1,48 @@
+"Map Commands Menu"
+{
+    "1"
+    {
+        "label"   "#MOM_Menu_MapCommands_Toggle_Wireframes"
+        "command" "toggle mat_wireframe 3 0"
+    }
+    "2"
+    {
+        "label"   "#MOM_Menu_MapCommands_Toggle_Triggers"
+        "command" "showtriggers_toggle"
+    }
+    "3"
+    {
+        "label"   "#MOM_Menu_MapCommands_Toggle_Fullbright"
+        "command" "toggle mat_fullbright"
+    }
+    "4"
+    {
+        "label"   "#MOM_Menu_MapCommands_Toggle_Clipbrushes"
+        "command" "toggle r_drawclipbrushes 2 0"
+    }
+    "5"
+    {
+        "label"   "#MOM_Menu_MapCommands_Toggle_Water"
+        "command" "toggle mat_drawwater"
+    }
+    "6"
+    {
+        "label"   "#MOM_Menu_MapCommands_Toggle_Show_Sounds"
+        "command" "toggle snd_show"
+    }
+    "7"
+    {
+        "label"   "#MOM_Menu_MapCommands_Toggle_Entities"
+        "command" "toggle r_drawentities"
+    }
+    "8"
+    {
+        "label"   "#MOM_Menu_MapCommands_Reload_Materials"
+        "command" "mat_reloadallmaterials"
+    }
+    "9"
+    {
+        "label"   "#MOM_Menu_MapCommands_Toggle_Cheats"
+        "command" "toggle sv_cheats"
+    }
+}

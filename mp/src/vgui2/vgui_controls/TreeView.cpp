@@ -2393,7 +2393,7 @@ void TreeView::MakeItemVisible(int itemIndex)
         pParent = pParent->GetParentNode();
     }
 
-    // recalculate scroll bar due to possible exapnsion
+    // recalculate scroll bar due to possible expansion
     PerformLayout();
 
     if (!m_pVertScrollBar->IsVisible())

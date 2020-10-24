@@ -131,6 +131,7 @@ class SectionedListPanel;
 class Slider;
 class Splitter;
 class TextEntry;
+class TextEntryBox;
 class ToggleButton;
 class BaseTooltip;
 class TextTooltip;

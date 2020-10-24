@@ -1353,7 +1353,7 @@ Activity CNPC_PlayerCompanion::TranslateActivityReadiness( Activity activity )
 
 
 //-----------------------------------------------------------------------------
-// Purpose: Override base class activiites
+// Purpose: Override base class activities
 //-----------------------------------------------------------------------------
 Activity CNPC_PlayerCompanion::NPC_TranslateActivity( Activity activity )
 {
@@ -1798,7 +1798,7 @@ float CNPC_PlayerCompanion::GetReadinessDecay()
 }
 
 //-----------------------------------------------------------------------------
-// Passing NULL to clear the aim target is acceptible.
+// Passing NULL to clear the aim target is acceptable.
 //-----------------------------------------------------------------------------
 void CNPC_PlayerCompanion::SetAimTarget( CBaseEntity *pTarget )
 {
@@ -3629,7 +3629,7 @@ void CNPC_PlayerCompanion::OnPlayerKilledOther( CBaseEntity *pVictim, const CTak
 		// was Alyx being mobbed by this enemy?
 		bVictimWasMob = pEMemory->bMobbedMe;
 
-		// has Alyx recieved damage from this enemy?
+		// has Alyx received damage from this enemy?
 		if ( pEMemory->timeLastReceivedDamageFrom > 0 ) {
 			bVictimWasAttacker = true;
 		}
@@ -3682,7 +3682,7 @@ bool CNPC_PlayerCompanion::IsNavigationUrgent( void )
 
 		// This test was made more general because previous iterations had cases where characters
 		// could not see the player but the player could in fact see them.  Now the NPC's facing is
-		// irrelevant and the player's viewcone is more authorative. -- jdw
+		// irrelevant and the player's viewcone is more authoritative. -- jdw
 
 		CBasePlayer *pLocalPlayer = AI_GetSinglePlayer();
 		if ( pLocalPlayer->FInViewCone( EyePosition() ) )

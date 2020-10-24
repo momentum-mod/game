@@ -1,11 +1,11 @@
-﻿#pragma once
+#pragma once
 
 #if defined(GAME_DLL) || defined(CLIENT_DLL)
 #include "shareddefs.h"
 #endif
 
-// Main Version (0 is private alpha, 1 is public beta, 2 is full release)​.Main feature push (increment by one for each)​.​Small commits or hotfixes​
-#define MOM_CURRENT_VERSION "0.8.5"
+// Milestone release (alpha, beta, gold)​ . Backwards incompatible or mini-milestone update . Small feature updates (non-breaking)​
+#define MOM_CURRENT_VERSION "0.8.6"
 
 #define MAX_TRACKS 64
 #define MAX_ZONES 64
@@ -21,6 +21,7 @@ enum MomZoneType_t
     ZONE_TYPE_START,
     ZONE_TYPE_STAGE,
     ZONE_TYPE_CHECKPOINT,
+    ZONE_TYPE_TRICK,
     // Should be last
     ZONE_TYPE_COUNT,
 };
@@ -54,8 +55,18 @@ enum SpeedometerUnits_t
     SPEEDOMETER_UNITS_MPH,
     SPEEDOMETER_UNITS_ENERGY,
 
+    SPEEDOMETER_UNITS_COUNT,
+
     SPEEDOMETER_UNITS_FIRST = SPEEDOMETER_UNITS_UPS,
     SPEEDOMETER_UNITS_LAST = SPEEDOMETER_UNITS_ENERGY
+};
+
+static const char *const g_szSpeedometerUnits[] =
+{
+    "#MOM_Settings_Speedometer_Units_UPS",
+    "#MOM_Settings_Speedometer_Units_KPH",
+    "#MOM_Settings_Speedometer_Units_MPH",
+    "#MOM_Settings_Speedometer_Units_Energy"
 };
 
 enum SpeedometerColorize_t
@@ -67,6 +78,20 @@ enum SpeedometerColorize_t
 
     SPEEDOMETER_COLORIZE_FIRST = SPEEDOMETER_COLORIZE_NONE,
     SPEEDOMETER_COLORIZE_LAST = SPEEDOMETER_COLORIZE_COMPARISON_SEPARATE
+};
+
+enum SpeedometerLabel_t
+{
+    SPEEDOMETER_LABEL_TYPE_ABS = 0,
+    SPEEDOMETER_LABEL_TYPE_HORIZ,
+    SPEEDOMETER_LABEL_TYPE_VERT,
+    SPEEDOMETER_LABEL_TYPE_EXPLOSIVE,
+    SPEEDOMETER_LABEL_TYPE_LASTJUMP,
+    SPEEDOMETER_LABEL_TYPE_RAMPBOARD,
+    SPEEDOMETER_LABEL_TYPE_RAMPLEAVE,
+    SPEEDOMETER_LABEL_TYPE_STAGE,
+
+    SPEEDOMETER_LABEL_TYPE_COUNT
 };
 
 static const char *const g_szSubmitStates[] = {
@@ -82,7 +107,7 @@ static const char *const g_szSubmitStates[] = {
 // Gamemode for momentum
 enum GameMode_t
 {
-    GAMEMODE_UNKNOWN = 0, // Non-recognized map (no info ents in it)
+    GAMEMODE_UNKNOWN = 0, // Unrecognized map
     GAMEMODE_SURF = 1,
     GAMEMODE_BHOP = 2,
     GAMEMODE_KZ = 3,
@@ -90,7 +115,9 @@ enum GameMode_t
     GAMEMODE_SJ = 5,
     GAMEMODE_TRICKSURF = 6,
     GAMEMODE_AHOP = 7,
-    // MOM_TODO: etc
+    GAMEMODE_PARKOUR = 8,
+    GAMEMODE_CONC = 9,
+    GAMEMODE_DEFRAG = 10,
 
     // NOTE NOTE: IF YOU UPDATE THIS, UPDATE MOMENTUM.FGD's "GameTypes" BASECLASS!
     GAMEMODE_COUNT // Should be last
@@ -104,7 +131,10 @@ const char * const g_szGameModes[] = {
     "#MOM_GameType_RJ",
     "#MOM_GameType_SJ",
     "#MOM_GameType_Tricksurf",
-    "#MOM_GameType_Ahop"
+    "#MOM_GameType_Ahop",
+    "#MOM_GameType_Parkour",
+    "#MOM_GameType_Conc",
+    "#MOM_GameType_Defrag"
 };
 
 // Run Flags
@@ -213,9 +243,27 @@ enum SpectateMessageType_t
     SPEC_UPDATE_INVALID = -1,
 };
 
+enum AirJumpState
+{
+    AIRJUMP_READY = 1,    // Player has not airjumped yet
+    AIRJUMP_NORM_JUMPING, // Player is normal jumping
+    AIRJUMP_NOW,          // Player is airjumping right now
+    AIRJUMP_DONE          // Player has airjumped already
+};
+
+enum WallRunState
+{
+    WALLRUN_NOT = 0, // Not wallrunning
+    WALLRUN_LEAN_IN, // About to start wall running, lean in
+    WALLRUN_RUNNING, // Wallrunning
+    WALLRUN_JUMPING, // Jumping off the wall
+    WALLRUN_STALL,   // Wallrunning, but facing into the wall or otherwise not moving along it
+    WALLRUN_SCRAMBLE // basically waterjumping - vertical velocity is allowed
+};
+
 #define PANEL_TIMES "times"
 #define PANEL_REPLAY "replaycontrols"
-#define PANEL_LOBBY_MEMBERS "LobbyMembers"
+#define PANEL_TRICK_LIST "tricks"
 
 #define MOM_COLORIZATION_CHECK_FREQUENCY 0.1f
 
@@ -300,11 +348,21 @@ enum SpectateMessageType_t
 #define SND_FLASHLIGHT_ON "CSPlayer.FlashlightOn"
 #define SND_FLASHLIGHT_OFF "CSPlayer.FlashlightOff"
 
+#define SND_PAINT_SHOT "MomPlayer.PaintShot"
+
+// Get these with GetLobbyMemberData
 #define LOBBY_DATA_MAP "map"
 #define LOBBY_DATA_APPEARANCE "appearance"
 #define LOBBY_DATA_TYPING "isTyping"
 #define LOBBY_DATA_SPEC_TARGET "specTargetID"
 #define LOBBY_DATA_IS_SPEC "isSpectating"
-#define LOBBY_DATA_TYPE "type" // Use this with GetLobbyData and NOT GetLobbyMemberData!!!
+// Use these with GetLobbyData
+#define LOBBY_DATA_OWNER "owner"
+#define LOBBY_DATA_OWNER_MAP "owner_map" // Note: this is used by public and roaming lobbies
+#define LOBBY_DATA_TYPE "type"
+
+// Use this with zone rendering
+#define MOM_ZONE_DRAW_MATERIAL "momentum/zone_material"
+#define MOM_ZONE_DRAW_MATERIAL_OVERLAY "momentum/zone_material_overlay"
 
 static const unsigned long long MOM_STEAM_GROUP_ID64 = 103582791441609755;

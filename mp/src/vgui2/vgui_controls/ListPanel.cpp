@@ -40,17 +40,30 @@ public:
 	virtual void ApplySchemeSettings(IScheme *pScheme);
 	virtual void OnMousePressed(MouseCode code);
 
+	Color GetButtonBgColor() override;
+
 	void OpenColumnChoiceMenu();
+
+private:
+	bool m_bBgOverridden;
 };
 
 ColumnButton::ColumnButton(vgui::Panel *parent, const char *name, const char *text) : Button(parent, name, text)
 {
+	m_bBgOverridden = false;
 	SetBlockDragChaining( true );
 }
 
 void ColumnButton::ApplySchemeSettings(IScheme *pScheme)
 {
 	Button::ApplySchemeSettings(pScheme);
+
+	const auto pHeaderBgColor = pScheme->GetResourceString("ListPanelHeader.BgColor");
+	if (pHeaderBgColor && pHeaderBgColor[0])
+	{
+		m_bBgOverridden = true;
+		SetBgColor(GetSchemeColor("ListPanelHeader.BgColor", pScheme));
+	}
 
 	SetFont(GetSchemeFont(pScheme, nullptr, "ListPanelHeader.Font", "DefaultSmall"));
     const auto pBorder = pScheme->GetBorder("ListPanelColumnButtonBorder");
@@ -84,6 +97,14 @@ void ColumnButton::OnMousePressed(MouseCode code)
 		// lock mouse input to going to this button
 		input()->SetMouseCapture(GetVPanel());
 	}
+}
+
+Color ColumnButton::GetButtonBgColor()
+{
+	if (m_bBgOverridden)
+		return GetBgColor();
+
+	return Button::GetButtonBgColor();
 }
 
 void ColumnButton::OpenColumnChoiceMenu()
@@ -186,7 +207,7 @@ void Dragger::SetMovable(bool state)
 		if (state)
 		{
 			// if its not movable we stick with the default arrow
-			// if parent windows Start getting fancy cursors we should probably retrive a parent
+			// if parent windows Start getting fancy cursors we should probably retrieve a parent
 			// cursor and set it to that
 			SetCursor(dc_sizewe); 
 		}
@@ -243,7 +264,7 @@ static int __cdecl AscendingSortFunc(const void *elem1, const void *elem2)
 	int result = s_pSortFunc( s_pCurrentSortingListPanel, *p1, *p2 );
 	if (result == 0)
 	{
-		// use the secondary sort functino
+		// use the secondary sort function
 		result = s_pSortFuncSecondary( s_pCurrentSortingListPanel, *p1, *p2 );
 
 		if (!s_bSortAscendingSecondary)
@@ -278,7 +299,7 @@ static int __cdecl AscendingSortFunc(const void *elem1, const void *elem2)
 
 
 //-----------------------------------------------------------------------------
-// Purpose: Default column sorting function, puts things in alpabetical order
+// Purpose: Default column sorting function, puts things in alphabetical order
 //          If images are the same returns 1, else 0
 //-----------------------------------------------------------------------------
 static int __cdecl DefaultSortFunc(
@@ -414,6 +435,7 @@ DECLARE_BUILD_FACTORY( ListPanel );
 //-----------------------------------------------------------------------------
 ListPanel::ListPanel(Panel *parent, const char *panelName) : BaseClass(parent, panelName)
 {
+	m_bAlternatingColors = false;
 	m_bAutoTallHeaderToFont = false;
 	m_bIgnoreDoubleClick = false;
 	m_bMultiselectEnabled = true;
@@ -1226,7 +1248,7 @@ void ListPanel::RemoveAll()
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: obselete, use RemoveAll();
+// Purpose: obsolete, use RemoveAll();
 //-----------------------------------------------------------------------------
 void ListPanel::DeleteAllItems()
 {
@@ -1238,7 +1260,7 @@ void ListPanel::DeleteAllItems()
 //-----------------------------------------------------------------------------
 void ListPanel::ResetScrollBar()
 {
-	// delete and reallocate to besure the scroll bar's
+	// delete and reallocate to be sure the scroll bar's
 	// information is correct.
 	delete m_vbar;
 	m_vbar = new ScrollBar(this, "VertScrollBar", true);
@@ -1443,6 +1465,63 @@ IImage *ListPanel::GetCellImage(int itemID, int col) //, ImagePanel *&buffer)
 	return NULL;
 }
 
+void ListPanel::SetCellRendererBgColor(Panel *pRenderer, int itemID, int col, bool bSelected)
+{
+	KeyValues *item = GetItem(itemID);
+
+	bool bHasBg = false;
+	// Determine selection state or other bg color, if set
+	if (bSelected)
+	{
+		VPANEL focus = input()->GetFocus();
+		// if one of the children of the SectionedListPanel has focus, then 'we have focus' if we're selected
+		if (HasFocus() || (focus && ipanel()->HasParent(focus, GetVParent())))
+		{
+			pRenderer->SetBgColor(m_SelectionBgColor);
+		}
+		else
+		{
+			pRenderer->SetBgColor(m_SelectionOutOfFocusBgColor);
+		}
+	}
+	else
+	{
+		KeyValues *pCellBg = item->FindKey("cellbgcolor");
+		if (pCellBg && !pCellBg->IsEmpty())
+		{
+			// Check the type
+			if (pCellBg->GetDataType() == KeyValues::TYPE_NONE)
+			{
+				// It's an array of cells, try to find this cell in particular
+				char num[4];
+				V_snprintf(num, 4, "%i", col);
+				KeyValues *pThisCell = pCellBg->FindKey(num);
+				if (pThisCell)
+					pRenderer->SetBgColor(pThisCell->GetColor("color"));
+			}
+			else
+			{
+				// It's just a color, apply to all cells in the row
+				pRenderer->SetBgColor(item->GetColor("cellbgcolor"));
+			}
+
+			bHasBg = true;
+		}
+
+		if (!bHasBg && m_bAlternatingColors)
+		{
+			const auto bIsOddRow = GetItemCurrentRow(itemID) % 2 == 1;
+
+			pRenderer->SetBgColor(bIsOddRow ? m_ListAlternationColor2 : m_ListAlternationColor1);
+
+			bHasBg = true;
+		}
+	}
+
+	pRenderer->SetPaintBackgroundEnabled(bSelected || bHasBg);
+}
+
+
 //-----------------------------------------------------------------------------
 // Purpose: Returns the panel to use to render a cell
 //-----------------------------------------------------------------------------
@@ -1452,56 +1531,33 @@ Panel *ListPanel::GetCellRenderer(int itemID, int col)
 	Assert( m_pImagePanel );
 	
 	column_t &column = m_ColumnsData[ m_CurrentColumns[col] ];
-
+	
     KeyValues *item = GetItem(itemID);
+
+	bool bSelected = false;
+	if (m_SelectedItems.HasElement(itemID) && (!m_bCanSelectIndividualCells || col == m_iSelectedColumn))
+	{
+		bSelected = true;
+	}
+
+	if (item->GetInt("cellRenderOverrideCol", -1) == col)
+	{
+		const auto pPtr = item->GetPtr("cellRenderOverridePtr");
+		if (pPtr)
+		{
+	        const auto pRenderOverride = static_cast<Panel*>(pPtr);
+
+			SetCellRendererBgColor(pRenderOverride, itemID, col, bSelected);
+
+			return pRenderOverride;
+		}
+	}
 
 	m_pLabel->SetContentAlignment( (Label::Alignment)column.m_nContentAlignment );
     // Reset to normal bg color
     m_pLabel->SetBgColor(m_BgColor);
 
-    // Determine selection state or other bg color, if set
-    bool bSelected = false, bHasBg = false;
-    if (m_SelectedItems.HasElement(itemID) && (!m_bCanSelectIndividualCells || col == m_iSelectedColumn))
-    {
-        bSelected = true;
-        VPANEL focus = input()->GetFocus();
-        // if one of the children of the SectionedListPanel has focus, then 'we have focus' if we're selected
-        if (HasFocus() || (focus && ipanel()->HasParent(focus, GetVParent())))
-        {
-            m_pLabel->SetBgColor(m_SelectionBgColor);
-        }
-        else
-        {
-            m_pLabel->SetBgColor(m_SelectionOutOfFocusBgColor);
-        }
-    }
-    else
-    {
-        KeyValues *pCellBg = item->FindKey("cellbgcolor");
-        if (pCellBg && !pCellBg->IsEmpty())
-        {
-            // Check the type
-            if (pCellBg->GetDataType() == KeyValues::TYPE_NONE)
-            {
-                // It's an array of cells, try to find this cell in particular
-                char num[4];
-                V_snprintf(num, 4, "%i", col);
-                KeyValues *pThisCell = pCellBg->FindKey(num);
-                if (pThisCell)
-                    m_pLabel->SetBgColor(pThisCell->GetColor("color"));
-            }
-            else
-            {
-                // It's just a color, apply to all cells in the row
-                m_pLabel->SetBgColor(item->GetColor("cellbgcolor"));
-            }
-
-            bHasBg = true;
-        }
-
-    }
-
-    m_pLabel->SetPaintBackgroundEnabled(bSelected || bHasBg);
+	SetCellRendererBgColor(m_pLabel, itemID, col, bSelected);
 
 	if ( column.m_bTypeIsText ) 
 	{
@@ -1701,7 +1757,7 @@ void ListPanel::PerformLayout()
 		m_lastBarWidth = buttonMaxXPos;
 
 	}
-	else if ( oldSizeX != 0 ) // make sure this isnt the first time we opened the window
+	else if ( oldSizeX != 0 ) // make sure this isn't the first time we opened the window
 	{
 		int dx = buttonMaxXPos - m_lastBarWidth;  // this is how much we grew or shrank.
 
@@ -1709,7 +1765,7 @@ void ListPanel::PerformLayout()
 		dxPerBar=(int)((float)dx/(float)numToResize);
 		m_lastBarWidth = buttonMaxXPos;
 	}
-	else // this is the first time we've opened the window, make sure all our colums fit! resize if needed
+	else // this is the first time we've opened the window, make sure all our columns fit! resize if needed
 	{
 		int startingBarWidth=0;
 		for (int i = 0; i < nColumns; i++)
@@ -1889,6 +1945,7 @@ void ListPanel::Paint()
   	GetSize( panelWide, tall );
 
 	m_iTableStartX = 0;
+	m_iTableStartY = GetNumColumnHeaders() ? m_ColumnsData[m_CurrentColumns[0]].m_pHeader->GetTall() : 0;
 
 	int nTotalRows = m_VisibleItems.Count();
 	int nRowsPerPage = GetRowsPerPage();
@@ -1985,13 +2042,15 @@ void ListPanel::Paint()
 		    m_pEmptyListText->SetPos(m_iTableStartX + 8, m_iTableStartY + 4);
         }
 
-        m_pEmptyListText->SetWide(panelWide - 8);
+        m_pEmptyListText->SetWide(panelWide - vbarInset);
 
         m_pEmptyListText->SetVisible(true);
 
 	}
     else
-        m_pEmptyListText->SetVisible(false);
+    {
+		m_pEmptyListText->SetVisible(false);
+    }
 
 //	endTime = system()->GetCurrentTime();
 //	ivgui()->DPrintf2("ListPanel::Paint() (%.3f sec)\n", (float)(endTime - startTime));
@@ -2189,7 +2248,7 @@ void ListPanel::OnMouseWheeled(int delta)
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: Double-click act like the the item under the mouse was selected
+// Purpose: Double-click act like the item under the mouse was selected
 //			and then the enter key hit
 //-----------------------------------------------------------------------------
 void ListPanel::OnMouseDoublePressed(MouseCode code)
@@ -2416,7 +2475,7 @@ bool ListPanel::GetCellAtPos(int x, int y, int &row, int &col)
 	// make sure it's still in valid area
 	if ( x >= 0 && y >= 0 )
 	{
-		// walk the rows (for when row height is independant each row)  
+		// walk the rows (for when row height is independent each row)  
 		// NOTE: if we do height independent rows, we will need to change GetCellBounds as well
 		for ( row = startitem ; row < m_VisibleItems.Count() ; row++ )
 		{
@@ -2479,6 +2538,12 @@ void ListPanel::ApplySchemeSettings(IScheme *pScheme)
 	m_DisabledSelectionFgColor = GetSchemeColor("ListPanel.DisabledSelectedTextColor", m_LabelFgColor, pScheme);
     m_SelectionBgColor = GetSchemeColor("ListPanel.SelectedBgColor", pScheme);
     m_SelectionOutOfFocusBgColor = GetSchemeColor("ListPanel.SelectedOutOfFocusBgColor", pScheme);
+
+	const auto pAlternatingSetting = pScheme->GetResourceString("ListPanel.AlternatingColors");
+	m_bAlternatingColors = pAlternatingSetting[0] ? Q_atoi(pAlternatingSetting) : false;
+
+	m_ListAlternationColor1 = GetSchemeColor("ListPanel.AlternatingColor1", pScheme);
+	m_ListAlternationColor2 = GetSchemeColor("ListPanel.AlternatingColor2", Color(0, 0, 0, 255), pScheme);
 
 	m_pEmptyListText->SetFgColor(GetSchemeColor("ListPanel.EmptyListInfoTextColor", pScheme));
 
@@ -2958,7 +3023,7 @@ void ListPanel::ResizeColumnToContents(int column)
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: Changes the visibilty of a column
+// Purpose: Changes the visibility of a column
 //-----------------------------------------------------------------------------
 void ListPanel::OnToggleColumnVisible(int col)
 {

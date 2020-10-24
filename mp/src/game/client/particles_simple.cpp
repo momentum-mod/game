@@ -523,7 +523,7 @@ Vector CFireParticle::UpdateColor( const SimpleParticle *pParticle )
 {
 	for ( int i = 0; i < 3; i++ )
 	{
-		//FIXME: This is frame dependant... but I don't want to store off start/end colors yet
+		//FIXME: This is frame dependent... but I don't want to store off start/end colors yet
 		//pParticle->m_uchColor[i] = MAX( 0, pParticle->m_uchColor[i]-2 );
 	}
 

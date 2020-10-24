@@ -3,7 +3,59 @@
     
     "#MOM_GameType_Unknown"
     {
-        "order"
+        "autolayout" "1"
+        "layout" // only used when autolayout is off
+        {
+            // Override control settings here
+            "HudSpeedMeter"
+            {
+                "xpos" "c-60"
+                "ypos" "c+22"
+                "wide" "120"
+                "tall" "60"
+            }
+            "AbsSpeedometer"
+            {
+                "xpos" "0"
+                "ypos" "0"
+            }
+            "HorizSpeedometer"
+            {
+                "xpos" "0"
+                "ypos" "0"
+            }
+            "VertSpeedometer"
+            {
+                "xpos" "0"
+                "ypos" "0"
+            }
+            "ExplosiveJumpVelocity"
+            {
+                "xpos" "0"
+                "ypos" "0"
+            }
+            "LastJumpVelocity"
+            {
+                "xpos" "0"
+                "ypos" "0"
+            }
+            "RampBoardVelocity"
+            {
+                "xpos" "0"
+                "ypos" "0"
+            }
+            "RampLeaveVelocity"
+            {
+                "xpos" "0"
+                "ypos" "0"
+            }
+            "StageEnterExitVelocity"
+            {
+                "xpos" "0"
+                "ypos" "0"
+            }
+        }
+        "order" // only used when autolayout is on
         {
             "1" "AbsSpeedometer"
             "2" "HorizSpeedometer"
@@ -23,14 +75,20 @@
         "HorizSpeedometer"
         {
             "visible"  "0"
+            "colorize" "2"
+            "units"    "0"
         }
         "VertSpeedometer"
         {
             "visible"  "0"
+            "colorize" "2"
+            "units"    "0"
         }
         "ExplosiveJumpVelocity"
         {
             "visible"  "0"
+            "colorize" "0"
+            "units"    "0"
         }
         "LastJumpVelocity"
         {
@@ -60,7 +118,13 @@
     
     "#MOM_GameType_Surf"
     {
-        "order"
+        "autolayout" "1"
+        "layout" // only used when autolayout is off
+        {
+            // Override control settings here
+            // see "#MOM_GameType_Unknown" for an example
+        }
+        "order" // only used when autolayout is on
         {
             "1" "AbsSpeedometer"
             "2" "HorizSpeedometer"
@@ -80,14 +144,20 @@
         "HorizSpeedometer"
         {
             "visible"  "0"
+            "colorize" "2"
+            "units"    "0"
         }
         "VertSpeedometer"
         {
             "visible"  "0"
+            "colorize" "2"
+            "units"    "0"
         }
         "ExplosiveJumpVelocity"
         {
             "visible"  "0"
+            "colorize" "0"
+            "units"    "0"
         }
         "LastJumpVelocity"
         {
@@ -117,7 +187,13 @@
 
     "#MOM_GameType_Bhop"
     {
-        "order"
+        "autolayout" "1"
+        "layout" // only used when autolayout is off
+        {
+            // Override control settings here
+            // see "#MOM_GameType_Unknown" for an example
+        }
+        "order" // only used when autolayout is on
         {
             "1" "AbsSpeedometer"
             "2" "HorizSpeedometer"
@@ -137,14 +213,20 @@
         "HorizSpeedometer"
         {
             "visible"  "0"
+            "colorize" "2"
+            "units"    "0"
         }
         "VertSpeedometer"
         {
             "visible"  "0"
+            "colorize" "2"
+            "units"    "0"
         }
         "ExplosiveJumpVelocity"
         {
             "visible"  "0"
+            "colorize" "0"
+            "units"    "0"
         }
         "LastJumpVelocity"
         {
@@ -155,10 +237,14 @@
         "RampBoardVelocity"
         {
             "visible"  "0"
+            "colorize" "0"
+            "units"    "0"
         }
         "RampLeaveVelocity"
         {
             "visible"  "0"
+            "colorize" "0"
+            "units"    "0"
         }
         "StageEnterExitVelocity"
         {
@@ -170,7 +256,13 @@
 
     "#MOM_GameType_RJ"
     {
-        "order"
+        "autolayout" "1"
+        "layout" // only used when autolayout is off
+        {
+            // Override control settings here
+            // see "#MOM_GameType_Unknown" for an example
+        }
+        "order" // only used when autolayout is on
         {
             "1" "AbsSpeedometer"
             "2" "HorizSpeedometer"
@@ -183,7 +275,9 @@
         }
         "AbsSpeedometer"
         {
-            "visible" "0"
+            "visible"  "0"
+            "colorize" "2"
+            "units"    "0"
         }
         "HorizSpeedometer"
         {
@@ -215,6 +309,8 @@
         "VertSpeedometer"
         {
             "visible"  "0"
+            "colorize" "2"
+            "units"    "0"
         }
         "ExplosiveJumpVelocity"
         {
@@ -225,14 +321,20 @@
         "LastJumpVelocity"
         {
             "visible"  "0"
+            "colorize" "2"
+            "units"    "0"
         }
         "RampBoardVelocity"
         {
             "visible"  "0"
+            "colorize" "0"
+            "units"    "0"
         }
         "RampLeaveVelocity"
         {
             "visible"  "0"
+            "colorize" "0"
+            "units"    "0"
         }
         "StageEnterExitVelocity"
         {
@@ -244,7 +346,13 @@
 
     "#MOM_GameType_SJ"
     {
-        "order"
+        "autolayout" "1"
+        "layout" // only used when autolayout is off
+        {
+            // Override control settings here
+            // see "#MOM_GameType_Unknown" for an example
+        }
+        "order" // only used when autolayout is on
         {
             "1" "AbsSpeedometer"
             "2" "HorizSpeedometer"
@@ -257,7 +365,9 @@
         }
         "AbsSpeedometer"
         {
-            "visible" "0"
+            "visible"  "0"
+            "colorize" "2"
+            "units"    "0"
         }
         "HorizSpeedometer"
         {
@@ -322,14 +432,20 @@
         "LastJumpVelocity"
         {
             "visible"  "0"
+            "colorize" "0"
+            "units"    "0"
         }
         "RampBoardVelocity"
         {
             "visible"  "0"
+            "colorize" "0"
+            "units"    "0"
         }
         "RampLeaveVelocity"
         {
             "visible"  "0"
+            "colorize" "0"
+            "units"    "0"
         }
         "StageEnterExitVelocity"
         {
@@ -341,7 +457,13 @@
 
     "#MOM_GameType_Ahop"
     {
-        "order"
+        "autolayout" "1"
+        "layout" // only used when autolayout is off
+        {
+            // Override control settings here
+            // see "#MOM_GameType_Unknown" for an example
+        }
+        "order" // only used when autolayout is on
         {
             "1" "AbsSpeedometer"
             "2" "HorizSpeedometer"
@@ -361,14 +483,20 @@
         "HorizSpeedometer"
         {
             "visible"  "0"
+            "colorize" "2"
+            "units"    "0"
         }
         "VertSpeedometer"
         {
             "visible"  "0"
+            "colorize" "2"
+            "units"    "0"
         }
         "ExplosiveJumpVelocity"
         {
             "visible"  "0"
+            "colorize" "0"
+            "units"    "0"
         }
         "LastJumpVelocity"
         {
@@ -379,10 +507,290 @@
         "RampBoardVelocity"
         {
             "visible"  "0"
+            "colorize" "0"
+            "units"    "0"
         }
         "RampLeaveVelocity"
         {
             "visible"  "0"
+            "colorize" "0"
+            "units"    "0"
+        }
+        "StageEnterExitVelocity"
+        {
+            "visible"  "1"
+            "colorize" "3"
+            "units"    "0"
+        }
+    }
+
+    "#MOM_GameType_Parkour"
+    {
+        "autolayout" "1"
+        "layout" // only used when autolayout is off
+        {
+            // Override control settings here
+            // see "#MOM_GameType_Unknown" for an example
+        }
+        "order" // only used when autolayout is on
+        {
+            "1" "AbsSpeedometer"
+            "2" "HorizSpeedometer"
+            "3" "VertSpeedometer"
+            "4" "ExplosiveJumpVelocity"
+            "5" "LastJumpVelocity"
+            "6" "RampBoardVelocity"
+            "7" "RampLeaveVelocity"
+            "8" "StageEnterExitVelocity"
+        }
+        "AbsSpeedometer"
+        {
+            "visible"  "1"
+            "colorize" "2"
+            "units"    "0"
+        }
+        "HorizSpeedometer"
+        {
+            "visible"  "0"
+            "colorize" "2"
+            "units"    "0"
+        }
+        "VertSpeedometer"
+        {
+            "visible"  "0"
+            "colorize" "2"
+            "units"    "0"
+        }
+        "ExplosiveJumpVelocity"
+        {
+            "visible"  "0"
+            "colorize" "0"
+            "units"    "0"
+        }
+        "LastJumpVelocity"
+        {
+            "visible"  "1"
+            "colorize" "2"
+            "units"    "0"
+        }
+        "RampBoardVelocity"
+        {
+            "visible"  "0"
+            "colorize" "0"
+            "units"    "0"
+        }
+        "RampLeaveVelocity"
+        {
+            "visible"  "0"
+            "colorize" "0"
+            "units"    "0"
+        }
+        "StageEnterExitVelocity"
+        {
+            "visible"  "1"
+            "colorize" "3"
+            "units"    "0"
+        }
+    }
+
+    "#MOM_GameType_Tricksurf"
+    {
+        "autolayout" "1"
+        "layout" // only used when autolayout is off
+        {
+            // Override control settings here
+            // see "#MOM_GameType_Unknown" for an example
+        }
+        "order" // only used when autolayout is on
+        {
+            "1" "AbsSpeedometer"
+            "2" "HorizSpeedometer"
+            "3" "VertSpeedometer"
+            "4" "ExplosiveJumpVelocity"
+            "5" "LastJumpVelocity"
+            "6" "RampBoardVelocity"
+            "7" "RampLeaveVelocity"
+            "8" "StageEnterExitVelocity"
+        }
+        "AbsSpeedometer"
+        {
+            "visible"  "1"
+            "colorize" "2"
+            "units"    "0"
+        }
+        "HorizSpeedometer"
+        {
+            "visible"  "0"
+            "colorize" "2"
+            "units"    "0"
+        }
+        "VertSpeedometer"
+        {
+            "visible"  "0"
+            "colorize" "2"
+            "units"    "0"
+        }
+        "ExplosiveJumpVelocity"
+        {
+            "visible"  "0"
+            "colorize" "0"
+            "units"    "0"
+        }
+        "LastJumpVelocity"
+        {
+            "visible"  "1"
+            "colorize" "2"
+            "units"    "0"
+        }
+        "RampBoardVelocity"
+        {
+            "visible"  "1"
+            "colorize" "0"
+            "units"    "0"
+        }
+        "RampLeaveVelocity"
+        {
+            "visible"  "1"
+            "colorize" "0"
+            "units"    "0"
+        }
+        "StageEnterExitVelocity"
+        {
+            "visible"  "0"
+            "colorize" "3"
+            "units"    "0"
+        }
+    }
+
+    "#MOM_GameType_Conc"
+    {
+        "autolayout" "1"
+        "layout" // only used when autolayout is off
+        {
+            // Override control settings here
+            // see "#MOM_GameType_Unknown" for an example
+        }
+        "order" // only used when autolayout is on
+        {
+            "1" "AbsSpeedometer"
+            "2" "HorizSpeedometer"
+            "3" "VertSpeedometer"
+            "4" "ExplosiveJumpVelocity"
+            "5" "LastJumpVelocity"
+            "6" "RampBoardVelocity"
+            "7" "RampLeaveVelocity"
+            "8" "StageEnterExitVelocity"
+        }
+        "AbsSpeedometer"
+        {
+            "visible"  "0"
+            "colorize" "2"
+            "units"    "0"
+        }
+        "HorizSpeedometer"
+        {
+            "visible"  "1"
+            "colorize" "1"
+            "units"    "0"
+        }
+        "VertSpeedometer"
+        {
+            "visible"  "1"
+            "colorize" "1"
+            "units"    "0"
+        }
+        "ExplosiveJumpVelocity"
+        {
+            "visible"  "1"
+            "colorize" "0"
+            "units"    "0"
+        }
+        "LastJumpVelocity"
+        {
+            "visible"  "0"
+            "colorize" "0"
+            "units"    "0"
+        }
+        "RampBoardVelocity"
+        {
+            "visible"  "0"
+            "colorize" "0"
+            "units"    "0"
+        }
+        "RampLeaveVelocity"
+        {
+            "visible"  "0"
+            "colorize" "0"
+            "units"    "0"
+        }
+        "StageEnterExitVelocity"
+        {
+            "visible"  "1"
+            "colorize" "3"
+            "units"    "0"
+        }
+    }
+
+    "#MOM_GameType_Defrag"
+    {
+        "autolayout" "1"
+        "layout" // only used when autolayout is off
+        {
+            // Override control settings here
+            // see "#MOM_GameType_Unknown" for an example
+        }
+        "order" // only used when autolayout is on
+        {
+            "1" "AbsSpeedometer"
+            "2" "HorizSpeedometer"
+            "3" "VertSpeedometer"
+            "4" "ExplosiveJumpVelocity"
+            "5" "LastJumpVelocity"
+            "6" "RampBoardVelocity"
+            "7" "RampLeaveVelocity"
+            "8" "StageEnterExitVelocity"
+        }
+        "AbsSpeedometer"
+        {
+            "visible"  "1"
+            "colorize" "2"
+            "units"    "0"
+        }
+        "HorizSpeedometer"
+        {
+            "visible"  "0"
+            "colorize" "2"
+            "units"    "0"
+        }
+        "VertSpeedometer"
+        {
+            "visible"  "0"
+            "colorize" "2"
+            "units"    "0"
+        }
+        "ExplosiveJumpVelocity"
+        {
+            "visible"  "1"
+            "colorize" "0"
+            "units"    "0"
+        }
+        "LastJumpVelocity"
+        {
+            "visible"  "1"
+            "colorize" "2"
+            "units"    "0"
+        }
+        "RampBoardVelocity"
+        {
+            "visible"  "0"
+            "colorize" "0"
+            "units"    "0"
+        }
+        "RampLeaveVelocity"
+        {
+            "visible"  "0"
+            "colorize" "0"
+            "units"    "0"
         }
         "StageEnterExitVelocity"
         {

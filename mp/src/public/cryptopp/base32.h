@@ -23,7 +23,7 @@ public:
 	/// \param uppercase a flag indicating uppercase output
 	/// \param groupSize the size of the grouping
 	/// \param separator the separator to use between groups
-	/// \param terminator the terminator appeand after processing
+	/// \param terminator the terminator append after processing
 	/// \details Base32Encoder() constructs a default encoder. The constructor lacks fields for padding and
 	///   line breaks. You must use IsolatedInitialize() to change the default padding character or suppress it.
 	/// \sa Base32Encoder, Base32Decoder, Base32HexEncoder and Base32HexDecoder
@@ -104,7 +104,7 @@ public:
 	/// \param uppercase a flag indicating uppercase output
 	/// \param groupSize the size of the grouping
 	/// \param separator the separator to use between groups
-	/// \param terminator the terminator appeand after processing
+	/// \param terminator the terminator append after processing
 	/// \details Base32HexEncoder() constructs a default encoder. The constructor lacks fields for padding and
 	///   line breaks. You must use IsolatedInitialize() to change the default padding character or suppress it.
 	/// \sa Base32Encoder, Base32Decoder, Base32HexEncoder and Base32HexDecoder

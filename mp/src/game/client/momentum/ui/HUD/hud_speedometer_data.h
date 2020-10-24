@@ -9,22 +9,28 @@ class SpeedometerData
   public:
     SpeedometerData();
 
-    // gets what game mode pertains to the settings currently loaded
-    GameMode_t GetCurrentlyLoadedGameMode() { return m_CurrentlyLoadedGamemodeSettings; }
+    void Init();
 
-    void LoadGamemodeData();
-    void LoadGamemodeData(int gametype);
-    void LoadGamemodeData(GameMode_t gametype);
+    void Load(bool bApply = false);
+    void Save(bool bApply = false);
+    void Apply();
 
-    void SaveGamemodeData();
-    void SaveGamemodeData(int gametype);
-    void SaveGamemodeData(GameMode_t gametype);
+    void SetVisible(GameMode_t gametype, SpeedometerLabel_t speedometerLabelType, bool bVisible);
+    bool GetVisible(GameMode_t gametype, SpeedometerLabel_t speedometerLabelType) const;
+
+    void SetColorize(GameMode_t gametype, SpeedometerLabel_t speedometerLabelType, SpeedometerColorize_t speedometerColorizeType);
+    SpeedometerColorize_t GetColorize(GameMode_t gametype, SpeedometerLabel_t speedometerLabelType) const;
+
+    void SetUnits(GameMode_t gametype, SpeedometerLabel_t speedometerLabelType, SpeedometerUnits_t speedometerUnitsType);
+    SpeedometerUnits_t GetUnits(GameMode_t gametype, SpeedometerLabel_t speedometerLabelType) const;
 
   private:
-    SpeedometerLabel *GetLabelFromName(const char *name);
+    bool LoadDefaultSubKeyData(KeyValues *pGamemodeKV, KeyValues *pDefaultGamemodeKV, const char *pszKeyName);
 
-    KeyValues *m_pGamemodeSetupData;
-    GameMode_t m_CurrentlyLoadedGamemodeSettings;
+    KeyValues *GetSpeedoKVs(GameMode_t gametype, SpeedometerLabel_t speedometerLabelType) const;
+
+    KeyValues *m_pDefaultSpeedoData;
+    KeyValues *m_pSpeedoData;
 };
 
 extern SpeedometerData *g_pSpeedometerData;

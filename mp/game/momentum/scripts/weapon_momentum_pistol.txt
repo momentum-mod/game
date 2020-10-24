@@ -15,8 +15,8 @@ WeaponData
 
     "ModelData"
     {
-        "view"  "models/weapons/v_mom_pistol.mdl"
-        "world" "models/weapons/w_mom_pistol.mdl"
+        "view"  "models/weapons/mom_pistol/v_mom_pistol.mdl"
+        "world" "models/weapons/mom_pistol/w_mom_pistol.mdl"
     }
 
     // Sounds for the weapon.

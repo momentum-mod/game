@@ -31,7 +31,7 @@ namespace MomUtil
     Color ColorLerp(float prog, const Color& A, const Color& B);
     // Formats time in ticks by a given tickrate into time. Includes minutes if time > minutes, hours if time > hours,
     // etc
-    // Precision is miliseconds by default
+    // Precision is milliseconds by default
     void FormatTime(float seconds, char *pOut, const int precision = 3, const bool fileName = false,
                     const bool negativeTime = false);
 
@@ -52,11 +52,24 @@ namespace MomUtil
     bool IsInBounds(const Vector2D &source, const Vector2D &bottomLeft, const Vector2D &topRight);
     bool IsInBounds(const int x, const int y, const int rectX, const int rectY, const int rectW, const int rectH);
 
-    void KVSaveVector(KeyValues *kvInto, const char *pName, const Vector &toSave);
-    void KVLoadVector(KeyValues *kvFrom, const char *pName, Vector &vecInto);
+    template< class T >
+    void Save3DToKeyValues( KeyValues *pKvInto, const char *pName, const T &toSave )
+    {
+        if ( !pKvInto || !pName )
+            return;
 
-    void KVSaveQAngles(KeyValues *kvInto, const char *pName, const QAngle &toSave);
-    void KVLoadQAngles(KeyValues *kvFrom, const char *pName, QAngle &angInto);
+        char value[128];
+        Q_snprintf( value, 128, "%f %f %f", toSave.x, toSave.y, toSave.z );
+        pKvInto->SetString( pName, value );
+    }
+
+    template< class T >
+    void Load3DFromKeyValues( KeyValues *pKvFrom, const char *pName, T &into )
+    {
+        if ( !pKvFrom || !pName )
+            return;
+        sscanf( pKvFrom->GetString( pName ), "%f %f %f", &into.x, &into.y, &into.z );
+    }
 
     bool GetSHA1Hash(const CUtlBuffer &buf, char *pOut, size_t outLen);
     bool GetFileHash(char *pOut, size_t outLen, const char *pFileName, const char *pPath = "GAME");

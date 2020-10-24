@@ -208,7 +208,7 @@ private:
 	// List of metaclass types
 	CUtlDict< MetaClassDict_t, unsigned short > m_MetaClassDict;
 
-	// Create key value accesor
+	// Create key value accessor
 	CUtlDict< KeyValues*, unsigned short >	m_MetaClassKeyValues;
 };
 

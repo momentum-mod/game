@@ -6,7 +6,7 @@
 //			the default size and color of the entity, inputs and outputs,
 //			and any default models that are created when the entity is placed.
 //
-//			The game classes support multiple inheritence through aggregation
+//			The game classes support multiple inheritance through aggregation
 //			of properties.
 //
 //=============================================================================//

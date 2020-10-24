@@ -3,6 +3,7 @@
 #include "mom_triggers.h"
 #include "in_buttons.h"
 #include "mom_player_shared.h"
+#include "mom_shareddefs.h"
 #include "mom_replay_entity.h"
 #include "mom_system_gamemode.h"
 #include "mom_system_progress.h"
@@ -10,6 +11,9 @@
 #include "fmtstr.h"
 #include "mom_timer.h"
 #include "mom_modulecomms.h"
+#include "trigger_trace_enums.h"
+#include "movevars_shared.h"
+#include "mom_system_tricks.h"
 
 #include "dt_utlvector_send.h"
 
@@ -92,6 +96,20 @@ END_SEND_TABLE();
 CBaseMomZoneTrigger::CBaseMomZoneTrigger()
 {
     m_iTrackNumber = TRACK_MAIN; // Default zones to the main map.
+    m_vecRestartPos = vec3_invalid;
+}
+
+void CBaseMomZoneTrigger::Spawn()
+{
+    Precache();
+    BaseClass::Spawn();
+}
+
+void CBaseMomZoneTrigger::Precache()
+{
+    BaseClass::Precache();
+    PrecacheMaterial(MOM_ZONE_DRAW_MATERIAL);
+    PrecacheMaterial(MOM_ZONE_DRAW_MATERIAL_OVERLAY);
 }
 
 void CBaseMomZoneTrigger::InitCustomCollision(CPhysCollide* pPhysCollide, const Vector& vecMins, const Vector& vecMaxs)
@@ -162,6 +180,59 @@ bool CBaseMomZoneTrigger::LoadFromKeyValues(KeyValues *pKvFrom)
 int CBaseMomZoneTrigger::GetZoneType()
 {
     return ZONE_TYPE_INVALID;
+}
+
+bool CBaseMomZoneTrigger::FindStandableGroundBelow(const Vector& traceStartPos, Vector& dropPos)
+{
+    // Trace for a suitable landing position
+    Vector collisionEnd(traceStartPos + Vector(0, 0, -MAX_TRACE_LENGTH));
+    int mask = MASK_PLAYERSOLID_BRUSHONLY;
+    int group = COLLISION_GROUP_NONE;
+    trace_t solidTr;
+    UTIL_TraceHull(traceStartPos, collisionEnd, VEC_HULL_MIN, VEC_HULL_MAX, mask, nullptr, group, &solidTr);
+
+    // Check if we would land in a teleport trigger
+    Ray_t tpRay;
+    tpRay.Init(traceStartPos, solidTr.endpos);
+    CTeleportTriggerTraceEnum traceEnum(&tpRay);
+    enginetrace->EnumerateEntities(tpRay, true, &traceEnum);
+
+    // Check if one of the following happened:
+    // We would land on a trigger_teleport
+    // We didn't actually find any ground to stand on
+    // We would land on a ramp you cannot stand on
+    bool dropOnGround =
+        traceEnum.GetTeleportEntity() == nullptr
+        && solidTr.DidHit()
+        && (!solidTr.allsolid && solidTr.plane.normal.z >= 0.7);
+    dropPos = dropOnGround ? solidTr.endpos : traceStartPos;
+
+    return dropOnGround;
+}
+
+const Vector& CBaseMomZoneTrigger::GetRestartPosition()
+{
+    if(m_vecRestartPos == vec3_invalid)
+    {
+        Vector zoneMaxsRel = CollisionProp()->OBBMaxs();
+        Vector zoneMaxs;
+        VectorTransform(zoneMaxsRel, CollisionProp()->CollisionToWorldTransform(), zoneMaxs);
+        Vector zoneMinsRel = CollisionProp()->OBBMins();
+        Vector zoneMins;
+        VectorTransform(zoneMinsRel, CollisionProp()->CollisionToWorldTransform(), zoneMins);
+
+        // Fallback restart position in the middle
+        Vector zoneCenter(0.5f * (zoneMaxs + zoneMins));
+        // Where we actually trace from to find the landing position
+        Vector zoneCeilCenter = Vector(zoneCenter.x, zoneCenter.y, zoneMaxs.z);
+
+        Vector dropPos;
+        bool foundGround = FindStandableGroundBelow(zoneCeilCenter, dropPos);
+
+        bool groundIsHighEnough = (dropPos.z >= zoneMins.z - 0.9f * (VEC_DUCK_HULL_MAX.z - VEC_DUCK_HULL_MIN.z));
+        m_vecRestartPos = (foundGround && groundIsHighEnough) ? dropPos : zoneCenter;
+    }
+    return m_vecRestartPos;
 }
 
 // --------- CTriggerZone ----------------------------------------------
@@ -363,8 +434,17 @@ void CTriggerTimerStart::SetHasLookAngles(const bool bHasLook)
 //----------- CTriggerTimerStop ----------------------------------------------------------------
 LINK_ENTITY_TO_CLASS(trigger_momentum_timer_stop, CTriggerTimerStop);
 
+BEGIN_DATADESC(CTriggerTimerStop)
+    DEFINE_KEYFIELD(m_bCancel, FIELD_BOOLEAN, "cancel")
+END_DATADESC();
+
 IMPLEMENT_SERVERCLASS_ST(CTriggerTimerStop, DT_TriggerTimerStop)
 END_SEND_TABLE()
+
+CTriggerTimerStop::CTriggerTimerStop()
+{
+    m_bCancel = false;
+}
 
 void CTriggerTimerStop::Spawn()
 {
@@ -380,12 +460,76 @@ int CTriggerTimerStop::GetZoneType()
 
 //----------------------------------------------------------------------------------------------
 
+//----------- CTriggerTrickZone ----------------------------------------------------------------
+LINK_ENTITY_TO_CLASS(trigger_momentum_trick, CTriggerTrickZone);
+
+IMPLEMENT_SERVERCLASS_ST(CTriggerTrickZone, DT_TriggerTrickZone)
+SendPropInt(SENDINFO(m_iID), -1, SPROP_UNSIGNED),
+SendPropString(SENDINFO(m_szZoneName)),
+SendPropInt(SENDINFO(m_iDrawState), 3, SPROP_UNSIGNED),
+END_SEND_TABLE();
+
+CTriggerTrickZone::CTriggerTrickZone()
+{
+    m_iTrackNumber = TRACK_ALL;
+    m_iID = -1;
+    m_szZoneName.GetForModify()[0] = '\0';
+    m_iDrawState = TRICK_DRAW_NONE;
+}
+
+void CTriggerTrickZone::Spawn()
+{
+    BaseClass::Spawn();
+
+    g_pTrickSystem->AddZone(this);
+}
+
+int CTriggerTrickZone::GetZoneType()
+{
+    return ZONE_TYPE_TRICK;
+}
+
+bool CTriggerTrickZone::LoadFromKeyValues(KeyValues* pKvFrom)
+{
+    m_iID = Q_atoi(pKvFrom->GetName());
+    Q_strncpy(m_szZoneName.GetForModify(), pKvFrom->GetString("name", "NOT NAMED!!!!! ERROR!"), 32);
+
+    return BaseClass::LoadFromKeyValues(pKvFrom);
+}
+
+bool CTriggerTrickZone::ToKeyValues(KeyValues* pKvInto)
+{
+    pKvInto->SetName(CFmtStr("%i", m_iID.Get()));
+    pKvInto->SetString("name", m_szZoneName);
+
+    return BaseClass::ToKeyValues(pKvInto);
+}
+
+void CTriggerTrickZone::OnStartTouch(CBaseEntity *pOther)
+{
+    if (pOther->IsPlayer())
+    {
+        const auto pMomPlayer = ToCMOMPlayer(pOther);
+        g_pTrickSystem->OnTrickZoneEnter(this, pMomPlayer);
+    }
+}
+
+void CTriggerTrickZone::OnEndTouch(CBaseEntity *pOther)
+{
+    if (pOther->IsPlayer())
+    {
+        const auto pMomPlayer = ToCMOMPlayer(pOther);
+        g_pTrickSystem->OnTrickZoneExit(this, pMomPlayer);
+    }
+}
+
 //----------- CTriggerTeleport -----------------------------------------------------------------
 LINK_ENTITY_TO_CLASS(trigger_momentum_teleport, CTriggerMomentumTeleport);
 
 BEGIN_DATADESC(CTriggerMomentumTeleport)
     DEFINE_KEYFIELD(m_bResetVelocity, FIELD_BOOLEAN, "stop"),
     DEFINE_KEYFIELD(m_bResetAngles, FIELD_BOOLEAN, "resetang"),
+    DEFINE_KEYFIELD(m_bFail, FIELD_BOOLEAN, "fail"),
 END_DATADESC()
 
 void CTriggerMomentumTeleport::OnStartTouch(CBaseEntity *pOther)
@@ -411,21 +555,24 @@ void CTriggerMomentumTeleport::OnEndTouch(CBaseEntity *pOther)
 
 void CTriggerMomentumTeleport::HandleTeleport(CBaseEntity *pOther)
 {
-    if (pOther)
-    {
-        if (!m_hDestinationEnt.Get())
-        {
-            if (m_target != NULL_STRING)
-                m_hDestinationEnt = gEntList.FindEntityByName(nullptr, m_target, nullptr, pOther, pOther);
-            else
-            {
-                DevWarning("CTriggerTeleport cannot teleport, pDestinationEnt and m_target are null!\n");
-                return;
-            }
-        }
+    if (!pOther)
+        return;
 
-        DoTeleport(m_hDestinationEnt.Get(), pOther);
+    if (!m_hDestinationEnt.Get())
+    {
+        if (m_target != NULL_STRING)
+            m_hDestinationEnt = gEntList.FindEntityByName(nullptr, m_target, nullptr, pOther, pOther);
+        else
+        {
+            DevWarning("CTriggerTeleport cannot teleport, pDestinationEnt and m_target are null!\n");
+            return;
+        }
     }
+
+    DoTeleport(m_hDestinationEnt.Get(), pOther);
+
+    if (m_bFail)
+        OnFailTeleport(pOther);
 }
 
 bool CTriggerMomentumTeleport::DoTeleport(CBaseEntity *pTeleportTo, CBaseEntity *pEntToTeleport)
@@ -438,6 +585,15 @@ bool CTriggerMomentumTeleport::DoTeleport(CBaseEntity *pTeleportTo, CBaseEntity 
                      m_bResetVelocity ? &vec3_origin : nullptr);
     AfterTeleport(pEntToTeleport);
     return true;
+}
+
+void CTriggerMomentumTeleport::OnFailTeleport(CBaseEntity *pEntTeleported)
+{
+    const auto pPlayer = ToCMOMPlayer(pEntTeleported);
+    if (!pPlayer)
+        return;
+
+    pPlayer->m_nButtonsToggled = 0;
 }
 
 //---------- CTriggerProgress ----------------------------------------------------------------
@@ -1477,7 +1633,7 @@ static CUtlVector<CNoGrenadesZone *> s_vecNoGrenadeZones;
 LINK_ENTITY_TO_CLASS(func_nogrenades, CNoGrenadesZone);
 
 BEGIN_DATADESC(CNoGrenadesZone)
-DEFINE_KEYFIELD(m_bAirborneOnly, FIELD_BOOLEAN, "airborne_only")
+    DEFINE_KEYFIELD(m_iExplosivePreventionType, FIELD_INTEGER, "explosion_prevention_type")
 END_DATADESC();
 
 CNoGrenadesZone::~CNoGrenadesZone()
@@ -1502,24 +1658,401 @@ void CNoGrenadesZone::Precache()
     PrecacheModel(NOGRENADE_SPRITE);
 }
 
-bool CNoGrenadesZone::IsInsideNoGrenadesZone(CBaseEntity *pOther)
+void CNoGrenadesZone::OnStartTouch(CBaseEntity* pOther)
 {
-    if ( pOther )
+    BaseClass::OnStartTouch(pOther);
+
+    if (!pOther)
+        return;
+
+    const auto pExplosive = dynamic_cast<CMomExplosive *>(pOther);
+    if (!pExplosive)
+        return;
+
+    if (m_iExplosivePreventionType == FIZZLE_ON_ENTRANCE)
     {
-        const auto pSticky = dynamic_cast<CMomStickybomb*>(pOther);
-        FOR_EACH_VEC(s_vecNoGrenadeZones, i)
+        pExplosive->Destroy(true);
+        return;
+    }
+
+    const auto pSticky = dynamic_cast<CMomStickybomb *>(pExplosive);
+    if (pSticky && m_iExplosivePreventionType != FIZZLE_ON_LAND)
+        pSticky->SetCanExplode(false);
+}
+
+void CNoGrenadesZone::OnEndTouch(CBaseEntity* pOther)
+{
+    BaseClass::OnEndTouch(pOther);
+
+    if (!pOther)
+        return;
+
+    const auto pSticky = dynamic_cast<CMomStickybomb *>(pOther);
+    if (!pSticky)
+        return;
+
+    pSticky->SetCanExplode(true);
+}
+
+CNoGrenadesZone* CNoGrenadesZone::IsInsideNoGrenadesZone(CBaseEntity *pOther)
+{
+    if (!pOther)
+        return nullptr;
+
+    FOR_EACH_VEC(s_vecNoGrenadeZones, i)
+    {
+        const auto pNoGrenadeZone = s_vecNoGrenadeZones[i];
+
+        if (pNoGrenadeZone->m_bDisabled || !pNoGrenadeZone->PointIsWithin(pOther->GetAbsOrigin()))
+            continue;
+
+        return pNoGrenadeZone;
+    }
+
+    return nullptr;
+}
+
+//-----------------------------------------------------------------------------------------------
+
+//--------- CTriggerMomentumCatapult -------------------------------------------------------------------
+LINK_ENTITY_TO_CLASS(trigger_momentum_catapult, CTriggerMomentumCatapult);
+
+// Alias tf2 trigger_catapult for backwards compat
+LINK_ENTITY_TO_CLASS(trigger_catapult, CTriggerMomentumCatapult);
+
+BEGIN_DATADESC(CTriggerMomentumCatapult)
+    DEFINE_KEYFIELD(m_flPlayerSpeed, FIELD_FLOAT, "playerSpeed"),
+    DEFINE_KEYFIELD(m_bUseThresholdCheck, FIELD_INTEGER, "useThresholdCheck"),
+    DEFINE_KEYFIELD(m_flEntryAngleTolerance, FIELD_FLOAT, "entryAngleTolerance"),
+    DEFINE_KEYFIELD(m_iUseExactVelocity, FIELD_INTEGER, "useExactVelocity"),
+    DEFINE_KEYFIELD(m_iExactVelocityChoiceType, FIELD_INTEGER, "exactVelocityChoiceType"),
+    DEFINE_KEYFIELD(m_flLowerThreshold, FIELD_FLOAT, "lowerThreshold"),
+    DEFINE_KEYFIELD(m_flUpperThreshold, FIELD_FLOAT, "upperThreshold"),
+    DEFINE_KEYFIELD(m_vLaunchDirection, FIELD_VECTOR, "launchDirection"),
+    DEFINE_KEYFIELD(m_target, FIELD_STRING, "launchTarget"),
+    DEFINE_KEYFIELD(m_bOnlyCheckVelocity, FIELD_INTEGER, "onlyCheckVelocity"),
+    DEFINE_OUTPUT(m_OnCatapulted, "OnCatapulted"),
+    DEFINE_KEYFIELD(m_flInterval, FIELD_FLOAT, "Interval"),
+    DEFINE_KEYFIELD(m_bOnThink, FIELD_BOOLEAN, "OnThink"),
+    DEFINE_KEYFIELD(m_bEveryTick, FIELD_BOOLEAN, "EveryTick"),
+    DEFINE_KEYFIELD(m_flHeightOffset, FIELD_FLOAT, "heightOffset"),
+END_DATADESC()
+
+
+CTriggerMomentumCatapult::CTriggerMomentumCatapult()
+{
+    m_flPlayerSpeed = 450.0f;
+    m_bUseThresholdCheck = 0;
+    m_flEntryAngleTolerance = 0.0f;
+    m_iUseExactVelocity = 0;
+    m_iExactVelocityChoiceType = BEST;
+    m_flLowerThreshold = 0.15f;
+    m_flUpperThreshold = 0.30f;
+    m_vLaunchDirection = vec3_angle;
+    m_hLaunchTarget = nullptr;
+    m_bOnlyCheckVelocity = false;
+    m_flInterval = 1.0;
+    m_bOnThink = false;
+    m_bEveryTick = false;
+    m_flHeightOffset = 32.0f;
+}
+
+void CTriggerMomentumCatapult::Spawn()
+{ 
+    BaseClass::Spawn();
+
+    m_flLowerThreshold = clamp(m_flLowerThreshold, 0.0f, 1.0f);
+    m_flUpperThreshold = clamp(m_flUpperThreshold, 0.0f, 1.0f);
+
+    m_flEntryAngleTolerance = clamp(m_flEntryAngleTolerance, -1.0f, 1.0f);
+
+    if (!m_hLaunchTarget.Get())
+    {
+        if (m_target != NULL_STRING)
         {
-            const auto pNoGrenadeZone = s_vecNoGrenadeZones[i];
+            m_hLaunchTarget = gEntList.FindEntityByName(nullptr, m_target);
+            m_bUseLaunchTarget = true;
+        }
+        else
+        {
+            m_bUseLaunchTarget = false;
+        }
+    }
+}
 
-            if (pNoGrenadeZone->m_bDisabled || !pNoGrenadeZone->PointIsWithin(pOther->GetAbsOrigin()))
-                continue;
+Vector CTriggerMomentumCatapult::CalculateLaunchVelocity(CBaseEntity *pOther)
+{
+    // Calculated from time ignoring grav, then compensating for gravity later
+    // From https://www.gamasutra.com/blogs/KainShin/20090515/83954/Predictive_Aim_Mathematics_for_AI_Targeting.php
+    // and setting the target's velocity vector to zero
 
-            if (!pSticky)
-                return true; // This is a rocket in a nonade zone and should fizzle
+    Vector vecPlayerOrigin = pOther->GetAbsOrigin();
 
-            return !pNoGrenadeZone->m_bAirborneOnly || !pSticky->DidHitWorld();
+    vecPlayerOrigin.z += m_flHeightOffset;
+
+    Vector vecAbsDifference = m_hLaunchTarget->GetAbsOrigin() - vecPlayerOrigin;
+    float flSpeedSquared = m_flPlayerSpeed * m_flPlayerSpeed;
+    float flGravity = GetCurrentGravity();
+
+    float flDiscriminant = 4.0f * flSpeedSquared * vecAbsDifference.Length() * vecAbsDifference.Length();
+
+    flDiscriminant = sqrtf(flDiscriminant);
+    float fTime = 0.5f * (flDiscriminant / flSpeedSquared);
+
+    Vector vecLaunchVelocity = (vecAbsDifference / fTime);
+
+    Vector vecGravityComp(0, 0, 0.5f * -flGravity * fTime);
+    vecLaunchVelocity -= vecGravityComp;
+
+    return vecLaunchVelocity;
+}
+
+Vector CTriggerMomentumCatapult::CalculateLaunchVelocityExact(CBaseEntity* pOther)
+{
+    // Uses exact trig and gravity
+
+    Vector vecPlayerOrigin = pOther->GetAbsOrigin();
+
+    vecPlayerOrigin.z += m_flHeightOffset;
+
+    Vector vecAbsDifference = m_hLaunchTarget->GetAbsOrigin() - vecPlayerOrigin;
+    Vector vecAbsDifferenceXY = Vector(vecAbsDifference.x, vecAbsDifference.y, 0.0f);
+
+    float flSpeedSquared = m_flPlayerSpeed * m_flPlayerSpeed;
+    float flSpeedQuad = m_flPlayerSpeed * m_flPlayerSpeed * m_flPlayerSpeed * m_flPlayerSpeed;
+    float flAbsX = vecAbsDifferenceXY.Length();
+    float flAbsZ = vecAbsDifference.z;
+    float flGravity = GetCurrentGravity();
+
+    float flDiscriminant = flSpeedQuad - flGravity * (flGravity * flAbsX * flAbsX + 2.0f * flAbsZ * flSpeedSquared);
+
+    // Maybe not this but some sanity check ofc, then default to non exact case which should always have a solution
+    if (m_flPlayerSpeed < sqrtf(flGravity * (flAbsZ + vecAbsDifference.Length())))
+    {
+        DevWarning("Not enough speed to reach target.\n");
+        return CalculateLaunchVelocity(pOther);
+    }
+    if (flDiscriminant < 0.0f)
+    {
+        DevWarning("Not enough speed to reach target.\n");
+        return CalculateLaunchVelocity(pOther);
+    }
+    if (CloseEnough(flAbsX, 0.0f))
+    {
+        DevWarning("Target position cannot be the same as catapult position?\n");
+        return CalculateLaunchVelocity(pOther);
+    }
+
+    flDiscriminant = sqrtf(flDiscriminant);
+
+    float flLowAng = atanf((flSpeedSquared - flDiscriminant) / (flGravity * flAbsX));
+    float flHighAng = atanf((flSpeedSquared + flDiscriminant) / (flGravity * flAbsX));
+
+    Vector fGroundDir = vecAbsDifferenceXY.Normalized();
+    Vector vecLowAngVelocity = m_flPlayerSpeed * (fGroundDir * cosf(flLowAng) + Vector(0, 0, sinf(flLowAng)));
+    Vector vecHighAngVelocity = m_flPlayerSpeed * (fGroundDir * cosf(flHighAng) + Vector(0, 0, sinf(flHighAng)));
+    Vector vecLaunchVelocity = vec3_origin;
+    Vector vecPlayerEntryVel = pOther->GetAbsVelocity();
+
+    switch (m_iExactVelocityChoiceType)
+    {
+    case BEST:
+        // "Best" solution seems to minimize angle of entry with respect to launch vector
+        vecLaunchVelocity = vecPlayerEntryVel.Dot(vecLowAngVelocity) < vecPlayerEntryVel.Dot(vecHighAngVelocity)
+                                ? vecLowAngVelocity
+                                : vecHighAngVelocity;
+        break;
+
+    case SOLUTION_ONE:
+        vecLaunchVelocity = vecLowAngVelocity;
+        break;
+
+    case SOLUTION_TWO:
+        vecLaunchVelocity = vecHighAngVelocity;
+        break;
+
+    default:
+        break;
+    }
+
+    return vecLaunchVelocity;
+}
+void CTriggerMomentumCatapult::LaunchAtDirection(CBaseEntity *pOther)
+{
+    pOther->SetGroundEntity(nullptr);
+    Vector vecLaunchDir = vec3_origin;
+    AngleVectors(m_vLaunchDirection, &vecLaunchDir);
+    pOther->SetAbsVelocity(m_flPlayerSpeed * vecLaunchDir);
+    m_OnCatapulted.FireOutput(pOther, this);
+}
+
+void CTriggerMomentumCatapult::LaunchAtTarget(CBaseEntity *pOther)
+{
+    pOther->SetGroundEntity(nullptr);
+    Vector vecLaunchVelocity = vec3_origin;
+
+    if (m_iUseExactVelocity)
+    {
+        vecLaunchVelocity = CalculateLaunchVelocityExact(pOther);
+    }
+    else
+    {
+        vecLaunchVelocity = CalculateLaunchVelocity(pOther);
+    }
+
+    pOther->SetAbsVelocity(vecLaunchVelocity);
+    m_OnCatapulted.FireOutput(pOther, this);
+}
+
+void CTriggerMomentumCatapult::Launch(CBaseEntity *pOther)
+{
+    bool bLaunch = true;
+
+    // Check threshold
+    if (m_bUseThresholdCheck)
+    {
+        Vector vecPlayerVelocity = pOther->GetAbsVelocity();
+        float flPlayerSpeed = vecPlayerVelocity.Length();
+        bLaunch = false;
+
+        // From VDC
+        if (flPlayerSpeed > m_flPlayerSpeed - (m_flPlayerSpeed * m_flLowerThreshold) &&
+            flPlayerSpeed < m_flPlayerSpeed + (m_flPlayerSpeed * m_flUpperThreshold))
+        {
+            float flPlayerEntryAng = 0.0f;
+
+            if (m_bUseLaunchTarget)
+            {
+                Vector vecAbsDifference = m_hLaunchTarget->GetAbsOrigin() - pOther->GetAbsOrigin();
+                flPlayerEntryAng = DotProduct(vecAbsDifference.Normalized(), vecPlayerVelocity.Normalized());
+
+            }
+            else
+            {
+                Vector vecLaunchDir = vec3_origin;
+                AngleVectors(m_vLaunchDirection, &vecLaunchDir);
+                flPlayerEntryAng = DotProduct(vecLaunchDir.Normalized(), vecPlayerVelocity.Normalized());
+            }
+
+            // VDC uses brackets so inclusive??
+            if (flPlayerEntryAng >= m_flEntryAngleTolerance)
+            {
+                if (m_bOnlyCheckVelocity)
+                {
+                    m_OnCatapulted.FireOutput(pOther, this);
+                    return;
+                }
+                bLaunch = true;
+            }
         }
     }
 
-    return false;
+    if (!bLaunch)
+    {
+        return;
+    }
+
+    if (m_bUseLaunchTarget)
+    {
+        LaunchAtTarget(pOther);
+    }
+    else
+    {
+        LaunchAtDirection(pOther);
+    }
 }
+
+void CTriggerMomentumCatapult::OnStartTouch(CBaseEntity* pOther)
+{
+    BaseClass::OnStartTouch(pOther);
+
+    // Ignore vphys only allow players
+    if (pOther && pOther->IsPlayer())
+    {
+        Launch(pOther);
+
+        if (m_bOnThink)
+            SetNextThink(gpGlobals->curtime + m_flInterval);
+    }
+}
+
+void CTriggerMomentumCatapult::Touch(CBaseEntity *pOther)
+{
+    BaseClass::Touch(pOther);
+
+    if (m_bEveryTick)
+    {
+        if (!PassesTriggerFilters(pOther))
+            return;
+
+        if (pOther && pOther->IsPlayer())
+        {
+            Launch(pOther);
+        }
+    }
+}
+
+void CTriggerMomentumCatapult::Think()
+{
+    if (!m_bOnThink)
+    {
+        SetNextThink(TICK_NEVER_THINK);
+        return;
+    }
+    
+    FOR_EACH_VEC(m_hTouchingEntities, i)
+    {
+        const auto pEnt = m_hTouchingEntities[i].Get();
+        if (pEnt && pEnt->IsPlayer())
+        {
+            Launch(pEnt);
+            SetNextThink(gpGlobals->curtime + m_flInterval);
+        }
+    }
+}
+
+int CTriggerMomentumCatapult::DrawDebugTextOverlays()
+{
+    int text_offset = BaseClass::DrawDebugTextOverlays();
+
+
+    char tempstr[255];
+
+    Q_snprintf(tempstr, sizeof(tempstr), "Name: %s", GetDebugName());
+    EntityText(text_offset, tempstr, 0);
+    text_offset++;
+
+    Q_snprintf(tempstr, sizeof(tempstr), "Position: %f, %f, %f", GetAbsOrigin().x, GetAbsOrigin().y, GetAbsOrigin().z);
+    EntityText(text_offset, tempstr, 0);
+    text_offset++;
+
+    if (m_target != NULL_STRING)
+    {
+        Q_snprintf(tempstr, sizeof(tempstr), "Launch target: %s", m_target.ToCStr());
+        EntityText(text_offset, tempstr, 0);
+        text_offset++;
+    }
+
+    Q_snprintf(tempstr, sizeof(tempstr), "Player velocity: %f", m_flPlayerSpeed);
+    EntityText(text_offset, tempstr, 0);
+    text_offset++;
+
+    Vector vecLaunchVelocity = vec3_origin;
+    Vector vecLaunchVelocityExact = vec3_origin;
+    if (m_target != NULL_STRING)
+    {
+        vecLaunchVelocity = CalculateLaunchVelocity(this);
+        vecLaunchVelocityExact = CalculateLaunchVelocityExact(this);
+
+        Q_snprintf(tempstr, sizeof(tempstr), "Adjusted player velocity: %f",
+                   m_iUseExactVelocity ? (float)vecLaunchVelocity.Length() : (float)vecLaunchVelocityExact.Length());
+
+        EntityText(text_offset, tempstr, 0);
+        text_offset++;
+    }
+
+
+    return text_offset;
+}
+
+//-----------------------------------------------------------------------------------------------

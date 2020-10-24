@@ -6,12 +6,14 @@
 //=============================================================================//
 
 #include "CommandCheckButton.h"
-#include "EngineInterface.h"
+#include "cdll_int.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include <tier0/memdbgon.h>
 
 using namespace vgui;
+
+extern IVEngineClient *engine;
 
 CCommandCheckButton::CCommandCheckButton( Panel *parent, const char *panelName, const char *text, const char *downcmd, const char *upcmd )
  : CheckButton( parent, panelName, text )

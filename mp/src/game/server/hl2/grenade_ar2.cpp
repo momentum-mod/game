@@ -177,7 +177,7 @@ void CGrenadeAR2::GrenadeAR2Touch( CBaseEntity *pOther )
 	}
 	else
 	{
-		// If I'm not live, only blow up if I'm hitting an chacter that
+		// If I'm not live, only blow up if I'm hitting an character that
 		// is not the owner of the weapon
 		CBaseCombatCharacter *pBCC = ToBaseCombatCharacter( pOther );
 		if (pBCC && GetThrower() != pBCC)

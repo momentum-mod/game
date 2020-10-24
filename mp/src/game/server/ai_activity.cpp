@@ -20,7 +20,7 @@ int				 CAI_BaseNPC::m_iNumActivities = 0;
 
 //-----------------------------------------------------------------------------
 // Purpose: Add an activity to the activity string registry and increment
-//			the acitivty counter
+//			the activity counter
 //-----------------------------------------------------------------------------
 void CAI_BaseNPC::AddActivityToSR(const char *actName, int actID) 
 {

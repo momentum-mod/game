@@ -5,12 +5,21 @@
 // TF2 COMPATIBILITY
 //
 // -----------------------------------------------------------------------
+
+@BaseClass = Toggle
+[
+	// Inputs
+	input Toggle(void) : "Toggle the enabled/disabled status of this entity."
+]
+
 @SolidClass base(Targetname, EnableDisable, Toggle) = func_nogrenades : "Rockets and grenades will not detonate inside this area." 
 [
-    airborne_only(choices) : "Prevent airborne explosions only" : 0 = 
+    explosion_prevention_type(choices) : "Explosive prevention method" : 0 =
     [
-        0 : "False"
-        1 : "True"
+        0 : "[Default] Prevent explosive from detonating inside this trigger."
+        1 : "Prevent explosive detonation only if explosive is airborne."
+        2 : "Destroy stickybombs upon them landing (instead of on attempted det)."
+        3 : "Destroy explosive upon it entering the trigger."
     ]
 ]
 
@@ -64,6 +73,12 @@
         0 : "False"
         1 : "True"
     ]
+    
+    fail(choices) : "Indicates whether this teleport is for failing a level" : 0 =
+    [
+        0 : "False"
+        1 : "True"
+    ]
 ]
 
 @SolidClass base(TeleTrigger) = trigger_momentum_teleport : "A trigger volume that teleports entities that touch it. Entities are teleported to the Remote Destination. "+
@@ -99,7 +114,14 @@
     ]
 ]
 
-@SolidClass base(ZoneTrigger) = trigger_momentum_timer_stop : "Trigger that stops the timer." []
+@SolidClass base(ZoneTrigger) = trigger_momentum_timer_stop : "Trigger that stops the timer."
+[
+    cancel(choices) : "Cancel Timer" : 0 : "If true, the run will not be submitted." =
+    [
+        0 : "False"
+        1 : "True"
+    ]
+]
 
 @SolidClass base(ZoneTrigger) = trigger_momentum_timer_stage : "Starting trigger for each stage of a map. trigger_momentum_timer_start is automatically stage 1!" []
 
@@ -332,6 +354,9 @@
         5 : "SJ"
         6 : "Tricksurf"
         7 : "Ahop"
+        8 : "Parkour"
+        9 : "Conc"
+        10 : "Defrag"
     ]
 ]
 
@@ -343,6 +368,31 @@
 @PointClass base(Targetname, Campaign, GameTypes) = info_momentum_map : "An entity used to describe map information."
 [
     author(string) : "Map Author" : "" : "The map's original author(s)."
+]
+
+@SolidClass base(MomentumTrigger) = trigger_momentum_catapult : "Catapult the player at a target or in a given diretion at a given velocity."
+[
+	playerSpeed(float) : "Player Speed" : 450 : "Speed at which to launch the players (u/sec)"
+	useThresholdCheck(integer) : "Use Threshold Check" : 0
+	entryAngleTolerance(float) : "Entry Angle Tolerance" : "0.0" : "Flung object's velocity must be pointing this much at the target. Specify a value between [-1...1] 1 means exactly, 0 means within 180 degrees -1 means any angle is accepted. This is only used if Use Threshold Check is set to yes."
+	useExactVelocity(integer) : "Use Exact Velocity" : 0 : "Try to fling exactly at the speed specified - this prevents the added upward velocity from a launch target."
+	exactVelocityChoiceType(choices) : "Exact Solution Method" : 0 :
+	"Using exact velocity generates two correct solutions. Use this to force which one you choose." =
+	[
+		0 : "Best"
+		1 : "Solution One"
+		2 : "Solution Two"
+	]
+	lowerThreshold(float) : "Lower Threshold" : "0.15" : "Flung player must be within this percentage value in order to activate fling. Specify a value between [0...1] (default is .15) This is only used if Use Threshold Check is set to yes."
+	upperThreshold(float) : "Upper Threshold" : "0.30" : "Flung player must be within this percentage value in order to activate fling. Specify a value between [0...1] (default is .30) This is only used if Use Threshold Check is set to yes."
+	launchDirection(angle) : "Launch direction" : "0 0 0" : "Direction to launch the player in."
+	launchTarget(target_destination) : "Launch target" : "" : "Entity to try to 'hit' when we're launched."
+	onlyVelocityCheck(integer) : "Only check velocity" : 0 : "Only check velocity of the touching object - don't actually catapult it.  Use in conjunction with OnCatapulted to create velocity checking triggers.  Only works when Use Threshhold Check is enabled."
+    OnThink(integer) : "Update every interval" : 0 : "If you want to make the trigger updating for each defined interval, set it to 1."
+    Interval(float) : "Interval" : "1.0" : "Time in seconds between each update"
+    EveryTick(integer) : "Every tick" : 0 : "If you want the trigger to update and fire every tick, set this to 1."
+    heightOffset(float) :"Height Offset" : "32.0" : "Offset the origin of the player in the target calculation."
+	output OnCatapulted(void) : "The object has been launched."
 ]
 
 //-------------------------------------------------------------------------
@@ -368,13 +418,10 @@
 
 @PointClass base(Weapon) studio("models/weapons/v_knife_t.mdl") = weapon_knife : "Knife" []
 @PointClass base(Weapon) studio("models/weapons/w_mom_pistol.mdl") = weapon_momentum_pistol : "Pistol" []
-@PointClass base(Weapon) studio("models/weapons/v_smg_old.mdl") = weapon_momentum_smg : "SMG" []
-@PointClass base(Weapon) studio("models/weapons/w_irifle.mdl") = weapon_momentum_rifle : "Rifle" []
+@PointClass base(Weapon) studio("models/weapons/v_smg_old.mdl") = weapon_momentum_machinegun : "Machinegun" []
 @PointClass base(Weapon) studio("models/weapons/w_mom_shotgun.mdl") = weapon_momentum_shotgun : "Shotgun" []
-@PointClass base(Weapon) studio("models/weapons/v_mom_lmg.mdl") = weapon_momentum_lmg : "LMG" []
 @PointClass base(Weapon) studio("models/weapons/mom_sniper.mdl") = weapon_momentum_sniper : "Sniper" []
 @PointClass base(Weapon) studio("models/weapons/w_mom_grenade.mdl") = weapon_momentum_grenade : "Grenade" []
-@PointClass base(Weapon) studio("models/weapons/w_mom_paintgun.mdl") = weapon_momentum_paintgun : "Paintgun" []
 
 
 //-------------------------------------------------------------------------

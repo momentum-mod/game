@@ -12,6 +12,9 @@ using namespace vgui;
 
 #define DEFAULT_FOV 70
 
+IMPLEMENT_CLIENTCLASS_DT(C_ModelPanelModel, DT_ModelPanelModel, CModelPanelModel)
+END_RECV_TABLE();
+
 CRenderPanel::CRenderPanel(Panel *parent, const char *pElementName) : BaseClass(parent, pElementName)
 {
     render_ang.Init();
@@ -20,12 +23,20 @@ CRenderPanel::CRenderPanel(Panel *parent, const char *pElementName) : BaseClass(
     render_offset_modelBase.Init();
     m_pModelInstance = nullptr;
     m_bSizeToParent = false;
+    m_bShouldAutoRotateModel = false;
+    m_angAutoRotation = QAngle(0, 10, 0);
+
+    SetCameraDefaults(70, 45.0f, 180.0f, 100.0f);
+    SetDefaultLightAngle(QAngle(45, -135, 0));
 
     ResetView();
 
     m_iDragMode = RDRAG_NONE;
     m_iCachedMpos_x = 0;
     m_iCachedMpos_y = 0;
+    m_nAllowedDragModes = RDRAG_ALL;
+    m_flLastDragTime = 0.0f;
+    m_nAllowedRotateModes = ROTATE_ALL;
 
     m_nFOV = DEFAULT_FOV;
 
@@ -33,6 +44,8 @@ CRenderPanel::CRenderPanel(Panel *parent, const char *pElementName) : BaseClass(
     __proj.Identity();
     __ViewProj.Identity();
     __ViewProjNDC.Identity();
+
+    m_hDefaultCubemap.Init(materials->FindTexture("cubemaps/cubemap_menu_model_bg.hdr", TEXTURE_GROUP_CUBE_MAP));
 
     ListenForGameEvent("invalid_mdl_cache");
     SetPaintBorderEnabled(true);
@@ -45,6 +58,9 @@ CRenderPanel::~CRenderPanel()
 
 void CRenderPanel::UpdateRenderPosition()
 {
+    if (render_offset_modelBase.IsZero())
+        GetModelCenter(render_offset_modelBase);
+
     QAngle out(m_flPitch, m_flYaw, 0);
     Vector fwd;
     AngleVectors(out, &fwd);
@@ -60,15 +76,21 @@ void CRenderPanel::OnThink()
     if (m_bSizeToParent)
         SizePanelToParent();
 
-    if (m_iDragMode)
+    if (m_pModelInstance && m_iDragMode == RDRAG_NONE)
     {
-        int mdelta_x, mdelta_y;
-        input()->GetCursorPosition(mdelta_x, mdelta_y);
-        mdelta_x -= m_iCachedMpos_x;
-        mdelta_y -= m_iCachedMpos_y;
-        input()->SetCursorPos(m_iCachedMpos_x, m_iCachedMpos_y);
-        switch (m_iDragMode)
-        {
+        m_pModelInstance->SimulateAngles(gpGlobals->frametime);
+    }
+
+    if (m_iDragMode == RDRAG_NONE)
+        return;
+
+    int mdelta_x, mdelta_y;
+    input()->GetCursorPosition(mdelta_x, mdelta_y);
+    mdelta_x -= m_iCachedMpos_x;
+    mdelta_y -= m_iCachedMpos_y;
+    input()->SetCursorPos(m_iCachedMpos_x, m_iCachedMpos_y);
+    switch (m_iDragMode)
+    {
         case RDRAG_LIGHT:
         {
             VMatrix viewInv;
@@ -90,14 +112,21 @@ void CRenderPanel::OnThink()
         break;
         case RDRAG_ROTATE:
         {
-            m_flPitch -= mdelta_y * 0.5f;
-            m_flYaw += mdelta_x * 0.5f;
+            if (m_nAllowedRotateModes & ROTATE_PITCH)
+            {
+                m_flPitch -= mdelta_y * 0.5f;
+                m_flPitch = clamp(m_flPitch, -89, 89);
+            }
 
-            m_flPitch = clamp(m_flPitch, -89, 89);
-            if (m_flYaw > 180.0f)
-                m_flYaw -= 360.0f;
-            if (m_flYaw < -180.0f)
-                m_flYaw += 360.0f;
+            if (m_nAllowedRotateModes & ROTATE_YAW)
+            {
+                m_flYaw += mdelta_x * 0.5f;
+
+                if (m_flYaw > 180.0f)
+                    m_flYaw -= 360.0f;
+                if (m_flYaw < -180.0f)
+                    m_flYaw += 360.0f;
+            }
         }
         break;
         case RDRAG_POS:
@@ -105,25 +134,22 @@ void CRenderPanel::OnThink()
 #define RENDER_DRAGPOS_MOVESCALE 0.2f
             Vector viewRight, viewUp;
             AngleVectors(render_ang, NULL, &viewRight, &viewUp);
-            render_offset +=
-                mdelta_x * -viewRight * RENDER_DRAGPOS_MOVESCALE + mdelta_y * viewUp * RENDER_DRAGPOS_MOVESCALE;
+            render_offset += mdelta_x * -viewRight * RENDER_DRAGPOS_MOVESCALE + mdelta_y * viewUp * RENDER_DRAGPOS_MOVESCALE;
         }
         break;
         default:
             break;
-        }
     }
 }
 void CRenderPanel::ResetView()
 {
-    m_flDist = 100;
-    m_flPitch = 45;
-    m_flYaw = 180;
-    lightAng.Init(45, -135, 0);
-    m_nFOV = DEFAULT_FOV;
+    m_flDist = m_flDefaultDist;
+    m_flPitch = m_flDefaultPitch;
+    m_flYaw = m_flDefaultYaw;
+    lightAng = m_angLightDefault;
+    m_nFOV = m_nDefaultFOV;
 
-    GetModelCenter(render_offset_modelBase);
-
+    render_offset_modelBase.Init();
     render_offset.Init();
 
     UpdateRenderPosition();
@@ -157,20 +183,18 @@ bool CRenderPanel::IsModelReady()
         return false;
 
     MDLCACHE_CRITICAL_SECTION();
-    bool bValid = !!m_pModelInstance->GetModel();
 
-    if (!bValid && Q_strlen(m_szModelPath))
-    {
-        const model_t *pMdl = modelinfo ? engine->LoadModel(m_szModelPath) : nullptr;
-        if (pMdl)
-            m_pModelInstance->SetModelPointer(pMdl);
-        bValid = !!pMdl;
-    }
+    return !modelinfo->IsDynamicModelLoading(m_pModelInstance->GetModelIndex());
+}
 
-    if (!bValid)
-        DestroyModel();
+void CRenderPanel::ReloadModel()
+{
+    if (!m_pModelInstance)
+        return;
 
-    return bValid;
+    char szModelPathCopy[MAX_PATH];
+    Q_strncpy(szModelPathCopy, m_szModelPath, MAX_PATH);
+    LoadModel(szModelPathCopy);
 }
 
 void CRenderPanel::ResetModel()
@@ -184,17 +208,15 @@ void CRenderPanel::ResetModel()
 
 void CRenderPanel::GetModelCenter(Vector &vecInto)
 {
+    if (!IsModelReady())
+        return;
+
     vecInto.Init();
-    if (IsModelReady())
-    {
-        MDLCACHE_CRITICAL_SECTION();
-        if (m_pModelInstance->GetModel())
-        {
-            Vector mins, maxs;
-            modelinfo->GetModelRenderBounds(m_pModelInstance->GetModel(), mins, maxs);
-            VectorLerp(mins, maxs, 0.5f, vecInto);
-        }
-    }
+
+    MDLCACHE_CRITICAL_SECTION();
+    Vector mins, maxs;
+    modelinfo->GetModelRenderBounds(m_pModelInstance->GetModel(), mins, maxs);
+    VectorLerp(mins, maxs, 0.5f, vecInto);
 }
 
 void CRenderPanel::OnMouseWheeled(int delta)
@@ -207,10 +229,21 @@ void CRenderPanel::OnMouseWheeled(int delta)
 void CRenderPanel::DestroyModel()
 {
     if (m_pModelInstance)
+    {
+        modelinfo->ReleaseDynamicModel(m_pModelInstance->GetModelIndex());
         m_pModelInstance->Remove();
+    }
 
     m_pModelInstance = nullptr;
     m_szModelPath[0] = '\0';
+}
+
+void CRenderPanel::SetCameraDefaults(int nFOV, float fPitch, float fYaw, float fDist)
+{
+    m_nDefaultFOV = nFOV;
+    m_flDefaultPitch = fPitch;
+    m_flDefaultYaw = fYaw;
+    m_flDefaultDist = fDist;
 }
 
 bool CRenderPanel::LoadModel(const char *localPath)
@@ -219,27 +252,29 @@ bool CRenderPanel::LoadModel(const char *localPath)
 
     DestroyModel();
 
-    const model_t *mdl = engine->LoadModel(localPath);
-    if (!mdl)
+    const auto iMdlIndex = modelinfo->RegisterDynamicModel(localPath, true);
+    if (iMdlIndex == -1)
         return false;
 
     Q_strcpy(m_szModelPath, localPath);
 
-    CModelPanelModel *pEnt = new CModelPanelModel();
+    auto pEnt = new C_ModelPanelModel;
     if (!pEnt->InitializeAsClientEntity(nullptr, RENDER_GROUP_OPAQUE_ENTITY))
     {
         pEnt->Remove();
         return false;
     }
 
+    pEnt->RemoveFromClientSideAnimationList();
     pEnt->DontRecordInTools();
-    pEnt->SetModelPointer(mdl);
+    pEnt->SetModelByIndex(iMdlIndex);
     pEnt->Spawn();
 
     pEnt->SetAbsAngles(vec3_angle);
     pEnt->SetAbsOrigin(vec3_origin);
 
     pEnt->AddEffects(EF_NODRAW | EF_NOINTERP);
+    
     pEnt->m_EntClientFlags |= ENTCLIENTFLAG_DONTUSEIK;
 
     // leave it alone.
@@ -253,6 +288,11 @@ bool CRenderPanel::LoadModel(const char *localPath)
     // So we listen for the "invalid_mdl_cache" event (see constructor) to be able to manually call it,
     // while manually saving our entity from the perils of start/end map.
 
+    if (m_bShouldAutoRotateModel)
+    {
+        pEnt->SetLocalAngularVelocity(m_angAutoRotation);
+    }
+
     m_pModelInstance = pEnt;
     ResetView();
 
@@ -262,25 +302,44 @@ bool CRenderPanel::LoadModel(const char *localPath)
 void CRenderPanel::OnMousePressed(MouseCode code)
 {
     BaseClass::OnMousePressed(code);
-    if (m_iDragMode)
+
+    if (m_iDragMode != RDRAG_NONE)
         return;
 
-    if (code == MOUSE_LEFT)
+    if (code == MOUSE_LEFT && (m_nAllowedDragModes & RDRAG_ROTATE))
+    {
         m_iDragMode = RDRAG_ROTATE;
-    else if (code == MOUSE_RIGHT)
+    }
+    else if (code == MOUSE_RIGHT && (m_nAllowedDragModes & RDRAG_POS))
+    {
         m_iDragMode = RDRAG_POS; // Note: These were swapped
-    else
+    }
+    else if (code == MOUSE_MIDDLE && (m_nAllowedDragModes & RDRAG_LIGHT))
+    {
         m_iDragMode = RDRAG_LIGHT;
+    }
 
-    input()->GetCursorPosition(m_iCachedMpos_x, m_iCachedMpos_y);
-    input()->SetCursorOveride(dc_none);
-    input()->SetMouseCapture(GetVPanel());
+    if (m_iDragMode != RDRAG_NONE)
+    {
+        m_flLastDragTime = engine->Time();
+
+        input()->GetCursorPosition(m_iCachedMpos_x, m_iCachedMpos_y);
+        input()->SetCursorOveride(dc_none);
+        input()->SetMouseCapture(GetVPanel());
+    }
 }
+
 void CRenderPanel::OnMouseReleased(MouseCode code)
 {
     BaseClass::OnMouseReleased(code);
-    if (!m_iDragMode)
+
+    if (m_iDragMode == RDRAG_NONE)
         return;
+
+    if (m_iDragMode != 1 << (code - MOUSE_FIRST))
+        return;
+
+    m_flLastDragTime = engine->Time();
 
     input()->SetCursorOveride(NULL);
     input()->SetMouseCapture(NULL);
@@ -293,9 +352,8 @@ void CRenderPanel::SetupView(CViewSetup &setup)
 {
     UpdateRenderPosition();
 
-    int x, y, w, t;
+    int x = 0, y = 0, w, t;
     GetSize(w, t);
-    x = y = 0;
     LocalToScreen(x, y);
     if (x < 0)
         w += x;
@@ -323,6 +381,9 @@ void CRenderPanel::SetupView(CViewSetup &setup)
 void CRenderPanel::Paint()
 {
     BaseClass::Paint();
+
+    if (!IsModelReady())
+        return;
 
     MDLCACHE_CRITICAL_SECTION();
 
@@ -362,6 +423,9 @@ void CRenderPanel::Paint()
     MaterialFogMode_t oldFog = pRenderContext->GetFogMode();
     pRenderContext->FogMode(MATERIAL_FOG_NONE);
 
+    const auto pCubemapTex = pRenderContext->GetLocalCubemap();
+    pRenderContext->BindLocalCubemap(m_hDefaultCubemap);
+
     DrawModel();
 
     pRenderContext->FogMode(oldFog);
@@ -369,6 +433,9 @@ void CRenderPanel::Paint()
     render->PopView(frustum);
 
     modelrender->SuppressEngineLighting(false);
+
+    pRenderContext->BindLocalCubemap(pCubemapTex);
+    pRenderContext->Flush();
 }
 
 void CRenderPanel::DrawModel()
@@ -382,15 +449,37 @@ void CRenderPanel::DrawModel()
 
 void CRenderPanel::SetRenderColors(C_BaseEntity* pEnt)
 {
-    color32 col = pEnt->GetRenderColor();
-    float color[4] = { col.r / 255.0f, col.g / 255.0f, col.b / 255.0f, col.a / 255.0f };
-    float alphaBias = (GetParent() ? GetParent()->GetAlpha() : GetAlpha()) / 255.0f;
+    const auto col = pEnt->GetRenderColor();
+    const auto fAlpha = col.a / 255.0f;
+    float color[4] = { col.r / 255.0f, col.g / 255.0f, col.b / 255.0f, fAlpha };
     render->SetColorModulation(color);
-    render->SetBlend(alphaBias * color[3]);
+    render->SetBlend(fAlpha);
 }
 
 void CRenderPanel::FireGameEvent(IGameEvent* event)
 {
+    if (!m_pModelInstance)
+        return;
+
+    m_pModelInstance->InvalidateMdlCache();
+}
+
+void CRenderPanel::SetShouldAutoRotateModel(bool bRotate)
+{
+    m_bShouldAutoRotateModel = bRotate;
+
     if (m_pModelInstance)
-        m_pModelInstance->InvalidateMdlCache();
+    {
+        m_pModelInstance->SetLocalAngularVelocity(m_bShouldAutoRotateModel ? m_angAutoRotation : vec3_angle);
+    }
+}
+
+void CRenderPanel::SetAutoModelRotationSpeed(const QAngle &angle)
+{
+    m_angAutoRotation = angle;
+
+    if (m_pModelInstance)
+    {
+        m_pModelInstance->SetLocalAngularVelocity(m_angAutoRotation);
+    }
 }

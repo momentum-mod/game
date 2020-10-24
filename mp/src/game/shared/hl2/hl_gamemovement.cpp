@@ -273,7 +273,7 @@ bool CHL2GameMovement::ContinueForcedMove()
 		mv->m_vecVelocity.Init();
 	}
 
-	// Stil active
+	// Still active
 	return lm->m_bForceLadderMove;
 }
 
@@ -747,7 +747,7 @@ bool CHL2GameMovement::CheckLadderAutoMountEndPoint( CFuncLadder *ladder, const 
 
 bool CHL2GameMovement::CheckLadderAutoMountCone( CFuncLadder *ladder, const Vector& bestOrigin, float maxAngleDelta, float maxDistToLadder )
 {
-	// Never 'back' onto ladders or stafe onto ladders
+	// Never 'back' onto ladders or strafe onto ladders
 	if ( ladder != NULL && 
 		( mv->m_flForwardMove > 0.0f ) )
 	{
@@ -930,7 +930,7 @@ bool CHL2GameMovement::LadderMove( void )
 	// If I'm already moving on a ladder, use the previous ladder direction
 	if ( !ladder && !pressed_use )
 	{
-		// If flying through air, allow mounting ladders if we are facing < 15 degress from the ladder and we are close
+		// If flying through air, allow mounting ladders if we are facing < 15 degrees from the ladder and we are close
 		if ( !ladder && !sv_ladder_useonly.GetBool() )
 		{
 			// Tracker 6625:  Don't need to be leaping to auto mount using this method...

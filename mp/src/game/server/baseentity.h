@@ -632,7 +632,7 @@ public:
 	#endif // _DEBUG
 
 	// handles an input (usually caused by outputs)
-	// returns true if the the value in the pass in should be set, false if the input is to be ignored
+	// returns true if the value in the pass in should be set, false if the input is to be ignored
 	virtual bool AcceptInput( const char *szInputName, CBaseEntity *pActivator, CBaseEntity *pCaller, variant_t Value, int outputID );
 
 	//
@@ -1148,7 +1148,7 @@ public:
 	string_t	m_iszDamageFilterName;	// The name of the entity to use as our damage filter.
 	EHANDLE		m_hDamageFilter;		// The entity that controls who can damage us.
 
-	// Debugging / devolopment fields
+	// Debugging / development fields
 	int				m_debugOverlays;	// For debug only (bitfields)
 	TimedOverlay_t*	m_pTimedOverlay;	// For debug only
 
@@ -1365,8 +1365,6 @@ public:
 	static void SetAllowPrecache( bool allow );
 
 	static bool m_bAllowPrecache;
-
-	static bool IsSimulatingOnAlternateTicks();
 
 	virtual bool IsDeflectable() { return false; }
 	virtual void Deflected( CBaseEntity *pDeflectedBy, Vector &vecDir ) {}
@@ -1699,7 +1697,7 @@ private:
 	CNetworkQAngle( m_angRotation );
 	CBaseHandle m_RefEHandle;
 
-	// was pev->view_ofs ( FIXME:  Move somewhere up the hierarch, CBaseAnimating, etc. )
+	// was pev->view_ofs ( FIXME:  Move somewhere up the hierarchy, CBaseAnimating, etc. )
 	CNetworkVectorForDerived( m_vecViewOffset );
 
 private:
@@ -1739,7 +1737,7 @@ public:
 private:
 
 	// This is a random seed used by the networking code to allow client - side prediction code
-	//  randon number generators to spit out the same random numbers on both sides for a particular
+	//  random number generators to spit out the same random numbers on both sides for a particular
 	//  usercmd input.
 	static int						m_nPredictionRandomSeed;
 	static int						m_nPredictionRandomSeedServer;

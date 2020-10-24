@@ -68,7 +68,7 @@ typedef void *EntitySearchResult;
 
 
 //-----------------------------------------------------------------------------
-// Purpose: Client side tool interace (right now just handles IClientRenderables).
+// Purpose: Client side tool interface (right now just handles IClientRenderables).
 //  In theory could support hooking into client side entities directly
 //-----------------------------------------------------------------------------
 class IClientTools : public IBaseInterface
@@ -154,7 +154,7 @@ public:
 	// Use a UtlBuffer to crack the data
 	virtual void			ReloadParticleDefintions( const char *pFileName, const void *pBufData, int nLen ) = 0;
 
-	// Sends a mesage from the tool to the client
+	// Sends a message from the tool to the client
 	virtual void			PostToolMessage( KeyValues *pKeyValues ) = 0;
 
 	// Indicates whether the client should render particle systems
@@ -251,7 +251,7 @@ typedef IServerTools IServerTools002;
 #define VSERVERTOOLS_INTERFACE_VERSION_INT	3
 
 //-----------------------------------------------------------------------------
-// Purpose: Client side tool interace (right now just handles IClientRenderables).
+// Purpose: Client side tool interface (right now just handles IClientRenderables).
 //  In theory could support hooking into client side entities directly
 //-----------------------------------------------------------------------------
 class IServerChoreoTools : public IBaseInterface

@@ -55,7 +55,7 @@ public:
 
 private:
 	/*
-	// broken into its own function so I can move it if necesasry
+	// broken into its own function so I can move it if necessary
 	void Initialize();
 	*/
 

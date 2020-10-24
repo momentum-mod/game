@@ -349,7 +349,6 @@ BEGIN_DATADESC( CBasePlayer )
 
 	DEFINE_FIELD( m_bitsDamageType, FIELD_INTEGER ),
 	DEFINE_AUTO_ARRAY( m_rgbTimeBasedDamage, FIELD_CHARACTER ),
-	DEFINE_FIELD( m_fLastPlayerTalkTime, FIELD_FLOAT ),
 	DEFINE_FIELD( m_hLastWeapon, FIELD_EHANDLE ),
 
 #if !defined( NO_ENTITY_PREDICTION )
@@ -388,7 +387,6 @@ BEGIN_DATADESC( CBasePlayer )
 	DEFINE_INPUTFUNC( FIELD_STRING, "HandleMapEvent", InputHandleMapEvent ),
 
 	DEFINE_FIELD( m_nNumCrouches, FIELD_INTEGER ),
-	DEFINE_FIELD( m_bDuckToggled, FIELD_BOOLEAN ),
 	DEFINE_FIELD( m_flForwardMove, FIELD_FLOAT ),
 	DEFINE_FIELD( m_flSideMove, FIELD_FLOAT ),
 	DEFINE_FIELD( m_vecPreviouslyPredictedOrigin, FIELD_POSITION_VECTOR ), 
@@ -536,14 +534,13 @@ CBasePlayer::CBasePlayer( )
 
 	m_hZoomOwner = NULL;
 
-	m_nUpdateRate = 1.0f/TICK_INTERVAL;  // cl_updaterate defualt
+	m_nUpdateRate = 1.0f/TICK_INTERVAL;  // cl_updaterate default
 	m_fLerpTime = TICK_INTERVAL; // cl_interp default
 	m_bPredictWeapons = true;
 	m_bLagCompensation = false;
 	m_flLaggedMovementValue = 1.0f;
 	m_StuckLast = 0;
 	m_impactEnergyScale = 1.0f;
-	m_fLastPlayerTalkTime = 0.0f;
 	m_PlayerInfo.SetParent( this );
 
 	ResetObserverMode();
@@ -562,7 +559,6 @@ CBasePlayer::CBasePlayer( )
 	m_autoKickDisabled = false;
 
 	m_nNumCrouches = 0;
-	m_bDuckToggled = false;
 	m_bPhysicsWasFrozen = false;
 
 	// Used to mask off buttons
@@ -685,7 +681,7 @@ bool CBasePlayer::WantsLagCompensationOnEntity( const CBasePlayer *pPlayer, cons
 	const Vector &vHisOrigin = pPlayer->GetAbsOrigin();
 
 	// get max distance player could have moved within max lag compensation time, 
-	// multiply by 1.5 to to avoid "dead zones"  (sqrt(2) would be the exact value)
+	// multiply by 1.5 to avoid "dead zones"  (sqrt(2) would be the exact value)
 	float maxDistance = 1.5 * pPlayer->MaxSpeed() * sv_maxunlag.GetFloat();
 
 	// If the player is within this distance, lag compensate them in case they're running past us.
@@ -2039,12 +2035,6 @@ void CBasePlayer::PlayerDeathThink(void)
 	m_flPlaybackRate = 0.0;
 	
 	int fAnyButtonDown = (m_nButtons & ~IN_SCORE);
-	
-	// Strip out the duck key from this check if it's toggled
-	if ( (fAnyButtonDown & IN_DUCK) && GetToggledDuckState())
-	{
-		fAnyButtonDown &= ~IN_DUCK;
-	}
 
 	// wait for all buttons released
 	if (m_lifeState == LIFE_DEAD)
@@ -3200,7 +3190,7 @@ void CBasePlayer::PhysicsSimulate( void )
 
 	// If we're running multiple ticks this frame, don't peel off all of the commands, spread them out over
 	// the server ticks.  Use blocks of two in alternate ticks
-	int commandLimit = CBaseEntity::IsSimulatingOnAlternateTicks() ? 2 : 1;
+	int commandLimit = 1;
 	int commandsToRun = vecAvailCommands.Count();
 	if ( gpGlobals->simTicksThisFrame >= commandLimit && vecAvailCommands.Count() > commandLimit )
 	{
@@ -3507,7 +3497,7 @@ void CBasePlayer::DumpPerfToRecipient( CBasePlayer *pRecipient, int nMaxRecords 
 
 		if ( curpos + len > 200 )
 		{
-			ClientPrint( pRecipient, HUD_PRINTCONSOLE, (char const *)buf );
+			ClientPrint( pRecipient, HUD_PRINTCONSOLE, buf );
 			buf[ 0 ] = 0;
 			curpos = 0;
 		}
@@ -3590,10 +3580,6 @@ void CBasePlayer::PlayerRunCommand(CUserCmd *ucmd, IMoveHelper *moveHelper)
 		ucmd->impulse = 0;
 		VectorCopy ( pl.v_angle.Get(), ucmd->viewangles );
 	}
-	else if ( GetToggledDuckState() )
-	{
-		ucmd->buttons |= IN_DUCK;
-	}
 	
 	PlayerMove()->RunCommand(this, ucmd, moveHelper);
 }
@@ -3658,7 +3644,8 @@ void CBasePlayer::HandleFuncTrain(void)
 	
 	if ( !pTrain )
 	{
-		if ( GetActiveWeapon()->ObjectCaps() & FCAP_DIRECTIONAL_USE )
+		const auto pActiveWeapon = GetActiveWeapon();
+		if ( pActiveWeapon && (pActiveWeapon->ObjectCaps() & FCAP_DIRECTIONAL_USE) )
 		{
 			m_iTrain = TRAIN_ACTIVE | TRAIN_NEW;
 
@@ -3795,7 +3782,7 @@ void CBasePlayer::PreThink(void)
 
 		#define DMG_PARALYZE		(1 << 14)	// slows affected creature down
 		#define DMG_NERVEGAS		(1 << 15)	// nerve toxins, very bad
-		#define DMG_POISON			(1 << 16)	// blood poisioning
+		#define DMG_POISON			(1 << 16)	// blood poisoning
 		#define DMG_RADIATION		(1 << 17)	// radiation exposure
 		#define DMG_DROWNRECOVER	(1 << 18)	// drown recovery
 		#define DMG_ACID			(1 << 19)	// toxic chemicals or acid burns
@@ -3823,7 +3810,7 @@ void CBasePlayer::PreThink(void)
 							- recharged by suit recharger
 		Air In Lungs		- drowning damage is done to air in lungs first, then to body
 							- recharged by poking head out of water
-							- 10 seconds if swiming fast
+							- 10 seconds if swimming fast
 		Air In SCUBA		- drowning damage is done to air in tanks first, then to body
 							- 2 minutes in tanks. Need new tank once empty.
 		Radiation Syringe	- Each syringe full provides protection vs one radiation dosage
@@ -4781,7 +4768,7 @@ void CBasePlayer::InitialSpawn( void )
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: Called everytime the player respawns
+// Purpose: Called every time the player respawns
 //-----------------------------------------------------------------------------
 void CBasePlayer::Spawn( void )
 {
@@ -4841,7 +4828,7 @@ void CBasePlayer::Spawn( void )
 	m_flNextDecalTime	= 0;// let this player decal as soon as he spawns.
 
 	m_flgeigerDelay = gpGlobals->curtime + 2.0;	// wait a few seconds until user-defined message registrations
-												// are recieved by all clients
+												// are received by all clients
 	
 	m_flFieldOfView		= 0.766;// some NPCs use this to determine whether or not the player is looking at them.
 
@@ -4968,7 +4955,7 @@ void CBasePlayer::Precache( void )
 	// was loaded, fix all of the node graph pointers before the game starts.
 	
 	// !!!BUGBUG - now that we have multiplayer, this needs to be moved!
-	/* todo - put in better spot and use new ainetowrk stuff
+	/* todo - put in better spot and use new ainetwork stuff
 	if ( WorldGraph.m_fGraphPresent && !WorldGraph.m_fGraphPointersSet )
 	{
 		if ( !WorldGraph.FSetGraphPointers() )
@@ -5445,7 +5432,7 @@ CBaseEntity *FindEntityForward( CBasePlayer *pMe, bool fHull )
 //-----------------------------------------------------------------------------
 // Purpose: Finds the nearest entity in front of the player of the given
 //			classname, preferring collidable entities, but allows selection of 
-//			enities that are on the other side of walls or objects
+//			entities that are on the other side of walls or objects
 //
 // Input  :
 // Output :
@@ -5469,7 +5456,7 @@ CBaseEntity *FindPickerEntityClass( CBasePlayer *pPlayer, char *classname )
 
 //-----------------------------------------------------------------------------
 // Purpose: Finds the nearest entity in front of the player, preferring
-//			collidable entities, but allows selection of enities that are
+//			collidable entities, but allows selection of entities that are
 //			on the other side of walls or objects
 // Input  :
 // Output :
@@ -5958,7 +5945,7 @@ bool CBasePlayer::ClientCommand( const CCommand &args )
 		
 		return true;
 	}
-	else if ( stricmp( cmd, "spec_prev" ) == 0 ) // chase prevoius player
+	else if ( stricmp( cmd, "spec_prev" ) == 0 ) // chase previous player
 	{
 		if ( GetObserverMode() > OBS_MODE_FIXED )
 		{
@@ -6442,11 +6429,16 @@ void CBasePlayer::Weapon_Equip( CBaseCombatWeapon *pWeapon )
 	}
 #endif//HL2_DLL
 
-	// should we switch to this item?
-	if ( bShouldSwitch )
-	{
-		Weapon_Switch( pWeapon );
-	}
+    // should we switch to this item?
+    if ( bShouldSwitch )
+    {
+        Weapon_Switch( pWeapon );
+    }
+    //we didn't switch but if there is no last weapon yet, we set it to this one
+    else if(!GetLastWeapon())
+    {
+        Weapon_SetLast(pWeapon);
+    }
 }
 
 
@@ -6514,7 +6506,7 @@ void CBasePlayer::RemoveWearable( CEconWearable *pItem )
 			break;
 		}
 
-		// Integrety is failing, remove NULLs
+		// Integrity is failing, remove NULLs
 		if ( !pWearable )
 		{
 			m_hMyWearables.Remove( i );
@@ -7123,7 +7115,7 @@ void CBasePlayer::SetupVPhysicsShadow( const Vector &vecAbsOrigin, const Vector 
 	m_pShadowStand = PhysModelCreateCustom( this, pStandModel, GetLocalOrigin(), GetLocalAngles(), pStandHullName, false, &solid );
 	m_pShadowStand->SetCallbackFlags( CALLBACK_GLOBAL_COLLISION | CALLBACK_SHADOW_COLLISION );
 
-	// create crouchig hull
+	// create crouching hull
 	m_pShadowCrouch = PhysModelCreateCustom( this, pCrouchModel, GetLocalOrigin(), GetLocalAngles(), pCrouchHullName, false, &solid );
 	m_pShadowCrouch->SetCallbackFlags( CALLBACK_GLOBAL_COLLISION | CALLBACK_SHADOW_COLLISION );
 
@@ -7331,10 +7323,6 @@ void CBasePlayer::VPhysicsShadowUpdate( IPhysicsObject *pPhysics )
 
 				if ( !IsRideablePhysics(pPhysGround) )
 				{
-					if ( !(m_afPhysicsFlags & PFLAG_VPHYSICS_MOTIONCONTROLLER ) && IsSimulatingOnAlternateTicks() )
-					{
-						newVelocity *= 0.5f;
-					}
 					ApplyAbsVelocityImpulse( newVelocity );
 				}
 			}
@@ -7996,15 +7984,6 @@ CON_COMMAND( mp_disable_autokick, "Prevents a userid from being auto-kicked" )
 	int userID = atoi( args[1] );
 	DisableAutokick disable( userID );
 	ForEachPlayer( disable );
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: Toggle between the duck being on and off
-//-----------------------------------------------------------------------------
-void CBasePlayer::ToggleDuck( void )
-{
-	// Toggle the state
-	m_bDuckToggled = !m_bDuckToggled;
 }
 
 //-----------------------------------------------------------------------------

@@ -2,7 +2,7 @@
 //
 // Purpose: 
 //
-//  A class allowing storage of a sparse NxN matirx as an array of sparse rows
+//  A class allowing storage of a sparse NxN matrix as an array of sparse rows
 //===========================================================================//
 
 #ifndef SPARSEMATRIX_H

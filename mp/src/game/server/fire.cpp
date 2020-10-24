@@ -23,7 +23,7 @@
 
 
 /********************************************************************
- NOTE: if you are looking at this file becase you would like flares 
+ NOTE: if you are looking at this file because you would like flares 
  to be considered as fires (and thereby trigger gas traps), be aware 
  that the env_flare class is actually found in weapon_flaregun.cpp 
  and is really a repurposed piece of ammunition. (env_flare isn't the 
@@ -54,8 +54,8 @@
 
 // UNDONE: This shouldn't be constant but depend on specific fire
 #define	FIRE_WIDTH				128
-#define	FIRE_MINS				Vector(-20,-20,0 )   // Sould be FIRE_WIDTH in size
-#define FIRE_MAXS				Vector( 20, 20,20)	 // Sould be FIRE_WIDTH in size
+#define	FIRE_MINS				Vector(-20,-20,0 )   // Should be FIRE_WIDTH in size
+#define FIRE_MAXS				Vector( 20, 20,20)	 // Should be FIRE_WIDTH in size
 #define FIRE_SPREAD_DAMAGE_MULTIPLIER 2.0
 
 #define FIRE_MAX_HEAT_LEVEL		64.0f

@@ -1,0 +1,5 @@
+SpriteCard
+{
+	$basetexture    effects/rainbow_trail_circle
+	$additive       1
+}

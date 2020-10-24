@@ -98,7 +98,7 @@ private:
 	cache_user_t m_camoImageDataCache;
 #endif
 	unsigned char m_CamoPalette[256][3];
-	// these represent that part of the entitiy's bounding box that we 
+	// these represent that part of the entity's bounding box that we 
 	// want to cast rays through to get colors for the camo
 	Vector m_SubBoundingBoxMin; // normalized
 	Vector m_SubBoundingBoxMax; // normalized
@@ -223,7 +223,7 @@ bool CCamoMaterialProxy::Init( IMaterial *pMaterial, KeyValues *pKeyValues )
 	if (pCamoTexture)
 		pCamoTexture->SetTextureRegenerator( &m_TextureRegen );
 	
-	// Need to get the palettized texture to create the procedural texture from
+	// Need to get the palletized texture to create the procedural texture from
 	// somewhere.
 	m_pCamoPatternTextureVar = m_pMaterial->FindVar( "$camoPatternTexture", &found );
 	if( !found )

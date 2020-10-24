@@ -38,7 +38,7 @@ void CFuncLadderEndPoint::Activate()
 
 bool CFuncLadderEndPoint::Validate()
 {
-	// Find the the other end
+	// Find the other end
 	Vector startPos = GetAbsOrigin();
 	
 	CFuncLadderEndPoint *other = dynamic_cast< CFuncLadderEndPoint * >( GetNextTarget() );

@@ -117,7 +117,7 @@ void DrawExampleModel_DX9_Internal( CBaseVSShader *pShader, IMaterialVar** param
 
 			if( bIsAlphaTested )
 			{
-				// disable alpha test and use the zfunc zequals since alpha isn't guaranteed to 
+				// disable alpha test and use the zfunc equals since alpha isn't guaranteed to 
 				// be the same on both the regular pass and the flashlight pass.
 				pShaderShadow->EnableAlphaTest( false );
 				pShaderShadow->DepthFunc( SHADER_DEPTHFUNC_EQUAL );

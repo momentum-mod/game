@@ -348,10 +348,10 @@ bool CAI_BaseActor::ProcessSceneEvent( CSceneEventInfo *info, CChoreoScene *scen
 			// lockbodyfacing is designed to run on top of both normal AI and on top of
 			// scripted_sequences.  By allowing torso turns during post-idles, pre-idles, 
 			// act-busy's, scripted_sequences, normal AI movements, etc., it increases 
-			// the functionality of those AI features without breaking their assuptions 
+			// the functionality of those AI features without breaking their assumptions 
 			// that the entity won't be made to "turn" by something outside of those 
 			// AI's control.
-			// lockbody facing is also usefull when npcs are moving and you want them to turn
+			// lockbody facing is also useful when npcs are moving and you want them to turn
 			// towards something but still walk in the direction of travel.
 			if (!event->IsLockBodyFacing())
 				bInScene = EnterSceneSequence( scene, event, true );
@@ -1461,7 +1461,7 @@ void CAI_BaseActor::MaintainLookTargets( float flInterval )
 	Set( m_ParameterGestureWidth, Get( m_FlexweightGestureRightLeft ) );
 
 	// initialize goal head direction to be current direction - this frames animation layering/pose parameters -  
-	// but with the head controlls removed.
+	// but with the head controls removed.
 	Vector vHead = HeadDirection3D( );
 	float flHeadInfluence = 0.0;
 
@@ -1661,7 +1661,7 @@ void CAI_BaseActor::MaintainLookTargets( float flInterval )
 		OnNewLookTarget();
 	}
 
-	// this should take into acount where it will try to be....
+	// this should take into account where it will try to be....
 	if (!bFoundTarget && !ValidEyeTarget( GetViewtarget() ))
 	{
 		Vector right, up;

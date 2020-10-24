@@ -436,7 +436,7 @@ void ComboBox::ApplySettings( KeyValues *pInResourceData )
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: Set the visiblity of the drop down menu button.
+// Purpose: Set the visibility of the drop down menu button.
 //-----------------------------------------------------------------------------
 void ComboBox::SetDropdownButtonVisible(bool state)
 {

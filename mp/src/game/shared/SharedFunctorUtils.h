@@ -4,7 +4,7 @@
 
 //--------------------------------------------------------------------------------------------------------
 /**
-* NOTE: The functors in this file should ideally be game-independant, 
+* NOTE: The functors in this file should ideally be game-independent, 
 * and work for any Source based game
 */
 //--------------------------------------------------------------------------------------------------------

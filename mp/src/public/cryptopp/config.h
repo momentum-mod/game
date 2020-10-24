@@ -21,7 +21,7 @@
 #endif
 
 // Sanity checks. Some processors have more than big, little and bi-endian modes. PDP mode, where order results in "4312", should
-// raise red flags immediately. Additionally, mis-classified machines, like (previosuly) S/390, should raise red flags immediately.
+// raise red flags immediately. Additionally, mis-classified machines, like (previously) S/390, should raise red flags immediately.
 #if (CRYPTOPP_BIG_ENDIAN) && defined(__GNUC__) && defined(__BYTE_ORDER__) && (__BYTE_ORDER__ != __ORDER_BIG_ENDIAN__)
 # error "(CRYPTOPP_BIG_ENDIAN) is set, but __BYTE_ORDER__ is not __ORDER_BIG_ENDIAN__"
 #endif
@@ -59,7 +59,7 @@
 // compiled using C++ only. The library code will not include SSE2 (and
 // above), NEON, Aarch32, Aarch64, Power4, Power7 or Power8. Note the compiler
 // may use higher ISAs depending on compiler options, but the library will not
-// explictly use the ISAs. When disabling ASM, it is best to do it from
+// explicitly use the ISAs. When disabling ASM, it is best to do it from
 // config.h to ensure the library and all programs share the setting.
 // #define CRYPTOPP_DISABLE_ASM 1
 
@@ -171,7 +171,7 @@
 #endif
 
 #ifdef CRYPTOPP_DOXYGEN_PROCESSING
-// Document the namespce exists. Put it here before CryptoPP is undefined below.
+// Document the namespace exists. Put it here before CryptoPP is undefined below.
 /// \namespace CryptoPP
 /// \brief Crypto++ library namespace
 /// \details Nearly all classes are located in the CryptoPP namespace. Within
@@ -524,7 +524,7 @@ NAMESPACE_END
 # endif
 #endif
 
-// Intrinsics availible in GCC 4.3 (http://gcc.gnu.org/gcc-4.3/changes.html) and
+// Intrinsics available in GCC 4.3 (http://gcc.gnu.org/gcc-4.3/changes.html) and
 //   MSVC 2008 (http://msdn.microsoft.com/en-us/library/bb892950%28v=vs.90%29.aspx)
 //   SunCC could generate SSE4 at 12.1, but the intrinsics are missing until 12.4.
 #if !defined(CRYPTOPP_DISABLE_SSE4) && defined(CRYPTOPP_SSSE3_AVAILABLE) && \
@@ -542,7 +542,7 @@ NAMESPACE_END
 #endif
 
 // Couple to CRYPTOPP_DISABLE_AESNI, but use CRYPTOPP_CLMUL_AVAILABLE so we can selectively
-//  disable for misbehaving platofrms and compilers, like Solaris or some Clang.
+//  disable for misbehaving platforms and compilers, like Solaris or some Clang.
 #if defined(CRYPTOPP_DISABLE_AESNI)
 	#define CRYPTOPP_DISABLE_CLMUL 1
 #endif
@@ -622,7 +622,7 @@ NAMESPACE_END
 #if (CRYPTOPP_BOOL_ARM32 || CRYPTOPP_BOOL_ARM64)
 
 // We don't have an ARM big endian test rig. Disable
-// ARM-BE ASM and instrinsics until we can test it.
+// ARM-BE ASM and intrinsics until we can test it.
 #if (CRYPTOPP_BIG_ENDIAN)
 # define CRYPTOPP_DISABLE_ASM 1
 #endif
@@ -818,7 +818,7 @@ NAMESPACE_END
 
 // ***************** Miscellaneous ********************
 
-// Nearly all Intel's and AMD's have SSE. Enable it independent of SSE ASM and intrinscs
+// Nearly all Intel's and AMD's have SSE. Enable it independent of SSE ASM and intrinsics
 #if (CRYPTOPP_BOOL_X86 || CRYPTOPP_BOOL_X32 || CRYPTOPP_BOOL_X64 || CRYPTOPP_BOOL_PPC32 || CRYPTOPP_BOOL_PPC64) && !defined(CRYPTOPP_DISABLE_ASM)
 	#define CRYPTOPP_BOOL_ALIGN16 1
 #else
@@ -864,10 +864,10 @@ NAMESPACE_END
 // How to disable CPU feature probing. We determine machine
 //  capabilities by performing an os/platform *query* first,
 //  like getauxv(). If the *query* fails, we move onto a
-//  cpu *probe*. The cpu *probe* tries to exeute an instruction
+//  cpu *probe*. The cpu *probe* tries to execute an instruction
 //  and then catches a SIGILL on Linux or the exception
 //  EXCEPTION_ILLEGAL_INSTRUCTION on Windows. Some OSes
-//  fail to hangle a SIGILL gracefully, like Apple OSes. Apple
+//  fail to handle a SIGILL gracefully, like Apple OSes. Apple
 //  machines corrupt memory and variables around the probe.
 #if defined(__APPLE__)
 #  define CRYPTOPP_NO_CPU_FEATURE_PROBES 1
@@ -1022,7 +1022,7 @@ NAMESPACE_END
 // ************** Unused variable ***************
 
 // Portable way to suppress warnings.
-//   Moved from misc.h due to circular depenedencies.
+//   Moved from misc.h due to circular dependencies.
 #define CRYPTOPP_UNUSED(x) ((void)(x))
 
 // ************** Deprecated ***************
@@ -1147,7 +1147,7 @@ NAMESPACE_END
 #endif // constexpr compilers
 
 // strong typed enums: MS at VS2012 (17.00); GCC at 4.4; Clang at 3.3; Intel 14.0; SunCC 5.12.
-//   Mircorosft and Intel had partial support earlier, but we require full support.
+//   Microsoft and Intel had partial support earlier, but we require full support.
 #if (CRYPTOPP_MSC_VERSION >= 1700) || __has_feature(cxx_strong_enums) || \
 	(__INTEL_COMPILER >= 1400) || (CRYPTOPP_GCC_VERSION >= 40400) || (__SUNPRO_CC >= 0x5120)
 # define CRYPTOPP_CXX11_ENUM 1

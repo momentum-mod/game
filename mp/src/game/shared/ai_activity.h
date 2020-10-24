@@ -15,7 +15,7 @@
 
 typedef enum
 {
-	ACT_INVALID = -1,			// So we have something more succint to check for than '-1'
+	ACT_INVALID = -1,			// So we have something more succinct to check for than '-1'
 	ACT_RESET = 0,				// Set m_Activity to this invalid value to force a reset to m_IdealActivity
 	ACT_IDLE,
 	ACT_TRANSITION,
@@ -202,7 +202,7 @@ typedef enum
 	ACT_GESTURE_TURN_LEFT90_FLAT,
 	ACT_GESTURE_TURN_RIGHT90_FLAT,
 
-	// HALF-LIFE 1 compatability stuff goes here. Temporary!
+	// HALF-LIFE 1 compatibility stuff goes here. Temporary!
 	ACT_BARNACLE_HIT,		// barnacle tongue hits a monster
 	ACT_BARNACLE_PULL,		// barnacle is lifting the monster ( loop )
 	ACT_BARNACLE_CHOMP,		// barnacle latches on to the monster

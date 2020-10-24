@@ -216,7 +216,7 @@ public:
 
 	virtual void ReadRestoreHeaders( IRestore *pRestore )
 	{
-		// No reason why any future version shouldn't try to retain backward compatability. The default here is to not do so.
+		// No reason why any future version shouldn't try to retain backward compatibility. The default here is to not do so.
 		short version = pRestore->ReadShort();
 		m_fDoLoad = ( version == PHYS_SAVE_RESTORE_VERSION );
 
@@ -391,7 +391,7 @@ public:
 			pRestore->EndBlock();
 		}
 		else
-			DevMsg( "Don't know how to reconsitite models for physobj array \n" );
+			DevMsg( "Don't know how to reconstitute models for physobj array \n" );
 	}
 	
 	//---------------------------------

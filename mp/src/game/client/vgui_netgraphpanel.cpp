@@ -408,7 +408,7 @@ void CNetGraphPanel::ColorForHeight( packet_latency_t *packet, byte *color, int 
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: Set up blend colors for comman/client-frame/interpolation graph
+// Purpose: Set up blend colors for command/client-frame/interpolation graph
 //-----------------------------------------------------------------------------
 void CNetGraphPanel::InitColors( void )
 {
@@ -967,7 +967,7 @@ void CNetGraphPanel::GraphGetXY( vrect_t *rect, int width, int *x, int *y )
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: drawing stream progess (file download etc) as green bars ( under in/out)
+// Purpose: drawing stream progress (file download etc) as green bars ( under in/out)
 // Input  : x - 
 //			y - 
 //			maxmsgbytes - 
@@ -1347,7 +1347,7 @@ void CNetGraphPanel::PaintLineArt( int x, int y, int w, int graphtype, int maxms
 
 		DrawLine(&rcFill, color, 255 );		
 
-		// Move up for begining of data
+		// Move up for beginning of data
 		rcFill.y -= 1;
 
 		// Packet didn't have any real data...

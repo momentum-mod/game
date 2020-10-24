@@ -96,6 +96,9 @@ public:
 
     CBaseMomZoneTrigger();
 
+    void Spawn() override;
+    void Precache() override;
+
     // Point-based zones need a custom collision check
     void InitCustomCollision(CPhysCollide *pPhysCollide, const Vector &vecMins, const Vector &vecMaxs);
     virtual bool TestCollision(const Ray_t &ray, unsigned int mask, trace_t &tr) OVERRIDE;
@@ -110,14 +113,21 @@ public:
 
     virtual int GetZoneType();
 
+    const Vector& GetRestartPosition();
+
     IMPLEMENT_NETWORK_VAR_FOR_DERIVED(m_iTrackNumber);
 
     CNetworkVar(float, m_flZoneHeight);
     // Point-based zone editing
     CUtlVector<Vector> m_vecZonePoints;
 
+
 private:
     friend class CMomPointZoneBuilder;
+
+    bool FindStandableGroundBelow(const Vector& traceStartPos, Vector& dropPos);
+
+    Vector m_vecRestartPos;
 };
 
 // A zone trigger has a signifying "zone number" used to give the player
@@ -239,6 +249,9 @@ class CTriggerTimerStop : public CTriggerZone
 public:
     DECLARE_CLASS(CTriggerTimerStop, CTriggerZone);
     DECLARE_NETWORKCLASS();
+    DECLARE_DATADESC();
+
+    CTriggerTimerStop();
 
     virtual void Spawn() OVERRIDE;
 
@@ -246,6 +259,36 @@ public:
     virtual int UpdateTransmitState() OVERRIDE { return SetTransmitState(FL_EDICT_ALWAYS); }
 
     int GetZoneType() OVERRIDE;
+
+    bool GetCancelBool() const { return m_bCancel; }
+
+private:
+    bool m_bCancel;
+};
+
+class CTriggerTrickZone : public CBaseMomZoneTrigger
+{
+public:
+    DECLARE_CLASS(CTriggerTrickZone, CBaseMomZoneTrigger);
+    DECLARE_NETWORKCLASS();
+
+    CTriggerTrickZone();
+
+    void Spawn() override;
+
+    int UpdateTransmitState() override { return SetTransmitState(FL_EDICT_ALWAYS); }
+
+    int GetZoneType() override;
+
+    bool LoadFromKeyValues(KeyValues* pKvFrom) override;
+    bool ToKeyValues(KeyValues* pKvInto) override;
+
+    void OnStartTouch(CBaseEntity* pOther) override;
+    void OnEndTouch(CBaseEntity* pOther) override;
+
+    CNetworkVar(int, m_iID);
+    CNetworkString(m_szZoneName, 32);
+    CNetworkVar(int, m_iDrawState);
 };
 
 // Our teleport trigger override with extra convenience features
@@ -271,11 +314,14 @@ public:
     // True if the entity was teleported, else false
     virtual bool DoTeleport(CBaseEntity *pTeleportTo, CBaseEntity *pEntToTeleport);
     // After teleporting, do this code. Base class does nothing.
-    virtual void AfterTeleport(CBaseEntity *pEntTeleported) {};
+    virtual void AfterTeleport(CBaseEntity *pEntTeleported) {}
+    // Called when teleported by a fail teleport
+    void OnFailTeleport(CBaseEntity *pEntTeleported);
 
 private:
     bool m_bResetVelocity;
     bool m_bResetAngles;
+    bool m_bFail;
     EHANDLE m_hDestinationEnt;
 };
 
@@ -487,7 +533,7 @@ class CTriggerMomentumPush : public CBaseMomentumTrigger
     // Force in units per seconds applied to the player
     float m_fPushForce;
     // 1: SetPlayerVelocity to final push force
-    // 2: Increase player's current velocity by push final foce ammount // This is almost like the default trigger_push
+    // 2: Increase player's current velocity by push final force amount // This is almost like the default trigger_push
     // behaviour
     // 3: Only set the player's velocity to the final push velocity if player's velocity is lower than final push
     // velocity
@@ -673,11 +719,71 @@ public:
     void Spawn() override;
     void Precache() override;
 
+    void OnStartTouch(CBaseEntity *pOther) override;
+    void OnEndTouch(CBaseEntity *pOther) override;
+
     void InputDisable(inputdata_t &inputdata) override { m_bDisabled = true; }
     void InputEnable(inputdata_t &inputdata) override { m_bDisabled = false; }
     void InputToggle(inputdata_t &inputdata) override { m_bDisabled = !m_bDisabled; }
 
-    static bool IsInsideNoGrenadesZone(CBaseEntity *pOther);
+    static CNoGrenadesZone* IsInsideNoGrenadesZone(CBaseEntity *pOther);
 
-    bool m_bAirborneOnly;
+    int m_iExplosivePreventionType;
+    enum ExplosivePreventionType_t
+    {
+        FIZZLE_ON_DET,
+        FIZZLE_ON_DET_AIRBORNE_ONLY,
+        FIZZLE_ON_LAND,
+        FIZZLE_ON_ENTRANCE
+    };
+};
+
+class CTriggerMomentumCatapult : public CBaseMomentumTrigger
+{
+  public:
+    DECLARE_CLASS(CTriggerMomentumCatapult, CBaseMomentumTrigger);
+    DECLARE_DATADESC();
+
+    CTriggerMomentumCatapult();
+
+  public:
+    void OnStartTouch(CBaseEntity *) override;
+    void Touch(CBaseEntity *) override;
+    void Spawn() override;
+    void Think() override;
+
+    int DrawDebugTextOverlays() override;
+
+  private:
+    Vector CalculateLaunchVelocity(CBaseEntity *);
+    Vector CalculateLaunchVelocityExact(CBaseEntity *);
+    void Launch(CBaseEntity *);
+    void LaunchAtDirection(CBaseEntity *);
+    void LaunchAtTarget(CBaseEntity *);
+
+  private:
+
+    enum ExactVelocityChoice_t
+    {
+        BEST = 0,
+        SOLUTION_ONE,
+        SOLUTION_TWO,
+    };
+
+    float m_flPlayerSpeed;
+    int m_iUseExactVelocity;
+    int m_iExactVelocityChoiceType;
+    QAngle m_vLaunchDirection;
+    EHANDLE m_hLaunchTarget;
+    bool m_bUseLaunchTarget;
+    bool m_bUseThresholdCheck;
+    float m_flLowerThreshold;
+    float m_flUpperThreshold;
+    bool m_bOnlyCheckVelocity;
+    float m_flEntryAngleTolerance;
+    COutputEvent m_OnCatapulted;
+    float m_flInterval;
+    bool m_bOnThink;
+    bool m_bEveryTick;
+    float m_flHeightOffset;
 };

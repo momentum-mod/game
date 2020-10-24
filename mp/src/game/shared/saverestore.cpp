@@ -889,7 +889,7 @@ void CSave::EndBlock()
 	
 	m_BlockStartStack.Remove( m_BlockStartStack.Count() - 1 );
 	
-	// Move to the the location where the size of the block was written & rewrite the size
+	// Move to the location where the size of the block was written & rewrite the size
 	SetWritePos( startPos - sizeof(SaveRestoreRecordHeader_t) );
 	BufferData( (const char *)&sizeBlock, sizeof(short) );
 	

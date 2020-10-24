@@ -1018,8 +1018,8 @@ char const *CPhonemeExtractorLipSinc::ApplyTBWordRules( char const *word )
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: Given a wavfile and a list of inwords, determines the word/phonene 
-//  sample counts for the sentce
+// Purpose: Given a wavfile and a list of inwords, determines the word/phoneme 
+//  sample counts for the sentence
 // Output : SR_RESULT
 //-----------------------------------------------------------------------------
 SR_RESULT CPhonemeExtractorLipSinc::Extract( 

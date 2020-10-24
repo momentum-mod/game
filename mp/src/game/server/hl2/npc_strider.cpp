@@ -1098,7 +1098,7 @@ void CNPC_Strider::GatherConditions()
 				}
 
 				// If I'm on target and see more targets than just this one, move on to another target for a bit!
-				// Because the Mingun's state will stay "on target" until the minigun gets a chance to think,
+				// Because the Minigun's state will stay "on target" until the minigun gets a chance to think,
 				// and this function may be called several times per strider think, don't call this code anymore in the same
 				// think when a new enemy is chosen.
 				//
@@ -1175,7 +1175,7 @@ void CNPC_Strider::GatherHeightConditions( const Vector &vTestPos, CBaseEntity *
 
 		if ( m_LowZCorrectionTimer.Expired() )
 		{
-			// Hack to handle discrepency between ideal gun pos and actual pos due to strider head tilt in crouch pos
+			// Hack to handle discrepancy between ideal gun pos and actual pos due to strider head tilt in crouch pos
 			if ( pEntity && fabs( newHeight - GetHeight() ) < 12 && newHeight < GetMinHeight() + GetHeightRange() * .33 )
 			{
 				Vector muzzlePos;

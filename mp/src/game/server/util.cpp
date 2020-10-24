@@ -273,8 +273,6 @@ int UTIL_PrecacheDecal( const char *name, bool preload )
 //-----------------------------------------------------------------------------
 float UTIL_GetSimulationInterval()
 {
-	if ( CBaseEntity::IsSimulatingOnAlternateTicks() )
-		return ( TICK_INTERVAL * 2.0 );
 	return TICK_INTERVAL;
 }
 
@@ -350,7 +348,7 @@ int UTIL_DropToFloor( CBaseEntity *pEntity, unsigned int mask, CBaseEntity *pIgn
 	trace_t	trace;
 
 #ifndef HL2MP
-	// HACK: is this really the only sure way to detect crossing a terrain boundry?
+	// HACK: is this really the only sure way to detect crossing a terrain boundary?
 	UTIL_TraceEntity( pEntity, pEntity->GetAbsOrigin(), pEntity->GetAbsOrigin(), mask, pIgnore, pEntity->GetCollisionGroup(), &trace );
 	if (trace.fraction == 0.0)
 		return -1;
@@ -761,7 +759,7 @@ void UTIL_GetPlayerConnectionInfo( int playerIndex, int& ping, int &packetloss )
 		latency -= TICKS_TO_TIME( 0.5f );
 
 		ping = latency * 1000.0f; // as msecs
-		ping = clamp( ping, 5, 1000 ); // set bounds, dont show pings under 5 msecs
+		ping = clamp( ping, 5, 1000 ); // set bounds, don't show pings under 5 msecs
 		
 		packetloss = 100.0f * nci->GetAvgLoss( FLOW_INCOMING ); // loss in percentage
 		packetloss = clamp( packetloss, 0, 100 );
@@ -1141,78 +1139,6 @@ void ClientPrint( CBasePlayer *player, int msg_dest, const char *msg_name, const
 	user.MakeReliable();
 
 	UTIL_ClientPrintFilter( user, msg_dest, msg_name, param1, param2, param3, param4 );
-}
-
-void UTIL_SayTextFilter( IRecipientFilter& filter, const char *pText, CBasePlayer *pPlayer, bool bChat )
-{
-	UserMessageBegin( filter, "SayText" );
-		if ( pPlayer ) 
-		{
-			WRITE_BYTE( pPlayer->entindex() );
-		}
-		else
-		{
-			WRITE_BYTE( 0 ); // world, dedicated server says
-		}
-		WRITE_STRING( pText );
-		WRITE_BYTE( bChat );
-	MessageEnd();
-}
-
-void UTIL_SayText2Filter( IRecipientFilter& filter, CBasePlayer *pEntity, bool bChat, const char *msg_name, const char *param1, const char *param2, const char *param3, const char *param4 )
-{
-	UserMessageBegin( filter, "SayText2" );
-		if ( pEntity )
-		{
-			WRITE_BYTE( pEntity->entindex() );
-		}
-		else
-		{
-			WRITE_BYTE( 0 ); // world, dedicated server says
-		}
-
-		WRITE_BYTE( bChat );
-
-		WRITE_STRING( msg_name );
-
-		if ( param1 )
-			WRITE_STRING( param1 );
-		else
-			WRITE_STRING( "" );
-
-		if ( param2 )
-			WRITE_STRING( param2 );
-		else
-			WRITE_STRING( "" );
-
-		if ( param3 )
-			WRITE_STRING( param3 );
-		else
-			WRITE_STRING( "" );
-
-		if ( param4 )
-			WRITE_STRING( param4 );
-		else
-			WRITE_STRING( "" );
-
-	MessageEnd();
-}
-
-void UTIL_SayText( const char *pText, CBasePlayer *pToPlayer )
-{
-	if ( !pToPlayer->IsNetClient() )
-		return;
-
-	CSingleUserRecipientFilter user( pToPlayer );
-	user.MakeReliable();
-
-	UTIL_SayTextFilter( user, pText, pToPlayer, false );
-}
-
-void UTIL_SayTextAll( const char *pText, CBasePlayer *pPlayer, bool bChat )
-{
-	CReliableBroadcastRecipientFilter filter;
-	UTIL_SayTextFilter( filter, pText, pPlayer, bChat );
 }
 
 void UTIL_ShowMessage( const char *pString, CBasePlayer *pPlayer )
@@ -2231,7 +2157,7 @@ static edict_t *UTIL_GetCurrentCheckClient()
 	ent = engine->PEntityOfEntIndex( g_CheckClient.m_lastcheck );
 
 	// Allow dead clients -- JAY
-	// Our monsters know the difference, and this function gates alot of behavior
+	// Our monsters know the difference, and this function gates a lot of behavior
 	// It's annoying to die and see monsters stop thinking because you're no longer
 	// "in" their PVS
 	if ( !ent || ent->IsFree() || !ent->GetUnknown())
@@ -2423,9 +2349,9 @@ CBaseEntity *UTIL_EntitiesInPVS( CBaseEntity *pPVSEntity, CBaseEntity *pStarting
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: Get the predicted postion of an entity of a certain number of seconds
+// Purpose: Get the predicted position of an entity of a certain number of seconds
 //			Use this function with caution, it has great potential for annoying the player, especially
-//			if used for target firing predition
+//			if used for target firing prediction
 // Input  : *pTarget - target entity to predict
 //			timeDelta - amount of time to predict ahead (in seconds)
 //			&vecPredictedPosition - output

@@ -351,7 +351,7 @@ void CBaseAnimating::Activate()
 
 
 //-----------------------------------------------------------------------------
-// Force our lighting origin to be trasmitted
+// Force our lighting origin to be transmitted
 //-----------------------------------------------------------------------------
 void CBaseAnimating::SetTransmit( CCheckTransmitInfo *pInfo, bool bAlways )
 {
@@ -679,11 +679,13 @@ void CBaseAnimating::InputSetGlowDistance(inputdata_t& inputdata)
 void CBaseAnimating::AddGlowEffect(void)
 {
     m_bGlowEnabled.Set(true);
+    SetTransmitState(FL_EDICT_ALWAYS);
 }
 
 void CBaseAnimating::RemoveGlowEffect(void)
 {
     m_bGlowEnabled.Set(false);
+    DispatchUpdateTransmitState();
 }
 
 bool CBaseAnimating::IsGlowEffectActive(void)
@@ -985,7 +987,7 @@ void CBaseAnimating::ResetSequenceInfo ( )
 	m_nNewSequenceParity = ( m_nNewSequenceParity+1 ) & EF_PARITY_MASK;
 	m_nResetEventsParity = ( m_nResetEventsParity+1 ) & EF_PARITY_MASK;
 
-	// FIXME: why is this called here?  Nothing should have changed to make this nessesary
+	// FIXME: why is this called here?  Nothing should have changed to make this necessary
 	if ( pStudioHdr )
 	{
 		SetEventIndexForSequence( pStudioHdr->pSeqdesc( GetSequence() ) );
@@ -1637,7 +1639,7 @@ void CBaseAnimating::UpdateStepOrigin()
 				// debounce floor location
 				m_flEstIkFloor = m_flEstIkFloor * 0.2 + m_flIKGroundMinHeight * 0.8;
 
-				// don't let heigth difference between min and max exceed step height
+				// don't let height difference between min and max exceed step height
 				float bias = clamp( (m_flIKGroundMaxHeight - m_flIKGroundMinHeight) - height, 0.f, height );
 				// save off reasonable offset
 				m_flEstIkOffset = clamp( m_flEstIkFloor - GetAbsOrigin().z, -height + bias, 0.0f );
@@ -2844,7 +2846,7 @@ float CBaseAnimating::GetBoneController ( int iController )
 }
 
 //------------------------------------------------------------------------------
-// Purpose : Returns velcocity of the NPC from it's animation.  
+// Purpose : Returns velocity of the NPC from it's animation.  
 //			 If physically simulated gets velocity from physics object
 // Input   :
 // Output  :

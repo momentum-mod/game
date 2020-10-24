@@ -76,7 +76,7 @@ public:
 
 	// Update() and DoAnimationEvent() together maintain the entire player's animation state.
 	//
-	// Update() maintains the the lower body animation (the player's m_nSequence)
+	// Update() maintains the lower body animation (the player's m_nSequence)
 	// and the upper body overlay based on the player's velocity and look direction.
 	//
 	// It also modulates these based on events triggered by DoAnimationEvent.

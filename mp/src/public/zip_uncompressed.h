@@ -81,7 +81,7 @@ struct ZIP_LocalFileHeader
 //	Valve Non standard Extension, Preload Section
 //	An optional first file in an aligned zip that can be loaded into ram and
 //	used by the FileSystem to supply header data rather than disk.
-//	Is is an optimization to prevent the large of amount of small I/O performed
+//	This is an optimization to prevent the large of amount of small I/O performed
 ///	by the map loading process.
 //=============================================================================//
 

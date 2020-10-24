@@ -1,0 +1,7 @@
+"UnlitGeneric"
+{
+	"$basetexture" "sprites/conc_ring_blur"
+	"$vertexcolor" "1"
+	"$vertexalpha" "1"
+	"$$alphatest" "1"
+}

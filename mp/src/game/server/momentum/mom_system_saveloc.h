@@ -5,24 +5,49 @@
 class CMomentumPlayer;
 class SavelocReqPacket;
 
+enum SavedLocationComponent_t
+{
+    SAVELOC_NONE = 0,
+
+    SAVELOC_POS = 1 << 0,
+    SAVELOC_VEL = 1 << 1,
+    SAVELOC_ANG = 1 << 2,
+    SAVELOC_TARGETNAME = 1 << 3,
+    SAVELOC_CLASSNAME = 1 << 4,
+    SAVELOC_GRAVITY = 1 << 5,
+    SAVELOC_MOVEMENTLAG = 1 << 6,
+    SAVELOC_DISABLED_BTNS = 1 << 7,
+    SAVELOC_EVENT_QUEUE = 1 << 8,
+    SAVELOC_DUCKED = 1 << 9,
+    SAVELOC_TRACK = 1 << 10,
+    SAVELOC_ZONE = 1 << 11,
+    SAVELOC_TOGGLED_BTNS = 1 << 12,
+
+    SAVELOC_ALL = ~SAVELOC_NONE,
+};
+
 // Saved Location used in the "Saveloc menu"
 struct SavedLocation_t
 {
-    bool crouched;
-    Vector pos;
-    Vector vel;
-    QAngle ang;
-    char targetName[512];
-    char targetClassName[512];
-    float gravityScale;
-    float movementLagScale;
-    int disabledButtons;
+    bool m_bCrouched;
+    Vector m_vecPos;
+    Vector m_vecVel;
+    QAngle m_qaAng;
+    char m_szTargetName[512];
+    char m_szTargetClassName[512];
+    float m_fGravityScale;
+    float m_fMovementLagScale;
+    int m_iDisabledButtons;
+    int m_iToggledButtons;
+    int m_iTrack, m_iZone;
     CEventQueueState entEventsState;
+
+    int m_savedComponents;
 
     SavedLocation_t();
 
     // Called when the player creates a checkpoint
-    SavedLocation_t(CMomentumPlayer* pPlayer);
+    SavedLocation_t(CMomentumPlayer* pPlayer, int components = SAVELOC_ALL);
 
     // Called when saving the checkpoint to file
     void Save(KeyValues* kvCP) const;
@@ -36,11 +61,11 @@ struct SavedLocation_t
     bool Write(CUtlBuffer &mem);
 };
 
-class CMOMSaveLocSystem : public CAutoGameSystem
+class CSaveLocSystem : public CAutoGameSystem
 {
 public:
-    CMOMSaveLocSystem(const char* pName);
-    ~CMOMSaveLocSystem();
+    CSaveLocSystem(const char* pName);
+    ~CSaveLocSystem();
     void PostInit() OVERRIDE;
     void LevelInitPreEntity() OVERRIDE;
     void LevelShutdownPreEntity() OVERRIDE;
@@ -60,12 +85,14 @@ public:
     bool ReadReceivedSavelocs(SavelocReqPacket *input, const uint64 &sender);
 
     // Local
+    // Loads start marks from saveloc file
+    bool LoadStartMarks();
     // Gets the current menu Saveloc index
     uint32 GetCurrentSavelocMenuIndex() const { return m_iCurrentSavelocIndx; }
     // Is the player currently using the saveloc menu?
     bool IsUsingSaveLocMenu() const { return m_bUsingSavelocMenu; }
     // Creates a saveloc on the location of the player
-    SavedLocation_t *CreateSaveloc();
+    SavedLocation_t *CreateSaveloc(int components = SAVELOC_ALL);
     // Creates and saves a checkpoint to the saveloc menu
     void CreateAndSaveLocation();
     // Add a Saveloc to the list
@@ -78,7 +105,7 @@ public:
     void GotoNextSaveloc();
     // Goes to the previous saveloc in the list, wrapping around
     void GotoPrevSaveloc();
-    // Goes to the first saveloc (indx 0) in the list
+    // Goes to the first saveloc (index 0) in the list
     void GotoFirstSaveloc();
     // Goes to the last saveloc (count - 1) in the list
     void GotoLastSaveloc();
@@ -92,7 +119,7 @@ public:
     int GetSavelocCount() const { return m_rcSavelocs.Size(); }
     // Gets a saveloc given an index (number)
     SavedLocation_t *GetSaveloc(int indx) { return indx > -1 && indx < m_rcSavelocs.Count() ? m_rcSavelocs[indx] : nullptr; }
-    // Sets wheter or not we're using the Saveloc Menu
+    // Sets whether or not we're using the Saveloc Menu
     // WARNING! No verification is done. It is up to the caller to don't give false information
     void SetUsingSavelocMenu(bool bIsUsingSLMenu);
 
@@ -110,4 +137,4 @@ private:
     bool m_bUsingSavelocMenu;
 };
 
-extern CMOMSaveLocSystem *g_pMOMSavelocSystem;
+extern CSaveLocSystem *g_pSavelocSystem;

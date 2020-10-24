@@ -39,7 +39,7 @@ public:
 	virtual bool GetPakFileLump( IFileSystem *pFileSystem, const char *pBSPFilename, void **pPakData, int *pPakSize ) = 0;
 	virtual bool SetPakFileLump( IFileSystem *pFileSystem, const char *pBSPFilename, const char *pNewFilename, void *pPakData, int pakSize ) = 0;
 
-	// populates list of files that bsp owns, i.e. world/cubmap materials, statis props, etc
+	// populates list of files that bsp owns, i.e. world/cubmap materials, static props, etc
 	virtual bool GetBSPDependants( IFileSystem *pFileSystem, const char *pBSPFilename, CUtlVector< CUtlString > *pList ) = 0;
 };
 

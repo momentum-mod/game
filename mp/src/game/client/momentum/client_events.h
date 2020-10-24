@@ -1,8 +1,4 @@
-#ifndef CLIENT_EVENTS_H
-#define CLIENT_EVENTS_H
-#ifdef _WIN32
 #pragma once
-#endif
 
 class CMOMClientEvents : public CAutoGameSystem
 {
@@ -21,5 +17,3 @@ public:
     void Precache();
 
 };
-
-#endif // CLIENT_EVENTS_H

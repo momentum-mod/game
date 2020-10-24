@@ -222,7 +222,7 @@ bool CTeamControlPointMaster::FindControlPoints( void )
 		Warning( "Too many control points! Max is %d\n", MAX_CONTROL_POINTS );
 	}
 
-	//Remap the indeces of the control points so they are 0-based
+	//Remap the indices of the control points so they are 0-based
 	//======================
 	unsigned int j;
 

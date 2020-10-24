@@ -19,7 +19,7 @@
 // THash
 // This is a heavyweight, templatized version of DHash.
 // It differs from DHash in the following ways:
-// - It's templetized, and automatically constructs and destructs its records as appropriate
+// - It's templatized, and automatically constructs and destructs its records as appropriate
 // - It provides a scheduling service, which can be used to touch every record in the table
 //		at a specified interval.  The scheduler is low-overhead, and provides a very smooth
 //		distribution of touches across frames.
@@ -420,7 +420,7 @@ void CTHash<Data,I>::SetRunRatio( Data *pvRecord, int nRunRatio )
 template<class Data, class I>
 void CTHash<Data,I>::StartFrameSchedule( bool bNewFrame )
 {
-	// Calculate our current frame and cycle cycle
+	// Calculate our current frame and cycle
 	if ( bNewFrame )
 	{
 		m_iCycleLast = m_iCycleCur;

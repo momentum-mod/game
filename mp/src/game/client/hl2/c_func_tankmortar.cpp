@@ -78,7 +78,7 @@ void C_MortarShell::AddRisingParticles( float flPerc )
 
 	float flCur = gpGlobals->frametime;
 
-	// Anime ground effects
+	// Anim ground effects
 	while ( m_ParticleEvent.NextEvent( flCur ) )
 	{
 		offset.x = random->RandomFloat( -radius, radius );
@@ -127,7 +127,7 @@ void C_MortarShell::AddExplodingParticles( float flPerc )
 
 	float flCur = gpGlobals->frametime;
 
-	// Anime ground effects
+	// Anim ground effects
 	while ( m_ParticleEvent.NextEvent( flCur ) )
 	{
 		offset.x = random->RandomFloat( -radius, radius );

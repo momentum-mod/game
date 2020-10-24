@@ -1197,7 +1197,7 @@ void CUtlRBTree<T, I, L, M>::RemoveAll()
 		}
 
 		if ( it == m_LastAlloc )
-			break; // don't destruct elements that haven't ever been constucted
+			break; // don't destruct elements that haven't ever been constructed
 	}
 
 	// Clear everything else out

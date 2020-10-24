@@ -120,7 +120,7 @@ extern AchievementsAndStatsInterface* g_pAchievementsAndStatsInterface;
 extern bool	g_bLevelInitialized;
 extern bool g_bTextMode;
 
-// Kyle says: this is here to obsfucate our accessing of the g_bTextMode variable and for no other purpose.
+// Kyle says: this is here to obfuscate our accessing of the g_bTextMode variable and for no other purpose.
 //			  See the mess of TF_ANTI_IDLEBOT_VERIFICATION code. If that code doesn't exist anymore, this
 //			  probably also doesn't need to exist anymore.
 //

@@ -71,7 +71,7 @@ class ISchemeManager: public IBaseInterface
 {
 public:
 	// loads a scheme from a file
-	// first scheme loaded becomes the default scheme, and all subsequent loaded scheme are derivitives of that
+	// first scheme loaded becomes the default scheme, and all subsequent loaded scheme are derivatives of that
 	virtual HScheme LoadSchemeFromFile(const char *fileName, const char *tag) = 0;
 
 	// reloads the scheme from the file - should only be used during development
@@ -101,15 +101,15 @@ public:
 	// unload all schemes
 	virtual void Shutdown( bool full = true ) = 0;
 
-	// gets the proportional coordinates for doing screen-size independant panel layouts
+	// gets the proportional coordinates for doing screen-size independent panel layouts
 	// use these for font, image and panel size scaling (they all use the pixel height of the display for scaling)
 	virtual int GetProportionalScaledValue( int normalizedValue) = 0;
 	virtual int GetProportionalNormalizedValue(int scaledValue) = 0;
 
 	// loads a scheme from a file
-	// first scheme loaded becomes the default scheme, and all subsequent loaded scheme are derivitives of that
+	// first scheme loaded becomes the default scheme, and all subsequent loaded scheme are derivatives of that
 	virtual HScheme LoadSchemeFromFileEx( VPANEL sizingPanel, const char *fileName, const char *tag) = 0;
-	// gets the proportional coordinates for doing screen-size independant panel layouts
+	// gets the proportional coordinates for doing screen-size independent panel layouts
 	// use these for font, image and panel size scaling (they all use the pixel height of the display for scaling)
 	virtual int GetProportionalScaledValueEx( HScheme scheme, int normalizedValue ) = 0;
 	virtual int GetProportionalNormalizedValueEx( HScheme scheme, int scaledValue ) = 0;

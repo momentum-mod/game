@@ -23,10 +23,10 @@
 enum ScannerFlyMode_t
 {
 	SCANNER_FLY_PHOTO = 0,		// Fly close to photograph entity
-	SCANNER_FLY_PATROL,			// Fly slowly around the enviroment
-	SCANNER_FLY_FAST,			// Fly quickly around the enviroment
-	SCANNER_FLY_CHASE,			// Fly quickly around the enviroment
-	SCANNER_FLY_SPOT,			// Fly above enity in spotlight position
+	SCANNER_FLY_PATROL,			// Fly slowly around the environment
+	SCANNER_FLY_FAST,			// Fly quickly around the environment
+	SCANNER_FLY_CHASE,			// Fly quickly around the environment
+	SCANNER_FLY_SPOT,			// Fly above entity in spotlight position
 	SCANNER_FLY_ATTACK,			// Get in my enemies face for spray or flash
 	SCANNER_FLY_DIVE,			// Divebomb - only done when dead
 	SCANNER_FLY_FOLLOW,			// Following a target

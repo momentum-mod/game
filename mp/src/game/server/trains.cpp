@@ -2025,7 +2025,7 @@ TrainOrientationType_t CFuncTrackTrain::GetTrainOrientationType()
 //-----------------------------------------------------------------------------
 void CFuncTrackTrain::UpdateTrainOrientation( CPathTrack *pPrev, CPathTrack *pNext, const Vector &nextPos, float flInterval )
 {
-	// FIXME: old way of doing fixed orienation trains, remove!
+	// FIXME: old way of doing fixed orientation trains, remove!
 	if ( HasSpawnFlags( SF_TRACKTRAIN_FIXED_ORIENTATION ) )
 		return;
 

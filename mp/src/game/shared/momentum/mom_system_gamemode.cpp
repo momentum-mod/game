@@ -42,6 +42,7 @@ void CGameModeBase::SetGameModeVars()
     sv_maxvelocity.SetValue(3500);
     sv_airaccelerate.SetValue(150);
     sv_accelerate.SetValue(5);
+    sv_friction.SetValue(4);
     sv_maxspeed.SetValue(260);
     sv_stopspeed.SetValue(75);
     sv_considered_on_ground.SetValue(1);
@@ -122,9 +123,12 @@ void CGameMode_KZ::SetGameModeVars()
 {
     CGameModeBase::SetGameModeVars();
 
-    // KZ-specific
+    // KZ-specific (Based on SimpleKZ variables)
+    sv_accelerate.SetValue(6.5f);
     sv_airaccelerate.SetValue(100);
-    sv_maxspeed.SetValue(250);
+    sv_friction.SetValue(5.2f);
+    sv_maxspeed.SetValue(320);
+    sv_maxvelocity.SetValue(3500);
 }
 
 bool CGameMode_KZ::WeaponIsAllowed(WeaponID_t weapon)
@@ -173,11 +177,10 @@ void CGameMode_RJ::OnPlayerSpawn(CMomentumPlayer *pPlayer)
 
 bool CGameMode_RJ::WeaponIsAllowed(WeaponID_t weapon)
 {
-    // RJ only allows 3 weapons + paintgun:
+    // RJ only allows 3 weapons:
     return weapon == WEAPON_ROCKETLAUNCHER ||
            weapon == WEAPON_SHOTGUN        ||
-           weapon == WEAPON_KNIFE          ||
-           weapon == WEAPON_PAINTGUN;
+           weapon == WEAPON_KNIFE;
 }
 
 bool CGameMode_RJ::HasCapability(GameModeHUDCapability_t capability)
@@ -217,16 +220,42 @@ void CGameMode_SJ::OnPlayerSpawn(CMomentumPlayer *pPlayer)
 
 bool CGameMode_SJ::WeaponIsAllowed(WeaponID_t weapon)
 {
-    // SJ only allows 3 weapons + paintgun:
+    // SJ only allows 3 weapons:
     return weapon == WEAPON_STICKYLAUNCHER ||
            weapon == WEAPON_PISTOL         ||
-           weapon == WEAPON_KNIFE          ||
-           weapon == WEAPON_PAINTGUN;
+           weapon == WEAPON_KNIFE;
 }
 
 bool CGameMode_SJ::HasCapability(GameModeHUDCapability_t capability)
 {
     return capability == GameModeHUDCapability_t::CAP_HUD_KEYPRESS_ATTACK;
+}
+
+void CGameMode_Conc::SetGameModeVars()
+{
+    CGameModeBase::SetGameModeVars();
+
+    // Conc-specific
+    sv_airaccelerate.SetValue(10);
+    sv_accelerate.SetValue(14);
+    sv_maxspeed.SetValue(320);
+    sv_stopspeed.SetValue(100);
+    sv_considered_on_ground.SetValue(1);
+    sv_duck_collision_fix.SetValue(false);
+}
+
+void CGameMode_Conc::OnPlayerSpawn(CMomentumPlayer *pPlayer)
+{
+    CGameModeBase::OnPlayerSpawn(pPlayer);
+
+#ifdef GAME_DLL
+    pPlayer->GiveWeapon(WEAPON_CONCGRENADE);
+#endif
+}
+
+bool CGameMode_Conc::WeaponIsAllowed(WeaponID_t weapon)
+{
+    return weapon == WEAPON_CONCGRENADE;
 }
 
 void CGameMode_Tricksurf::SetGameModeVars()
@@ -236,6 +265,11 @@ void CGameMode_Tricksurf::SetGameModeVars()
     // Tricksurf-specific
     sv_airaccelerate.SetValue(1000);
     sv_accelerate.SetValue(10);
+}
+
+bool CGameMode_Tricksurf::HasCapability(GameModeHUDCapability_t capability)
+{
+    return capability == GameModeHUDCapability_t::CAP_HUD_KEYPRESS_JUMPS;
 }
 
 void CGameMode_Ahop::SetGameModeVars()
@@ -279,6 +313,69 @@ bool CGameMode_Ahop::WeaponIsAllowed(WeaponID_t weapon)
            weapon != WEAPON_STICKYLAUNCHER;
 }
 
+void CGameMode_Parkour::SetGameModeVars()
+{
+    CGameModeBase::SetGameModeVars();
+
+    // Parkour-specific
+    sv_gravity.SetValue(600);
+    sv_airaccelerate.SetValue(8);
+    sv_accelerate.SetValue(15);
+}
+
+void CGameMode_Parkour::OnPlayerSpawn(CMomentumPlayer *pPlayer)
+{
+    CGameModeBase::OnPlayerSpawn(pPlayer);
+
+#ifdef GAME_DLL
+    pPlayer->SetAutoBhopEnabled(false);
+    pPlayer->ToggleSprint(false);
+#endif
+}
+
+bool CGameMode_Parkour::WeaponIsAllowed(WeaponID_t weapon)
+{
+    return weapon != WEAPON_ROCKETLAUNCHER &&
+           weapon != WEAPON_STICKYLAUNCHER;
+}
+
+bool CGameMode_Parkour::HasCapability(GameModeHUDCapability_t capability)
+{
+    return capability == GameModeHUDCapability_t::CAP_HUD_KEYPRESS_SPRINT ||
+           capability == GameModeHUDCapability_t::CAP_HUD_KEYPRESS_JUMPS;
+}
+
+void CGameMode_Defrag::SetGameModeVars()
+{
+    CGameModeBase::SetGameModeVars();
+
+    sv_maxvelocity.SetValue(100000);
+    sv_airaccelerate.SetValue(1000);
+    sv_accelerate.SetValue(10);
+}
+
+void CGameMode_Defrag::OnPlayerSpawn(CMomentumPlayer *pPlayer)
+{
+    CGameModeBase::OnPlayerSpawn(pPlayer);
+
+#ifdef GAME_DLL
+    pPlayer->GiveWeapon(WEAPON_ROCKETLAUNCHER);
+    pPlayer->GiveWeapon(WEAPON_MACHINEGUN);
+#endif
+}
+
+bool CGameMode_Defrag::HasCapability(GameModeHUDCapability_t capability)
+{
+    return capability == GameModeHUDCapability_t::CAP_HUD_KEYPRESS_JUMPS;
+}
+
+bool CGameMode_Defrag::WeaponIsAllowed(WeaponID_t weapon)
+{
+    return weapon == WEAPON_ROCKETLAUNCHER ||
+           weapon == WEAPON_MACHINEGUN ||
+           weapon == WEAPON_KNIFE;
+}
+
 CGameModeSystem::CGameModeSystem() : CAutoGameSystem("CGameModeSystem")
 {
     m_pCurrentGameMode = new CGameModeBase; // Unknown game mode
@@ -290,6 +387,9 @@ CGameModeSystem::CGameModeSystem() : CAutoGameSystem("CGameModeSystem")
     m_vecGameModes.AddToTail(new CGameMode_SJ);
     m_vecGameModes.AddToTail(new CGameMode_Tricksurf);
     m_vecGameModes.AddToTail(new CGameMode_Ahop);
+    m_vecGameModes.AddToTail(new CGameMode_Parkour);
+    m_vecGameModes.AddToTail(new CGameMode_Conc);
+    m_vecGameModes.AddToTail(new CGameMode_Defrag);
 }
 
 CGameModeSystem::~CGameModeSystem()

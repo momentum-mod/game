@@ -5,6 +5,7 @@
 #include "weapon_base.h"
 #include "ammodef.h"
 #include "mom_player_shared.h"
+#include "mom_system_gamemode.h"
 #include "movevars_shared.h"
 #include "util/mom_util.h"
 
@@ -35,7 +36,7 @@ BEGIN_NETWORK_TABLE(CWeaponBase, DT_WeaponBase)
 #ifdef CLIENT_DLL
 
 #else
-// world weapon models have no aminations
+// world weapon models have no animations
 SendPropExclude("DT_AnimTimeMustBeFirst", "m_flAnimTime"),
 SendPropExclude("DT_BaseAnimating", "m_nSequence"),
 //	SendPropExclude( "DT_LocalActiveWeaponData", "m_flTimeWeaponIdle" ),
@@ -165,8 +166,6 @@ void CWeaponBase::ItemPostFrame()
             }
 
             SecondaryAttack();
-
-            pPlayer->m_nButtons &= ~IN_ATTACK2;
         }
 
         if (bPrimaryAttack)
@@ -178,7 +177,6 @@ void CWeaponBase::ItemPostFrame()
             }
 
             PrimaryAttack();
-            //---
         }
     }
     else if (pPlayer->m_nButtons & IN_RELOAD && GetMaxClip1() != WEAPON_NOCLIP && !m_bInReload && m_flNextPrimaryAttack < gpGlobals->curtime)
@@ -645,7 +643,7 @@ bool CWeaponBase::IsUseable()
     {
         if (pPlayer->GetAmmoCount(GetPrimaryAmmoType()) <= 0 && GetMaxClip1() != -1)
         {
-            // clip is empty (or nonexistant) and the player has no more ammo of this type. 
+            // clip is empty (or nonexistent) and the player has no more ammo of this type. 
             return false;
         }
     }
@@ -705,8 +703,9 @@ float CWeaponBase::CalcViewmodelBob(void)
 
 
     float bob_offset = RemapVal(speed, 0, 320, 0.0f, 1.0f);
+    float time_delta = (gpGlobals->curtime - lastbobtime);
 
-    bobtime += (gpGlobals->curtime - lastbobtime) * bob_offset;
+    bobtime += time_delta * bob_offset;
     lastbobtime = gpGlobals->curtime;
 
     //Calculate the vertical bob
@@ -719,13 +718,52 @@ float CWeaponBase::CalcViewmodelBob(void)
     }
     else
     {
-        cycle = M_PI + M_PI*(cycle - cl_bobup.GetFloat()) / (1.0 - cl_bobup.GetFloat());
+        cycle = M_PI + M_PI*(cycle - cl_bobup.GetFloat()) / (1.0f - cl_bobup.GetFloat());
     }
 
     g_verticalBob = speed*0.005f;
     g_verticalBob = g_verticalBob*0.3 + g_verticalBob*0.7*sin(cycle);
 
-    g_verticalBob = clamp(g_verticalBob, -7.0f, 4.0f);
+    if (g_pGameModeSystem->GameModeIs(GAMEMODE_PARKOUR))
+    {
+        // Calculate the vertical bob kick
+        const auto speed_delta_z = player->GetLocalVelocity().z - m_flPrevPlayerVelZ;
+
+        // The bigger the accel upwards, the more the kick downwards
+        if (speed_delta_z > 30.0f)
+        {
+            m_bTgtBobKickZ = true;
+        }
+
+        if (m_bTgtBobKickZ)
+        {
+            m_flBobKickZ -= 25.0f * time_delta; // 40 units/sec
+
+            if (g_verticalBob + m_flBobKickZ < -2.5)
+            {
+                // reached the lowest point
+                m_bTgtBobKickZ = false;
+            }
+        }
+        else if (m_flBobKickZ < 0)
+        {
+            // decay the bob kick...
+            m_flBobKickZ += 13 * time_delta;
+        }
+        else
+        {
+            m_flBobKickZ = 0;
+        }
+
+        g_verticalBob = clamp(g_verticalBob + m_flBobKickZ, -8.0f, 5.0f);
+
+        m_flPrevPlayerVelZ = player->GetLocalVelocity().z;
+    }
+    else
+    {
+        g_verticalBob = clamp(g_verticalBob, -7.0f, 4.0f);
+    }
+
 
     //Calculate the lateral bob
     cycle = bobtime - (int) (bobtime / cl_bobcycle.GetFloat() * 2)*cl_bobcycle.GetFloat() * 2;
@@ -737,7 +775,7 @@ float CWeaponBase::CalcViewmodelBob(void)
     }
     else
     {
-        cycle = M_PI + M_PI*(cycle - cl_bobup.GetFloat()) / (1.0 - cl_bobup.GetFloat());
+        cycle = M_PI + M_PI*(cycle - cl_bobup.GetFloat()) / (1.0f - cl_bobup.GetFloat());
     }
 
     g_lateralBob = speed*0.005f;
@@ -762,8 +800,9 @@ void CWeaponBase::AddViewmodelBob(CBaseViewModel *viewmodel, Vector &origin, QAn
 
     CalcViewmodelBob();
 
-    // Apply bob, but scaled down to 40%
-    VectorMA(origin, g_verticalBob * 0.4f, forward, origin);
+    // Apply bob, but scaled down
+    const auto fBobScale = g_pGameModeSystem->GameModeIs(GAMEMODE_PARKOUR) ? 0.1f : 0.4f;
+    VectorMA(origin, g_verticalBob * fBobScale, forward, origin);
 
     // Z bob a bit more
     origin[2] += g_verticalBob * 0.1f;
@@ -773,6 +812,20 @@ void CWeaponBase::AddViewmodelBob(CBaseViewModel *viewmodel, Vector &origin, QAn
     angles[PITCH] -= g_verticalBob * 0.4f;
 
     angles[YAW] -= g_lateralBob  * 0.3f;
+
+    if (g_pGameModeSystem->GameModeIs(GAMEMODE_PARKOUR))
+    {
+        m_flRollAdj = MAX(m_flRollAdj - (gpGlobals->frametime * 360), 0.0f);
+
+        angles[ROLL] += m_flRollAdj;
+
+        angles[YAW] -= m_flRollAdj / 4.0f;
+
+        if (m_flBobKickZ < 5.0f && m_flBobKickZ > -5.0f)
+            angles[PITCH] -= m_flBobKickZ;
+
+        VectorMA(origin, g_lateralBob * 0.8f, right, origin);
+    }
 
     //	VectorMA( origin, g_lateralBob * 0.2f, right, origin );
 }

@@ -117,7 +117,7 @@ node_t	*BlockTree (int xl, int yl, int xh, int yh)
 		return node;
 	}
 
-	// create a seperator along the largest axis
+	// create a separator along the largest axis
 	node = AllocNode ();
 
 	if (xh - xl > yh - yl)
@@ -288,7 +288,7 @@ void ProcessWorldModel (void)
 
 		if (FloodEntities (tree))
 		{
-			// turns everthing outside into solid
+			// turns everything outside into solid
 			FillOutside (tree->headnode);
 		}
 		else
@@ -347,6 +347,12 @@ void ProcessWorldModel (void)
 	// This unifies the vertex list for all edges (splits collinear edges to remove t-junctions)
 	// It also welds the list of vertices out of each winding/portal and rounds nearly integer verts to integer
 	pLeafFaceList = FixTjuncs (tree->headnode, pLeafFaceList);
+
+	if (g_numprimitives > MAX_MAP_PRIMITIVES || g_numprimindices > MAX_MAP_PRIMINDICES)
+    {
+        Msg("Too many t-junctions to fix up! (%d prims, max %d :: %d indices, max %d)\n", g_numprimitives,
+              MAX_MAP_PRIMITIVES, g_numprimindices, MAX_MAP_PRIMINDICES);
+    }
 
 	// this merges all of the solid nodes that have separating planes
 	if (!noprune)
@@ -1279,7 +1285,7 @@ int RunVBSP( int argc, char **argv )
 	LoadSurfaceProperties();
 
 #if 0
-	Msg( "qdir: %s  This is the the path of the initial source file \n", qdir );
+	Msg( "qdir: %s  This is the path of the initial source file \n", qdir );
 	Msg( "gamedir: %s This is the base engine + mod-specific game dir (e.g. d:/tf2/mytfmod/) \n", gamedir );
 	Msg( "basegamedir: %s This is the base engine + base game directory (e.g. e:/hl2/hl2/, or d:/tf2/tf2/ )\n", basegamedir );
 #endif
@@ -1313,7 +1319,7 @@ int RunVBSP( int argc, char **argv )
 	}
 
 	//
-	// if onlyents, just grab the entites and resave
+	// if onlyents, just grab the entities and resave
 	//
 	if (onlyents)
 	{
@@ -1340,13 +1346,13 @@ int RunVBSP( int argc, char **argv )
 		// Recompute the skybox
 		ComputeBoundsNoSkybox();
 
-		// Make sure that we have a water lod control eneity if we have water in the map.
+		// Make sure that we have a water lod control entity if we have water in the map.
 		EnsurePresenceOfWaterLODControlEntity();
 
 		// Make sure the func_occluders have the appropriate data set
 		FixupOnlyEntsOccluderEntities();
 
-		// Doing this here because stuff abov may filter out entities
+		// Doing this here because stuff above may filter out entities
 		UnparseEntities ();
 
 		WriteBSPFile (mapFile);

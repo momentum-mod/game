@@ -148,7 +148,8 @@ protected:
     MESSAGE_FUNC( OnFindDefaultButton, "FindDefaultButton" );
 
 private:
-	
+	void LayoutPage(Panel *pPage);
+
 	// enable/disable the page with title "title" 
 	virtual void SetPageEnabled(const char *title,bool state);
 

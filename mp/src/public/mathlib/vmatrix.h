@@ -602,7 +602,7 @@ inline void VMatrix::SetTranslation(const Vector &vTrans)
 
 		  
 //-----------------------------------------------------------------------------
-// appply translation to this matrix in the input space
+// apply translation to this matrix in the input space
 //-----------------------------------------------------------------------------
 inline void VMatrix::PreTranslate(const Vector &vTrans)
 {
@@ -615,7 +615,7 @@ inline void VMatrix::PreTranslate(const Vector &vTrans)
 
 
 //-----------------------------------------------------------------------------
-// appply translation to this matrix in the output space
+// apply translation to this matrix in the output space
 //-----------------------------------------------------------------------------
 inline void VMatrix::PostTranslate(const Vector &vTrans)
 {
