@@ -196,6 +196,7 @@
         "Gelmo - Unicode chat" "CreditsText"
         "osinmv - Initial entity documentation" "CreditsText"
         "beileidstourist - Improvements in file mounting" "CreditsText"
+        "ijre - Client & server game code" "CreditsText"
         " " "CreditsText"
         "Third Party Assets" "CreditsTextBold"
         "Philip Klevestav - textures" "CreditsText"
