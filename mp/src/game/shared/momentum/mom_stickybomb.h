@@ -40,7 +40,6 @@ class CMomStickybomb : public CMomExplosive
     void Explode(trace_t *pTrace, CBaseEntity *pOther);
     void Destroy(bool bShowFizzleSprite) override;
 
-    void Fizzle();
     void Detonate();
     void VPhysicsCollision(int index, gamevcollisionevent_t *pEvent) override;
 
@@ -54,7 +53,6 @@ class CMomStickybomb : public CMomExplosive
 #ifdef CLIENT_DLL
     bool m_bPulsed;
 #else
-    bool m_bFizzle;
     bool m_bDidHitWorld;
     Vector m_vecImpactNormal;
     float m_flCreationTime;

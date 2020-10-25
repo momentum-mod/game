@@ -57,7 +57,6 @@ CMomStickybomb::CMomStickybomb()
     m_bCanExplode = true;
 
 #ifdef GAME_DLL
-    m_bFizzle = false;
     m_flCreationTime = 0.0f;
     m_bDidHitWorld = false;
     m_vecImpactNormal.Init();
@@ -232,7 +231,6 @@ void CMomStickybomb::Destroy(bool bShowFizzleSprite)
 {
     if (bShowFizzleSprite)
     {
-        m_bFizzle = true;
         Dissolve(nullptr, gpGlobals->curtime, false, ENTITY_DISSOLVE_CORE);
     }
     else
@@ -256,7 +254,7 @@ void CMomStickybomb::Explode(trace_t *pTrace, CBaseEntity *pOther)
 {
     const auto *pGrenadesZone = CNoGrenadesZone::IsInsideNoGrenadesZone(this);
 
-    if (m_bFizzle || pGrenadesZone
+    if (pGrenadesZone
         &&
         (pGrenadesZone->m_iExplosivePreventionType == CNoGrenadesZone::FIZZLE_ON_DET
         ||
@@ -301,8 +299,6 @@ void CMomStickybomb::Explode(trace_t *pTrace, CBaseEntity *pOther)
 
     UTIL_Remove(this);
 }
-
-void CMomStickybomb::Fizzle() { m_bFizzle = true; }
 
 void CMomStickybomb::VPhysicsCollision(int index, gamevcollisionevent_t *pEvent)
 {
