@@ -936,7 +936,7 @@ void CMomentumPlayer::HandleSprintAndWalkChanges()
 void CMomentumPlayer::PreThink()
 {
     // Handle Ahop related things
-    if (g_pGameModeSystem->GameModeIs(GAMEMODE_AHOP) || g_pGameModeSystem->GameModeIs(GAMEMODE_PARKOUR))
+    if (!IsObserver() && g_pGameModeSystem->GameModeIs(GAMEMODE_AHOP) || g_pGameModeSystem->GameModeIs(GAMEMODE_PARKOUR))
     {
         HandleSprintAndWalkChanges();
     }
