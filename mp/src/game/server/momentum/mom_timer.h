@@ -19,6 +19,7 @@ class CMomentumTimer : public CAutoGameSystemPerFrame
     // HUD messages
     void DispatchCheatsMessage(CMomentumPlayer *pPlayer);
     void DispatchTickrateMessage(CMomentumPlayer *pPlayer);
+    void DispatchOverrideMessage(CMomentumPlayer *pPlayer);
     void DispatchResetMessage(CMomentumPlayer *pPlayer) const;
     void DispatchTimerEventMessage(CBasePlayer *pPlayer, int iEntIdx, int type) const;
 
