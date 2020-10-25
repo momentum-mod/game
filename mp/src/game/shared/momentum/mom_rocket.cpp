@@ -94,18 +94,18 @@ float CMomRocket::GetDamageAmount()
     return g_pGameModeSystem->GameModeIs(GAMEMODE_RJ) ? 90.0f : 50.0f;
 }
 
-void CMomRocket::Destroy(bool bShowFizzleSprite)
+void CMomRocket::Destroy()
 {
     StopTrailSound();
 
-    BaseClass::Destroy(bShowFizzleSprite);
+    BaseClass::Destroy();
 }
 
 void CMomRocket::Explode(trace_t *pTrace, CBaseEntity *pOther)
 {
     if (CNoGrenadesZone::IsInsideNoGrenadesZone(this))
     {
-        Destroy(true);
+        Fizzle();
         return;
     }
 

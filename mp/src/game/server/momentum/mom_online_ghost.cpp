@@ -217,7 +217,7 @@ void CMomentumOnlineGhostEntity::FireSticky(const DecalPacket &packet)
         const auto pTemp = m_vecExplosives[0];
         if (pTemp)
         {
-            pTemp->Destroy(true);
+            pTemp->Fizzle();
         }
     }
 }

@@ -232,7 +232,7 @@ void CMomRunEntity::DestroyExplosives()
         const auto pExplosive = m_vecExplosives[i];
         if (pExplosive)
         {
-            pExplosive->Destroy(true);
+            pExplosive->Fizzle();
         }
     }
 

@@ -1671,7 +1671,7 @@ void CNoGrenadesZone::OnStartTouch(CBaseEntity* pOther)
 
     if (m_iExplosivePreventionType == FIZZLE_ON_ENTRANCE)
     {
-        pExplosive->Destroy(true);
+        pExplosive->Fizzle();
         return;
     }
 
