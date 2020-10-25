@@ -124,23 +124,30 @@ void CMomExplosive::InitExplosive(CBaseEntity *pOwner, const Vector &velocity, c
     }
 }
 
-void CMomExplosive::Destroy(bool bShowFizzleSprite)
+void CMomExplosive::Destroy()
 {
     SetThink(&BaseClass::SUB_Remove);
     SetNextThink(gpGlobals->curtime);
     SetTouch(nullptr);
     AddEffects(EF_NODRAW);
+}
 
-    if (bShowFizzleSprite)
-    {
-        const auto pGlowSprite = CSprite::SpriteCreate(NOGRENADE_SPRITE, GetAbsOrigin(), false);
-        if (pGlowSprite)
-        {
-            pGlowSprite->SetTransparency(kRenderGlow, 255, 255, 255, 255, kRenderFxFadeFast);
-            pGlowSprite->SetThink(&CSprite::SUB_Remove);
-            pGlowSprite->SetNextThink(gpGlobals->curtime + 1.0f);
-        }
-    }
+void CMomExplosive::Fizzle()
+{
+    Destroy();
+
+    ShowFizzleSprite();
+}
+
+void CMomExplosive::ShowFizzleSprite()
+{
+    const auto pGlowSprite = CSprite::SpriteCreate(NOGRENADE_SPRITE, GetAbsOrigin(), false);
+    if (!pGlowSprite)
+        return;
+
+    pGlowSprite->SetTransparency(kRenderGlow, 255, 255, 255, 255, kRenderFxFadeFast);
+    pGlowSprite->SetThink(&CSprite::SUB_Remove);
+    pGlowSprite->SetNextThink(gpGlobals->curtime + 1.0f);
 }
 
 #endif

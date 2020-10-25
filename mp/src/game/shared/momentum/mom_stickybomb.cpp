@@ -227,16 +227,9 @@ void CMomStickybomb::InitExplosive(CBaseEntity *pOwner, const Vector &velocity, 
     }
 }
 
-void CMomStickybomb::Destroy(bool bShowFizzleSprite)
+void CMomStickybomb::Fizzle()
 {
-    if (bShowFizzleSprite)
-    {
-        Dissolve(nullptr, gpGlobals->curtime, false, ENTITY_DISSOLVE_CORE);
-    }
-    else
-    {
-        BaseClass::Destroy(bShowFizzleSprite);
-    }
+    Dissolve(nullptr, gpGlobals->curtime, false, ENTITY_DISSOLVE_CORE);
 }
 
 void CMomStickybomb::Detonate()
@@ -260,7 +253,7 @@ void CMomStickybomb::Explode(trace_t *pTrace, CBaseEntity *pOther)
         ||
         pGrenadesZone->m_iExplosivePreventionType == CNoGrenadesZone::FIZZLE_ON_DET_AIRBORNE_ONLY && !m_bDidHitWorld))
     {
-        Destroy(true);
+        Fizzle();
         return;
     }
 
@@ -334,7 +327,7 @@ void CMomStickybomb::VPhysicsCollision(int index, gamevcollisionevent_t *pEvent)
             }
             else if (pGrenadesZone->m_iExplosivePreventionType == CNoGrenadesZone::FIZZLE_ON_LAND)
             {
-                Destroy(true);
+                Fizzle();
                 return;
             }
         }

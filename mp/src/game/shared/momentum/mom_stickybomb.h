@@ -38,7 +38,7 @@ class CMomStickybomb : public CMomExplosive
     static CMomStickybomb *Create(const Vector &position, const QAngle &angles, const Vector &velocity, CBaseEntity *pOwner);
 
     void Explode(trace_t *pTrace, CBaseEntity *pOther);
-    void Destroy(bool bShowFizzleSprite) override;
+    void Fizzle() override;
 
     void Detonate();
     void VPhysicsCollision(int index, gamevcollisionevent_t *pEvent) override;

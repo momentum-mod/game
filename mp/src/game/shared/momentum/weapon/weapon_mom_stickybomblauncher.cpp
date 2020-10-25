@@ -73,6 +73,7 @@ CMomentumStickybombLauncher::CMomentumStickybombLauncher()
 
 CMomentumStickybombLauncher::~CMomentumStickybombLauncher()
 {
+#ifdef GAME_DLL
     if (m_iStickybombCount)
     {
         FOR_EACH_VEC(m_Stickybombs, i)
@@ -80,10 +81,11 @@ CMomentumStickybombLauncher::~CMomentumStickybombLauncher()
             const auto pStickybomb = m_Stickybombs[i];
             if (pStickybomb)
             {
-                pStickybomb->Destroy(true);
+                pStickybomb->Fizzle();
             }
         }
     }
+#endif
 }
 
 void CMomentumStickybombLauncher::Precache()
@@ -337,7 +339,7 @@ CMomStickybomb *CMomentumStickybombLauncher::FireProjectile(CMomentumPlayer *pPl
             CMomStickybomb *pTemp = m_Stickybombs[0];
             if (pTemp)
             {
-                pTemp->Destroy(true);
+                pTemp->Fizzle();
             }
 
             m_Stickybombs.Remove(0);
