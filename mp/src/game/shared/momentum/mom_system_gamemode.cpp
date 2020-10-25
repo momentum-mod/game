@@ -87,7 +87,8 @@ bool CGameMode_Surf::WeaponIsAllowed(WeaponID_t weapon)
 {
     // Surf only blacklists weapons
     return weapon != WEAPON_ROCKETLAUNCHER &&
-           weapon != WEAPON_STICKYLAUNCHER;
+           weapon != WEAPON_STICKYLAUNCHER &&
+           weapon != WEAPON_CONCGRENADE;
 }
 
 bool CGameMode_Surf::HasCapability(GameModeHUDCapability_t capability)
@@ -108,7 +109,8 @@ bool CGameMode_Bhop::WeaponIsAllowed(WeaponID_t weapon)
 {
     // Bhop only blacklists weapons
     return weapon != WEAPON_ROCKETLAUNCHER &&
-           weapon != WEAPON_STICKYLAUNCHER;
+           weapon != WEAPON_STICKYLAUNCHER &&
+           weapon != WEAPON_CONCGRENADE;
 }
 
 bool CGameMode_Bhop::HasCapability(GameModeHUDCapability_t capability)
@@ -135,7 +137,8 @@ bool CGameMode_KZ::WeaponIsAllowed(WeaponID_t weapon)
 {
     // KZ only blacklists weapons
     return weapon != WEAPON_ROCKETLAUNCHER &&
-           weapon != WEAPON_STICKYLAUNCHER;
+           weapon != WEAPON_STICKYLAUNCHER &&
+           weapon != WEAPON_CONCGRENADE;
 }
 
 bool CGameMode_KZ::HasCapability(GameModeHUDCapability_t capability)
@@ -310,7 +313,8 @@ bool CGameMode_Ahop::WeaponIsAllowed(WeaponID_t weapon)
 {
     // Ahop only blacklists weapons
     return weapon != WEAPON_ROCKETLAUNCHER &&
-           weapon != WEAPON_STICKYLAUNCHER;
+           weapon != WEAPON_STICKYLAUNCHER &&
+           weapon != WEAPON_CONCGRENADE;
 }
 
 void CGameMode_Parkour::SetGameModeVars()
@@ -336,7 +340,8 @@ void CGameMode_Parkour::OnPlayerSpawn(CMomentumPlayer *pPlayer)
 bool CGameMode_Parkour::WeaponIsAllowed(WeaponID_t weapon)
 {
     return weapon != WEAPON_ROCKETLAUNCHER &&
-           weapon != WEAPON_STICKYLAUNCHER;
+           weapon != WEAPON_STICKYLAUNCHER &&
+           weapon != WEAPON_CONCGRENADE;
 }
 
 bool CGameMode_Parkour::HasCapability(GameModeHUDCapability_t capability)
