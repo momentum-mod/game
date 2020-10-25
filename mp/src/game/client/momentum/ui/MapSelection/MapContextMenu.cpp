@@ -50,6 +50,18 @@ void CMapContextMenu::ShowMenu(MapData *pMapData)
         {
             AddMenuItem("StartMap", "#MOM_MapSelector_StartMap", new KeyValues("StartMap", "id", pMapData->m_uID),
                         m_pParent);
+
+            const auto pGameModesList = new Menu(m_pParent, "StartMapOverrideList");
+            for (int i = 1; i < GAMEMODE_COUNT; i++)
+            {
+                if (i == pMapData->m_eType)
+                    continue;
+
+                pGameModesList->AddMenuItem(g_szGameModes[i], g_szGameModes[i],
+                    new KeyValues("StartMapOverride", "id", pMapData->m_uID, "gamemode", i), m_pParent);
+            }
+
+            AddCascadingMenuItem("#MOM_MapSelector_StartMapOverride", m_pParent, pGameModesList);
         }
 
         AddSeparator();

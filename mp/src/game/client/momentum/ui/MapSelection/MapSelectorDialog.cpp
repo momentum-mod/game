@@ -27,6 +27,7 @@
 using namespace vgui;
 
 extern ConVar mom_map_download_cancel_confirm;
+extern ConVar mom_gamemode_override;
 
 CMapSelectorDialog *g_pMapSelector = nullptr;
 
@@ -611,7 +612,7 @@ void CMapSelectorDialog::OnAddMapToLibrary(int id)
     g_pMapCache->AddMapToLibrary(id);
 }
 
-void CMapSelectorDialog::OnMapStart(int id)
+void CMapSelectorDialog::LaunchMap(int id)
 {
     m_uStartMapWhenReady = 0;
     m_pFilterPanel->ResetFeelingLucky();
@@ -620,6 +621,22 @@ void CMapSelectorDialog::OnMapStart(int id)
     {
         CloseMapInfoDialog(id);
     }
+    else
+    {
+        mom_gamemode_override.Revert();
+    }
+}
+
+void CMapSelectorDialog::OnMapStart(int id)
+{
+    mom_gamemode_override.Revert();
+    LaunchMap(id);
+}
+
+void CMapSelectorDialog::OnMapStartOverride(int id, int gamemode)
+{
+    mom_gamemode_override.SetValue(gamemode);
+    LaunchMap(id);
 }
 
 void CMapSelectorDialog::OnRemoveMapFromFavorites(int id)
