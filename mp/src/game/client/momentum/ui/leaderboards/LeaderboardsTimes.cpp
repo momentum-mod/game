@@ -73,6 +73,8 @@ CLeaderboardsTimes::CLeaderboardsTimes(CClientTimesDisplay* pParent) : BaseClass
     m_pRunFilterButton->SetCommand("ShowFilter");
     m_pRunFilterButton->AddActionSignalTarget(this);
 
+    m_bUnauthorizedFriendlist = false;
+
     LoadControlSettings("resource/ui/leaderboards/times.res");
 
     // Get rid of the scrollbars for the panels
@@ -390,7 +392,7 @@ void CLeaderboardsTimes::LoadLocalTimes(KeyValues* kv)
 
 void CLeaderboardsTimes::LoadOnlineTimes(TimeType_t type)
 {
-    if (type == TIMES_FRIENDS && !m_bUnauthorizedFriendlist)
+    if (type == TIMES_FRIENDS && m_bUnauthorizedFriendlist)
         return;
 
     if (!m_bTimesLoading[type] && m_bTimesNeedUpdate[type])
