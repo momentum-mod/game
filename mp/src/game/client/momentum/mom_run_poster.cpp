@@ -8,6 +8,8 @@
 
 #include <tier0/memdbgon.h>
 
+extern ConVar mom_gamemode_override;
+
 CRunPoster::CRunPoster()
 {
 #if ENABLE_STEAM_LEADERBOARDS
@@ -61,7 +63,7 @@ void CRunPoster::PreRender()
     if (m_uRunSessionID)
     {
         static ConVarRef cheats("sv_cheats");
-        if (cheats.GetBool())
+        if (cheats.GetBool() || mom_gamemode_override.GetBool())
         {
             g_pAPIRequests->InvalidateRunSession(g_pMapCache->GetCurrentMapID(), UtlMakeDelegate(this, &CRunPoster::InvalidateSessionCallback));
             ResetSession();
@@ -146,7 +148,7 @@ void CRunPoster::FireGameEvent(IGameEvent *pEvent)
     {
         const auto iMapID = g_pMapCache->GetCurrentMapID();
         static ConVarRef cheats("sv_cheats");
-        if (iMapID == 0 || m_bIsMappingMode || cheats.GetBool())
+        if (iMapID == 0 || m_bIsMappingMode || cheats.GetBool() || mom_gamemode_override.GetBool())
             return;
 
         if (pEvent->GetInt("ent") == engine->GetLocalPlayer())

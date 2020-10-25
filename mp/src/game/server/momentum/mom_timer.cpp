@@ -13,10 +13,12 @@
 
 #include "tier0/memdbgon.h"
 
+extern ConVar mom_gamemode_override;
 
 CMomentumTimer::CMomentumTimer() : CAutoGameSystemPerFrame("CMomentumTimer"),
       m_iStartTick(0), m_iEndTick(0), m_bIsRunning(false),
-      m_bCanStart(false), m_bWasCheatsMsgShown(false), m_iTrackNumber(0), m_bShouldUseStartZoneOffset(false)
+      m_bCanStart(false), m_bWasCheatsMsgShown(false),
+      m_iTrackNumber(0), m_bShouldUseStartZoneOffset(false)
 {
 }
 
@@ -59,6 +61,11 @@ void CMomentumTimer::DispatchTickrateMessage(CMomentumPlayer *pPlayer)
     UTIL_ShowMessage("NON_DEFAULT_TICKRATE", pPlayer);
 }
 
+void CMomentumTimer::DispatchOverrideMessage(CMomentumPlayer* pPlayer)
+{
+    UTIL_ShowMessage("GAMEMODE_OVERRIDDEN", pPlayer);
+}
+
 bool CMomentumTimer::Start(CMomentumPlayer *pPlayer)
 {
     if (!pPlayer)
@@ -98,6 +105,11 @@ bool CMomentumTimer::Start(CMomentumPlayer *pPlayer)
     {
         // We allow cheats to be enabled but we should warn the player that times won't submit
         DispatchCheatsMessage(pPlayer);
+    }
+    if (mom_gamemode_override.GetBool())
+    {
+        // We allow the gamemode to be overridden as well, but warn the player that times won't submit
+        DispatchOverrideMessage(pPlayer);
     }
     if (!CloseEnough(gpGlobals->interval_per_tick, g_pGameModeSystem->GetGameMode()->GetIntervalPerTick(), FLT_EPSILON))
     {

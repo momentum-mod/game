@@ -222,3 +222,10 @@ NON_DEFAULT_TICKRATE
 {
 #MOM_Tickrate_Warning
 }
+
+$position 0.56 0.35
+
+GAMEMODE_OVERRIDDEN
+{
+#MOM_GameMode_Overridden
+}
