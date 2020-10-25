@@ -35,6 +35,13 @@ static MAKE_CONVAR_C(mom_gamemode, "0", FCVAR_REPLICATED | FCVAR_NOT_CONNECTED |
 
 #endif
 
+MAKE_CONVAR(mom_gamemode_override, "0", FCVAR_REPLICATED | FCVAR_NOT_CONNECTED,
+            "Forces the gamemode to the given gamemode number, ignoring the map's specified gamemode.\n"
+            "\nNOTE: CHANGING THIS CVAR YOURSELF WILL NOT WORK WITH THE MAP SELECTOR!!\n"
+            "For the Map Selector, you must right click on the map in the selector, "
+            "and then pick your mode from the \"Start Map In Specific Gamemode\" dropdown instead.\n",
+            GAMEMODE_UNKNOWN, GAMEMODE_COUNT - 1);
+
 void CGameModeBase::SetGameModeVars()
 {
     // Default game mode vars
@@ -426,7 +433,7 @@ IGameMode *CGameModeSystem::GetGameMode(int eMode) const
 IGameMode *CGameModeSystem::GetGameModeFromMapName(const char *pMapName)
 {
     if (!pMapName || !pMapName[0])
-        return nullptr;
+        return m_vecGameModes[GAMEMODE_UNKNOWN];
 
     // Skip over unknown in the loop
     for (auto i = 1; i < m_vecGameModes.Count(); ++i)
@@ -439,7 +446,7 @@ IGameMode *CGameModeSystem::GetGameModeFromMapName(const char *pMapName)
         }
     }
 
-    return nullptr;
+    return m_vecGameModes[GAMEMODE_UNKNOWN];
 }
 
 void CGameModeSystem::SetGameMode(GameMode_t eMode)
