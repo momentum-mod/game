@@ -650,13 +650,16 @@ bool CMomentumPlayer::ClientCommand(const CCommand &args)
         else
         {
             // switch to next spec mode if no parameter given
-            mode = GetObserverMode() + 1;
-
-            if (mode > OBS_MODE_CHASE)
+            mode = GetObserverMode();
+            if (mode >= OBS_MODE_ROAMING)
             {
                 mode = OBS_MODE_IN_EYE;
             }
-            else if (mode < OBS_MODE_IN_EYE)
+            else if (mode >= OBS_MODE_CHASE)
+            {
+                mode = OBS_MODE_ROAMING;
+            }
+            else if (mode <= OBS_MODE_IN_EYE)
             {
                 mode = OBS_MODE_CHASE;
             }
