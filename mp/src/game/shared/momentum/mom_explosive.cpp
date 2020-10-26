@@ -137,6 +137,7 @@ void CMomExplosive::Fizzle()
     Destroy();
 
     ShowFizzleSprite();
+    PlayFizzleSound();
 }
 
 void CMomExplosive::ShowFizzleSprite()

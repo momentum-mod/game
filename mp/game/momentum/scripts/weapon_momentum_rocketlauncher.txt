@@ -31,6 +31,7 @@ WeaponData
         "single_shot"       "Weapon_RL.Single"
         "explosion"         "Weapon_RL.Explosion"
         "RocketTrail"       "Rocket.Trail"
+        "RocketFizzle"      "Rocket.Fizzle"
     }
 
     // Weapon particles

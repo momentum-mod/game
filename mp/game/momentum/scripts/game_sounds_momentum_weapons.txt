@@ -76,6 +76,16 @@
     "wave"          "weapons/mom_rocketlauncher/mom_rocketlauncher-RocketTrail.wav"
 }
 
+"Rocket.Fizzle"
+{
+    "channel"    "CHAN_STATIC"
+    "volume"     "0.42"
+    "soundlevel" "SNDLVL_NORM"
+    "pitch"      "70,80"
+
+    "wave" "weapons/physcannon/physcannon_dryfire.wav"
+}
+
 "Weapon_RL.Explosion"
 {
     "channel"       "CHAN_STATIC"
@@ -167,6 +177,16 @@
     
     "wave"		    "^weapons/mom_stickylauncher/mom_stickylauncher-Explosion.wav"
    
+}
+
+"Stickybomb.Fizzle"
+{
+    "channel"    "CHAN_STATIC"
+    "volume"     "0.42"
+    "soundlevel" "SNDLVL_NORM"
+    "pitch"      "70,80"
+
+    "wave" "^weapons/physcannon/physcannon_dryfire.wav"
 }
 
 "Weapon_Pistol.Single"
