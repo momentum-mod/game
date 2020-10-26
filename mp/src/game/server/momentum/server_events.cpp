@@ -129,7 +129,6 @@ void CMomServerEvents::LevelShutdownPostEntity()
 
 void CMomServerEvents::OnGameOverlay(GameOverlayActivated_t* pParam)
 {
-    engine->ServerCommand("unpause\n");
 }
 
 CMomServerEvents g_MOMServerEvents;
