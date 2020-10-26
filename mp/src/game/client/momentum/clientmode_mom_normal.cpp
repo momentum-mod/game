@@ -215,7 +215,7 @@ int ClientModeMOMNormal::HandleSpectatorKeyInput(int down, ButtonCode_t keynum, 
         return 1;
 
     // we are in spectator mode, open spectator menu
-    if (FStrEq(pszCurrentBinding, "+duck"))
+    if (FStrEq(pszCurrentBinding, "+duck") || FStrEq(pszCurrentBinding, "toggle_duck"))
     {
         bool bMouseState = m_pSpectatorGUI->IsMouseInputEnabled();
         m_pSpectatorGUI->SetMouseInputEnabled(!bMouseState);
