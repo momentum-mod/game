@@ -208,37 +208,41 @@ int ClientModeMOMNormal::HudElementKeyInput(int down, ButtonCode_t keynum, const
 
 int ClientModeMOMNormal::HandleSpectatorKeyInput(int down, ButtonCode_t keynum, const char *pszCurrentBinding)
 {
-    if (m_pSpectatorGUI)
+    if (!m_pSpectatorGUI)
+        return 1;
+
+    if (!down || !pszCurrentBinding)
+        return 1;
+
+    // we are in spectator mode, open spectator menu
+    if (FStrEq(pszCurrentBinding, "+duck"))
     {
-        // we are in spectator mode, open spectator menu
-        if (down && pszCurrentBinding && !Q_strcmp(pszCurrentBinding, "+duck"))
-        {
-            bool bMouseState = m_pSpectatorGUI->IsMouseInputEnabled();
-            m_pSpectatorGUI->SetMouseInputEnabled(!bMouseState);
-            if (m_pHudMapFinished && m_pHudMapFinished->IsVisible())
-                m_pHudMapFinished->SetMouseInputEnabled(!bMouseState);
-            // MOM_TODO: re-enable this in alpha+ when we add movie-style controls to the spectator menu!
-            // m_pViewport->ShowPanel(PANEL_SPECMENU, true);
+        bool bMouseState = m_pSpectatorGUI->IsMouseInputEnabled();
+        m_pSpectatorGUI->SetMouseInputEnabled(!bMouseState);
+        if (m_pHudMapFinished && m_pHudMapFinished->IsVisible())
+            m_pHudMapFinished->SetMouseInputEnabled(!bMouseState);
 
-            return 0; // we handled it, don't handle twice or send to server
-        }
+        return 0; // we handled it, don't handle twice or send to server
+    }
 
-        bool shouldEatSpecInput = (m_pHudMapFinished && m_pHudMapFinished->IsVisible()) || m_pSpectatorGUI->IsMouseInputEnabled();
-        if (down && pszCurrentBinding && FStrEq(pszCurrentBinding, "+attack") && !shouldEatSpecInput)
-        {
-            engine->ClientCmd("spec_next");
-            return 0;
-        }
-        else if (down && pszCurrentBinding && FStrEq(pszCurrentBinding, "+attack2") && !shouldEatSpecInput)
-        {
-            engine->ClientCmd("spec_prev");
-            return 0;
-        }
-        else if (down && pszCurrentBinding && FStrEq(pszCurrentBinding, "+jump") && !shouldEatSpecInput)
-        {
-            engine->ClientCmd("spec_mode");
-            return 0;
-        }
+    bool bShouldEatSpecInput = (m_pHudMapFinished && m_pHudMapFinished->IsVisible()) || m_pSpectatorGUI->IsMouseInputEnabled();
+    if (bShouldEatSpecInput)
+        return 1;
+
+    if (FStrEq(pszCurrentBinding, "+attack"))
+    {
+        engine->ClientCmd("spec_next");
+        return 0;
+    }
+    if (FStrEq(pszCurrentBinding, "+attack2"))
+    {
+        engine->ClientCmd("spec_prev");
+        return 0;
+    }
+    if (FStrEq(pszCurrentBinding, "+jump"))
+    {
+        engine->ClientCmd("spec_mode");
+        return 0;
     }
 
     return 1;
