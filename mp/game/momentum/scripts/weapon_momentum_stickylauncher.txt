@@ -33,6 +33,7 @@ WeaponData
         "deny"              "StickybombLauncher.Deny"
         "charge"            "StickybombLauncher.Charge"
         "chargestop"        "StickybombLauncher.ChargeStop"
+        "StickyFizzle"      "Stickybomb.Fizzle"
     }
     
     // Weapon particles

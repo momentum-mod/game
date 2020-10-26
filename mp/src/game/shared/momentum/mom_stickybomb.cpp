@@ -49,6 +49,7 @@ static MAKE_TOGGLE_CONVAR(mom_sj_particle_trail_enable, "1", FCVAR_ARCHIVE,
                           "Toggles the sticky trail particle. 0 = OFF, 1 = ON\n");
 #else
 static MAKE_TOGGLE_CONVAR(mom_sj_decals_enable, "1", FCVAR_ARCHIVE, "Toggles creating decals on sticky explosion. 0 = OFF, 1 = ON\n");
+static MAKE_TOGGLE_CONVAR(mom_sj_sound_fizzle_enable, "1", FCVAR_ARCHIVE | FCVAR_REPLICATED, "Toggles the stickybomb fizzle sound. 0 = OFF, 1 = ON\n");
 #endif
 
 CMomStickybomb::CMomStickybomb()
@@ -230,6 +231,15 @@ void CMomStickybomb::InitExplosive(CBaseEntity *pOwner, const Vector &velocity, 
 void CMomStickybomb::Fizzle()
 {
     Dissolve(nullptr, gpGlobals->curtime, false, ENTITY_DISSOLVE_CORE);
+    PlayFizzleSound();
+}
+
+void CMomStickybomb::PlayFizzleSound()
+{
+    if (mom_sj_sound_fizzle_enable.GetBool())
+    {
+        EmitSound(g_pWeaponDef->GetWeaponSound(WEAPON_STICKYLAUNCHER, "StickyFizzle"));
+    }
 }
 
 void CMomStickybomb::Detonate()

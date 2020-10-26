@@ -39,6 +39,7 @@ class CMomStickybomb : public CMomExplosive
 
     void Explode(trace_t *pTrace, CBaseEntity *pOther);
     void Fizzle() override;
+    void PlayFizzleSound() override;
 
     void Detonate();
     void VPhysicsCollision(int index, gamevcollisionevent_t *pEvent) override;

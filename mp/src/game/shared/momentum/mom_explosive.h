@@ -32,6 +32,7 @@ public:
     virtual void Destroy();
     virtual void Fizzle();
     virtual void ShowFizzleSprite();
+    virtual void PlayFizzleSound() {}
     virtual void InitExplosive(CBaseEntity *pOwner, const Vector &velocity, const QAngle &angles);
 
     float GetDamage() const { return m_fDamage; }
