@@ -781,8 +781,8 @@ CON_COMMAND_F( spec_mode, "Set spectator mode", FCVAR_CLIENTCMD_CAN_EXECUTE )
 	{
 		if ( HLTVCamera()->IsPVSLocked() )
 		{
-			// in locked mode we can only switch between first and 3rd person
-			HLTVCamera()->ToggleChaseAsFirstPerson();
+			// in locked mode we can only switch between first and 3rd person and roaming
+			HLTVCamera()->ToggleChaseWhenLocked();
 		}
 		else
 		{
