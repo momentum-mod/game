@@ -78,6 +78,7 @@ gamestate.txt
 stats.txt
 voice_ban.dt
 *.dem
+*.nav
 
 # shader files
 *.tmp
