@@ -127,9 +127,4 @@ void CMomServerEvents::LevelShutdownPostEntity()
         fullbright.SetValue(0);
 }
 
-void CMomServerEvents::OnGameOverlay(GameOverlayActivated_t* pParam)
-{
-    engine->ServerCommand("unpause\n");
-}
-
 CMomServerEvents g_MOMServerEvents;
