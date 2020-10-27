@@ -127,8 +127,4 @@ void CMomServerEvents::LevelShutdownPostEntity()
         fullbright.SetValue(0);
 }
 
-void CMomServerEvents::OnGameOverlay(GameOverlayActivated_t* pParam)
-{
-}
-
 CMomServerEvents g_MOMServerEvents;
