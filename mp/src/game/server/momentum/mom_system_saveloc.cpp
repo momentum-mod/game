@@ -236,6 +236,7 @@ CSaveLocSystem::CSaveLocSystem(const char* pName): CAutoGameSystem(pName)
     m_iRequesting = 0;
     m_iCurrentSavelocIndx = -1;
     m_bUsingSavelocMenu = false;
+    m_bHintedStartMarkForLevel = false;
 }
 
 CSaveLocSystem::~CSaveLocSystem()
@@ -252,6 +253,8 @@ void CSaveLocSystem::PostInit()
 
 void CSaveLocSystem::LevelInitPreEntity()
 {
+    m_bHintedStartMarkForLevel = false;
+
     // We don't check mom_savelocs_save_between_sessions because we want to be able to load savelocs from friends
     DevLog("Loading savelocs from %s ...\n", SAVELOC_FILE_NAME);
 
@@ -536,10 +539,11 @@ void CSaveLocSystem::CreateAndSaveLocation()
     if (!pPlayer)
         return;
 
-    if (pPlayer->CreateStartMark())
+    const auto bCreatedStartMark = pPlayer->CreateStartMark();
+    if (bCreatedStartMark && !m_bHintedStartMarkForLevel)
     {
         UTIL_HudHintText(pPlayer, "#MOM_Hint_CreateStartMark");
-        return;
+        m_bHintedStartMarkForLevel = true;
     }
 
     AddSaveloc(CreateSaveloc());

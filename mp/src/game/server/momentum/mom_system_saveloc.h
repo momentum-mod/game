@@ -137,6 +137,7 @@ private:
     CUtlVector<SavedLocation_t*> m_rcSavelocs;
     int m_iCurrentSavelocIndx;
     bool m_bUsingSavelocMenu;
+    bool m_bHintedStartMarkForLevel;
 };
 
 extern CSaveLocSystem *g_pSavelocSystem;
