@@ -19,7 +19,7 @@ MAKE_TOGGLE_CONVAR(mom_saveloc_save_between_sessions, "1", FCVAR_ARCHIVE, "Defin
 
 SavedLocation_t::SavedLocation_t() : m_bCrouched(false), m_vecPos(vec3_origin), m_vecVel(vec3_origin), m_qaAng(vec3_angle),
                                      m_fGravityScale(1.0f), m_fMovementLagScale(1.0f), m_iDisabledButtons(0), m_savedComponents(SAVELOC_NONE),
-                                     m_iZone(-1), m_iTrack(-1), m_iToggledButtons(0)
+                                     m_iZone(-1), m_iTrack(-1), m_iToggledButtons(0), m_iTimerTickOffset(-1)
 {
     m_szTargetName[0] = '\0';
     m_szTargetClassName[0] = '\0';
@@ -67,6 +67,22 @@ SavedLocation_t::SavedLocation_t(CMomentumPlayer* pPlayer, int components /*= SA
 
     if ( components & SAVELOC_EVENT_QUEUE )
         g_EventQueue.SaveForTarget(pPlayer, entEventsState);
+
+    if ( components & SAVELOC_TIME )
+    {
+        if (g_pMomentumTimer->IsRunning())
+        {
+            m_iTimerTickOffset = g_pMomentumTimer->GetCurrentTime();
+        }
+        else if (pPlayer->m_Data.m_iTimerState == TIMER_STATE_PRACTICE)
+        {
+            m_iTimerTickOffset = gpGlobals->tickcount - pPlayer->m_Data.m_iStartTick;
+        }
+        else
+        {
+            m_iTimerTickOffset = -1;
+        }
+    }
 }
 
 void SavedLocation_t::Save(KeyValues* kvCP) const
@@ -111,6 +127,9 @@ void SavedLocation_t::Save(KeyValues* kvCP) const
 
     if ( m_savedComponents & SAVELOC_EVENT_QUEUE )
         entEventsState.SaveToKeyValues(kvCP);
+
+    if ( m_savedComponents & SAVELOC_TIME )
+        kvCP->SetInt("time", m_iTimerTickOffset);
 }
 
 void SavedLocation_t::Load(KeyValues* pKv)
@@ -129,6 +148,7 @@ void SavedLocation_t::Load(KeyValues* pKv)
     m_iZone = pKv->GetInt( "zone", -1 );
     m_iToggledButtons = pKv->GetInt("toggledButtons");
     entEventsState.LoadFromKeyValues(pKv);
+    m_iTimerTickOffset = pKv->GetInt("time", -1);
 }
 
 void SavedLocation_t::Teleport(CMomentumPlayer* pPlayer)
@@ -175,6 +195,20 @@ void SavedLocation_t::Teleport(CMomentumPlayer* pPlayer)
 
     if ( m_savedComponents & SAVELOC_EVENT_QUEUE )
         g_EventQueue.RestoreForTarget(pPlayer, entEventsState);
+
+    if ( m_savedComponents & SAVELOC_TIME )
+    {
+        if (m_iTimerTickOffset != -1)
+        {
+            pPlayer->m_Data.m_iTimerState = TIMER_STATE_PRACTICE;
+            pPlayer->m_Data.m_iStartTick = gpGlobals->tickcount - m_iTimerTickOffset;
+        }
+        else
+        {
+            pPlayer->m_Data.m_iTimerState = TIMER_STATE_NOT_RUNNING;
+            pPlayer->m_Data.m_iStartTick = 0;
+        }
+    }
 }
 
 bool SavedLocation_t::Read(CUtlBuffer &mem)

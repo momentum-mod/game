@@ -22,6 +22,7 @@ enum SavedLocationComponent_t
     SAVELOC_TRACK = 1 << 10,
     SAVELOC_ZONE = 1 << 11,
     SAVELOC_TOGGLED_BTNS = 1 << 12,
+    SAVELOC_TIME = 1 << 13,
 
     SAVELOC_ALL = ~SAVELOC_NONE,
 };
@@ -40,6 +41,7 @@ struct SavedLocation_t
     int m_iDisabledButtons;
     int m_iToggledButtons;
     int m_iTrack, m_iZone;
+    int m_iTimerTickOffset; // What to offset from gpGlobals->tickcount
     CEventQueueState entEventsState;
 
     int m_savedComponents;
