@@ -8,10 +8,6 @@
 
 #include "tier0/memdbgon.h"
 
-ConVar mm_updaterate("mom_ghost_online_updaterate", "40",
-    FCVAR_ARCHIVE | FCVAR_CLIENTCMD_CAN_EXECUTE,
-    "Number of updates per second for online ghosts.\n", true, 1.0f, true, 50.0f);
-
 CON_COMMAND(mom_spectate, "Start spectating if there are ghosts currently being played.")
 {
     if (gpGlobals->eLoadType == MapLoad_Background)

@@ -12,6 +12,9 @@ enum PacketType
     PACKET_TYPE_COUNT
 };
 
+// Number of updates per second for online ghosts
+#define MOM_ONLINE_GHOST_UPDATERATE 40.0f
+
 #define APPEARANCE_BODYGROUP_MIN 0
 #define APPEARANCE_BODYGROUP_MAX 14
 #define APPEARANCE_TRAIL_LEN_MIN 1
@@ -414,5 +417,3 @@ class SavelocReqPacket : public MomentumPacket
         }
     }
 };
-
-extern ConVar mm_updaterate;
