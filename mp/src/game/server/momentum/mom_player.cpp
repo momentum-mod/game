@@ -1122,17 +1122,17 @@ void CMomentumPlayer::OnZoneEnter(CTriggerZone *pTrigger)
         {
             // We've reached end zone, stop here
             const auto pStopTrigger = static_cast<CTriggerTimerStop *>(pTrigger);
+            if (pStopTrigger->GetCancelBool())
+            {
+                g_pMomentumTimer->Stop(this);
+                return;
+            }
+
             m_iOldTrack = m_Data.m_iCurrentTrack;
             m_iOldZone = m_Data.m_iCurrentZone;
 
             if (g_pMomentumTimer->IsRunning())
             {
-                if (pStopTrigger->GetCancelBool())
-                {
-                    g_pMomentumTimer->Stop(this);
-                    return;
-                }
-
                 const int zoneNum = m_Data.m_iCurrentZone;
 
                 // This is needed so we have an ending velocity.
@@ -1172,6 +1172,23 @@ void CMomentumPlayer::OnZoneEnter(CTriggerZone *pTrigger)
                 m_Data.m_iRunTime = g_pMomentumTimer->GetLastRunTime();
                 // The map is now finished, show the mapfinished panel
                 m_Data.m_bMapFinished = true;
+            }
+            else if (m_Data.m_iTimerState == TIMER_STATE_PRACTICE)
+            {
+                m_Data.m_iTimerState = TIMER_STATE_NOT_RUNNING;
+                m_Data.m_bMapFinished = true;
+
+                m_Data.m_flTickRate = gpGlobals->interval_per_tick;
+                m_Data.m_iRunTime = gpGlobals->tickcount - m_Data.m_iStartTick;
+
+                g_pMomentumTimer->DispatchTimerEventMessage(this, entindex(), TIMER_EVENT_FINISHED);
+
+                const auto pReplaySavedEvent = gameeventmanager->CreateEvent("replay_save");
+                if (pReplaySavedEvent)
+                {
+                    pReplaySavedEvent->SetBool("save", false);
+                    gameeventmanager->FireEvent(pReplaySavedEvent);
+                }
             }
         }
         break;
