@@ -546,8 +546,11 @@ void CSaveLocSystem::CreateAndSaveLocation()
         m_bHintedStartMarkForLevel = true;
     }
 
-    AddSaveloc(CreateSaveloc());
-    ClientPrint(pPlayer, HUD_PRINTTALK, CFmtStr("Saveloc #%i created!", m_rcSavelocs.Count()));
+    AddSaveloc(CreateSaveloc(bCreatedStartMark ? (SAVELOC_POS | SAVELOC_ANG) : SAVELOC_ALL));
+
+    if (!bCreatedStartMark)
+        ClientPrint(pPlayer, HUD_PRINTTALK, CFmtStr("Saveloc #%i created!", m_rcSavelocs.Count()));
+
     UpdateRequesters();
 }
 
