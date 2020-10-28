@@ -50,6 +50,12 @@ void CHudChat::StartMessageMode()
     if (g_pRunSafeguards->IsSafeguarded(RUN_SAFEGUARD_CHAT_OPEN))
         return;
 
+    const auto pEvent = gameeventmanager->CreateEvent("hud_chat_opened");
+    if (pEvent)
+    {
+        gameeventmanager->FireEvent(pEvent);
+    }
+
     SetMouseInputEnabled(true);
     SetKeyBoardInputEnabled(true);
 

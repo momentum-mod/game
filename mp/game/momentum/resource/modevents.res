@@ -150,4 +150,7 @@
         "type" "byte"
         "num" "short"
     }
+    hud_chat_opened
+    {
+    }
 }
