@@ -289,7 +289,7 @@ void CMomentumOnlineGhostEntity::Think()
         HandleGhostFirstPerson();
 
     // Emulate at the update rate (or slightly slower) for the smoothest interpolation
-    SetNextThink(gpGlobals->curtime + 1.0f / mm_updaterate.GetFloat() + (gpGlobals->interval_per_tick * mom_ghost_online_interp_ticks.GetFloat()));
+    SetNextThink(gpGlobals->curtime + 1.0f / MOM_ONLINE_GHOST_UPDATERATE + (gpGlobals->interval_per_tick * mom_ghost_online_interp_ticks.GetFloat()));
 }
 void CMomentumOnlineGhostEntity::HandleGhost()
 {
@@ -299,7 +299,7 @@ void CMomentumOnlineGhostEntity::HandleGhost()
     {
         // Similar fast-forward code to the positions except we aren't jumping here,
         // we want to place these decals ASAP (sound spam incoming) and get them out of the queue.
-        int upperBound = static_cast<int>(ceil(mom_ghost_online_lerp.GetFloat() * mm_updaterate.GetFloat()));
+        int upperBound = static_cast<int>(ceil(mom_ghost_online_lerp.GetFloat() * MOM_ONLINE_GHOST_UPDATERATE));
         while (m_vecDecalPackets.Count() > upperBound)
         {
             ReceivedFrame_t<DecalPacket> *fireMeImmedately = m_vecDecalPackets.RemoveAtHead();
@@ -321,7 +321,7 @@ void CMomentumOnlineGhostEntity::HandleGhost()
         // Realistically, we're going to have a buffer of about MOM_GHOST_LERP * update rate. So for 25 updates
         // in a second, a lerp of 0.1 seconds would make there be about 2.5 packets in the queue at all times.
         // If there's ever any excess, we need to get rid of it, immediately.
-        int upperBound = static_cast<int>(ceil(mom_ghost_online_lerp.GetFloat() * mm_updaterate.GetFloat()));
+        int upperBound = static_cast<int>(ceil(mom_ghost_online_lerp.GetFloat() * MOM_ONLINE_GHOST_UPDATERATE));
         while (m_vecPositionPackets.Count() > upperBound)
         {
             ReceivedFrame_t<PositionPacket> *pTemp = m_vecPositionPackets.RemoveAtHead();

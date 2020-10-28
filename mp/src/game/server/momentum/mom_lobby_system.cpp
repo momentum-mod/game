@@ -707,7 +707,7 @@ void CMomentumLobbySystem::CreateLobbyGhostEntity(const CSteamID &lobbyMember)
         m_mapLobbyGhosts.Insert(lobbyMemberID, pNewPlayer);
 
         if (m_flNextUpdateTime < 0)
-            m_flNextUpdateTime = gpGlobals->curtime + (1.0f / mm_updaterate.GetFloat());
+            m_flNextUpdateTime = gpGlobals->curtime + (1.0f / MOM_ONLINE_GHOST_UPDATERATE);
 
         // "_____ just joined your map."
         WriteLobbyMessage(LOBBY_UPDATE_MEMBER_JOIN_MAP, lobbyMemberID);
@@ -934,7 +934,7 @@ void CMomentumLobbySystem::SendP2PPackets()
         PositionPacket frame;
         if (g_pMomentumGhostClient->CreateNewNetFrame(frame) && SendPacketToEveryone(&frame))
         {
-            m_flNextUpdateTime = gpGlobals->curtime + (1.0f / mm_updaterate.GetFloat());
+            m_flNextUpdateTime = gpGlobals->curtime + (1.0f / MOM_ONLINE_GHOST_UPDATERATE);
         }
     }
 }
