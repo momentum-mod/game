@@ -55,7 +55,7 @@ public:
             pLobbyData->SetInt("avatar", m_pPanel->TryAddAvatar(hAvatarID));
         }
 
-        pLobbyData->SetString("name", GetLobbyName(hLobbyID, hAvatarID));
+        GetLobbyName(hLobbyID, hAvatarID, pLobbyData);
 
         pLobbyData->SetString("map", GetLobbyMap(hLobbyID));
 
@@ -75,7 +75,7 @@ public:
         return true;
     }
 
-    virtual const char *GetLobbyName(const CSteamID &hLobbyID, uint64 hAvatarID) = 0;
+    virtual void GetLobbyName(const CSteamID &hLobbyID, uint64 hAvatarID, KeyValues *pOut) = 0;
 
     virtual const char *GetLobbyMap(const CSteamID &hLobbyID)
     {
@@ -119,14 +119,14 @@ public:
         m_flLastRequestTime = gpGlobals->curtime;
     }
 
-    const char *GetLobbyName(const CSteamID &hLobbyID, uint64 hAvatarID) override
+    void GetLobbyName(const CSteamID &hLobbyID, uint64 hAvatarID, KeyValues *pOut) override
     {
         const char *pOwnerName = "";
 
         if (hAvatarID)
             pOwnerName = SteamFriends()->GetFriendPersonaName(hAvatarID);
-        
-        return pOwnerName[0] ? CFmtStr("%s's Lobby", pOwnerName).Get() : "#MOM_Drawer_Lobby_Public_Fallback";
+
+        pOut->SetString("name", pOwnerName[0] ? CFmtStr("%s's Lobby", pOwnerName).Get() : "#MOM_Drawer_Lobby_Public_Fallback");
     }
 
 protected:
@@ -255,7 +255,7 @@ public:
         return LobbyListProvider::GetLobbyMap(hLobbyID);
     }
 
-    const char *GetLobbyName(const CSteamID &hLobbyID, uint64 hAvatarID) override
+    void GetLobbyName(const CSteamID &hLobbyID, uint64 hAvatarID, KeyValues *pOut) override
     {
         const char *pToReturn = "#MOM_Drawer_Lobby_Friend_Fallback";
 
@@ -286,7 +286,7 @@ public:
             }
         }
 
-        return pToReturn;
+        pOut->SetString("name", pToReturn);
     }
 
     void OnLobbyRemoved(const CSteamID &hLobbyID) override
