@@ -181,10 +181,14 @@ void C_MomentumPlayer::OnObserverTargetUpdated()
 float C_MomentumPlayer::GetCurrentRunTime()
 {
     int iTotalTicks = 0;
-    if (m_Data.m_bTimerRunning)
-        iTotalTicks = gpGlobals->tickcount - m_Data.m_iStartTick;    
+    if (m_Data.m_iTimerState != TIMER_STATE_NOT_RUNNING)
+    {
+        iTotalTicks = gpGlobals->tickcount - m_Data.m_iStartTick;
+    }
     else if (m_Data.m_bMapFinished)
+    {
         iTotalTicks = m_Data.m_iRunTime;
+    }
 
     return float(iTotalTicks) * m_Data.m_flTickRate;
 }

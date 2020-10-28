@@ -39,13 +39,11 @@ inline bool ShouldDrawLocal()
         if (pRunEnt->GetEntType() == RUN_ENT_REPLAY)
         {
             // MOM_TODO: Should we have a convar against this?
-            return pRunEnt->GetRunEntData()->m_bTimerRunning && !pRunEnt->GetRunEntData()->m_bMapFinished;
+            return pRunEnt->GetRunEntData()->m_iTimerState == TIMER_STATE_RUNNING && !pRunEnt->GetRunEntData()->m_bMapFinished;
         }
-        else
-        {
-            return !pPlayer->m_Data.m_bMapFinished &&
-                ((!pPlayer->m_bHasPracticeMode && strafesync_draw.GetInt() == 2) || pPlayer->m_Data.m_bTimerRunning);
-        }
+
+        return !pPlayer->m_Data.m_bMapFinished &&
+                ((!pPlayer->m_bHasPracticeMode && strafesync_draw.GetInt() == 2) || pPlayer->m_Data.m_iTimerState == TIMER_STATE_RUNNING);
     }
     return false;
 }

@@ -122,7 +122,9 @@ bool C_RunComparisons::ShouldDraw()
         // MOM_TODO: Should we have a convar against letting a ghost compare?
         const auto pData = pPlayer->GetCurrentUIEntData();
 
-        shouldDrawLocal = pData->m_bTimerRunning && !pData->m_bMapFinished && pPlayer->m_iZoneCount[pData->m_iCurrentTrack] > 1;
+        shouldDrawLocal = pData->m_iTimerState == TIMER_STATE_RUNNING &&
+                          !pData->m_bMapFinished &&
+                          pPlayer->m_iZoneCount[pData->m_iCurrentTrack] > 1;
     }
     return CHudElement::ShouldDraw() && shouldDrawLocal;
 }

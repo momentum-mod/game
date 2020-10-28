@@ -84,7 +84,7 @@ bool CRunSafeguard::IsSafeguarded(RunSafeguardMode_t mode)
     if (!pEntData)
         return false;
 
-    if (!pEntData->m_bTimerRunning || pPlayer->IsObserver())
+    if (pEntData->m_iTimerState != TIMER_STATE_RUNNING || pPlayer->IsObserver())
         return false;
 
 #ifdef GAME_DLL

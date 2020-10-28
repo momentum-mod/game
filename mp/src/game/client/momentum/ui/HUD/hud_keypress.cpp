@@ -313,7 +313,7 @@ void CHudKeyPressDisplay::OnThink()
             m_nDisabledButtons = pPlayer->m_afButtonDisabled;
             m_bIsDucked = pPlayer->GetFlags() & FL_DUCKING;
             // we should only draw the strafe/jump counters when the timer is running
-            m_bShouldDrawCounts = pPlayer->m_Data.m_bTimerRunning;
+            m_bShouldDrawCounts = pPlayer->m_Data.m_iTimerState == TIMER_STATE_RUNNING;
             if (m_bShouldDrawCounts)
             {
                 m_nStrafes = pPlayer->m_RunStats.m_iZoneStrafes[0];
