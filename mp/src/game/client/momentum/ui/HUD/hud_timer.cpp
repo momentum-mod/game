@@ -295,4 +295,5 @@ void CHudTimer::LevelShutdown()
 {
     m_pRunStats = nullptr;
     m_pRunData = nullptr;
+    m_bWasUsingSavelocMenu = false;
 }
