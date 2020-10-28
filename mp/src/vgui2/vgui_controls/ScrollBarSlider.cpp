@@ -9,7 +9,6 @@
 
 #include <vgui/IBorder.h>
 #include <vgui/IInput.h>
-#include <vgui/ISystem.h>
 #include <vgui/IScheme.h>
 #include <vgui/ISurface.h>
 #include <vgui/MouseCode.h>
@@ -17,8 +16,6 @@
 
 #include <vgui_controls/ScrollBarSlider.h>
 #include <vgui_controls/Controls.h>
-
-#include <math.h>
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include <tier0/memdbgon.h>
@@ -233,7 +230,7 @@ void ScrollBarSlider::RecomputeValueFromNobPos()
 	}
 
 	// check to see if we should just snap to the bottom
-	if (fabs(fvalue + _rangeWindow - _range[1]) < (0.01f * frange))
+	if (fabsf(fvalue + _rangeWindow - _range[1]) < (0.01f * frange))
 	{
 		// snap to the end
 		_value = _range[1] - _rangeWindow;
@@ -241,7 +238,7 @@ void ScrollBarSlider::RecomputeValueFromNobPos()
 	else
 	{
 		// Take care of rounding issues.
-		_value = (int)( fvalue + _range[0] + 0.5);
+		_value = (int)( fvalue + _range[0] + 0.5f);
 	}
 
 	// Clamp final result
@@ -502,58 +499,66 @@ void ScrollBarSlider::OnMousePressed(MouseCode code)
 	input()->GetCursorPos(x,y);
 	ScreenToLocal(x,y);
 
-	if (_vertical)
+	int wide, tall;
+	GetPaintSize(wide, tall);
+
+	int comparator = _vertical ? y : x;
+	int sizer = _vertical ? tall : wide;
+
+	if (comparator >= _nobPos[0] && comparator < _nobPos[1])
 	{
-		if ((y >= _nobPos[0]) && (y < _nobPos[1]))
-		{
-			_dragging = true;
-			input()->SetMouseCapture(GetVPanel());
-			_nobDragStartPos[0] = _nobPos[0];
-			_nobDragStartPos[1] = _nobPos[1];
-			_dragStartPos[0] = x;
-			_dragStartPos[1] = y;
-		}
-		else if (y < _nobPos[0])
-		{
-			// jump the bar up by the range window
-			int val = GetValue();
-			val -= _rangeWindow;
-			SetValue(val);
-		}
-		else if (y >= _nobPos[1])
-		{
-			// jump the bar down by the range window
-			int val = GetValue();
-			val += _rangeWindow;
-			SetValue(val);
-		}
+		_dragging = true;
+		input()->SetMouseCapture(GetVPanel());
+		_nobDragStartPos[0] = _nobPos[0];
+		_nobDragStartPos[1] = _nobPos[1];
+		_dragStartPos[0] = x;
+		_dragStartPos[1] = y;
 	}
-	else
+	else if (input()->IsKeyDown(KEY_LSHIFT) || input()->IsKeyDown(KEY_RSHIFT))
 	{
-		if((x >= _nobPos[0]) && (x < _nobPos[1]))
-		{
-			_dragging = true;
-			input()->SetMouseCapture(GetVPanel());
-			_nobDragStartPos[0] = _nobPos[0];
-			_nobDragStartPos[1] = _nobPos[1];
-			_dragStartPos[0] = x;
-			_dragStartPos[1] = y;
-		}
-		else if (x < _nobPos[0])
-		{
-			// jump the bar up by the range window
-			int val = GetValue();
-			val -= _rangeWindow;
-			SetValue(val);
-		}
-		else if (x >= _nobPos[1])
-		{
-			// jump the bar down by the range window
-			int val = GetValue();
-			val += _rangeWindow;
-			SetValue(val);
-		}
+		int range = _range[1] - _range[0];
+		// Offset the scroll amount so the middle of the nob goes where we click
+		int toScrollTo = comparator - ((_nobPos[1] - _nobPos[0]) / 2); 
+	    SetValue(range * toScrollTo / sizer);
 	}
+	else if (comparator < _nobPos[0])
+	{
+		// jump the bar up / left by the range window
+		int val = GetValue();
+		val -= _rangeWindow;
+		SetValue(val);
+	}
+	else if (comparator >= _nobPos[1])
+	{
+		// jump the bar down / right by the range window
+		int val = GetValue();
+		val += _rangeWindow;
+		SetValue(val);
+	}
+}
+
+int ScrollBarSlider::GetMouseFocusTickDirection()
+{
+	if (!input()->IsMouseDown(MOUSE_LEFT) && !input()->IsMouseDown(MOUSE_RIGHT))
+		return 0;
+
+	if (_dragging)
+		return 0;
+
+	int x, y;
+	input()->GetCursorPos(x, y);
+	ScreenToLocal(x, y);
+
+	int comparator = _vertical ? y : x;
+	int nobMiddle = _nobPos[0] + ((_nobPos[1] - _nobPos[0]) / 2);
+	int pixelBuffer = 3;
+	if (comparator < (nobMiddle - pixelBuffer))
+		return -1;
+
+	if (comparator >= (nobMiddle + pixelBuffer))
+		return 1;
+
+	return 0;
 }
 
 //-----------------------------------------------------------------------------
