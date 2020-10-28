@@ -8,7 +8,7 @@
 BEGIN_RECV_TABLE_NOBASE(CMomRunEntityData, DT_MomRunEntityData)
 RecvPropBool(RECVINFO(m_bIsInZone)),
 RecvPropBool(RECVINFO(m_bMapFinished)),
-RecvPropBool(RECVINFO(m_bTimerRunning)),
+RecvPropInt(RECVINFO(m_iTimerState)),
 RecvPropFloat(RECVINFO(m_flStrafeSync)),
 RecvPropFloat(RECVINFO(m_flStrafeSync2)),
 RecvPropInt(RECVINFO(m_iRunFlags), SPROP_UNSIGNED),
@@ -25,7 +25,7 @@ END_RECV_TABLE();
 BEGIN_SEND_TABLE_NOBASE(CMomRunEntityData, DT_MomRunEntityData)
 SendPropBool(SENDINFO(m_bIsInZone)),
 SendPropBool(SENDINFO(m_bMapFinished)),
-SendPropBool(SENDINFO(m_bTimerRunning)),
+SendPropInt(SENDINFO(m_iTimerState), 3, SPROP_UNSIGNED),
 SendPropFloat(SENDINFO(m_flStrafeSync)),
 SendPropFloat(SENDINFO(m_flStrafeSync2)),
 SendPropInt(SENDINFO(m_iRunFlags), 8, SPROP_UNSIGNED), // MOM_TODO change the nBits to how many flags we end up supporting!
@@ -45,7 +45,7 @@ CMomRunEntityData::CMomRunEntityData()
 {
     m_bIsInZone = false;
     m_bMapFinished = false;
-    m_bTimerRunning = false;
+    m_iTimerState = TIMER_STATE_NOT_RUNNING;
     m_flStrafeSync = 0.0f;
     m_flStrafeSync2 = 0.0f;
     m_iRunFlags = 0;

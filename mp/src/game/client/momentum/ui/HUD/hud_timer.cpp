@@ -207,9 +207,10 @@ void CHudTimer::OnThink()
              * Timer running but spectating while using practice mode => "<Current replay/ghost timer>" and splits etc
              * Timer running => "<Current Time>", "<Last Stage>", "<Last Stage Split>"
              * MOM_TODO: Timer running but using practice mode and savelocs => "Practice Mode" and "Saveloc X/Y"
+             * Timer running and using savelocs (practice timer state)
              */
 
-            if (!m_pRunData->m_bTimerRunning)
+            if (m_pRunData->m_iTimerState == TIMER_STATE_NOT_RUNNING)
             {
                 if (pLocal->m_bHasPracticeMode && pEnt->GetEntType() == RUN_ENT_PLAYER)
                 {
@@ -234,7 +235,7 @@ void CHudTimer::OnThink()
                 m_pComparisonLabel->SetText("");
                 m_pSplitLabel->SetText("");
             }
-            else
+            else if (m_pRunData->m_iTimerState == TIMER_STATE_RUNNING)
             {
                 if (pLocal->m_bHasPracticeMode && pEnt->GetEntType() == RUN_ENT_PLAYER)
                 {

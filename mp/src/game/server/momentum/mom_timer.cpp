@@ -155,7 +155,7 @@ void CMomentumTimer::Reset(CMomentumPlayer *pPlayer)
     g_pSavelocSystem->SetUsingSavelocMenu(false);
     pPlayer->ResetRunStats();
     pPlayer->m_Data.m_bMapFinished = false;
-    pPlayer->m_Data.m_bTimerRunning = false;
+    pPlayer->m_Data.m_iTimerState = TIMER_STATE_NOT_RUNNING;
 
     if (m_bIsRunning)
     {
@@ -268,7 +268,7 @@ void CMomentumTimer::SetRunning(CMomentumPlayer *pPlayer, bool isRunning)
     m_bIsRunning = isRunning;
 
     if (pPlayer)
-        pPlayer->m_Data.m_bTimerRunning = isRunning;
+        pPlayer->m_Data.m_iTimerState = isRunning ? TIMER_STATE_RUNNING : TIMER_STATE_NOT_RUNNING;
 }
 void CMomentumTimer::CalculateTickIntervalOffset(CMomentumPlayer *pPlayer, const int zoneType, const int zoneNumber)
 {

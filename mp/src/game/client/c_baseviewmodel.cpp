@@ -25,13 +25,10 @@
 MAKE_TOGGLE_CONVAR_CV(cl_righthand, "1", FCVAR_ARCHIVE, "Use right-handed view models. 1 = ON, 0 = OFF.\n", nullptr, [](IConVar *pVar, const char *pVal)
 {
     const auto pPlayer = C_MomentumPlayer::GetLocalMomPlayer();
-    if (pPlayer)
+    if (pPlayer && pPlayer->m_Data.m_iTimerState == TIMER_STATE_RUNNING)
     {
-        if (pPlayer->m_Data.m_bTimerRunning)
-        {
-            Warning("Cannot change cl_righthand while in a run! Stop the timer to be able to change it.\n");
-            return false;
-        }
+        Warning("Cannot change cl_righthand while in a run! Stop the timer to be able to change it.\n");
+        return false;
     }
 
     return true;
