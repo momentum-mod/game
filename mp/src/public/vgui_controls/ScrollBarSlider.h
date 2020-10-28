@@ -66,6 +66,8 @@ public:
 
 	virtual void ApplySettings( KeyValues *pInResourceData );
 
+	virtual int GetMouseFocusTickDirection();
+
 protected:
 	virtual void Paint();
 	virtual void PaintBackground();

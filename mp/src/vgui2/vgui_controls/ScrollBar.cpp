@@ -467,6 +467,10 @@ void ScrollBar::OnMouseFocusTicked()
 	{
 		direction = 1;
 	}
+	else
+	{
+	    direction = _slider->GetMouseFocusTickDirection();
+	}
 
 	// a button is down 
 	if ( direction != 0 )  
