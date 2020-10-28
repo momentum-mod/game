@@ -227,10 +227,7 @@ void CHudTimer::OnThink()
                     m_pMainStatusLabel->SetText(curTime);
                 }
 
-                if (m_bWasUsingSavelocMenu)
-                    m_pInfoLabel->SetText(CConstructLocalizedString(m_wSavelocStatus, m_iSavelocCurrent, m_iSavelocCount));
-                else
-                    m_pInfoLabel->SetText("");
+                m_pInfoLabel->SetText(m_bWasUsingSavelocMenu ? CConstructLocalizedString(m_wSavelocStatus, m_iSavelocCurrent, m_iSavelocCount) : L"");
 
                 m_pComparisonLabel->SetText("");
                 m_pSplitLabel->SetText("");
@@ -273,6 +270,17 @@ void CHudTimer::OnThink()
                         }
                     }
                 }
+            }
+            else if (m_pRunData->m_iTimerState == TIMER_STATE_PRACTICE)
+            {
+                char curTime[BUFSIZETIME];
+                MomUtil::FormatTime(pEnt->GetCurrentRunTime(), curTime, 2);
+                m_pMainStatusLabel->SetText(curTime);
+
+                m_pInfoLabel->SetText(m_bWasUsingSavelocMenu ? CConstructLocalizedString(m_wSavelocStatus, m_iSavelocCurrent, m_iSavelocCount) : L"");
+
+                m_pComparisonLabel->SetText("");
+                m_pSplitLabel->SetText("");
             }
         }
     }

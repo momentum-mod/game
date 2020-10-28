@@ -119,10 +119,12 @@ bool CMomentumTimer::Start(CMomentumPlayer *pPlayer)
 
 void CMomentumTimer::Stop(CMomentumPlayer *pPlayer, bool bFinished /* = false */, bool bStopRecording /* = true*/)
 {
-    if (!m_bIsRunning)
-        return;
+    bool bWasRunning = m_bIsRunning;
 
     SetRunning(pPlayer, false);
+
+    if (!bWasRunning)
+        return;
 
     if (pPlayer)
     {
@@ -339,10 +341,10 @@ CON_COMMAND(mom_start_mark_clear, "Clears the saved start location for your curr
     }
 }
 
-CON_COMMAND_F(mom_timer_stop, "Stops the timer if it is currently running.", FCVAR_CLIENTCMD_CAN_EXECUTE)
+CON_COMMAND_F(mom_timer_stop, "Stops the timer if it is currently running.\n", FCVAR_CLIENTCMD_CAN_EXECUTE)
 {
     const auto pPlayer = CMomentumPlayer::GetLocalPlayer();
-    if (pPlayer && g_pMomentumTimer->IsRunning())
+    if (pPlayer)
     {
         g_pMomentumTimer->Stop(pPlayer);
     }
