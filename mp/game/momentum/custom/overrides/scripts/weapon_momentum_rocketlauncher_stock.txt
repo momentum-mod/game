@@ -18,7 +18,7 @@ WeaponData
 
     "ModelData"
     {
-        "view"  "models/weapons/mom_rocketlauncher/v_mom_rocketlauncher_c.mdl"
+        "view"  "models/weapons/mom_rocketlauncher/v_mom_rocketlauncher.mdl"
         "world" "models/weapons/mom_rocketlauncher/w_mom_rocketlauncher.mdl"
 
         "rocket"    "models/weapons/mom_rocketlauncher/w_missile.mdl"
