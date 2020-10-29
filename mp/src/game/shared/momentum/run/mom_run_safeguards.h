@@ -49,8 +49,6 @@ class CRunSafeguard
 
     float m_flLastTimePressed;
 
-    bool m_bDoublePressSafeguard;
-
     bool m_bIgnoredInMenu;
 
     ConVar *m_pRelatedVar;
