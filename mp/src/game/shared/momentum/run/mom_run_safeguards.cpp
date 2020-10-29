@@ -58,7 +58,7 @@ static MAKE_TOGGLE_CONVAR(mom_run_safeguard_quit_map, "1", FCVAR_ARCHIVE | FCVAR
 static MAKE_TOGGLE_CONVAR(mom_run_safeguard_quit_game, "1", FCVAR_ARCHIVE | FCVAR_REPLICATED, "Changes the safeguard setting for preventing quitting the game while in a run. 0 = OFF, 1 = ON\n");
 
 CRunSafeguard::CRunSafeguard(const char *szAction)
-    : m_flLastTimePressed(0.0f), m_bDoublePressSafeguard(true), m_pRelatedVar(nullptr), m_bIgnoredInMenu(true)
+    : m_flLastTimePressed(0.0f), m_pRelatedVar(nullptr), m_bIgnoredInMenu(true)
 {
     Q_strncpy(m_szAction, szAction, sizeof(m_szAction));
 }
@@ -130,17 +130,13 @@ bool CRunSafeguard::IsDoublePressSafeguarded()
 {
     if (gpGlobals->curtime > m_flLastTimePressed + mom_run_safeguard_doublepress_maxtime.GetFloat())
     {
-        m_bDoublePressSafeguard = true;
-    }
-    m_flLastTimePressed = gpGlobals->curtime;
-    if (m_bDoublePressSafeguard)
-    {
         Warning("You must double press the key to %s while the timer is running!\n"
                 "You can turn this safeguard off in the Gameplay Settings!\n", m_szAction);
-        m_bDoublePressSafeguard = false;
+        m_flLastTimePressed = gpGlobals->curtime;
         return true;
     }
 
+    Reset();
     return false;
 }
 
