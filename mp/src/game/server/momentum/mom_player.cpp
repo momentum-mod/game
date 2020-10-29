@@ -1251,6 +1251,8 @@ void CMomentumPlayer::OnZoneExit(CTriggerZone *pTrigger)
             LimitSpeed(pStart->GetSpeedLimit(), true);
         }
         m_bShouldLimitPlayerSpeed = false;
+
+        g_pRunSafeguards->ResetAllSafeguards();
         // No break here, we want to fall through; this handles both the start and stage triggers
     case ZONE_TYPE_STAGE:
         {
@@ -1264,6 +1266,8 @@ void CMomentumPlayer::OnZoneExit(CTriggerZone *pTrigger)
                 if (zoneNum == 1)
                     m_RunStats.SetZoneEnterSpeed(0, enterVel3D, enterVel2D);
             }
+
+            g_pRunSafeguards->ResetSafeguard(RUN_SAFEGUARD_RESTART_STAGE);
         }
     default:
         break;

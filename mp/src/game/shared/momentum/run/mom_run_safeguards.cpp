@@ -63,6 +63,11 @@ CRunSafeguard::CRunSafeguard(const char *szAction)
     Q_strncpy(m_szAction, szAction, sizeof(m_szAction));
 }
 
+void CRunSafeguard::Reset()
+{
+    m_flLastTimePressed = 0.0f - mom_run_safeguard_doublepress_maxtime.GetFloat();
+}
+
 bool CRunSafeguard::IsSafeguarded(RunSafeguardMode_t mode)
 {
     CMomentumPlayer *pPlayer;
@@ -163,6 +168,27 @@ MomRunSafeguards::MomRunSafeguards()
     m_bGameUIActive = false;
     g_pModuleComms->ListenForEvent("gameui_toggle", UtlMakeDelegate(this, &MomRunSafeguards::OnGameUIToggled));
 #endif
+}
+
+void MomRunSafeguards::ResetAllSafeguards()
+{
+    for (int i = 0; i < RUN_SAFEGUARD_COUNT; i++)
+    {
+        m_pSafeguards[i]->Reset();
+    }
+}
+
+void MomRunSafeguards::ResetSafeguard(int type)
+{
+    if (type <= RUN_SAFEGUARD_INVALID || type >= RUN_SAFEGUARD_COUNT)
+        return;
+
+    ResetSafeguard(RunSafeguardType_t(type));
+}
+
+void MomRunSafeguards::ResetSafeguard(RunSafeguardType_t type)
+{
+    m_pSafeguards[type]->Reset();
 }
 
 #ifdef GAME_DLL

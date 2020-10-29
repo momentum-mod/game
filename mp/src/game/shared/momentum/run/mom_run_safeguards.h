@@ -33,6 +33,8 @@ class CRunSafeguard
   public:
     CRunSafeguard(const char *szAction);
 
+    void Reset();
+
     bool IsSafeguarded(RunSafeguardMode_t mode);
 
     void SetRelevantCVar(ConVar *pVarRef) { m_pRelatedVar = pVarRef; }
@@ -58,6 +60,10 @@ class MomRunSafeguards
 {
   public:
     MomRunSafeguards();
+
+    void ResetAllSafeguards();
+    void ResetSafeguard(int type);
+    void ResetSafeguard(RunSafeguardType_t type);
 
     bool IsSafeguarded(RunSafeguardType_t type);
     bool IsSafeguarded(RunSafeguardType_t type, RunSafeguardMode_t mode);
