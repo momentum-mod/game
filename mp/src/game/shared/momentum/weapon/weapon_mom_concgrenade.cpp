@@ -81,6 +81,7 @@ void CMomentumConcGrenade::PrimaryAttack()
         return;
 
     WeaponSound(GetWeaponSound("timer"));
+    SendWeaponAnim(ACT_VM_PULLBACK);
     m_bPrimed = true;
     m_bNeedsRepress = true;
 
@@ -212,4 +213,5 @@ void CMomentumConcGrenade::ThrowGrenade(float flTimer, float flSpeed)
 
     m_flThrowTime = 0.0f;
     m_flTimer = 0.0f;
+    SendWeaponAnim(ACT_VM_THROW);
 }
