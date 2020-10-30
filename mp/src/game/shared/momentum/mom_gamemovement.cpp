@@ -819,6 +819,9 @@ void CMomentumGameMovement::CalculateWaterWishVelocityZ(Vector &wishVel, const V
 
 void CMomentumGameMovement::Duck()
 {
+    if (player->GetMoveType() == MOVETYPE_NOCLIP)
+        return;
+
     if (g_pGameModeSystem->GameModeIs(GAMEMODE_AHOP))
     {
         BaseClass::Duck();
