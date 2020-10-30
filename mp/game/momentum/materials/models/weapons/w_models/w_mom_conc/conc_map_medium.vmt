@@ -1,7 +1,14 @@
-"VertexLitGeneric"
+VertexLitGeneric
 {
-	$baseTexture "models/weapons/w_models/w_mom_conc/conc_map_medium"
-	$model "1"
-	$selfillum "1"
-	$selfillumtint "[1.5 1.5 1.5]"
+	$baseTexture    "models/weapons/w_models/w_mom_conc/conc_map_medium"
+	$bumpmap        dev/flat_normal
+        
+    $phong          1
+    $phongFresnelRanges "[.05 1 2]"
+    $phongBoost         2
+    $phongExponent      64
+    
+    $rimlight           1
+    $rimlightBoost      2
+    $rimlightExponent   24	
 }

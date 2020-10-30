@@ -1,7 +1,17 @@
 "UnLitGeneric"
 {
-	$baseTexture "models/weapons/w_models/w_mom_conc/conc_map_medium"
-	$model "1"
-	$selfillum "1"
-	$selfillumtint "[1.5 1.5 1.5]"
+	$baseTexture    "models/weapons/w_models/w_mom_conc/conc_map_medium"
+    $color2         "[0 0 0]"
+	$model          1
+    
+    Proxies
+    {
+        Sine
+        {
+            sinemax 1
+            sinemin .2
+            sineperiod  .5
+            resultVar   $color2            
+        }
+    }
 }
