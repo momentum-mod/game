@@ -2199,10 +2199,10 @@ void CGameMovement::FullObserverMove( void )
 
 	float factor = sv_specspeed.GetFloat();
 
-	if ( mv->m_nButtons & IN_SPEED )
-	{
-		factor /= 2.0f;
-	}
+    if (mv->m_nButtons & IN_SPEED)
+    {
+        factor *= sv_noclipspeed_sprint_multiplier.GetFloat();
+    }
     if (mv->m_nButtons & IN_DUCK)
     {
         factor *= sv_noclipspeed_duck_multiplier.GetFloat();
@@ -2279,10 +2279,10 @@ void CGameMovement::FullNoClipMove( float factor, float maxacceleration )
 
 	AngleVectors (mv->m_vecViewAngles, &forward, &right, &up);  // Determine movement angles
 
-	if ( mv->m_nButtons & IN_SPEED )
-	{
-		factor /= 2.0f;
-	}
+    if ( mv->m_nButtons & IN_SPEED )
+    {
+        factor *= sv_noclipspeed_sprint_multiplier.GetFloat();
+    }
     if (mv->m_nButtons & IN_DUCK)
     {
         factor *= sv_noclipspeed_duck_multiplier.GetFloat();
