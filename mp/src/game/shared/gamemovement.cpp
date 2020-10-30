@@ -2203,6 +2203,10 @@ void CGameMovement::FullObserverMove( void )
 	{
 		factor /= 2.0f;
 	}
+    if (mv->m_nButtons & IN_DUCK)
+    {
+        factor *= sv_noclipspeed_duck_multiplier.GetFloat();
+    }
 
 	float fmove = mv->m_flForwardMove * factor;
 	float smove = mv->m_flSideMove * factor;
@@ -2279,6 +2283,10 @@ void CGameMovement::FullNoClipMove( float factor, float maxacceleration )
 	{
 		factor /= 2.0f;
 	}
+    if (mv->m_nButtons & IN_DUCK)
+    {
+        factor *= sv_noclipspeed_duck_multiplier.GetFloat();
+    }
 	
 	// Copy movement amounts
 	float fmove = mv->m_flForwardMove * factor;
