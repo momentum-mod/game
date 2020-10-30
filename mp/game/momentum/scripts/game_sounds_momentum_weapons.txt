@@ -63,9 +63,9 @@
     "channel"       "CHAN_WEAPON"
     "volume"        ".9"
     "pitch"         "PITCH_NORM"
-    "soundlevel"    "SNDLVL_90dB"
+    "soundlevel"    "SNDLVL_95dB"
 
-    "wave"          "weapons/mom_rocketlauncher/mom_rocketlauncher-RocketTrail.wav"
+    "wave"          ")weapons/mom_rocketlauncher/mom_rocketlauncher-RocketTrail.wav"
 }
 
 "Rocket.Fizzle"
@@ -223,7 +223,7 @@
 "Weapon_Shotgun.Single"
 {
 	"channel"		"CHAN_WEAPON"
-	"volume"		"0.3"
+	"volume"		"0.4"
 	"soundlevel"	"SNDLVL_NORM"
 
 	"wave"		    "weapons/mom_shotgun/mom_shotgun-fire01.wav"
@@ -232,7 +232,7 @@
 "Grenade.Bounce"
 {
 	"channel"	    "CHAN_AUTO"
-	"volume"	    "0.4"
+	"volume"	    "0.8"
 	"soundlevel"	"SNDLVL_NORM"
     
     rndwave
@@ -245,18 +245,23 @@
 
 "ConcussionGrenade.Bounce"
 {
-    "channel"       "CHAN_WEAPON"
-    "volume"        "VOL_NORM"
-    "pitch"         "PITCH_NORM"
-    "soundlevel"    "SNDLVL_90dB"
-
-    "wave"          "weapons/grenade/conc/bounce.wav"
+    "channel"	    "CHAN_WEAPON"
+	"volume"	    "0.8"
+	"soundlevel"	"SNDLVL_NORM"
+    
+    rndwave
+    {
+        "wave"		")weapons/mom_conc/mom_conc-bounce01.wav"
+        "wave"      ")weapons/mom_conc/mom_conc-bounce02.wav"
+        "wave"      ")weapons/mom_conc/mom_conc-bounce03.wav"
+        "wave"      ")weapons/mom_conc/mom_conc-bounce04.wav"
+    }
 }
 
 "ConcussionGrenade.Explode"
 {
     "channel"       "CHAN_WEAPON"
-    "volume"        "VOL_NORM"
+    "volume"        "0.2"
     "pitch"         "PITCH_NORM"
     "soundlevel"    "SNDLVL_90dB"
 
@@ -270,9 +275,9 @@
 "ConcussionGrenade.Timer"
 {
     "channel"       "CHAN_AUTO"
-    "volume"        "VOL_NORM"
-    "pitch"         "PITCH_NORM"
+    "volume"        "0.2"
+    "pitch"         "95,100,105"
     "soundlevel"    "SNDLVL_90dB"
 
-    "wave"          "weapons/grenade/conc/conctimer.wav"
+    "wave"          ")weapons/grenade/conc/conctimer.wav"
 }

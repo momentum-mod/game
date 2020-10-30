@@ -37,9 +37,9 @@ WeaponData
     // Weapon particles
     ParticleData
     {
-        "ExplosionEffect"          "mom_rocket_explosion_c"
-        "ExplosionMidAirEffect"    "mom_rocket_explosion_b"
-        "ExplosionWaterEffect"     "mom_rocket_explosion_b_"
+        "ExplosionEffect"          "mom_rocket_explosion_regular"
+        "ExplosionMidAirEffect"    "mom_rocket_explosion_midair"
+        "ExplosionWaterEffect"     "mom_rocket_explosion_underwater"
 
         // Trail
         "RocketTrail"              "mom_rocket_trail_a" // mom_rocket_trail_b
