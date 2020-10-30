@@ -128,6 +128,9 @@ public:
     // WARNING! No verification is done. It is up to the caller to don't give false information
     void SetUsingSavelocMenu(bool bIsUsingSLMenu);
 
+    KeyValues *GetSavelocKV() const { return m_pSavedLocsKV; }
+    void ImportMapSavelocs(const char *pImportMapName);
+
     void AddSavelocsFromKV(KeyValues *pSavelocData);
 
 private:
