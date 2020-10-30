@@ -244,8 +244,7 @@ CSaveLocSystem::CSaveLocSystem(const char* pName): CAutoGameSystem(pName)
 
 CSaveLocSystem::~CSaveLocSystem()
 {
-    if (m_pSavedLocsKV)
-        m_pSavedLocsKV->deleteThis();
+    m_pSavedLocsKV->deleteThis();
     m_pSavedLocsKV = nullptr;
 }
 
@@ -258,45 +257,13 @@ void CSaveLocSystem::LevelInitPreEntity()
 {
     m_bHintedStartMarkForLevel = false;
 
-    // We don't check mom_savelocs_save_between_sessions because we want to be able to load savelocs from friends
-    DevLog("Loading savelocs from %s ...\n", SAVELOC_FILE_NAME);
 
-    if (m_pSavedLocsKV)
+    KeyValues *kvMapSavelocs = m_pSavedLocsKV->FindKey(gpGlobals->mapname.ToCStr());
+    if (kvMapSavelocs && !kvMapSavelocs->IsEmpty())
     {
-        //Remove the past loaded stuff
-        m_pSavedLocsKV->Clear();
+        m_iCurrentSavelocIndx = kvMapSavelocs->GetInt(SAVELOC_KV_KEY_CURRENTINDEX);
 
-        // Note: This loading is going to contain all of the other maps' savelocs as well!
-        // Note: We are not in PostInit because if players edit their savelocs file (add
-        // savelocs from a friend or something), then we want to reload on map load again,
-        // and not force the player to restart the mod every time.
-        if (m_pSavedLocsKV->LoadFromFile(filesystem, SAVELOC_FILE_NAME, "MOD"))
-        {
-            DevLog("Loaded savelocs from %s!\n", SAVELOC_FILE_NAME);
-
-            if (!m_pSavedLocsKV->IsEmpty())
-            {
-                KeyValues *kvMapSavelocs = m_pSavedLocsKV->FindKey(gpGlobals->mapname.ToCStr());
-                if (kvMapSavelocs && !kvMapSavelocs->IsEmpty())
-                {
-                    m_iCurrentSavelocIndx = kvMapSavelocs->GetInt("cur");
-
-                    KeyValues *kvCPs = kvMapSavelocs->FindKey("cps");
-                    if (!kvCPs)
-                        return;
-
-                    FOR_EACH_SUBKEY(kvCPs, kvCheckpoint)
-                    {
-                        auto c = new SavedLocation_t;
-                        c->Load(kvCheckpoint);
-                        m_rcSavelocs.AddToTail(c);
-                    }
-
-                    // Fire the initial event
-                    FireUpdateEvent();
-                }
-            }
-        }
+        AddSavelocsFromKV(kvMapSavelocs->FindKey(SAVELOC_KV_KEY_SAVELOCS));
     }
 }
 
@@ -309,7 +276,7 @@ bool CSaveLocSystem::LoadStartMarks()
     if (!kvMapSavelocs || kvMapSavelocs->IsEmpty())
         return false;
 
-    KeyValues *kvStartMarks = kvMapSavelocs->FindKey("startmarks");
+    KeyValues *kvStartMarks = kvMapSavelocs->FindKey(SAVELOC_KV_KEY_STARTMARKS);
     if (!kvStartMarks)
         return false;
 
@@ -321,7 +288,7 @@ bool CSaveLocSystem::LoadStartMarks()
     {
         int track = Q_atoi(kvStartMark->GetName());
 
-        SavedLocation_t * pStartmark = new SavedLocation_t;
+        const auto pStartmark = new SavedLocation_t;
         pStartmark->Load(kvStartMark);
 
         if (!pPlayer->SetStartMark(track, pStartmark))
@@ -665,7 +632,6 @@ void CSaveLocSystem::CheckTimer()
 {
     if (g_pMomentumTimer->IsRunning())
     {
-
         g_pMomentumTimer->Stop(CMomentumPlayer::GetLocalPlayer());
 
         // MOM_TODO: consider
@@ -705,6 +671,21 @@ void CSaveLocSystem::UpdateRequesters()
     }
 }
 
+void CSaveLocSystem::AddSavelocsFromKV(KeyValues *pSavelocData)
+{
+    if (!pSavelocData || pSavelocData->IsEmpty())
+        return;
+
+    FOR_EACH_SUBKEY(pSavelocData, kvSaveloc)
+    {
+        auto pSaveloc = new SavedLocation_t;
+        pSaveloc->Load(kvSaveloc);
+        m_rcSavelocs.AddToTail(pSaveloc);
+    }
+
+    UpdateRequesters();
+    FireUpdateEvent();
+}
 CON_COMMAND_F(mom_saveloc_create, "Creates a saveloc that saves a player's state.\n", FCVAR_CLIENTCMD_CAN_EXECUTE)
 {
     g_pSavelocSystem->CreateAndSaveLocation();

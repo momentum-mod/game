@@ -125,6 +125,8 @@ public:
     // WARNING! No verification is done. It is up to the caller to don't give false information
     void SetUsingSavelocMenu(bool bIsUsingSLMenu);
 
+    void AddSavelocsFromKV(KeyValues *pSavelocData);
+
 private:
     void CheckTimer(); // Check the timer to see if we should stop it
     void FireUpdateEvent() const; // Fire tan event to the UI when we change our saveloc vector in any way, or stop using the saveloc menu
