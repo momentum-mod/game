@@ -28,7 +28,8 @@ WeaponData
     {
         "single_shot"   "Weapon_RPG.Single"
         "explosion"     "BaseExplosionEffect.SoundTF2"
-        "RocketTrail"   "Rocket.Trail"
+        // "RocketTrail"   "Rocket.Trail"
+        // "RocketFizzle"      "Rocket.Fizzle"
     }
 
     // Weapon particles
