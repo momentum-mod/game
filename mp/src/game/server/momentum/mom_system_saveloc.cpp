@@ -14,6 +14,9 @@
 #include "tier0/memdbgon.h"
 
 #define SAVELOC_FILE_NAME "savedlocs.txt"
+#define SAVELOC_KV_KEY_SAVELOCS "cps"
+#define SAVELOC_KV_KEY_CURRENTINDEX "cur"
+#define SAVELOC_KV_KEY_STARTMARKS "startmarks"
 
 MAKE_TOGGLE_CONVAR(mom_saveloc_save_between_sessions, "1", FCVAR_ARCHIVE, "Defines if savelocs should be saved between sessions of the same map.\n");
 
