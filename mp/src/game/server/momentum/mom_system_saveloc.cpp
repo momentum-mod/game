@@ -717,6 +717,33 @@ void CSaveLocSystem::AddSavelocsFromKV(KeyValues *pSavelocData)
     UpdateRequesters();
     FireUpdateEvent();
 }
+
+void CSaveLocSystem::ImportMapSavelocs(const char *pImportMapName)
+{
+    if (!CMomentumPlayer::GetLocalPlayer())
+    {
+        Warning("This command can only be used while in-game!\n");
+        return;
+    }
+
+    if (!pImportMapName || !pImportMapName[0])
+        return;
+
+    const auto pImportKV = m_pSavedLocsKV->FindKey(pImportMapName);
+    if (!pImportKV)
+        return;
+
+    const auto pImportSavelocsKV = pImportKV->FindKey(SAVELOC_KV_KEY_SAVELOCS);
+    if (!pImportSavelocsKV)
+    {
+        Warning("Failed to import savelocs; map to import has no savelocs!\n");
+        return;
+    }
+
+    AddSavelocsFromKV(pImportSavelocsKV);
+    SaveSavelocsToKV();
+}
+
 CON_COMMAND_F(mom_saveloc_create, "Creates a saveloc that saves a player's state.\n", FCVAR_CLIENTCMD_CAN_EXECUTE)
 {
     g_pSavelocSystem->CreateAndSaveLocation();
@@ -752,6 +779,48 @@ CON_COMMAND_F(mom_saveloc_remove_all, "Removes all of the created savelocs for t
 CON_COMMAND_F(mom_saveloc_close, "Closes the saveloc menu.\n", FCVAR_CLIENTCMD_CAN_EXECUTE)
 {
     g_pSavelocSystem->SetUsingSavelocMenu(false);
+}
+
+static int SavelocImportCompletion(const char *pPartial, char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH])
+{
+    if (!CMomentumPlayer::GetLocalPlayer())
+        return 0;
+
+    const auto pCmdName = "mom_saveloc_import";
+    char *pSubstring = nullptr;
+    if (Q_strstr(pPartial, pCmdName) && strlen(pPartial) > strlen(pCmdName) + 1)
+    {
+        pSubstring = (char *)pPartial + strlen(pCmdName) + 1;
+    }
+
+    const bool bSubstringNullOrEmpty = !pSubstring || !pSubstring[0];
+
+    int current = 0;
+
+    const auto pSavelocsKV = g_pSavelocSystem->GetSavelocKV();
+    AssertMsg(pSavelocsKV, "Failed to complete saveloc autocomplete due to null KV!");
+    FOR_EACH_SUBKEY(pSavelocsKV, pSavelocMapKV)
+    {
+        const auto pMapName = pSavelocMapKV->GetName();
+        const auto bMatchedName = bSubstringNullOrEmpty || Q_stristr(pMapName, pSubstring);
+        if (bMatchedName && !pSavelocMapKV->IsEmpty(SAVELOC_KV_KEY_SAVELOCS))
+        {
+            char command[COMMAND_COMPLETION_ITEM_LENGTH];
+            Q_snprintf(command, COMMAND_COMPLETION_ITEM_LENGTH, "%s %s", pCmdName, pMapName);
+            Q_strncpy(commands[current], command, COMMAND_COMPLETION_ITEM_LENGTH);
+            current++;
+        }
+    }
+
+    return current;
+}
+
+CON_COMMAND_F_COMPLETION(mom_saveloc_import, "Imports savelocs from a previous map's block.\nUsage:\n"
+    "\"mom_saveloc_import map_1\" - imports map_1's savelocs into the current map's block.\n"
+    "This command can only be used when in a map!\n",
+    FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_SERVER_CAN_EXECUTE, SavelocImportCompletion)
+{
+    g_pSavelocSystem->ImportMapSavelocs(args.Arg(1));
 }
 
 //Expose this to the DLL
