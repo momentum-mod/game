@@ -303,60 +303,9 @@ bool CSaveLocSystem::LoadStartMarks()
 
 void CSaveLocSystem::LevelShutdownPreEntity()
 {
-    CMomentumPlayer *pPlayer = CMomentumPlayer::GetLocalPlayer();
-    if (pPlayer && m_pSavedLocsKV && mom_saveloc_save_between_sessions.GetBool())
+    if (mom_saveloc_save_between_sessions.GetBool())
     {
-        DevLog("Saving map %s savelocs and startmarks to %s ...\n", gpGlobals->mapname.ToCStr(), SAVELOC_FILE_NAME);
-        // Make the KV to save into and save into it
-        KeyValues *pKvMapSavelocs = new KeyValues(gpGlobals->mapname.ToCStr());
-        // Set the current index
-        pKvMapSavelocs->SetInt("cur", m_iCurrentSavelocIndx);
-
-        // Add all your savelocs
-        KeyValues *kvCPs = new KeyValues("cps");
-        FOR_EACH_VEC(m_rcSavelocs, i)
-        {
-            char szCheckpointNum[10]; // 999 million savelocs is pretty generous
-            Q_snprintf(szCheckpointNum, sizeof(szCheckpointNum), "%09i", i); // %09 because '\0' is the last (10)
-            KeyValues *kvCP = new KeyValues(szCheckpointNum);
-            m_rcSavelocs[i]->Save(kvCP);
-            kvCPs->AddSubKey(kvCP);
-        }
-
-        // Add startmarks
-        KeyValues *kvStartMarks = new KeyValues("startmarks");
-        for (int track = 0; track < MAX_TRACKS; track++)
-        {
-            SavedLocation_t *startMark = pPlayer->GetStartMark(track);
-            if (!startMark) // Save location of valid startmarks only
-                continue;
-
-            char szTrackNum[4]; // 999 tracks should be enough
-            Q_snprintf(szTrackNum, sizeof(szTrackNum), "%03i", track); 
-            KeyValues *kvStartMark = new KeyValues(szTrackNum);
-
-            startMark->Save(kvStartMark);
-            kvStartMarks->AddSubKey(kvStartMark);
-        }
-
-        // Save them into the keyvalues
-        pKvMapSavelocs->AddSubKey(kvCPs);
-        pKvMapSavelocs->AddSubKey(kvStartMarks);
-       
-        // Remove the map if it already exists in there
-        KeyValues *pExisting = m_pSavedLocsKV->FindKey(gpGlobals->mapname.ToCStr());
-        if (pExisting)
-        {
-            m_pSavedLocsKV->RemoveSubKey(pExisting);
-            pExisting->deleteThis();
-        }
-
-        // Add the new one
-        m_pSavedLocsKV->AddSubKey(pKvMapSavelocs);
-
-        // Save everything to file
-        if (m_pSavedLocsKV->SaveToFile(filesystem, SAVELOC_FILE_NAME, "MOD", true))
-            DevLog("Saved map %s savelocs and startmarks to %s!\n", gpGlobals->mapname.ToCStr(), SAVELOC_FILE_NAME);
+        SaveSavelocsToKV();
     }
 
     // Remove all requesters if we had any
@@ -669,6 +618,60 @@ void CSaveLocSystem::UpdateRequesters()
         CSteamID requester(m_vecRequesters[i]);
         g_pMomentumGhostClient->SendSavelocReqPacket(requester, &response);
     }
+}
+
+bool CSaveLocSystem::SaveSavelocsToKV()
+{
+    const auto pPlayer = CMomentumPlayer::GetLocalPlayer();
+    if (!pPlayer)
+        return false;
+
+    const auto pKvMapSavelocs = new KeyValues(gpGlobals->mapname.ToCStr());
+
+    // Set the current index
+    pKvMapSavelocs->SetInt(SAVELOC_KV_KEY_CURRENTINDEX, m_iCurrentSavelocIndx);
+
+    // Add all your savelocs
+    const auto kvCPs = new KeyValues(SAVELOC_KV_KEY_SAVELOCS);
+    FOR_EACH_VEC(m_rcSavelocs, i)
+    {
+        char szCheckpointNum[10]; // 999 million savelocs is pretty generous
+        Q_snprintf(szCheckpointNum, sizeof(szCheckpointNum), "%09i", i); // %09 because '\0' is the last (10)
+        KeyValues *kvCP = new KeyValues(szCheckpointNum);
+        m_rcSavelocs[i]->Save(kvCP);
+        kvCPs->AddSubKey(kvCP);
+    }
+
+    // Add startmarks
+    const auto kvStartMarks = new KeyValues(SAVELOC_KV_KEY_STARTMARKS);
+    for (int track = 0; track < MAX_TRACKS; track++)
+    {
+        SavedLocation_t *startMark = pPlayer->GetStartMark(track);
+        if (!startMark) // Save location of valid startmarks only
+            continue;
+
+        char szTrackNum[4]; // 999 tracks should be enough
+        Q_snprintf(szTrackNum, sizeof(szTrackNum), "%03i", track);
+        const auto kvStartMark = new KeyValues(szTrackNum);
+
+        startMark->Save(kvStartMark);
+        kvStartMarks->AddSubKey(kvStartMark);
+    }
+
+    pKvMapSavelocs->AddSubKey(kvCPs);
+    pKvMapSavelocs->AddSubKey(kvStartMarks);
+
+    // Remove the map if it already exists in there
+    KeyValues *pExisting = m_pSavedLocsKV->FindKey(gpGlobals->mapname.ToCStr());
+    if (pExisting)
+    {
+        m_pSavedLocsKV->RemoveSubKey(pExisting);
+        pExisting->deleteThis();
+    }
+
+    m_pSavedLocsKV->AddSubKey(pKvMapSavelocs);
+
+    return m_pSavedLocsKV->SaveToFile(filesystem, SAVELOC_FILE_NAME, "MOD", true);
 }
 
 void CSaveLocSystem::AddSavelocsFromKV(KeyValues *pSavelocData)
