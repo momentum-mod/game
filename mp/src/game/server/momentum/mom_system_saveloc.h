@@ -87,6 +87,8 @@ public:
     bool ReadReceivedSavelocs(SavelocReqPacket *input, const uint64 &sender);
 
     // Local
+    // Loads savelocs from file
+    bool LoadSavelocsIntoKV();
     bool SaveSavelocsToKV();
     // Loads start marks from savelocs keyvalues
     bool LoadStartMarks();

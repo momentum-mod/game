@@ -257,6 +257,11 @@ void CSaveLocSystem::LevelInitPreEntity()
 {
     m_bHintedStartMarkForLevel = false;
 
+    // Note: We are not only loading in PostInit because if players edit their savelocs file (add
+    // savelocs from a friend or something), then we want to reload on map load again,
+    // and not force the player to restart the mod every time.
+    if (!LoadSavelocsIntoKV())
+        return;
 
     KeyValues *kvMapSavelocs = m_pSavedLocsKV->FindKey(gpGlobals->mapname.ToCStr());
     if (kvMapSavelocs && !kvMapSavelocs->IsEmpty())
@@ -618,6 +623,29 @@ void CSaveLocSystem::UpdateRequesters()
         CSteamID requester(m_vecRequesters[i]);
         g_pMomentumGhostClient->SendSavelocReqPacket(requester, &response);
     }
+}
+
+bool CSaveLocSystem::LoadSavelocsIntoKV()
+{
+    // We don't check mom_savelocs_save_between_sessions because we want to be able to load savelocs from friends
+    DevLog("Loading savelocs from %s ...\n", SAVELOC_FILE_NAME);
+
+    // Remove the past loaded stuff
+    m_pSavedLocsKV->Clear();
+
+    // Note: This loading is going to contain all of the other maps' savelocs as well!
+    if (!m_pSavedLocsKV->LoadFromFile(filesystem, SAVELOC_FILE_NAME, "MOD"))
+    {
+        DevWarning("Failed to savelocs file! It probably doesn't exist yet...\n");
+        return false;
+    }
+
+    if (m_pSavedLocsKV->IsEmpty())
+        return false;
+
+    DevLog("Loaded savelocs from %s!\n", SAVELOC_FILE_NAME);
+
+    return true;
 }
 
 bool CSaveLocSystem::SaveSavelocsToKV()
