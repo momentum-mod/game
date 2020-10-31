@@ -627,7 +627,20 @@
         "MOM_MB_Safeguard_Map_Quit_ToMenu_Msg" "You are trying to quit to menu while your timer is running!\nAre you sure you want to quit?\n(You can go to Settings -> Gameplay -> Safeguards to turn this off!)"
 
         "MOM_Momentum" "Momentum"
-        
+
+        // Safeguard warnings
+        "MOM_Safeguard_Movement_Keys_Warning_Practice"  "You cannot enable practice mode when movement keys are held down while the timer is running!\nYou can turn this safeguard off in the Gameplay Settings!"
+        "MOM_Safeguard_Movement_Keys_Warning_Restart"   "You cannot restart map when movement keys are held down while the timer is running!\nYou can turn this safeguard off in the Gameplay Settings!"
+        "MOM_Safeguard_Movement_Keys_Warning_TeleSave"  "You cannot teleport to saveloc when movement keys are held down while the timer is running!\nYou can turn this safeguard off in the Gameplay Settings!"
+        "MOM_Safeguard_Movement_Keys_Warning_Chat"      "You cannot open chat when movement keys are held down while the timer is running!\nYou can turn this safeguard off in the Gameplay Settings!"
+        "MOM_Safeguard_Movement_Keys_Warning_TeleStage" "You cannot teleport to a stage when movement keys are held down while the timer is running!\nYou can turn this safeguard off in the Gameplay Settings!"
+
+        "MOM_Safeguard_Double_Press_Warning_Practice"  "You must double press the key to enable practice mode while the timer is running!\nYou can turn this safeguard off in the Gameplay Settings!"
+        "MOM_Safeguard_Double_Press_Warning_Restart"   "You must double press the key to restart map while the timer is running!\nYou can turn this safeguard off in the Gameplay Settings!"
+        "MOM_Safeguard_Double_Press_Warning_TeleSave"  "You must double press the key to teleport to saveloc while the timer is running!\nYou can turn this safeguard off in the Gameplay Settings!"
+        "MOM_Safeguard_Double_Press_Warning_Chat"      "You must double press the key to open chat while the timer is running!\nYou can turn this safeguard off in the Gameplay Settings!"
+        "MOM_Safeguard_Double_Press_Warning_TeleStage" "You must double press the key to teleport to a stage while the timer is running!\nYou can turn this safeguard off in the Gameplay Settings!"
+
         // Lobby members panel / related strings
         "MOM_Lobby_Spectate" "Spectate"
         "MOM_Lobby_GoToMap" "Join Player"
