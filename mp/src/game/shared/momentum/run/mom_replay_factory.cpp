@@ -48,15 +48,9 @@ CMomReplayBase *CMomReplayFactory::CreateReplay(uint8 version, CUtlBuffer &reade
     }
 }
 
-CMomReplayBase* CMomReplayFactory::LoadReplayFile(const char* pFileName, bool bFullLoad, const char* pPathID)
+CMomReplayBase* CMomReplayFactory::LoadReplayFile(const char *pFileName, bool bFullLoad, const char *pPathID)
 {
-    bool bLogReplay = false;
-#ifdef CLIENT_DLL
-    bLogReplay = mom_replay_debug.GetBool();
-#else
-    static ConVarRef replayDebug("mom_replay_debug");
-    bLogReplay = replayDebug.GetBool();
-#endif
+    bool bLogReplay = IsReplayDebugEnabled();
 
     if (bLogReplay)
         Log("Loading a replay from '%s'...\n", pFileName);
@@ -67,6 +61,22 @@ CMomReplayBase* CMomReplayFactory::LoadReplayFile(const char* pFileName, bool bF
     if (!bFile)
     {
         Log("Replay file not found: %s\n", pFileName);
+        return nullptr;
+    }
+
+    return LoadReplayFromBuffer(reader, bFullLoad);
+}
+
+CMomReplayBase* CMomReplayFactory::LoadReplayFromBuffer(CUtlBuffer &reader, bool bFullLoad)
+{
+    bool bLogReplay = IsReplayDebugEnabled();
+
+    if (bLogReplay)
+        Log("Loading a replay from a buffer...\n");
+
+    if (!reader.IsValid())
+    {
+        Warning("Attempted to read a replay from an invalid buffer!\n");
         return nullptr;
     }
 
@@ -84,7 +94,7 @@ CMomReplayBase* CMomReplayFactory::LoadReplayFile(const char* pFileName, bool bF
     uint8 version = reader.GetUnsignedChar();
 
     if (bLogReplay)
-        Log("Loading replay '%s' of version '%d'...\n", pFileName, version);
+        Log("Loading replay of version '%d'...\n", version);
 
     // MOM_TODO: Verify that replay parsing was successful.
     CMomReplayBase *toReturn = CreateReplay(version, reader, bFullLoad);
