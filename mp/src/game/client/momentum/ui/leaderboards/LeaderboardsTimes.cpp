@@ -84,7 +84,7 @@ CLeaderboardsTimes::CLeaderboardsTimes(CClientTimesDisplay* pParent) : BaseClass
     m_pFriendsLeaderboards->SetVerticalScrollbar(false);
 
     m_flTimesLastUpdate[TIMES_TOP10] = m_flTimesLastUpdate[TIMES_AROUND] = m_flTimesLastUpdate[TIMES_FRIENDS] = 0.0f;
-    for (int i = 1; i < 4; i++)
+    for (int i = 1; i < TIMES_COUNT; i++) // Skip over local
         m_eTimesStatus[i] = STATUS_TIMES_LOADING;
 
     m_iFlaggedRuns = RUNFLAG_NONE;
@@ -844,13 +844,12 @@ void CLeaderboardsTimes::OnReplayDownloadEnd(KeyValues* pKvEnd)
     }
 }
 
-
 void CLeaderboardsTimes::OnCommand(const char* pCommand)
 {
     BaseClass::OnCommand(pCommand);
 
     // MOM_TODO: Implement run tags
-// Leaderboards type
+    // Leaderboards type
     bool isTop10 = FStrEq(pCommand, "GlobalTypeTop10");
     bool isAround = FStrEq(pCommand, "GlobalTypeAround");
     bool isLocal = FStrEq(pCommand, "ShowLocal");
