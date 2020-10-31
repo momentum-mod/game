@@ -285,6 +285,11 @@ void CClientTimesDisplay::LevelInitPostEntity()
     m_pTimes->LevelInit();
 }
 
+void CClientTimesDisplay::LevelShutdownPreEntity()
+{
+    m_pTimes->LevelShutdown();
+}
+
 void CClientTimesDisplay::OnReloadControls()
 {
     BaseClass::OnReloadControls();
