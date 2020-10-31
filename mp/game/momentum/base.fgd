@@ -3069,6 +3069,40 @@
     input Toggle(void) : "Toggle the light on/off."
 ]
 
+// Beam spotlight ---------------------
+@PointClass base(Targetname, Parentname, RenderFields, Angles, DXLevelChoice) studio("models/editor/cone_helper.mdl") = beam_spotlight : 
+    "An entity to draw a spotlight. Will draw a beam when the player views it side on, and a halo when it's facing towards the player. "+
+    "Unless the 'No Dynamic Light' spawnflag is checked, it will also create a dynamic light wherever the end of the spotlight rests." +
+    "This spotlight is entirely client side, it is not sync'd across clients."
+[
+    spawnflags(Flags) = 
+    [
+        1 : "Start On" : 1
+        2 : "No Dynamic Light" : 0
+        4 : "Start rotation on" : 0
+        8 : "Reverse Direction" : 0
+        16 : "X Axis"  : 0
+        32 : "Y Axis"  : 0
+    ]
+
+    maxspeed(integer) : "Max Rotation Speed" : 100 : "The maximum rotation speed of the spotlight, in degrees per second."
+
+    spotlightlength(integer) : "Spotlight Length" : 500 : "Length of the spotlight beam."
+    spotlightwidth(integer) : "Spotlight Width" : 50 : "Width of the spotlight beam."
+    rendercolor(color255) : "Color (R G B)" : "255 255 255"
+    HDRColorScale(float) : "HDR color scale." : "0.7" : "float value to multiply sprite color by when running in HDR mode."
+    
+    // Inputs
+    input LightOn(void) : "Turn the spotlight on."
+    input LightOff(void) : "Turn the spotlight off"
+    input Start(void) : "Start the rotator rotating."
+    input Stop(void) : "Stop the rotator from rotating."
+    input Reverse(void) : "Reverse the direction of rotation of the rotator."
+    
+    // outputs
+    output OnLightOn(void) : "Fires when light turns on."
+    output OnLightOff(void) : "Fires when light turns off."
+]
 
 //-------------------------------------------------------------------------
 // Shadow control
