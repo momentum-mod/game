@@ -3,6 +3,7 @@
 #include "vgui_controls/EditablePanel.h"
 #include "steam/isteamhttp.h"
 #include "mom_shareddefs.h"
+#include "run/mom_replay_factory.h"
 
 class CClientTimesDisplay;
 class CMomReplayBase;
@@ -55,10 +56,11 @@ class CLeaderboardsTimes : public vgui::EditablePanel
     void Reset(bool bFullReset);
     void InitLeaderboardSections();
     void OnRunPosted(bool bPosted);
-    void OnRunSaved();
+    void OnRunSaved(const char *pFilePath);
     void OnPanelShow(bool bShow);
 
     CUtlMap<HTTPRequestHandle, uint64> m_mapReplayDownloads;
+    CUtlLinkedList<MomReplayAsyncHandle> m_llReplayLocalRequests;
 
     // Sets up the icons used in the leaderboard
     void SetupDefaultIcons();
@@ -76,13 +78,12 @@ class CLeaderboardsTimes : public vgui::EditablePanel
     // methods
     void FillLeaderboards(bool bFullUpdate);
     void SetPlaceColors(vgui::SectionedListPanel* panel, TimeType_t type) const;
-    void LoadLocalTimes(KeyValues *kv);
     void LoadOnlineTimes(TimeType_t type);
-    void ConvertLocalTimes(KeyValues *pKv);
     // Place vector times into leaderboards panel (sectionlist)
+    void LocalTimesVectorToLeaderboards();
     void OnlineTimesVectorToLeaderboards(TimeType_t type);
 
-    bool GetPlayerTimes(KeyValues *outPlayerInfo, bool fullUpdate);
+    bool FillPlayerTimes(bool fullUpdate);
     
     void ResetLeaderboardContextMenu();
 
@@ -106,15 +107,22 @@ class CLeaderboardsTimes : public vgui::EditablePanel
     void OnReplayDownloadEnd(KeyValues *pKv);
 
 protected:
-    void OnCommand(const char* command) OVERRIDE;
-    void ApplySchemeSettings(vgui::IScheme* pScheme) OVERRIDE;
+    void OnCommand(const char* command) override;
+    void ApplySchemeSettings(vgui::IScheme* pScheme) override;
 
     MESSAGE_FUNC_PARAMS(OnItemContextMenu, "ItemContextMenu", data); // Catching from SectionedListPanel
     MESSAGE_FUNC_CHARPTR(OnContextWatchReplay, "ContextWatchReplay", runName);
-    MESSAGE_FUNC_INT_CHARPTR(OnContextDeleteReplay, "ContextDeleteReplay", itemID, runName);
+    MESSAGE_FUNC_PARAMS(OnContextDeleteReplay, "ContextDeleteReplay", pData);
     MESSAGE_FUNC_PARAMS(OnContextWatchOnlineReplay, "ContextWatchOnlineReplay", data);
-    MESSAGE_FUNC_INT_CHARPTR(OnConfirmDeleteReplay, "ConfirmDeleteReplay", itemID, file);
+    MESSAGE_FUNC_PARAMS(OnConfirmDeleteReplay, "ConfirmDeleteReplay", pData);
     MESSAGE_FUNC_UINT64(OnContextVisitProfile, "ContextVisitProfile", profile);
+
+    void LoadLocalTimes();
+    // We take this detour so only the VGUI thread modifies our local times vector
+    MESSAGE_FUNC_INT(OnLocalTimesReady, "LocalTimesReady", nRequestIndex);
+    void LocalTimesCallback(MomReplayAsyncHandle handle);
+
+    void ConvertLocalTimes(KeyValues *pKv);
 
 private:
 
