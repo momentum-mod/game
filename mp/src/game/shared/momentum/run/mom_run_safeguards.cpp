@@ -57,10 +57,13 @@ static MAKE_TOGGLE_CONVAR(mom_run_safeguard_change_map, "1", FCVAR_ARCHIVE | FCV
 static MAKE_TOGGLE_CONVAR(mom_run_safeguard_quit_map, "1", FCVAR_ARCHIVE | FCVAR_REPLICATED, "Changes the safeguard setting for preventing quitting/disconnecting while in a run. 0 = OFF, 1 = ON\n");
 static MAKE_TOGGLE_CONVAR(mom_run_safeguard_quit_game, "1", FCVAR_ARCHIVE | FCVAR_REPLICATED, "Changes the safeguard setting for preventing quitting the game while in a run. 0 = OFF, 1 = ON\n");
 
-CRunSafeguard::CRunSafeguard(const char *szAction)
+static MAKE_TOGGLE_CONVAR(mom_run_safeguard_show_msg, "1", FCVAR_ARCHIVE | FCVAR_REPLICATED, "Changes the safeguard setting which shows a message on your screen upon blocking a safeguarded command. 0 = OFF, 1 = ON\n");
+
+CRunSafeguard::CRunSafeguard(const char *szMovementKeysToken, const char *szDoublePressToken)
     : m_flLastTimePressed(0.0f), m_pRelatedVar(nullptr), m_bIgnoredInMenu(true)
 {
-    Q_strncpy(m_szAction, szAction, sizeof(m_szAction));
+    Q_strncpy(m_szMovementKeysToken, szMovementKeysToken, sizeof(m_szMovementKeysToken));
+    Q_strncpy(m_szDoublePressToken, szDoublePressToken, sizeof(m_szDoublePressToken));
 }
 
 void CRunSafeguard::Reset()
@@ -119,10 +122,18 @@ bool CRunSafeguard::IsMovementKeysSafeguarded(int nButtons)
 {
     if ((nButtons & (IN_FORWARD | IN_MOVELEFT | IN_MOVERIGHT | IN_BACK | IN_JUMP | IN_DUCK | IN_WALK)) != 0)
     {
-        Warning("You cannot %s when movement keys are held down while the timer is running!\n"
-                "You can turn this safeguard off in the Gameplay Settings!\n", m_szAction);
+#ifdef GAME_DLL
+        if (mom_run_safeguard_show_msg.GetBool())
+            UTIL_HudHintText(UTIL_GetLocalPlayer(), m_szMovementKeysToken);
+#endif
+
         return true;
     }
+
+#ifdef GAME_DLL
+    UTIL_HudHintText(UTIL_GetLocalPlayer(), "");
+#endif
+
     return false;
 }
 
@@ -130,11 +141,18 @@ bool CRunSafeguard::IsDoublePressSafeguarded()
 {
     if (gpGlobals->curtime > m_flLastTimePressed + mom_run_safeguard_doublepress_maxtime.GetFloat())
     {
-        Warning("You must double press the key to %s while the timer is running!\n"
-                "You can turn this safeguard off in the Gameplay Settings!\n", m_szAction);
+#ifdef GAME_DLL
+        if (mom_run_safeguard_show_msg.GetBool())
+            UTIL_HudHintText(UTIL_GetLocalPlayer(), m_szDoublePressToken);
+#endif
+
         m_flLastTimePressed = gpGlobals->curtime;
         return true;
     }
+
+#ifdef GAME_DLL
+    UTIL_HudHintText(UTIL_GetLocalPlayer(), "");
+#endif
 
     Reset();
     return false;
@@ -142,21 +160,30 @@ bool CRunSafeguard::IsDoublePressSafeguarded()
 
 MomRunSafeguards::MomRunSafeguards()
 {
-    m_pSafeguards[RUN_SAFEGUARD_PRACTICEMODE] = new CRunSafeguard("enable practice mode");
-    m_pSafeguards[RUN_SAFEGUARD_RESTART] = new CRunSafeguard("restart map");
-    m_pSafeguards[RUN_SAFEGUARD_SAVELOC_TELE] = new CRunSafeguard("teleport to saveloc");
-    m_pSafeguards[RUN_SAFEGUARD_CHAT_OPEN] = new CRunSafeguard("open chat");
-    m_pSafeguards[RUN_SAFEGUARD_RESTART_STAGE] = new CRunSafeguard("teleport to a stage");
+    m_pSafeguards[RUN_SAFEGUARD_PRACTICEMODE] = new CRunSafeguard("#MOM_Safeguard_Movement_Keys_Warning_Practice",
+                                                                  "#MOM_Safeguard_Double_Press_Warning_Practice");
 
-    m_pSafeguards[RUN_SAFEGUARD_MAP_CHANGE] = new CRunSafeguard("changing map");
+    m_pSafeguards[RUN_SAFEGUARD_RESTART] = new CRunSafeguard("#MOM_Safeguard_Movement_Keys_Warning_Restart",
+                                                             "#MOM_Safeguard_Double_Press_Warning_Restart");
+
+    m_pSafeguards[RUN_SAFEGUARD_SAVELOC_TELE] = new CRunSafeguard("#MOM_Safeguard_Movement_Keys_Warning_TeleSave",
+                                                                  "#MOM_Safeguard_Double_Press_Warning_TeleSave");
+
+    m_pSafeguards[RUN_SAFEGUARD_CHAT_OPEN] = new CRunSafeguard("#MOM_Safeguard_Movement_Keys_Warning_Chat",
+                                                               "#MOM_Safeguard_Double_Press_Warning_Chat");
+
+    m_pSafeguards[RUN_SAFEGUARD_RESTART_STAGE] = new CRunSafeguard("#MOM_Safeguard_Movement_Keys_Warning_TeleStage",
+                                                                   "#MOM_Safeguard_Double_Press_Warning_TeleStage");
+
+    m_pSafeguards[RUN_SAFEGUARD_MAP_CHANGE] = new CRunSafeguard("", ""); // handled separately
     m_pSafeguards[RUN_SAFEGUARD_MAP_CHANGE]->SetRelevantCVar(&mom_run_safeguard_change_map);
     m_pSafeguards[RUN_SAFEGUARD_MAP_CHANGE]->SetIgnoredInMenu(false);
 
-    m_pSafeguards[RUN_SAFEGUARD_QUIT_TO_MENU] = new CRunSafeguard("quitting to menu");
+    m_pSafeguards[RUN_SAFEGUARD_QUIT_TO_MENU] = new CRunSafeguard("", ""); // handled separately
     m_pSafeguards[RUN_SAFEGUARD_QUIT_TO_MENU]->SetRelevantCVar(&mom_run_safeguard_quit_map);
     m_pSafeguards[RUN_SAFEGUARD_QUIT_TO_MENU]->SetIgnoredInMenu(false);
 
-    m_pSafeguards[RUN_SAFEGUARD_QUIT_GAME] = new CRunSafeguard("quitting the game");
+    m_pSafeguards[RUN_SAFEGUARD_QUIT_GAME] = new CRunSafeguard("", ""); // handled separately
     m_pSafeguards[RUN_SAFEGUARD_QUIT_GAME]->SetRelevantCVar(&mom_run_safeguard_quit_game);
     m_pSafeguards[RUN_SAFEGUARD_QUIT_GAME]->SetIgnoredInMenu(false);
 

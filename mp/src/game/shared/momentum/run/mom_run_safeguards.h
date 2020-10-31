@@ -31,7 +31,7 @@ enum RunSafeguardMode_t
 class CRunSafeguard
 {
   public:
-    CRunSafeguard(const char *szAction);
+    CRunSafeguard(const char *szMovementKeysToken, const char *szDoublePressToken);
 
     void Reset();
 
@@ -45,7 +45,8 @@ class CRunSafeguard
     bool IsMovementKeysSafeguarded(int nButtons);
     bool IsDoublePressSafeguarded();
 
-    char m_szAction[64];
+    char m_szMovementKeysToken[64];
+    char m_szDoublePressToken[64];
 
     float m_flLastTimePressed;
 
