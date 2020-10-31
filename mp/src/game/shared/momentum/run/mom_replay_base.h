@@ -12,6 +12,7 @@ class CMomReplayBase : public ISerializable
     CMomReplayBase(CReplayHeader header, bool bFull) : m_rhHeader(header), m_pEntity(nullptr)
     {
         m_pszRunHash[0] = '\0';
+        m_pszFilePath[0] = '\0';
     }
 
   public:
@@ -33,6 +34,7 @@ class CMomReplayBase : public ISerializable
     virtual uint8 GetZoneNumber() { return m_rhHeader.m_iZoneNumber; }
     virtual CMomentumReplayGhostEntity *GetRunEntity() { return m_pEntity; }
     virtual const char *GetRunHash() { return m_pszRunHash; }
+    virtual const char *GetFilePath() { return m_pszFilePath; }
 
   public:
     virtual void SetMapName(const char *name) { Q_strncpy(m_rhHeader.m_szMapName, name, sizeof(m_rhHeader.m_szMapName)); }
@@ -48,6 +50,7 @@ class CMomReplayBase : public ISerializable
     virtual void SetZoneNumber(uint8 zone) { m_rhHeader.m_iZoneNumber = zone; }
     virtual void SetRunEntity(CMomentumReplayGhostEntity *pEnt) { m_pEntity = pEnt; }
     virtual void SetRunHash(const char *pHash) { Q_strncpy(m_pszRunHash, pHash, sizeof(m_pszRunHash)); }
+    virtual void SetFilePath(const char *pFilePath) { Q_strncpy(m_pszFilePath, pFilePath, sizeof(m_pszFilePath)); };
 
   public:
     virtual uint8 GetVersion() = 0;
@@ -63,4 +66,5 @@ class CMomReplayBase : public ISerializable
     CReplayHeader m_rhHeader;
     CMomentumReplayGhostEntity *m_pEntity;
     char m_pszRunHash[41];
+    char m_pszFilePath[MAX_PATH];
 };
