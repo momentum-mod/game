@@ -1069,6 +1069,7 @@ LINK_ENTITY_TO_CLASS(trigger_momentum_userinput, CTriggerUserInput);
 BEGIN_DATADESC(CTriggerUserInput)
     DEFINE_KEYFIELD(m_eKey, FIELD_INTEGER, "lookedkey"),
     DEFINE_OUTPUT(m_OnKeyPressed, "OnKeyPressed"),
+    DEFINE_OUTPUT(m_OnKeyHeld, "OnKeyHeld"),
     DEFINE_OUTPUT(m_OnKeyReleased, "OnKeyReleased"),
 END_DATADESC();
 
@@ -1127,6 +1128,9 @@ void CTriggerUserInput::Touch(CBaseEntity *pOther)
         {
             if (pPlayer->m_afButtonPressed & m_ButtonRep)
                 m_OnKeyPressed.FireOutput(pPlayer, this);
+
+            if (pPlayer->m_nButtons & m_ButtonRep)
+                m_OnKeyHeld.FireOutput(pPlayer, this);
 
             if (pPlayer->m_afButtonReleased & m_ButtonRep)
                 m_OnKeyReleased.FireOutput(pPlayer, this);

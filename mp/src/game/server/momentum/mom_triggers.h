@@ -559,6 +559,7 @@ public:
     int m_ButtonRep;
     Key m_eKey;
     COutputEvent m_OnKeyPressed;
+    COutputEvent m_OnKeyHeld;
     COutputEvent m_OnKeyReleased;
 };
 
