@@ -48,14 +48,6 @@
 //	SNDLVL_140dB	= 140,	// 0.2
 //	SNDLVL_150dB	= 150,	// 0.2
 
-"Weapon_RPG.Draw"
-{
-	"channel"	    "CHAN_STATIC"
-	"soundlevel"	"SNDLVL_74dB"
-	"volume"	    ".2"
-	"wave"		    "weapons/draw_primary.wav"
-}
-
 "Weapon_RL.Single"
 {
     "channel"       "CHAN_WEAPON"
