@@ -200,7 +200,7 @@ void CClientTimesDisplay::FireGameEvent(IGameEvent *event)
 
     if (FStrEq(type, "replay_save") && event->GetBool("save"))
     {
-        m_pTimes->OnRunSaved();
+        m_pTimes->OnRunSaved(event->GetString("filepath"));
     }
     else if (FStrEq(type, "run_upload"))
     {
