@@ -17,6 +17,10 @@ class CMomReplayFactory
 
     // Returns a replay file and constructs a versioned replay object.
     CMomReplayBase *LoadReplayFile(const char *pFileName, bool bFullLoad = true, const char *pPathID = "MOD");
+    CMomReplayBase *LoadReplayFromBuffer(CUtlBuffer &reader, bool bFullLoad = true);
+
+  private:
+    bool IsReplayDebugEnabled();
 
     uint8 m_ucCurrentVersion;
 };
