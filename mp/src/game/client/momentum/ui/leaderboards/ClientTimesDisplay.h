@@ -26,40 +26,40 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
     CClientTimesDisplay(IViewPort *pViewPort);
     ~CClientTimesDisplay();
 
-    const char* GetName() OVERRIDE { return PANEL_TIMES; }
-    void SetData(KeyValues *data) OVERRIDE{};
-    void Reset() OVERRIDE;
-    bool NeedsUpdate() OVERRIDE;
-    void Update() OVERRIDE;
+    const char* GetName() override { return PANEL_TIMES; }
+    void SetData(KeyValues *data) override{};
+    void Reset() override;
+    bool NeedsUpdate() override;
+    void Update() override;
     void Update(bool bFullUpdate);
     void Reset(bool bFullReset);
     
-    bool HasInputElements() OVERRIDE { return true; }
+    bool HasInputElements() override { return true; }
 
-    void ShowPanel(bool bShow) OVERRIDE;
+    void ShowPanel(bool bShow) override;
 
-    void SetMouseInputEnabled(bool bState) OVERRIDE;
+    void SetMouseInputEnabled(bool bState) override;
 
-    void SetVisible(bool bState) OVERRIDE;
+    void SetVisible(bool bState) override;
 
     void Close();
 
     // both vgui::Frame and IViewPortPanel define these, so explicitly define them here as passthroughs to vgui
-    vgui::VPANEL GetVPanel() OVERRIDE { return BaseClass::GetVPanel(); }
-    bool IsVisible() OVERRIDE { return BaseClass::IsVisible(); }
-    void SetParent(vgui::VPANEL parent) OVERRIDE { BaseClass::SetParent(parent); }
+    vgui::VPANEL GetVPanel() override { return BaseClass::GetVPanel(); }
+    bool IsVisible() override { return BaseClass::IsVisible(); }
+    void SetParent(vgui::VPANEL parent) override { BaseClass::SetParent(parent); }
 
   protected:
     // functions to override
     void OnKeyCodeReleased(vgui::KeyCode code) override;
 
-    void ApplySchemeSettings(vgui::IScheme *pScheme) OVERRIDE;
-    void PerformLayout() OVERRIDE;
+    void ApplySchemeSettings(vgui::IScheme *pScheme) override;
+    void PerformLayout() override;
 
     // IGameEventListener interface:
-    void FireGameEvent(IGameEvent *event) OVERRIDE;
+    void FireGameEvent(IGameEvent *event) override;
     // CAutoGameSystem:
-    void LevelInitPostEntity() OVERRIDE;
+    void LevelInitPostEntity() override;
 
     void OnReloadControls() override;
 
