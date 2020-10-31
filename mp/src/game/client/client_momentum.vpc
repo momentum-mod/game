@@ -443,6 +443,7 @@ $Project "Client (Momentum)"
         
         $File   "$SRCDIR\game\shared\predicted_viewmodel.cpp"
         $File   "$SRCDIR\game\shared\predicted_viewmodel.h"
+        $File   "c_beamspotlight.cpp"
     }
 
     $Folder "Link Libraries"
