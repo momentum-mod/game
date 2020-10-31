@@ -60,6 +60,7 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
     void FireGameEvent(IGameEvent *event) override;
     // CAutoGameSystem:
     void LevelInitPostEntity() override;
+    void LevelShutdownPreEntity() override;
 
     void OnReloadControls() override;
 

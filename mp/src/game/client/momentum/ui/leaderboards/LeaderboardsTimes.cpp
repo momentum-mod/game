@@ -1148,3 +1148,8 @@ void CLeaderboardsTimes::OnItemContextMenu(KeyValues* pData)
         }
     }
 }
+
+void CLeaderboardsTimes::LevelShutdown()
+{
+}
+

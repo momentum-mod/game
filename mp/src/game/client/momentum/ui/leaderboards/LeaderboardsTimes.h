@@ -51,6 +51,7 @@ class CLeaderboardsTimes : public vgui::EditablePanel
     ~CLeaderboardsTimes();
 
     void LevelInit();
+    void LevelShutdown();
     void Reset(bool bFullReset);
     void InitLeaderboardSections();
     void OnRunPosted(bool bPosted);
