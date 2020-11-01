@@ -48,6 +48,8 @@ CON_COMMAND(hud_reloadcontrols, "Reloads the control res files for hud elements.
 extern ConVar cl_forwardspeed;
 extern ConVar cl_sidespeed;
 
+extern ConVar mom_mapfinished_movement_enable;
+
 HScheme g_hVGuiCombineScheme = 0;
 
 // Instance the singleton and expose the interface to it.
@@ -193,6 +195,9 @@ int ClientModeMOMNormal::HudElementKeyInput(int down, ButtonCode_t keynum, const
                 m_pSpectatorGUI->SetMouseInputEnabled(true);
             return 0;
         }
+
+        if (!mom_mapfinished_movement_enable.GetBool())
+            return 0;
     }
 
     if (g_pZoneMenu && g_pZoneMenu->IsVisible())
