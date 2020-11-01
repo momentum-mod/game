@@ -22,7 +22,7 @@
 
 using namespace vgui;
 
-static MAKE_TOGGLE_CONVAR(mom_mapfinished_movement_enable, "0", FCVAR_CLIENTDLL | FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
+MAKE_TOGGLE_CONVAR(mom_mapfinished_movement_enable, "0", FCVAR_CLIENTDLL | FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
                           "Toggles being able to move after completing a run. 0 = OFF, 1 = ON\n");
 
 DECLARE_HUDELEMENT_DEPTH(CHudMapFinishedDialog, 70);
