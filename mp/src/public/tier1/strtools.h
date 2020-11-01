@@ -57,6 +57,7 @@ char *V_strlower( char *start );
 int V_stricmp( const char *s1, const char *s2 );
 int	V_strncmp( const char *s1, const char *s2, int count );
 int V_strnicmp( const char *s1, const char *s2, int n );
+int V_strinatcmp( const char *str1, const char *str2 );
 
 #ifdef POSIX
 

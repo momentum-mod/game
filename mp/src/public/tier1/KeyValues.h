@@ -212,6 +212,7 @@ public:
 	void ChainKeyValue( KeyValues* pChain );
 	
 	void RecursiveSaveToFile( CUtlBuffer& buf, int indentLevel, bool sortKeys = false, bool bAllowEmptyString = false );
+	void RecursiveSaveToFile( CUtlBuffer& buf, int indentLevel, int subKeySortCount, bool bAllowEmptyString = false );
 
 	bool WriteAsBinary( CUtlBuffer &buffer );
 	bool ReadAsBinary( CUtlBuffer &buffer, int nStackDepth = 0 );
@@ -285,8 +286,8 @@ private:
 	
 	// NOTE: If both filesystem and pBuf are non-null, it'll save to both of them.
 	// If filesystem is null, it'll ignore f.
-	void RecursiveSaveToFile( IBaseFileSystem *filesystem, FileHandle_t f, CUtlBuffer *pBuf, int indentLevel, bool sortKeys, bool bAllowEmptyString );
-	void SaveKeyToFile( KeyValues *dat, IBaseFileSystem *filesystem, FileHandle_t f, CUtlBuffer *pBuf, int indentLevel, bool sortKeys, bool bAllowEmptyString );
+	void RecursiveSaveToFile( IBaseFileSystem *filesystem, FileHandle_t f, CUtlBuffer *pBuf, int indentLevel, int sortKeyCount, bool bAllowEmptyString );
+	void SaveKeyToFile( KeyValues *dat, IBaseFileSystem *filesystem, FileHandle_t f, CUtlBuffer *pBuf, int indentLevel, int sortKeyCount, bool bAllowEmptyString );
 	void WriteConvertedString( IBaseFileSystem *filesystem, FileHandle_t f, CUtlBuffer *pBuf, const char *pszString );
 	
 	void RecursiveLoadFromBuffer( char const *resourceName, CUtlBuffer &buf );
@@ -434,7 +435,7 @@ class CUtlSortVectorKeyValuesByName
 public:
 	bool Less( const KeyValues* lhs, const KeyValues* rhs, void * )
 	{
-		return Q_stricmp( lhs->GetName(), rhs->GetName() ) < 0;
+		return V_strinatcmp( lhs->GetName(), rhs->GetName() ) < 0;
 	}
 };
 
