@@ -37,6 +37,7 @@ class CHudTimer : public CHudElement, public EditablePanel
     void Init() OVERRIDE;
     void Reset() OVERRIDE;
     bool ShouldDraw() OVERRIDE;
+    void LevelInit() override;
     void LevelShutdown() OVERRIDE;
     void FireGameEvent(IGameEvent* event) OVERRIDE;
     void ApplySchemeSettings(IScheme* pScheme) OVERRIDE;
@@ -268,6 +269,15 @@ void CHudTimer::OnThink()
                             m_pComparisonLabel->SetFgColor(compareColor);
                             m_pComparisonLabel->SetText(comparisonANSI);
                         }
+                        else
+                        {
+                            m_pComparisonLabel->SetText("");
+                        }
+                    }
+                    else
+                    {
+                        m_pSplitLabel->SetText("");
+                        m_pComparisonLabel->SetText("");
                     }
                 }
             }
@@ -289,6 +299,11 @@ void CHudTimer::OnThink()
 bool CHudTimer::ShouldDraw()
 {
     return mom_hud_timer.GetBool() && CHudElement::ShouldDraw();
+}
+
+void CHudTimer::LevelInit()
+{
+    SetToNoTimer();
 }
 
 void CHudTimer::LevelShutdown()
