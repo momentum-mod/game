@@ -89,6 +89,7 @@ public:
 	const char	*Get( ) const;
 	void		Set( const char *pValue );
 	operator const char*() const;
+	explicit operator bool() const;
 
 	// Set directly and don't look for a null terminator in pValue.
 	// nChars does not include the nul and this will only copy
@@ -316,6 +317,10 @@ inline CUtlString::operator const char*() const
 	return Get();
 }
 
+inline CUtlString::operator bool() const
+{
+	return !IsEmpty();
+}
 
 
 //-----------------------------------------------------------------------------
