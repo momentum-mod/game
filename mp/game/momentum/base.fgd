@@ -2841,7 +2841,13 @@
     "An entity that spawns a particle system built using the particle editor."
 [
     effect_name(string) : "Particle System Name"
+    duration(float) : "Particle System Duration" : "0.0" : "The duration of this particle system, 0.0 is infinite"
     start_active(choices) : "Start Active?" : 0 =
+    [
+        0 : "No"
+        1 : "Yes"
+    ]
+    attach_to_player(choices) : "Attach to Player" : 0 : "If set, the particle effect starts on the player" =
     [
         0 : "No"
         1 : "Yes"

@@ -31,11 +31,14 @@ IMPLEMENT_SERVERCLASS_ST_NOBASE(CParticleSystem, DT_ParticleSystem)
 	SendPropArray3( SENDINFO_ARRAY3(m_hControlPointEnts), SendPropEHandle( SENDINFO_ARRAY(m_hControlPointEnts) ) ),
 	SendPropArray3( SENDINFO_ARRAY3(m_iControlPointParents), SendPropInt( SENDINFO_ARRAY(m_iControlPointParents), 3, SPROP_UNSIGNED ) ),
 	SendPropBool( SENDINFO(m_bWeatherEffect) ),
+	SendPropBool( SENDINFO(m_bAttachToPlayer) ),
 END_SEND_TABLE()
 
 BEGIN_DATADESC( CParticleSystem )
 	DEFINE_KEYFIELD( m_bStartActive,	FIELD_BOOLEAN, "start_active" ),
 	DEFINE_KEYFIELD( m_bWeatherEffect,	FIELD_BOOLEAN, "flag_as_weather" ),
+	DEFINE_KEYFIELD( m_bAttachToPlayer,	FIELD_BOOLEAN, "attach_to_player" ),
+	DEFINE_KEYFIELD( m_flDuration,	FIELD_FLOAT, "duration" ),
 	DEFINE_FIELD( m_bActive,			FIELD_BOOLEAN ),
 	DEFINE_FIELD( m_bDestroyImmediately, FIELD_BOOLEAN ),
 	DEFINE_FIELD( m_flStartTime,		FIELD_TIME ),
@@ -120,8 +123,6 @@ BEGIN_DATADESC( CParticleSystem )
 	DEFINE_INPUTFUNC( FIELD_VOID, "Stop", InputStop ),
 	DEFINE_INPUTFUNC( FIELD_VOID, "DestroyImmediately", InputDestroyImmediately ),
 
-	DEFINE_THINKFUNC( StartParticleSystemThink ),
-
 END_DATADESC()
 
 LINK_ENTITY_TO_CLASS( info_particle_system, CParticleSystem );
@@ -132,6 +133,7 @@ LINK_ENTITY_TO_CLASS( info_particle_system, CParticleSystem );
 CParticleSystem::CParticleSystem()
 {
 	m_bWeatherEffect = false;
+	m_flDuration = 0.0f;
 }
 
 //-----------------------------------------------------------------------------
@@ -158,6 +160,11 @@ void CParticleSystem::Spawn( void )
 
 	Precache();
 	m_iEffectIndex = -1;
+
+	if (m_flDuration > 0.0f)
+	{
+		SetNextThink(gpGlobals->curtime);
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -180,9 +187,14 @@ void CParticleSystem::Activate( void )
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-void CParticleSystem::StartParticleSystemThink( void )
+void CParticleSystem::Think( void )
 {
-	StartParticleSystem();
+    if (gpGlobals->curtime >= m_flStartTime + m_flDuration && m_bActive)
+    {
+        StopParticleSystem();
+    }
+
+    SetNextThink(gpGlobals->curtime);
 }
 
 //-----------------------------------------------------------------------------

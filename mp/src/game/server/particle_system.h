@@ -27,6 +27,7 @@ public:
 	virtual void Precache( void );
 	virtual void Spawn( void );
 	virtual void Activate( void );
+	virtual void Think( void );
 	virtual int  UpdateTransmitState(void);
 
 	void		StartParticleSystem( void );
@@ -35,7 +36,6 @@ public:
 	void		InputStart( inputdata_t &inputdata );
 	void		InputStop( inputdata_t &inputdata );
 	void		InputDestroyImmediately( inputdata_t &inputdata );
-	void		StartParticleSystemThink( void );
 
 	enum { kMAXCONTROLPOINTS = 63 }; ///< actually one less than the total number of cpoints since 0 is assumed to be me
 
@@ -51,11 +51,13 @@ protected:
 	CNetworkVar( bool, m_bDestroyImmediately );
 	CNetworkVar( int,	m_iEffectIndex )
 	CNetworkVar( float,	m_flStartTime );	// Time at which this effect was started.  This is used after restoring an active effect.
+	CNetworkVar( float,	m_flDuration );
 
 	string_t			m_iszControlPointNames[kMAXCONTROLPOINTS];
 	CNetworkArray( EHANDLE, m_hControlPointEnts, kMAXCONTROLPOINTS );
 	CNetworkArray( unsigned char, m_iControlPointParents, kMAXCONTROLPOINTS );
 	CNetworkVar( bool,	m_bWeatherEffect );
+	CNetworkVar( bool,	m_bAttachToPlayer );
 };
 
 #endif // PARTICLE_SYSTEM_H
