@@ -44,6 +44,9 @@ protected:
 	unsigned char m_iControlPointParents[kMAXCONTROLPOINTS];
 
 	bool		m_bWeatherEffect;
+	bool		m_bAttachToPlayer;
+
+	C_BaseEntity	*m_pEffectEntity;
 };
 
 IMPLEMENT_CLIENTCLASS(C_ParticleSystem, DT_ParticleSystem, CParticleSystem);
@@ -63,6 +66,7 @@ BEGIN_RECV_TABLE_NOBASE( C_ParticleSystem, DT_ParticleSystem )
 	RecvPropArray3( RECVINFO_ARRAY(m_hControlPointEnts), RecvPropEHandle( RECVINFO( m_hControlPointEnts[0] ) ) ),
 	RecvPropArray3( RECVINFO_ARRAY(m_iControlPointParents), RecvPropInt( RECVINFO(m_iControlPointParents[0]))), 
 	RecvPropBool( RECVINFO( m_bWeatherEffect ) ),
+	RecvPropBool( RECVINFO( m_bAttachToPlayer ) ),
 END_RECV_TABLE();
 
 //-----------------------------------------------------------------------------
@@ -90,6 +94,8 @@ void C_ParticleSystem::PostDataUpdate( DataUpdateType_t updateType )
 {
 	BaseClass::PostDataUpdate( updateType );
 
+	m_pEffectEntity = m_bAttachToPlayer ? (CBaseEntity*)UTIL_PlayerByIndex(1) : this;
+
 	// Always restart if just created and updated
 	// FIXME: Does this play fairly with PVS?
 	if ( updateType == DATA_UPDATE_CREATED )
@@ -113,11 +119,11 @@ void C_ParticleSystem::PostDataUpdate( DataUpdateType_t updateType )
 			{
                 if (!m_bDestroyImmediately)
                 {
-                    ParticleProp()->StopEmission();
+                    m_pEffectEntity->ParticleProp()->StopEmission();
                 }
                 else
                 {
-                    ParticleProp()->StopEmissionAndDestroyImmediately();
+                    m_pEffectEntity->ParticleProp()->StopEmissionAndDestroyImmediately();
                 }
 			}
 		}
@@ -140,7 +146,7 @@ void C_ParticleSystem::ClientThink( void )
 			if ( m_bWeatherEffect && !GameRules()->AllowWeatherParticles() )
 				return;
 
-			CNewParticleEffect *pEffect = ParticleProp()->Create( pszName, PATTACH_ABSORIGIN_FOLLOW );
+			CNewParticleEffect *pEffect = m_pEffectEntity->ParticleProp()->Create( pszName, PATTACH_ABSORIGIN_FOLLOW );
 			AssertMsg1( pEffect, "Particle system couldn't make %s", pszName );
 			if (pEffect)
 			{
@@ -149,7 +155,7 @@ void C_ParticleSystem::ClientThink( void )
 					CBaseEntity *pOnEntity = m_hControlPointEnts[i].Get();
 					if ( pOnEntity )
 					{
-						ParticleProp()->AddControlPoint( pEffect, i + 1, pOnEntity, PATTACH_ABSORIGIN_FOLLOW );
+						m_pEffectEntity->ParticleProp()->AddControlPoint( pEffect, i + 1, pOnEntity, PATTACH_ABSORIGIN_FOLLOW );
 					}
 
 					AssertMsg2( m_iControlPointParents[i] >= 0 && m_iControlPointParents[i] <= kMAXCONTROLPOINTS ,
@@ -166,7 +172,7 @@ void C_ParticleSystem::ClientThink( void )
 				//		 already past the end of it, denoting that we're finished.  In that case, just destroy us and be done. -- jdw
 
 				// TODO: This can go when the SkipToTime code below goes
-				ParticleProp()->OnParticleSystemUpdated( pEffect, 0.0f );
+				m_pEffectEntity->ParticleProp()->OnParticleSystemUpdated( pEffect, 0.0f );
 
 				// Skip the effect ahead if we're restarting it
 				float flTimeDelta = gpGlobals->curtime - m_flStartTime;
