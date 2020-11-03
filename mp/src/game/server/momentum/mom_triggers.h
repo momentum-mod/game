@@ -54,15 +54,15 @@ public:
 
     CBaseMomentumTrigger();
 
-    void Spawn() OVERRIDE;
+    void Spawn() override;
     // Used to calculate if a position is inside of this trigger's bounds
     bool ContainsPosition(const Vector &pos) { return CollisionProp()->IsPointInBounds(pos); }
 
     // By default we want to filter out momentum entities that do not pass an inherit track number check.
-    virtual bool PassesTriggerFilters(CBaseEntity* pOther) OVERRIDE;
+    virtual bool PassesTriggerFilters(CBaseEntity* pOther) override;
 
     // Draws relevant information when ent_text is used
-    int DrawDebugTextOverlays() OVERRIDE;
+    int DrawDebugTextOverlays() override;
 
     // Returns this trigger's track number.
     int GetTrackNumber() const { return m_iTrackNumber; }
@@ -83,9 +83,9 @@ public:
     DECLARE_DATADESC();
 
     CFilterTrackNumber();
-    bool KeyValue(const char *szKeyName, const char *szValue) OVERRIDE;
+    bool KeyValue(const char *szKeyName, const char *szValue) override;
 
-    bool PassesFilterImpl(CBaseEntity *pCaller, CBaseEntity *pEntity) OVERRIDE;
+    bool PassesFilterImpl(CBaseEntity *pCaller, CBaseEntity *pEntity) override;
 
 private:
     int m_iTrackNumber;
@@ -100,7 +100,7 @@ public:
 
     CFilterPlayerState();
 
-    bool PassesFilterImpl(CBaseEntity* pCaller, CBaseEntity* pEntity) OVERRIDE;
+    bool PassesFilterImpl(CBaseEntity* pCaller, CBaseEntity* pEntity) override;
 
 private:
     int m_iPlayerState;
@@ -122,7 +122,7 @@ public:
 
     CFilterCollectibles();
 
-    bool PassesFilterImpl(CBaseEntity* pCaller, CBaseEntity* pEntity) OVERRIDE;
+    bool PassesFilterImpl(CBaseEntity* pCaller, CBaseEntity* pEntity) override;
 
 private:
     int m_iCollectibleCount;
@@ -137,7 +137,7 @@ public:
 
     CFilterVelocity();
 
-    bool PassesFilterImpl(CBaseEntity *pCaller, CBaseEntity *pEntity) OVERRIDE;
+    bool PassesFilterImpl(CBaseEntity *pCaller, CBaseEntity *pEntity) override;
 
 private:
     bool CheckTotalVelocity(CBaseEntity *pEntity);
@@ -178,7 +178,7 @@ public:
 
     // Point-based zones need a custom collision check
     void InitCustomCollision(CPhysCollide *pPhysCollide, const Vector &vecMins, const Vector &vecMaxs);
-    virtual bool TestCollision(const Ray_t &ray, unsigned int mask, trace_t &tr) OVERRIDE;
+    virtual bool TestCollision(const Ray_t &ray, unsigned int mask, trace_t &tr) override;
 
     // Override this function to have the game save this zone type to the .zon file
     // If you override this make sure to also override LoadFromKeyValues to load values from .zon file
@@ -192,7 +192,7 @@ public:
 
     const Vector& GetRestartPosition();
 
-    int DrawDebugTextOverlays() OVERRIDE;
+    int DrawDebugTextOverlays() override;
 
     IMPLEMENT_NETWORK_VAR_FOR_DERIVED(m_iTrackNumber);
 
@@ -224,13 +224,13 @@ public:
     void SetZoneNumber(int newZone) { m_iZoneNumber = newZone; }
     int GetZoneNumber() const { return m_iZoneNumber; };
 
-    virtual void OnStartTouch(CBaseEntity* pOther) OVERRIDE;
-    virtual void OnEndTouch(CBaseEntity* pOther) OVERRIDE;
+    virtual void OnStartTouch(CBaseEntity* pOther) override;
+    virtual void OnEndTouch(CBaseEntity* pOther) override;
 
-    virtual bool ToKeyValues(KeyValues* pKvInto) OVERRIDE;
-    virtual bool LoadFromKeyValues(KeyValues* kv) OVERRIDE;
+    virtual bool ToKeyValues(KeyValues* pKvInto) override;
+    virtual bool LoadFromKeyValues(KeyValues* kv) override;
 
-    int DrawDebugTextOverlays() OVERRIDE;
+    int DrawDebugTextOverlays() override;
 
 protected:
     // The zone number of this zone. Keep in mind start timer triggers are always zone number 1,
@@ -250,9 +250,9 @@ public:
     DECLARE_NETWORKCLASS();
 
     // always send to all clients
-    int UpdateTransmitState() OVERRIDE { return SetTransmitState(FL_EDICT_ALWAYS); }
+    int UpdateTransmitState() override { return SetTransmitState(FL_EDICT_ALWAYS); }
 
-    virtual int GetZoneType() OVERRIDE;
+    virtual int GetZoneType() override;
 };
 
 // Stage triggers are used to denote large, strung-together "chunks" of the map, usually 
@@ -269,9 +269,9 @@ public:
     DECLARE_NETWORKCLASS();
 
     // always send to all clients
-    int UpdateTransmitState() OVERRIDE { return SetTransmitState(FL_EDICT_ALWAYS); }
+    int UpdateTransmitState() override { return SetTransmitState(FL_EDICT_ALWAYS); }
 
-    virtual int GetZoneType() OVERRIDE;
+    virtual int GetZoneType() override;
 };
 
 // The start trigger is the first zone trigger for a track.
@@ -288,9 +288,9 @@ class CTriggerTimerStart : public CTriggerZone
     CTriggerTimerStart();
 
     // always send to all clients
-    int UpdateTransmitState() OVERRIDE { return SetTransmitState(FL_EDICT_ALWAYS); }
+    int UpdateTransmitState() override { return SetTransmitState(FL_EDICT_ALWAYS); }
 
-    void Spawn() OVERRIDE;
+    void Spawn() override;
 
     float GetSpeedLimit() const { return m_fSpeedLimit; }
     void SetSpeedLimit(const float maxLeaveSpeed);
@@ -307,10 +307,10 @@ class CTriggerTimerStart : public CTriggerZone
     int GetLimitSpeedType() const { return m_iLimitSpeedType; }
     void SetLimitSpeedType(const int type) { m_iLimitSpeedType = type; }
 
-    virtual bool ToKeyValues(KeyValues *pKvInto) OVERRIDE;
-    virtual bool LoadFromKeyValues(KeyValues *zoneKV) OVERRIDE;
+    virtual bool ToKeyValues(KeyValues *pKvInto) override;
+    virtual bool LoadFromKeyValues(KeyValues *zoneKV) override;
 
-    int GetZoneType() OVERRIDE;
+    int GetZoneType() override;
   private:
     QAngle m_angLook;
 
@@ -334,12 +334,12 @@ public:
 
     CTriggerTimerStop();
 
-    virtual void Spawn() OVERRIDE;
+    virtual void Spawn() override;
 
     // always send to all clients
-    virtual int UpdateTransmitState() OVERRIDE { return SetTransmitState(FL_EDICT_ALWAYS); }
+    virtual int UpdateTransmitState() override { return SetTransmitState(FL_EDICT_ALWAYS); }
 
-    int GetZoneType() OVERRIDE;
+    int GetZoneType() override;
 
     bool GetCancelBool() const { return m_bCancel; }
 
@@ -390,8 +390,8 @@ public:
     CTriggerMomentumTeleport();
 
     // This void teleports the touching entity!
-    void OnEndTouch(CBaseEntity *) OVERRIDE;
-    void Touch(CBaseEntity* pOther) OVERRIDE;
+    void OnEndTouch(CBaseEntity *) override;
+    void Touch(CBaseEntity* pOther) override;
     // Used by children classes to define what ent to teleport to (see CTriggerOneHop)
     void SetDestinationEnt(CBaseEntity *ent) { m_hDestinationEnt.Set(ent); }
     bool GetVelocityMode() const { return m_iMode; }
@@ -404,7 +404,7 @@ public:
     // Called when teleported by a fail teleport
     void OnFailTeleport(CBaseEntity *pEntTeleported);
 
-    int DrawDebugTextOverlays() OVERRIDE;
+    int DrawDebugTextOverlays() override;
 
 protected:
     int m_iMode;
@@ -420,10 +420,10 @@ class CEnvSurfaceTeleport : public CEnvPlayerSurfaceTrigger
     DECLARE_CLASS(CEnvSurfaceTeleport, CEnvPlayerSurfaceTrigger);
 
 public:
-    void UpdateMaterialThink() OVERRIDE;
+    void UpdateMaterialThink() override;
 
 protected:
-    void PlayerSurfaceChanged(CBasePlayer*, char) OVERRIDE;
+    void PlayerSurfaceChanged(CBasePlayer*, char) override;
 
 private:
     EHANDLE m_hDestinationEnt;
@@ -436,7 +436,7 @@ class CTriggerProgress : public CBaseMomentumTrigger
     DECLARE_DATADESC();
 
 public:
-    void OnStartTouch(CBaseEntity *) OVERRIDE;
+    void OnStartTouch(CBaseEntity *) override;
     // the following is only used by CFilterCheckpoint
     virtual int GetProgressNumber() const { return m_iProgressNumber; }
     // The following is used by mapzones.cpp
@@ -456,7 +456,7 @@ class CFilterProgress : public CBaseFilter
     DECLARE_DATADESC();
 
   public:
-    bool PassesFilterImpl(CBaseEntity *, CBaseEntity *) OVERRIDE;
+    bool PassesFilterImpl(CBaseEntity *, CBaseEntity *) override;
 
   private:
     int m_iProgressNum;
@@ -469,7 +469,7 @@ class CTriggerTeleportProgress : public CTriggerMomentumTeleport
     DECLARE_CLASS(CTriggerTeleportProgress, CTriggerMomentumTeleport);
 
   public:
-    void Touch(CBaseEntity *) OVERRIDE;
+    void Touch(CBaseEntity *) override;
 };
 
 // A trigger volume that allows multiple repeated entries (hops), but teleports the player
@@ -482,9 +482,9 @@ public:
 
     CTriggerMultihop();
 
-    void OnStartTouch(CBaseEntity *) OVERRIDE;
-    void OnEndTouch(CBaseEntity *) OVERRIDE;
-    void Touch(CBaseEntity *) OVERRIDE;
+    void OnStartTouch(CBaseEntity *) override;
+    void OnEndTouch(CBaseEntity *) override;
+    void Touch(CBaseEntity *) override;
 
     float GetHoldTeleportTime() const { return m_fMaxHoldSeconds; }
     void SetHoldTeleportTime(const float fHoldTime) { m_fMaxHoldSeconds = fHoldTime; }
@@ -508,7 +508,7 @@ class CTriggerOnehop : public CTriggerMultihop
 
     CTriggerOnehop();
 
-    void OnStartTouch(CBaseEntity *pEntity) OVERRIDE;
+    void OnStartTouch(CBaseEntity *pEntity) override;
     void SetNoLongerJumpableFired(bool bState) { m_bhopNoLongerJumpableFired = bState; }
 
   private:
@@ -525,7 +525,7 @@ class CTriggerResetOnehop : public CBaseMomentumTrigger
     DECLARE_CLASS(CTriggerResetOnehop, CBaseMomentumTrigger);
     DECLARE_DATADESC();
 
-    void OnStartTouch(CBaseEntity *) OVERRIDE;
+    void OnStartTouch(CBaseEntity *) override;
 
   private:
     // Fires when it resets all one hops.
@@ -540,7 +540,7 @@ public:
     DECLARE_DATADESC();
 
     CTriggerUserInput();
-    void Spawn() OVERRIDE;
+    void Spawn() override;
     void Touch(CBaseEntity* pOther);
 
   private:
@@ -571,8 +571,8 @@ class CTriggerLimitMovement : public CBaseMomentumTrigger
     DECLARE_CLASS(CTriggerLimitMovement, CBaseMomentumTrigger);
 
   public:
-    void Touch(CBaseEntity *pOther) OVERRIDE;
-    void OnEndTouch(CBaseEntity *pOther) OVERRIDE;
+    void Touch(CBaseEntity *pOther) override;
+    void OnEndTouch(CBaseEntity *pOther) override;
 
     // spawnflags
     // starts on 0x1000 (or 1 << 12) - SF_TRIGGER_DISALLOW_BOTS
@@ -625,7 +625,7 @@ void DoVariablePushes();
 
 class CMomentumTriggerSystem : public CAutoGameSystemPerFrame
 {
-    virtual void FrameUpdatePostEntityThink() OVERRIDE;
+    virtual void FrameUpdatePostEntityThink() override;
 };
 
 // CFuncShootBoost
@@ -637,9 +637,9 @@ class CFuncShootBoost : public CFuncBrush
 
     CFuncShootBoost();
 
-    void Spawn() OVERRIDE;
-    int OnTakeDamage(const CTakeDamageInfo &info) OVERRIDE;
-    int DrawDebugTextOverlays() OVERRIDE;
+    void Spawn() override;
+    int OnTakeDamage(const CTakeDamageInfo &info) override;
+    int DrawDebugTextOverlays() override;
     // Force in units per seconds applied to the player
     float m_fPushForce;
     // 0: Set the player's velocity to final push force
@@ -674,13 +674,13 @@ class CTriggerMomentumPush : public CBaseMomentumTrigger
     CTriggerMomentumPush();
 
   public:
-    void Spawn() OVERRIDE;
-    void OnStartTouch(CBaseEntity *) OVERRIDE;
-    void OnEndTouch(CBaseEntity *) OVERRIDE;
+    void Spawn() override;
+    void OnStartTouch(CBaseEntity *) override;
+    void OnEndTouch(CBaseEntity *) override;
     // Called when (and by) either a OnStartTouch() or OnEndTouch() event happens and their requisites are met
     void OnSuccessfulTouch(CBaseEntity *);
 
-    int DrawDebugTextOverlays() OVERRIDE;
+    int DrawDebugTextOverlays() override;
 
   private:
     // Force in units per seconds applied to the player
@@ -712,8 +712,8 @@ class CTriggerSlide : public CBaseMomentumTrigger
     DECLARE_DATADESC();
 
   public:
-    void OnStartTouch(CBaseEntity *pOther) OVERRIDE;
-    void OnEndTouch(CBaseEntity *pOther) OVERRIDE;
+    void OnStartTouch(CBaseEntity *pOther) override;
+    void OnEndTouch(CBaseEntity *pOther) override;
     int UpdateTransmitState() // always send to all clients
     {
         return SetTransmitState(FL_EDICT_ALWAYS);
@@ -732,8 +732,8 @@ public:
     DECLARE_DATADESC();
 
     CTriggerReverseSpeed();
-    void OnStartTouch(CBaseEntity *pOther) OVERRIDE;
-    void Think() OVERRIDE;
+    void OnStartTouch(CBaseEntity *pOther) override;
+    void Think() override;
 
     void ReverseSpeed(CBaseEntity *pEntity, bool bIsHorizontal);
 
@@ -752,10 +752,10 @@ public:
 
     CTriggerSetSpeed();
 
-    void OnStartTouch(CBaseEntity *pOther) OVERRIDE;
-    void OnEndTouch(CBaseEntity *pOther) OVERRIDE;
-    void Think(void) OVERRIDE;
-    void Touch(CBaseEntity *pOther) OVERRIDE;
+    void OnStartTouch(CBaseEntity *pOther) override;
+    void OnEndTouch(CBaseEntity *pOther) override;
+    void Think(void) override;
+    void Touch(CBaseEntity *pOther) override;
 
 private:
     void CalculateSpeed(CBaseEntity *pOther);
@@ -776,14 +776,14 @@ class CFuncMomentumBrush : public CFuncBrush
 
     CFuncMomentumBrush();
 
-    void Spawn() OVERRIDE;
+    void Spawn() override;
 
-    bool IsOn() const OVERRIDE;
-    void TurnOn() OVERRIDE;
-    void TurnOff() OVERRIDE;
+    bool IsOn() const override;
+    void TurnOn() override;
+    void TurnOff() override;
 
-    void StartTouch(CBaseEntity *pOther) OVERRIDE;
-    void EndTouch(CBaseEntity *pOther) OVERRIDE;
+    void StartTouch(CBaseEntity *pOther) override;
+    void EndTouch(CBaseEntity *pOther) override;
 
     int m_iStage;
     int m_iWorld;
@@ -801,7 +801,7 @@ class CFilterCampaignProgress : public CBaseFilter
     CFilterCampaignProgress();
 
   protected:
-    bool PassesFilterImpl(CBaseEntity *pCaller, CBaseEntity *pEntity) OVERRIDE;
+    bool PassesFilterImpl(CBaseEntity *pCaller, CBaseEntity *pEntity) override;
 
   private:
     int m_iWorld, m_iStage;
@@ -816,7 +816,7 @@ class CTriggerCampaignChangelevel : public CBaseMomentumTrigger
     CTriggerCampaignChangelevel();
 
   protected:
-    void OnStartTouch(CBaseEntity *pOther) OVERRIDE;
+    void OnStartTouch(CBaseEntity *pOther) override;
 
   private:
     int m_iWorld, m_iStage, m_iGametype;
@@ -832,7 +832,7 @@ class CMomentumMapInfo : public CPointEntity
     CMomentumMapInfo();
 
   protected:
-    void Spawn() OVERRIDE;
+    void Spawn() override;
 
   private:
     int m_iWorld, m_iStage, m_iGametype;
