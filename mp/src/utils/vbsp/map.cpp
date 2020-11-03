@@ -44,6 +44,14 @@ struct LoadSide_t
 	brush_texture_t	td;
 };
 
+// entities handled by zontool
+constexpr const char *momSkipTriggers[] = {
+    "trigger_momentum_timer_stop",
+    "trigger_momentum_timer_start",
+    "trigger_momentum_timer_stage",
+    "trigger_momentum_timer_checkpoint",
+    "trigger_momentum_trick"
+};
 
 extern qboolean onlyents;
 
@@ -1600,6 +1608,16 @@ ChunkFileResult_t CMapFile::LoadEntityCallback(CChunkFile *pFile, int nParam)
 		// func_detail brushes are moved into the world entity. The CONTENTS_DETAIL flag was set by the loader.
 		//
 		const char *pClassName = ValueForKey( mapent, "classname" );
+
+        for (uint i = 0; i < ARRAYSIZE(momSkipTriggers); ++i)
+        {
+            if (!strcmp(momSkipTriggers[i], pClassName))
+            {
+                mapent->numbrushes = 0;
+                mapent->epairs = nullptr;
+                return(ChunkFile_Ok);
+            }
+        }
 
 		if ( !strcmp( "func_detail", pClassName ) )
 		{
