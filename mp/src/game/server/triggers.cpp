@@ -2381,8 +2381,6 @@ void CTriggerTeleport::Touch(CBaseEntity* pOther)
 
     pOther->SetGroundEntity(NULL);
 
-    Vector vecPentTargetOrigin = pentTarget->GetAbsOrigin();
-
     if (!pentLandmark && !HasSpawnFlags(SF_TELEPORT_PRESERVE_ANGLES))
     {
         pOther->Teleport(&pentTarget->GetAbsOrigin(), &pentTarget->GetAbsAngles(), NULL);

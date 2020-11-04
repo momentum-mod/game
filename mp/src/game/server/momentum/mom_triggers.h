@@ -372,7 +372,7 @@ public:
     CNetworkVar(int, m_iDrawState);
 };
 
-enum TeleportMode
+enum TeleportMode_t
 {
     TELEPORT_DEFAULT = 0,
     TELEPORT_RESET,
@@ -592,7 +592,7 @@ private:
     void ToggleButtons(CMomRunEntity *pEnt, bool bEnable);
 };
 
-enum PushMode
+enum PushMode_t
 {
     PUSH_SET = 0,
     PUSH_ADD,
@@ -641,7 +641,7 @@ class CFuncShootBoost : public CFuncBrush
     int OnTakeDamage(const CTakeDamageInfo &info) override;
     int DrawDebugTextOverlays() override;
     // Force in units per seconds applied to the player
-    float m_fPushForce;
+    float m_flPushForce;
     // 0: Set the player's velocity to final push force
     // 1: Increase player's current velocity by push final force amount, this is almost like the default trigger_push
     // behaviour
@@ -684,7 +684,7 @@ class CTriggerMomentumPush : public CBaseMomentumTrigger
 
   private:
     // Force in units per seconds applied to the player
-    float m_fPushForce;
+    float m_flPushForce;
     // 0: Set the player's velocity to final push force
     // 1: Increase player's current velocity by push final force amount, this is almost like the default trigger_push
     // behaviour

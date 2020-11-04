@@ -68,7 +68,7 @@
     [
         0 : "Keep velocity"
         1 : "Reset velocity"
-        2 : "Keep negative Z velocity only"
+        2 : "Keep negative Z (downwards) velocity only"
         3 : "Reorient velocity to destination angles"
     ]
     
@@ -291,11 +291,10 @@
 [
 ]
 
-@SolidClass base(func_brush) = func_shootboost : "Entity that pushes the player when hit by the momentum_gun."
+@BaseClass = MomentumPush
 [
-    target(target_destination) : "Trigger" : : "If specified, the player must be inside this trigger for the boost to work."
     pushdir(angle) : "Push Direction (Pitch Yaw Roll)" : "0 0 0" : "Where player will be pushed. (Check flags for controlling its behaviour)."
-    force(integer) : "Force of the push" : 300 : "General force of the push (Player final velocity in Units per seconds) " +
+    force(integer) : "Force of the push" : 300 : "General force of the push (Player final velocity in units per second) " +
     "Ignored if -Use the direction vector as final force instead of calculating it by force amount- flag is set."
     increase(choices) : "Push mode" : 3 : "The method of pushing players. " =
     [
@@ -319,33 +318,18 @@
     ]
 ]
 
-@SolidClass base(MomentumTrigger) = trigger_momentum_push : "A trigger volume that modifies velocity of players that touch it."
+@SolidClass base(func_brush, MomentumPush) = func_shootboost : "Entity that pushes the player when it is damaged"
 [
-    pushdir(angle) : "Push Direction (Pitch Yaw Roll)" : "0 0 0" : "Where player will be pushed. (Check flags for controlling its behaviour)."
-    force(integer) : "Force of the push" : 300 : "General force of the push (Player final velocity in units per second) " +
-    "Ignored if -Use the direction vector as final force instead of calculating it by force amount- flag is set."
-    increase(choices) : "Push mode" : 3 : "The method of pushing players. " =
-    [
-        0 : "Set velocity"
-        1 : "Add velocity"
-        2 : "Set velocity if lower"
-        3 : "Add velocity if lower"
-        4 : "Basevelocity"
-        5 : "Variable push"
-    ]
-    varpushduration(float) : "Variable push duration" : 1 : "Duration of a variable push in seconds"
-    varpushbias(float) : "Variable push bias" : "0.5" : "The curve bias of a variable push, higher values bias the curve towards the end, 0.5 is linear"
-    varpushincrease(choices) : "Variable push mode" : 0 : "Whether the variable push increases or decreases over its duration" =
-    [
-        0 : "Decreasing"
-        1 : "Increasing"
-    ]
+    target(target_destination) : "Trigger" : : "If specified, the player must be inside this trigger for the boost to work."
+]
+
+@SolidClass base(MomentumTrigger, MomentumPush) = trigger_momentum_push : "A trigger volume that modifies velocity of players that touch it."
+[
     spawnflags(flags) = 
     [ 
         1048576: "Only allow for one touch before reseting" : 1
         2097152: "Modify player velocity on StartTouch" : 0
         4194304: "Modify player velocity on EndTouch" : 1
-        524288: "Use the direction vector as final force instead of calculating it by force amount" : 1
     ]
 ]
 
