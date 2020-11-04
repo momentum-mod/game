@@ -378,6 +378,7 @@ enum TeleportMode_t
     TELEPORT_RESET,
     TELEPORT_KEEP_NEGATIVE_Z,
     TELEPORT_SNAP_TO_DESTINATION,
+    TELEPORT_LANDMARK,
 };
 
 // Our teleport trigger override with extra convenience features
@@ -408,6 +409,7 @@ public:
 
 protected:
     int m_iMode;
+    string_t m_Landmark;
     Vector m_vecVelocityScaler;
     bool m_bResetAngles;
     bool m_bFail;

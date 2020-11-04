@@ -61,6 +61,8 @@
 @BaseClass base(MomentumTrigger) = TeleTrigger
 [
     target(target_destination) : "Remote Destination" : : "The entity specifying the point to which the player should be teleported."
+	
+	landmark(target_destination) : "Local Destination Landmark" : : "In landmark mode, teleported entities are offset from the target by their initial offset from the landmark, angles and velocity are also reoriented to the destination."
     
     velocityscale(vector) : "Velocity Scale Factor (X Y Z)" : "1 1 1" : "Scale the player's velocity per-axis"
     
@@ -70,6 +72,7 @@
         1 : "Reset velocity"
         2 : "Keep negative Z (downwards) velocity only"
         3 : "Reorient velocity to destination angles"
+        4 : "Landmark teleport"
     ]
     
     resetang(choices) : "Reset the player angles on teleport" : 1 =
