@@ -1124,7 +1124,6 @@ protected:
 	surfacedata_t*	m_pSurfaceData;
 	float			m_surfaceFriction;
 	char			m_chTextureType;
-	char			m_chPreviousTextureType;	// Separate from m_chTextureType. This is cleared if the player's not on the ground.
 
 	bool			m_bSinglePlayerGameEnding;
 

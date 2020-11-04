@@ -120,10 +120,10 @@ CFilterPlayerState::CFilterPlayerState()
 
 bool CFilterPlayerState::PassesFilterImpl(CBaseEntity* pCaller, CBaseEntity* pEntity)
 {
-    const auto pPlayer = static_cast<CMomentumPlayer*>(pEntity);
-
-    if (!pPlayer)
+    if (!pEntity || !pEntity->IsPlayer())
         return false;
+
+    const auto pPlayer = static_cast<CMomentumPlayer*>(pEntity);
 
     // 0 for any of these means they are the current interaction
     int floor = pPlayer->GetInteractionIndex(SurfInt::TYPE_FLOOR);      // Player is sliding on the floor
@@ -160,10 +160,10 @@ CFilterCollectibles::CFilterCollectibles()
 
 bool CFilterCollectibles::PassesFilterImpl(CBaseEntity* pCaller, CBaseEntity* pEntity)
 {
-    const auto pPlayer = static_cast<CMomentumPlayer*>(pEntity);
-
-    if (!pPlayer)
+    if (!pEntity || !pEntity->IsPlayer())
         return false;
+
+    const auto pPlayer = static_cast<CMomentumPlayer*>(pEntity);
 
     return pPlayer->m_Collectibles.GetCollectibleCount() >= m_iCollectibleCount;
 }
@@ -824,7 +824,9 @@ void CTriggerMomentumTeleport::HandleTeleport(CBaseEntity *pOther)
     if (!m_hDestinationEnt.Get())
     {
         if (m_target != NULL_STRING)
+        {
             m_hDestinationEnt = gEntList.FindEntityByName(nullptr, m_target, nullptr, pOther, pOther);
+        }
         else
         {
             DevWarning("CTriggerTeleport cannot teleport, pDestinationEnt and m_target are null!\n");
@@ -998,7 +1000,8 @@ void CTriggerMultihop::Touch(CBaseEntity *pOther)
             const auto fEnterTime = m_mapOnStartTouchedTimes[m_mapOnStartTouchedTimes.Find(pPlayer->entindex())];
             if (gpGlobals->curtime - fEnterTime >= m_fMaxHoldSeconds)
             {
-                HandleTeleport(pOther);
+                SetDestinationEnt(pPlayer->GetCurrentProgressTrigger());
+                HandleTeleport(pPlayer);
             }
         }
     }
@@ -1024,7 +1027,8 @@ void CTriggerOnehop::OnStartTouch(CBaseEntity *pOther)
     {
         if (pPlayer->FindOnehopOnList(this))
         {
-            TeleportEntity(pPlayer->GetCurrentProgressTrigger(), pPlayer, m_iMode, m_vecVelocityScaler, m_bResetAngles);
+            SetDestinationEnt(pPlayer->GetCurrentProgressTrigger());
+            HandleTeleport(pPlayer);
         }
         else
         {
@@ -1036,7 +1040,7 @@ void CTriggerOnehop::OnStartTouch(CBaseEntity *pOther)
                 m_bhopNoLongerJumpableFired = true;
             }
 
-            BaseClass::OnStartTouch(pOther);
+            BaseClass::OnStartTouch(pPlayer);
         }
     }
 }
@@ -1230,7 +1234,7 @@ void DoVariablePushes()
 
         if (!pPush->m_bIncreasing)
         {
-            flFactor = 1 - flFactor;
+            flFactor = 1.0f - flFactor;
         }
 
         Vector vecForce = pPush->m_vecPushForce * Bias(flFactor, pPush->m_flBias);
@@ -1244,8 +1248,6 @@ void PushEntity(CBaseEntity *pEntity, Vector vecPush, int iMode, float flVariabl
 {
     switch (iMode)
     {
-    case PUSH_SET:
-        break;
     case PUSH_ADD:
         vecPush += pEntity->GetAbsVelocity();
         break;
@@ -1264,7 +1266,7 @@ void PushEntity(CBaseEntity *pEntity, Vector vecPush, int iMode, float flVariabl
         InitVariablePush(pEntity, vecPush, flVariableDuration, flVariableBias, bVariableIncreasing);
         return;
     default:
-        DevWarning("PushEntity: invalid mode!");
+        DevWarning("PushEntity: invalid mode %d, defaulting to set velocity\n", iMode);
         break;
     }
 
@@ -1276,14 +1278,14 @@ LINK_ENTITY_TO_CLASS(func_shootboost, CFuncShootBoost);
 
 BEGIN_DATADESC(CFuncShootBoost)
     DEFINE_KEYFIELD(m_vPushDir, FIELD_VECTOR, "pushdir"),
-    DEFINE_KEYFIELD(m_fPushForce, FIELD_FLOAT, "force"),
+    DEFINE_KEYFIELD(m_flPushForce, FIELD_FLOAT, "force"),
     DEFINE_KEYFIELD(m_iIncrease, FIELD_INTEGER, "increase"),
     DEFINE_KEYFIELD(m_flVariablePushDuration, FIELD_FLOAT, "varpushduration"),
     DEFINE_KEYFIELD(m_flVariablePushBias, FIELD_FLOAT, "varpushbias"),
     DEFINE_KEYFIELD(m_bVariablePushIncreasing, FIELD_BOOLEAN, "varpushincrease")
 END_DATADESC()
 
-CFuncShootBoost::CFuncShootBoost(): m_fPushForce(300.0f), m_iIncrease(3), m_flVariablePushDuration(1.0f), m_flVariablePushBias(0.5), m_bVariablePushIncreasing(false)
+CFuncShootBoost::CFuncShootBoost(): m_flPushForce(300.0f), m_iIncrease(3), m_flVariablePushDuration(1.0f), m_flVariablePushBias(0.5), m_bVariablePushIncreasing(false)
 {
     m_vPushDir.Init();
 }
@@ -1329,11 +1331,7 @@ int CFuncShootBoost::OnTakeDamage(const CTakeDamageInfo &info)
         Vector vecAbsDir;
         VectorRotate(m_vPushDir, EntityToWorldTransform(), vecAbsDir);
 
-        Vector finalVel;
-        if (HasSpawnFlags(SF_PUSH_DIRECTION_AS_FINAL_FORCE))
-            finalVel = vecAbsDir;
-        else
-            finalVel = vecAbsDir.Normalized() * m_fPushForce;
+        Vector finalVel = HasSpawnFlags(SF_PUSH_DIRECTION_AS_FINAL_FORCE) ? vecAbsDir : vecAbsDir.Normalized() * m_flPushForce;
 
         PushEntity(pInflictor, finalVel, m_iIncrease, m_flVariablePushDuration, m_flVariablePushBias, m_bVariablePushIncreasing);
     }
@@ -1356,7 +1354,7 @@ int CFuncShootBoost::DrawDebugTextOverlays(void)
         text_offset++;
     }
     
-    Q_snprintf(tempstr, sizeof(tempstr), "Force: %.2f", m_fPushForce);
+    Q_snprintf(tempstr, sizeof(tempstr), "Force: %.2f", m_flPushForce);
     EntityText(text_offset, tempstr, 0);
     text_offset++;
 
@@ -1364,7 +1362,7 @@ int CFuncShootBoost::DrawDebugTextOverlays(void)
     VectorRotate(m_vPushDir, EntityToWorldTransform(), vecFinalVel);
 
     if (!HasSpawnFlags(SF_PUSH_DIRECTION_AS_FINAL_FORCE))
-        vecFinalVel = vecFinalVel.Normalized() * m_fPushForce;
+        vecFinalVel = vecFinalVel.Normalized() * m_flPushForce;
 
     if (m_iIncrease == PUSH_VARIABLE)
     {
@@ -1385,10 +1383,10 @@ int CFuncShootBoost::DrawDebugTextOverlays(void)
 
             if (!m_bVariablePushIncreasing)
             {
-                flFactor = 1 - flFactor;
+                flFactor = 1.0f - flFactor;
             }
 
-            vecTotalForce += vecFinalVel * Bias(1 - flFactor, m_flVariablePushBias);
+            vecTotalForce += vecFinalVel * Bias(1.0f - flFactor, m_flVariablePushBias);
         }
 
         vecFinalVel = vecTotalForce;
@@ -1418,14 +1416,14 @@ LINK_ENTITY_TO_CLASS(trigger_momentum_push, CTriggerMomentumPush);
 
 BEGIN_DATADESC(CTriggerMomentumPush)
     DEFINE_KEYFIELD(m_vPushDir, FIELD_VECTOR, "pushdir"),
-    DEFINE_KEYFIELD(m_fPushForce, FIELD_FLOAT, "force"),
+    DEFINE_KEYFIELD(m_flPushForce, FIELD_FLOAT, "force"),
     DEFINE_KEYFIELD(m_iIncrease, FIELD_INTEGER, "increase"),
     DEFINE_KEYFIELD(m_flVariablePushDuration, FIELD_FLOAT, "varpushduration"),
     DEFINE_KEYFIELD(m_flVariablePushBias, FIELD_FLOAT, "varpushbias"),
     DEFINE_KEYFIELD(m_bVariablePushIncreasing, FIELD_BOOLEAN, "varpushincrease")
 END_DATADESC()
 
-CTriggerMomentumPush::CTriggerMomentumPush(): m_fPushForce(300.0f), m_iIncrease(3), m_flVariablePushDuration(1.0f), m_flVariablePushBias(0.5), m_bVariablePushIncreasing(false)
+CTriggerMomentumPush::CTriggerMomentumPush(): m_flPushForce(300.0f), m_iIncrease(3), m_flVariablePushDuration(1.0f), m_flVariablePushBias(0.5), m_bVariablePushIncreasing(false)
 {
     m_vPushDir.Init();
 }
@@ -1465,11 +1463,7 @@ void CTriggerMomentumPush::OnSuccessfulTouch(CBaseEntity *pOther)
         Vector vecAbsDir;
         VectorRotate(m_vPushDir, EntityToWorldTransform(), vecAbsDir);
 
-        Vector finalVel;
-        if (HasSpawnFlags(SF_PUSH_DIRECTION_AS_FINAL_FORCE))
-            finalVel = vecAbsDir;
-        else
-            finalVel = vecAbsDir.Normalized() * m_fPushForce;
+        Vector finalVel = HasSpawnFlags(SF_PUSH_DIRECTION_AS_FINAL_FORCE) ? vecAbsDir : vecAbsDir.Normalized() * m_flPushForce;
 
         PushEntity(pOther, finalVel, m_iIncrease, m_flVariablePushDuration, m_flVariablePushBias, m_bVariablePushIncreasing);
     }
@@ -1489,7 +1483,7 @@ int CTriggerMomentumPush::DrawDebugTextOverlays(void)
         text_offset++;
     }
     
-    Q_snprintf(tempstr, sizeof(tempstr), "Force: %.2f", m_fPushForce);
+    Q_snprintf(tempstr, sizeof(tempstr), "Force: %.2f", m_flPushForce);
     EntityText(text_offset, tempstr, 0);
     text_offset++;
 
@@ -1497,7 +1491,7 @@ int CTriggerMomentumPush::DrawDebugTextOverlays(void)
     VectorRotate(m_vPushDir, EntityToWorldTransform(), vecFinalVel);
 
     if (!HasSpawnFlags(SF_PUSH_DIRECTION_AS_FINAL_FORCE))
-        vecFinalVel = vecFinalVel.Normalized() * m_fPushForce;
+        vecFinalVel = vecFinalVel.Normalized() * m_flPushForce;
 
     if (m_iIncrease == PUSH_VARIABLE)
     {

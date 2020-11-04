@@ -2258,7 +2258,7 @@ void CMomentumPlayer::InputAddCollectible(inputdata_t& inputdata)
     char sParameter[MAX_PATH];
     Q_strncpy(sParameter, inputdata.value.String(), sizeof(sParameter));
 
-    if (strlen(sParameter))
+    if (Q_strlen(sParameter))
     {
         pRequiredEntity = gEntList.FindEntityByName(nullptr, inputdata.value.String(), this, inputdata.pActivator, inputdata.pCaller);
 
@@ -2267,10 +2267,13 @@ void CMomentumPlayer::InputAddCollectible(inputdata_t& inputdata)
         {
             if (strchr(sParameter, ':')) // <required>:<weight>
             {
-                char *sToken = strtok(sParameter, ":");
-                pRequiredEntity = gEntList.FindEntityByName(nullptr, sToken, this, inputdata.pActivator, inputdata.pCaller);
-                sToken = strtok(nullptr, ":");
-                iWeight = V_isdigit(*sToken) ? atoi(sToken) : 1;
+                CUtlVector<char *> parameters;
+                V_SplitString(sParameter, ":", parameters);
+
+                pRequiredEntity = gEntList.FindEntityByName(nullptr, parameters[0], this, inputdata.pActivator, inputdata.pCaller);
+                iWeight = V_isdigit(*parameters[1]) ? atoi(parameters[1]) : 1;
+
+                parameters.PurgeAndDeleteElements();
             }
             else if (V_isdigit(*sParameter)) // <weight>
             {
@@ -2363,19 +2366,19 @@ void CMomentumPlayerCollectibles::LoadFromKeyValues(KeyValues *kv)
 
     m_iCollectibleCount = kv->GetInt("collectibleCount");
 
-    KeyValues *sub = kv->FindKey("collectibles");
-    if (!sub)
+    KeyValues *pKvCollectibles = kv->FindKey("collectibles");
+    if (!pKvCollectibles)
         return;
 
-    KeyValues *s = sub->GetFirstSubKey();
-    if (!s)
+    KeyValues *pKvSub = pKvCollectibles->GetFirstSubKey();
+    if (!pKvSub)
         return;
 
-    while (s)
+    while (pKvSub)
     {
         m_CollectibleList.AddToTail();
-        m_CollectibleList.Tail() = s->GetString("targetname");
+        m_CollectibleList.Tail() = pKvSub->GetString("targetname");
 
-        s = s->GetNextKey();
+        pKvSub = pKvSub->GetNextKey();
     }
 }

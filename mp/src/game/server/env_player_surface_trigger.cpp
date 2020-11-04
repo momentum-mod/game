@@ -93,11 +93,6 @@ void CEnvPlayerSurfaceTrigger::PlayerSurfaceChanged( CBasePlayer *pPlayer, char 
 	if ( m_bDisabled )
 		return;
 
-    if (pPlayer->m_chPreviousTextureType == gameMaterial)
-        return;
-
-    pPlayer->m_chPreviousTextureType = gameMaterial;
-
 	// Fire the output if we've changed, but only if it involves the target material
 	if ( gameMaterial != (char)m_iCurrentGameMaterial &&
 	     ( gameMaterial == m_iTargetGameMaterial || m_iCurrentGameMaterial == m_iTargetGameMaterial ) )
