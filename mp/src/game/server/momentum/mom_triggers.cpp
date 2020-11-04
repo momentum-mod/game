@@ -719,7 +719,7 @@ void CTriggerTrickZone::OnEndTouch(CBaseEntity *pOther)
 
 //----------------------------------------------------------------------------------------------
 
-bool TeleportEntity(CBaseEntity* pTeleportTo, CBaseEntity* pEntToTeleport, int iMode = 0, Vector vecVelocityScaler = Vector(1.0f, 1.0f, 1.0f), bool bResetAngles = true)
+bool TeleportEntity(CBaseEntity* pTeleportTo, CBaseEntity* pEntToTeleport, CBaseEntity* pLandmark = nullptr, int iMode = 0, Vector vecVelocityScaler = Vector(1.0f, 1.0f, 1.0f), bool bResetAngles = true)
 {
     if (!(pTeleportTo && pEntToTeleport))
         return false;
@@ -727,52 +727,85 @@ bool TeleportEntity(CBaseEntity* pTeleportTo, CBaseEntity* pEntToTeleport, int i
     pEntToTeleport->SetGroundEntity(nullptr);
 
     QAngle* pAngles = const_cast<QAngle*>(&pTeleportTo->GetAbsAngles());
+    Vector* pOrigin = const_cast<Vector*>(&pTeleportTo->GetAbsOrigin());
     Vector* pVelocity = const_cast<Vector*>(&pEntToTeleport->GetAbsVelocity());
-
-    matrix3x4_t matMyModelToWorld;
-    VMatrix matMyInverse, matRemoteTransform;
-    QAngle angVelocityAngle;
 
     VectorMultiply(*pVelocity, vecVelocityScaler, *pVelocity);
 
     switch (iMode)
     {
-    // Redundant due to the velocity scaler but needed to maintain compatibility with existing maps that use momentum teleports
-    case TELEPORT_RESET:
-        pVelocity = const_cast<Vector*>(&vec3_origin);
-        break;
+        // Redundant due to the velocity scaler but needed to maintain compatibility with existing maps that use momentum teleports
+        case TELEPORT_RESET:
+        {
+            pVelocity = const_cast<Vector*>(&vec3_origin);
+            break;
+        }
+        case TELEPORT_KEEP_NEGATIVE_Z:
+        {
+            pVelocity->x = 0;
+            pVelocity->y = 0;
 
-    case TELEPORT_KEEP_NEGATIVE_Z:
-        pVelocity->x = 0;
-        pVelocity->y = 0;
+            if (pVelocity->z > 0.0f)
+                pVelocity->z = 0;
 
-        if (pVelocity->z > 0.0f)
-            pVelocity->z = 0;
+            break;
+        }
+        case TELEPORT_SNAP_TO_DESTINATION:
+        {
+            matrix3x4_t matMyModelToWorld;
+            VMatrix matMyInverse, matRemoteTransform;
+            QAngle angVelocityAngle;
 
-        break;
+            // Build a transformation from the teleportee's velocity vector
+            VectorAngles(pEntToTeleport->GetAbsVelocity(), angVelocityAngle);
+            AngleMatrix(angVelocityAngle, matMyModelToWorld);
+            MatrixInverseGeneral(matMyModelToWorld, matMyInverse);
+            matRemoteTransform = pTeleportTo->EntityToWorldTransform();
 
-    case TELEPORT_SNAP_TO_DESTINATION:
-        // Build a transformation from the teleportee's velocity vector
-        VectorAngles(pEntToTeleport->GetAbsVelocity(), angVelocityAngle);
-        AngleMatrix(angVelocityAngle, matMyModelToWorld);
-        MatrixInverseGeneral(matMyModelToWorld, matMyInverse);
-        matRemoteTransform = pTeleportTo->EntityToWorldTransform();
+            // Reorient the velocity
+            *pVelocity = matMyInverse.ApplyRotation(*pVelocity);
+            *pVelocity = matRemoteTransform.ApplyRotation(*pVelocity);
+            break;
+        }
+        case TELEPORT_LANDMARK:
+        {
+            if (!pLandmark)
+            {
+                DevWarning("TeleportEntity: Invalid landmark entity while in landmark mode!\n");
+                return false;
+            }
 
-        // Reorient the velocity
-        *pVelocity = matMyInverse.ApplyRotation(*pVelocity);
-        *pVelocity = matRemoteTransform.ApplyRotation(*pVelocity);
-        break;
+            matrix3x4_t pTransformMatrix;
+            matrix3x4_t pLocalLandmarkMatrix;
+            matrix3x4_t pRemoteLandmarkMatrix = pTeleportTo->EntityToWorldTransform();
 
-    default:
-        // vphysics objects get stopped even when no velocity is sent, so just send the current velocity
-        if (pEntToTeleport->GetMoveType() != MOVETYPE_VPHYSICS)
-            pVelocity = nullptr;
+            Vector vecLandmarkOffset = pEntToTeleport->GetAbsOrigin() - pLandmark->GetAbsOrigin();
+
+            MatrixInvert(pLandmark->EntityToWorldTransform(), pLocalLandmarkMatrix);
+            ConcatTransforms(pRemoteLandmarkMatrix, pLocalLandmarkMatrix, pTransformMatrix);
+
+            // pVelocity already points to the teleportee's velocity, so we have to use a new one here
+            Vector vecNewVelocity;
+
+            *pAngles = TransformAnglesToWorldSpace(pEntToTeleport->GetAbsAngles(), pTransformMatrix);
+            VectorTransform(pEntToTeleport->GetAbsOrigin(), pTransformMatrix, *pOrigin);
+            VectorRotate(pEntToTeleport->GetAbsVelocity(), pTransformMatrix, vecNewVelocity);
+
+            *pVelocity = vecNewVelocity;
+            break;
+        }
+        default:
+        {
+            // vphysics objects get stopped even when no velocity is sent, so just send the current velocity
+            if (pEntToTeleport->GetMoveType() != MOVETYPE_VPHYSICS)
+                pVelocity = nullptr;
+        }
     };
 
-    if (!bResetAngles)
+    if (!bResetAngles && iMode < TELEPORT_SNAP_TO_DESTINATION)
         pAngles = nullptr;
 
-    pEntToTeleport->Teleport(&pTeleportTo->GetAbsOrigin(), pAngles, pVelocity);
+    pEntToTeleport->Teleport(pOrigin, pAngles, pVelocity);
 
     return true;
 }
@@ -785,6 +818,7 @@ BEGIN_DATADESC(CTriggerMomentumTeleport)
     DEFINE_KEYFIELD(m_vecVelocityScaler, FIELD_VECTOR, "velocityscale"),
     DEFINE_KEYFIELD(m_bResetAngles, FIELD_BOOLEAN, "resetang"),
     DEFINE_KEYFIELD(m_bFail, FIELD_BOOLEAN, "fail"),
+    DEFINE_KEYFIELD(m_Landmark, FIELD_STRING, "landmark"),
 END_DATADESC()
 
 CTriggerMomentumTeleport::CTriggerMomentumTeleport()
@@ -832,9 +866,16 @@ void CTriggerMomentumTeleport::HandleTeleport(CBaseEntity *pOther)
             DevWarning("CTriggerTeleport cannot teleport, pDestinationEnt and m_target are null!\n");
             return;
         }
-
-        TeleportEntity(m_hDestinationEnt.Get(), pOther, m_iMode, m_vecVelocityScaler, m_bResetAngles);
     }
+
+    CBaseEntity *pLandmark = nullptr;
+
+    if (m_iMode == TELEPORT_LANDMARK && m_Landmark != NULL_STRING)
+    {
+        pLandmark = gEntList.FindEntityByName(nullptr, m_Landmark, nullptr, pOther, pOther);
+    }
+
+    TeleportEntity(m_hDestinationEnt.Get(), pOther, pLandmark, m_iMode, m_vecVelocityScaler, m_bResetAngles);
 
     if (m_bFail)
         OnFailTeleport(pOther);
@@ -909,7 +950,7 @@ void CEnvSurfaceTeleport::UpdateMaterialThink()
         }
     }
 
-    TeleportEntity(m_hDestinationEnt.Get(), pPlayer, TELEPORT_RESET);
+    TeleportEntity(m_hDestinationEnt.Get(), pPlayer, nullptr, TELEPORT_RESET);
 }
 //----------------------------------------------------------------------------------------------
 
