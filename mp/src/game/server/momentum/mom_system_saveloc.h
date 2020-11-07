@@ -128,6 +128,12 @@ public:
     // WARNING! No verification is done. It is up to the caller to don't give false information
     void SetUsingSavelocMenu(bool bIsUsingSLMenu);
 
+    bool CreateStartMark();
+    void ClearStartMark(int track, bool bPrintMsg = true);
+    void ClearCurrentStartMark(bool bPrintMsg = true);
+    void ClearAllStartMarks();
+    bool TeleportToStartMark(int track);
+
     KeyValues *GetSavelocKV() const { return m_pSavedLocsKV; }
     void ImportMapSavelocs(const char *pImportMapName);
 
@@ -146,6 +152,8 @@ private:
     int m_iCurrentSavelocIndx;
     bool m_bUsingSavelocMenu;
     bool m_bHintedStartMarkForLevel;
+
+    CUtlVector<SavedLocation_t*> m_vecStartMarks;
 };
 
 extern CSaveLocSystem *g_pSavelocSystem;

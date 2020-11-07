@@ -240,6 +240,10 @@ CSaveLocSystem::CSaveLocSystem(const char* pName): CAutoGameSystem(pName)
     m_iCurrentSavelocIndx = -1;
     m_bUsingSavelocMenu = false;
     m_bHintedStartMarkForLevel = false;
+
+    m_vecStartMarks.EnsureCount(MAX_TRACKS);
+    for (int i = 0; i < MAX_TRACKS; i++)
+        m_vecStartMarks[i] = nullptr;
 }
 
 CSaveLocSystem::~CSaveLocSystem()
@@ -285,10 +289,6 @@ bool CSaveLocSystem::LoadStartMarks()
     if (!kvStartMarks)
         return false;
 
-    CMomentumPlayer *pPlayer = CMomentumPlayer::GetLocalPlayer();
-    if (!pPlayer)
-        return false;
-
     FOR_EACH_SUBKEY(kvStartMarks, kvStartMark)
     {
         int track = Q_atoi(kvStartMark->GetName());
@@ -296,11 +296,13 @@ bool CSaveLocSystem::LoadStartMarks()
         const auto pStartmark = new SavedLocation_t;
         pStartmark->Load(kvStartMark);
 
-        if (!pPlayer->SetStartMark(track, pStartmark))
+        if (!pStartmark || track < 0 || track >= MAX_TRACKS || pStartmark->m_savedComponents != (SAVELOC_POS | SAVELOC_ANG))
         {
             delete pStartmark;
             return false;
         }
+
+        m_vecStartMarks[track] = pStartmark;
     }
 
     return true;
@@ -463,7 +465,7 @@ void CSaveLocSystem::CreateAndSaveLocation()
     if (!pPlayer)
         return;
 
-    const auto bCreatedStartMark = pPlayer->CreateStartMark();
+    const auto bCreatedStartMark = CreateStartMark();
     if (bCreatedStartMark && !m_bHintedStartMarkForLevel)
     {
         UTIL_HudHintText(pPlayer, "#MOM_Hint_CreateStartMark");
@@ -582,6 +584,91 @@ void CSaveLocSystem::SetUsingSavelocMenu(bool bIsUsingSLMenu)
     FireUpdateEvent();
 }
 
+bool CSaveLocSystem::CreateStartMark()
+{
+    const auto pPlayer = CMomentumPlayer::GetLocalPlayer();
+    if (!pPlayer)
+        return false;
+
+    if (!pPlayer->IsInZone(ZONE_TYPE_START))
+    {
+        Warning("Could not create start mark; you are not in a valid start zone!\n");
+        return false;
+    }
+
+    int iCurrentTrack = pPlayer->m_Data.m_iCurrentTrack.Get();
+    if (iCurrentTrack < 0 || iCurrentTrack >= MAX_TRACKS)
+    {
+        Warning("Could not create start mark; invalid track (%i)!\n", iCurrentTrack);
+        return false;
+    }
+
+    const auto pSaveloc = CreateSaveloc(SAVELOC_POS | SAVELOC_ANG);
+    if (!pSaveloc)
+    {
+        Warning("Could not create start mark; null saveloc created!\n");
+        return false;
+    }
+
+    ClearStartMark(iCurrentTrack, false);
+
+    m_vecStartMarks[iCurrentTrack] = pSaveloc;
+
+    ClientPrint(pPlayer, HUD_PRINTTALK, "Start Mark Created!");
+
+    return true;
+}
+
+void CSaveLocSystem::ClearStartMark(int track, bool bPrintMsg)
+{
+    const auto pPlayer = CMomentumPlayer::GetLocalPlayer();
+    if (!pPlayer)
+        return;
+
+    if (track < 0 || track >= MAX_TRACKS)
+        return;
+
+    delete m_vecStartMarks[track];
+    m_vecStartMarks[track] = nullptr;
+
+    if (bPrintMsg)
+        ClientPrint(pPlayer, HUD_PRINTTALK, "Start Mark Cleared!");
+}
+
+void CSaveLocSystem::ClearCurrentStartMark(bool bPrintMsg)
+{
+    const auto pPlayer = CMomentumPlayer::GetLocalPlayer();
+    if (!pPlayer)
+        return;
+    
+    return ClearStartMark(pPlayer->m_Data.m_iCurrentTrack, bPrintMsg);
+}
+
+void CSaveLocSystem::ClearAllStartMarks()
+{
+    for (int i = 0; i < MAX_TRACKS; i++)
+    {
+        delete m_vecStartMarks[i];
+        m_vecStartMarks[i] = nullptr;
+    }
+}
+
+bool CSaveLocSystem::TeleportToStartMark(int track)
+{
+    const auto pPlayer = CMomentumPlayer::GetLocalPlayer();
+    if (!pPlayer)
+        return false;
+
+    if (track < 0 || track >= MAX_TRACKS)
+        return false;
+
+    if (!m_vecStartMarks[track])
+        return false;
+
+    m_vecStartMarks[track]->Teleport(pPlayer);
+    return true;
+}
+
 void CSaveLocSystem::CheckTimer()
 {
     if (g_pMomentumTimer->IsRunning())
@@ -674,7 +761,7 @@ bool CSaveLocSystem::SaveSavelocsToKV()
     const auto kvStartMarks = new KeyValues(SAVELOC_KV_KEY_STARTMARKS);
     for (int track = 0; track < MAX_TRACKS; track++)
     {
-        SavedLocation_t *startMark = pPlayer->GetStartMark(track);
+        SavedLocation_t *startMark = m_vecStartMarks[track];
         if (!startMark) // Save location of valid startmarks only
             continue;
 
@@ -821,6 +908,23 @@ CON_COMMAND_F_COMPLETION(mom_saveloc_import, "Imports savelocs from a previous m
     FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_SERVER_CAN_EXECUTE, SavelocImportCompletion)
 {
     g_pSavelocSystem->ImportMapSavelocs(args.Arg(1));
+}
+
+CON_COMMAND(mom_start_mark_create, "Marks a starting point inside the start trigger for a more customized starting location.\n")
+{
+    g_pSavelocSystem->CreateStartMark();
+}
+
+CON_COMMAND(mom_start_mark_clear, "Clears the saved start location for your current track, if there is one.\n"
+                                  "You may also specify the track number to clear as the parameter; "
+                                  "\"mom_start_mark_clear 2\" clears track 2's start mark.")
+{
+    if (args.ArgC() > 1)
+        g_pSavelocSystem->ClearStartMark(Q_atoi(args[1]));
+    else
+        g_pSavelocSystem->ClearCurrentStartMark();
+
+    g_pSavelocSystem->ClearStartMark(args.ArgC() > 1 ? Q_atoi(args[1]) : pPlayer->m_Data.m_iCurrentTrack);
 }
 
 //Expose this to the DLL
