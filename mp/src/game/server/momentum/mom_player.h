@@ -4,7 +4,6 @@
 #include "GameEventListener.h"
 #include "run/mom_run_entity.h"
 
-struct SavedLocation_t;
 class CBaseMomentumTrigger;
 class CTriggerOnehop;
 class CTriggerProgress;
@@ -201,7 +200,7 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
     void SetAccelTicks(int ticks) { m_nAccelTicks = ticks; }
 
     bool CanTeleport();
-    void ManualTeleport(const Vector *newPosition, const QAngle *newAngles, const Vector *newVelocity);
+    void ManualTeleport(const Vector *newPosition, const QAngle *newAngles, const Vector *newVelocity, bool bStopTimer = true);
 
     // Trail Methods
     void Teleport(const Vector *newPosition, const QAngle *newAngles, const Vector *newVelocity) OVERRIDE;

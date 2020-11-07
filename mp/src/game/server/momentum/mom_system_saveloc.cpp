@@ -154,7 +154,7 @@ void SavedLocation_t::Load(KeyValues* pKv)
     m_iTimerTickOffset = pKv->GetInt("time", -1);
 }
 
-void SavedLocation_t::Teleport(CMomentumPlayer* pPlayer)
+void SavedLocation_t::Teleport(CMomentumPlayer* pPlayer, bool bStopTimer /*= true*/)
 {
     if ( m_savedComponents & SAVELOC_TARGETNAME )
         pPlayer->SetName(MAKE_STRING(m_szTargetName));
@@ -174,9 +174,8 @@ void SavedLocation_t::Teleport(CMomentumPlayer* pPlayer)
         }
     }
 
-    pPlayer->ManualTeleport(&m_vecPos,
-                            m_savedComponents & SAVELOC_ANG ? &m_qaAng : nullptr,
-                            m_savedComponents & SAVELOC_VEL ? &m_vecVel : &vec3_origin);
+    pPlayer->ManualTeleport(&m_vecPos, m_savedComponents & SAVELOC_ANG ? &m_qaAng : nullptr,
+                            m_savedComponents & SAVELOC_VEL ? &m_vecVel : &vec3_origin, bStopTimer);
 
     if ( m_savedComponents & SAVELOC_GRAVITY )
         pPlayer->SetGravity(m_fGravityScale);
@@ -244,6 +243,12 @@ CSaveLocSystem::CSaveLocSystem(const char* pName): CAutoGameSystem(pName)
     m_vecStartMarks.EnsureCount(MAX_TRACKS);
     for (int i = 0; i < MAX_TRACKS; i++)
         m_vecStartMarks[i] = nullptr;
+
+    // all stages within a track; 0 and 1 are ignored
+    // track doesn't matter as it wipes every run
+    m_vecStageMarks.EnsureCount(MAX_ZONES);
+    for (int i = 0; i < MAX_ZONES; i++)
+        m_vecStageMarks[i] = nullptr;
 }
 
 CSaveLocSystem::~CSaveLocSystem()
@@ -590,82 +595,137 @@ bool CSaveLocSystem::CreateStartMark()
     if (!pPlayer)
         return false;
 
-    if (!pPlayer->IsInZone(ZONE_TYPE_START))
+    StartMarkType_t type;
+    int iMarkIndex;
+    SavedLocation_t **pSaveLocAtIndex;
+    if (pPlayer->IsInZone(ZONE_TYPE_START))
     {
-        Warning("Could not create start mark; you are not in a valid start zone!\n");
-        return false;
-    }
+        int iCurrentTrack = pPlayer->m_Data.m_iCurrentTrack.Get();
+        if (iCurrentTrack < 0 || iCurrentTrack >= MAX_TRACKS)
+        {
+            Warning("Could not create start mark; invalid track (%i)!\n", iCurrentTrack);
+            return false;
+        }
 
-    int iCurrentTrack = pPlayer->m_Data.m_iCurrentTrack.Get();
-    if (iCurrentTrack < 0 || iCurrentTrack >= MAX_TRACKS)
+        type = START_MARK;
+        iMarkIndex = iCurrentTrack;
+        pSaveLocAtIndex = &m_vecStartMarks[iCurrentTrack];
+    }
+    else if (pPlayer->IsInZone(ZONE_TYPE_STAGE))
     {
-        Warning("Could not create start mark; invalid track (%i)!\n", iCurrentTrack);
+        int iCurrentStage = pPlayer->m_Data.m_iCurrentZone.Get();
+        if (iCurrentStage < 2 || iCurrentStage >= MAX_ZONES)
+        {
+            Warning("Could not create stage mark; invalid stage (%i)!\n", iCurrentStage);
+            return false;
+        }
+
+        type = START_MARK_STAGE;
+        iMarkIndex = iCurrentStage;
+        pSaveLocAtIndex = &m_vecStageMarks[iCurrentStage];
+    }
+    else
+    {
+        Warning("Could not create start mark; you are not in a valid start or stage zone!\n");
         return false;
     }
 
     const auto pSaveloc = CreateSaveloc(SAVELOC_POS | SAVELOC_ANG);
     if (!pSaveloc)
-    {
-        Warning("Could not create start mark; null saveloc created!\n");
         return false;
-    }
 
-    ClearStartMark(iCurrentTrack, false);
-
-    m_vecStartMarks[iCurrentTrack] = pSaveloc;
-
-    ClientPrint(pPlayer, HUD_PRINTTALK, "Start Mark Created!");
+    ClearStartMark(type, iMarkIndex, false);
+    *pSaveLocAtIndex = pSaveloc;
+    ClientPrint(pPlayer, HUD_PRINTTALK, type == START_MARK ? "Start Mark Created!" : "Stage Start Mark Created!");
 
     return true;
 }
 
-void CSaveLocSystem::ClearStartMark(int track, bool bPrintMsg)
+void CSaveLocSystem::ClearStartMark(StartMarkType_t eMarktype, int iMarkIndex, bool bPrintMsg /*= true*/)
 {
     const auto pPlayer = CMomentumPlayer::GetLocalPlayer();
     if (!pPlayer)
         return;
 
-    if (track < 0 || track >= MAX_TRACKS)
-        return;
-
-    delete m_vecStartMarks[track];
-    m_vecStartMarks[track] = nullptr;
-
-    if (bPrintMsg)
-        ClientPrint(pPlayer, HUD_PRINTTALK, "Start Mark Cleared!");
-}
-
-void CSaveLocSystem::ClearCurrentStartMark(bool bPrintMsg)
-{
-    const auto pPlayer = CMomentumPlayer::GetLocalPlayer();
-    if (!pPlayer)
-        return;
-    
-    return ClearStartMark(pPlayer->m_Data.m_iCurrentTrack, bPrintMsg);
-}
-
-void CSaveLocSystem::ClearAllStartMarks()
-{
-    for (int i = 0; i < MAX_TRACKS; i++)
+    if (eMarktype == START_MARK)
     {
-        delete m_vecStartMarks[i];
-        m_vecStartMarks[i] = nullptr;
+        if (iMarkIndex < 0 || iMarkIndex >= MAX_TRACKS)
+            return;
+
+        delete m_vecStartMarks[iMarkIndex];
+        m_vecStartMarks[iMarkIndex] = nullptr;
+    }
+    else
+    {
+        if (iMarkIndex < 2 || iMarkIndex >= MAX_ZONES)
+            return;
+
+        delete m_vecStageMarks[iMarkIndex];
+        m_vecStageMarks[iMarkIndex] = nullptr;
+    }
+
+    if (!bPrintMsg)
+        return;
+
+    ClientPrint(pPlayer, HUD_PRINTTALK, eMarktype == START_MARK ? "Start Mark Cleared!" : "Stage Start Mark Cleared!");
+}
+
+void CSaveLocSystem::ClearCurrentStartMark(StartMarkType_t eMarktype, bool bPrintMsg /*= true*/)
+{
+    const auto pPlayer = CMomentumPlayer::GetLocalPlayer();
+    if (!pPlayer)
+        return;
+
+    ClearStartMark(eMarktype, eMarktype == START_MARK ? pPlayer->m_Data.m_iCurrentTrack.Get() : pPlayer->m_Data.m_iCurrentZone.Get(), bPrintMsg);
+}
+
+void CSaveLocSystem::ClearAllStartMarks(StartMarkType_t eMarktype)
+{
+    if (eMarktype == START_MARK)
+    {
+        for (int i = 0; i < MAX_TRACKS; i++)
+        {
+            delete m_vecStartMarks[i];
+            m_vecStartMarks[i] = nullptr;
+        }
+    }
+    else
+    {
+        for (int i = 0; i < MAX_ZONES; i++)
+        {
+            delete m_vecStageMarks[i];
+            m_vecStageMarks[i] = nullptr;
+        }
     }
 }
 
-bool CSaveLocSystem::TeleportToStartMark(int track)
+bool CSaveLocSystem::TeleportToStartMark(StartMarkType_t eMarktype, int iMarkIndex)
 {
     const auto pPlayer = CMomentumPlayer::GetLocalPlayer();
     if (!pPlayer)
         return false;
 
-    if (track < 0 || track >= MAX_TRACKS)
-        return false;
+    if (eMarktype == START_MARK)
+    {
+        if (iMarkIndex < 0 || iMarkIndex >= MAX_TRACKS)
+            return false;
 
-    if (!m_vecStartMarks[track])
-        return false;
+        if (!m_vecStartMarks[iMarkIndex])
+            return false;
 
-    m_vecStartMarks[track]->Teleport(pPlayer);
+        m_vecStartMarks[iMarkIndex]->Teleport(pPlayer);
+    }
+    else
+    {
+        if (iMarkIndex < 2 || iMarkIndex >= MAX_ZONES)
+            return false;
+
+        if (!m_vecStageMarks[iMarkIndex])
+            return false;
+
+        m_vecStageMarks[iMarkIndex]->Teleport(pPlayer, false);
+    }
+
     return true;
 }
 
@@ -910,7 +970,8 @@ CON_COMMAND_F_COMPLETION(mom_saveloc_import, "Imports savelocs from a previous m
     g_pSavelocSystem->ImportMapSavelocs(args.Arg(1));
 }
 
-CON_COMMAND(mom_start_mark_create, "Marks a starting point inside the start trigger for a more customized starting location.\n")
+CON_COMMAND(mom_start_mark_create, "Marks a starting point inside the start or stage trigger for a more customized starting location.\n"
+                                   "Stage start marks are wiped every run, while start marks are saved.\n")
 {
     g_pSavelocSystem->CreateStartMark();
 }
@@ -920,11 +981,17 @@ CON_COMMAND(mom_start_mark_clear, "Clears the saved start location for your curr
                                   "\"mom_start_mark_clear 2\" clears track 2's start mark.")
 {
     if (args.ArgC() > 1)
-        g_pSavelocSystem->ClearStartMark(Q_atoi(args[1]));
+        g_pSavelocSystem->ClearStartMark(START_MARK, Q_atoi(args[1]));
     else
-        g_pSavelocSystem->ClearCurrentStartMark();
+        g_pSavelocSystem->ClearCurrentStartMark(START_MARK);
+}
 
-    g_pSavelocSystem->ClearStartMark(args.ArgC() > 1 ? Q_atoi(args[1]) : pPlayer->m_Data.m_iCurrentTrack);
+CON_COMMAND(mom_stage_mark_clear, "Clears the current stage start location. Also accepts a stage number as parameter.\n")
+{
+    if (args.ArgC() > 1)
+        g_pSavelocSystem->ClearStartMark(START_MARK_STAGE, Q_atoi(args[1]));
+    else
+        g_pSavelocSystem->ClearCurrentStartMark(START_MARK_STAGE);
 }
 
 //Expose this to the DLL

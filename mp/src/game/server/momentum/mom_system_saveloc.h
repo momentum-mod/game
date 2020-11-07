@@ -27,6 +27,12 @@ enum SavedLocationComponent_t
     SAVELOC_ALL = ~SAVELOC_NONE,
 };
 
+enum StartMarkType_t
+{
+    START_MARK = 0,
+    START_MARK_STAGE
+};
+
 // Saved Location used in the "Saveloc menu"
 struct SavedLocation_t
 {
@@ -57,7 +63,7 @@ struct SavedLocation_t
     void Load(KeyValues* kvCP);
 
     // Called when the player wants to teleport to this checkpoint 
-    void Teleport(CMomentumPlayer* pPlayer);
+    void Teleport(CMomentumPlayer* pPlayer, bool bStopTimer = true);
 
     bool Read(CUtlBuffer &mem);
     bool Write(CUtlBuffer &mem);
@@ -129,10 +135,10 @@ public:
     void SetUsingSavelocMenu(bool bIsUsingSLMenu);
 
     bool CreateStartMark();
-    void ClearStartMark(int track, bool bPrintMsg = true);
-    void ClearCurrentStartMark(bool bPrintMsg = true);
-    void ClearAllStartMarks();
-    bool TeleportToStartMark(int track);
+    void ClearStartMark(StartMarkType_t eMarktype, int iMarkIndex, bool bPrintMsg = true);
+    void ClearCurrentStartMark(StartMarkType_t eMarktype, bool bPrintMsg = true);
+    void ClearAllStartMarks(StartMarkType_t eMarktype);
+    bool TeleportToStartMark(StartMarkType_t eMarktype, int iMarkIndex);
 
     KeyValues *GetSavelocKV() const { return m_pSavedLocsKV; }
     void ImportMapSavelocs(const char *pImportMapName);
@@ -154,6 +160,7 @@ private:
     bool m_bHintedStartMarkForLevel;
 
     CUtlVector<SavedLocation_t*> m_vecStartMarks;
+    CUtlVector<SavedLocation_t*> m_vecStageMarks;
 };
 
 extern CSaveLocSystem *g_pSavelocSystem;
