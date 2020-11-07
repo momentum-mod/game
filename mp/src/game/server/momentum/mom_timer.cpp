@@ -398,7 +398,7 @@ CON_COMMAND_F(mom_restart_stage,
         track = pPlayer->m_Data.m_iCurrentTrack;
     }
 
-    if (pPlayer->m_iZoneCount[track] == 1)
+    if (pPlayer->m_iLinearTracks.Get(track) == true)
     {
         Warning("Track only has one zone! Use mom_restart instead.\n");
         return;
