@@ -480,7 +480,7 @@ void CMomentumPlayer::Spawn()
         m_iLandTick = 0;
         ResetRunStats();
 
-        g_pSavelocSystem->ClearAllStartMarks();
+        g_pSavelocSystem->ClearAllStartMarks(START_MARK);
 
         // Load startmarks after player spawn
         if (g_pSavelocSystem->LoadStartMarks())
@@ -908,7 +908,7 @@ bool CMomentumPlayer::CanTeleport()
     return true;
 }
 
-void CMomentumPlayer::ManualTeleport(const Vector *newPosition, const QAngle *newAngles, const Vector *newVelocity)
+void CMomentumPlayer::ManualTeleport(const Vector *newPosition, const QAngle *newAngles, const Vector *newVelocity, bool bStopTimer /*= true*/)
 {
     if (!CanTeleport())
         return;
@@ -917,8 +917,11 @@ void CMomentumPlayer::ManualTeleport(const Vector *newPosition, const QAngle *ne
 
     DestroyExplosives();
 
-    g_pMomentumTimer->Stop(this);
-    g_pMomentumTimer->SetCanStart(false);
+    if (bStopTimer)
+    {
+        g_pMomentumTimer->Stop(this);
+        g_pMomentumTimer->SetCanStart(false);
+    }
 
     g_pTrickSystem->ClearTrickAttempts();
 
@@ -1207,6 +1210,7 @@ void CMomentumPlayer::OnZoneExit(CTriggerZone *pTrigger)
         m_bShouldLimitPlayerSpeed = false;
 
         g_pRunSafeguards->ResetAllSafeguards();
+        g_pSavelocSystem->ClearAllStartMarks(START_MARK_STAGE);
         // No break here, we want to fall through; this handles both the start and stage triggers
     case ZONE_TYPE_STAGE:
         {
@@ -1845,7 +1849,7 @@ void CMomentumPlayer::TimerCommand_Restart(int track)
     const auto pStart = g_pMomentumTimer->GetStartTrigger(track);
     if (pStart)
     {
-        if (!g_pSavelocSystem->TeleportToStartMark(track))
+        if (!g_pSavelocSystem->TeleportToStartMark(START_MARK, track))
         {
             // Don't set angles if still in start zone.
             QAngle ang = pStart->GetLookAngles();
@@ -1884,6 +1888,11 @@ void CMomentumPlayer::TimerCommand_RestartStage(int stage, int track)
         const auto pCurrentZone = GetCurrentZoneTrigger();
         if (pCurrentZone)
         {
+            // Can't abuse since player has to be there before teleporting to it.
+            if (g_pSavelocSystem->TeleportToStartMark(START_MARK_STAGE, stage))
+                return;
+
+            // Prevent abuse
             if (m_Data.m_bIsInZone)
                 return;
 
