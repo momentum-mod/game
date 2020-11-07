@@ -400,7 +400,7 @@ CON_COMMAND_F(mom_restart_stage,
 
     if (pPlayer->m_iLinearTracks.Get(track) == true)
     {
-        Warning("Track only has one zone! Use mom_restart instead.\n");
+        Warning("Not on a staged map! Use mom_restart instead.\n");
         return;
     }
 
