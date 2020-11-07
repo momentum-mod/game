@@ -1,7 +1,6 @@
 #pragma once
 
 #include "mom_ghostdefs.h"
-#include "mom_shareddefs.h"
 #include "GameEventListener.h"
 #include "run/mom_run_entity.h"
 
@@ -225,11 +224,7 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
 
     void SetCurrentZoneTrigger(CTriggerZone *pZone) { return m_CurrentZoneTrigger.Set(pZone); }
     CTriggerZone *GetCurrentZoneTrigger() const { return m_CurrentZoneTrigger.Get(); }
-
-    bool CreateStartMark();
-    bool SetStartMark(int track, SavedLocation_t *saveloc);
-    SavedLocation_t *GetStartMark(int track) const { return (track >= 0 && track < MAX_TRACKS) ? m_pStartZoneMarks[track] : nullptr; }
-    bool ClearStartMark(int track, bool bPrintMsg = true);
+    bool IsInZone(MomZoneType_t eZoneType);
 
     void PreThink() override;
     void PostThink() OVERRIDE;
@@ -377,8 +372,6 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
     CUtlVector<CTriggerOnehop*> m_vecOnehops;
     CHandle<CBaseMomentumTrigger> m_CurrentProgress;
     CHandle<CTriggerZone> m_CurrentZoneTrigger;
-
-    SavedLocation_t *m_pStartZoneMarks[MAX_TRACKS];
 
     // for detecting bhop
     friend class CMomentumGameMovement;

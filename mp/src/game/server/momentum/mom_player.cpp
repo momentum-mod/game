@@ -250,11 +250,6 @@ CMomentumPlayer::CMomentumPlayer()
     ListenForGameEvent("mapfinished_panel_closed");
     ListenForGameEvent("lobby_join");
 
-    for (int i = 0; i < MAX_TRACKS; i++)
-    {
-        m_pStartZoneMarks[i] = nullptr;
-    }
-
     m_bIsWalking = false;
     m_bIsSprinting = false;
 
@@ -485,10 +480,7 @@ void CMomentumPlayer::Spawn()
         m_iLandTick = 0;
         ResetRunStats();
 
-        for (int i = 0; i < MAX_TRACKS; i++)
-        {
-            ClearStartMark(i, false);
-        }
+        g_pSavelocSystem->ClearAllStartMarks();
 
         // Load startmarks after player spawn
         if (g_pSavelocSystem->LoadStartMarks())
@@ -770,68 +762,6 @@ void CMomentumPlayer::SetCurrentProgressTrigger(CBaseMomentumTrigger *pTrigger)
 CBaseMomentumTrigger* CMomentumPlayer::GetCurrentProgressTrigger() const
 {
     return m_CurrentProgress.Get();
-}
-
-bool CMomentumPlayer::CreateStartMark()
-{
-    if (m_Data.m_iCurrentTrack < 0 || m_Data.m_iCurrentTrack >= MAX_TRACKS)
-    {
-        Warning("Could not create start mark; invalid track (%i)!\n", m_Data.m_iCurrentTrack.Get());
-        return false;
-    }
-
-    const auto pCurrentZoneTrigger = GetCurrentZoneTrigger();
-    if (!pCurrentZoneTrigger || pCurrentZoneTrigger->GetZoneType() != ZONE_TYPE_START || !pCurrentZoneTrigger->IsTouching(this))
-    {
-        Warning("Could not create start mark; you are not in a valid start zone trigger!\n");
-        return false;
-    }
-
-    const auto pSaveloc = g_pSavelocSystem->CreateSaveloc(SAVELOC_POS | SAVELOC_ANG);
-    if (!pSaveloc)
-    {
-        Warning("Could not create start mark; null saveloc created!\n");
-        return false;
-    }
-
-    ClearStartMark(m_Data.m_iCurrentTrack, false);
-
-    m_pStartZoneMarks[m_Data.m_iCurrentTrack] = pSaveloc;
-
-    Log("Successfully created a start mark!\n");
-    ClientPrint(this, HUD_PRINTTALK, "Start Mark Created!");
-
-    return true;
-}
-
-bool CMomentumPlayer::SetStartMark(int track, SavedLocation_t *saveloc)
-{
-    if (!saveloc)
-        return false;
-
-    if (track < 0 || track >= MAX_TRACKS)
-        return false;
-
-    if (saveloc->m_savedComponents != (SAVELOC_POS | SAVELOC_ANG))
-        return false;
-
-    m_pStartZoneMarks[track] = saveloc;
-
-    return true;
-}
-
-bool CMomentumPlayer::ClearStartMark(int track, bool bPrintMsg)
-{
-    if (track < 0 || track >= MAX_TRACKS)
-        return false;
-
-    delete m_pStartZoneMarks[track];
-    m_pStartZoneMarks[track] = nullptr;
-
-    if (bPrintMsg)
-        ClientPrint(this, HUD_PRINTTALK, "Start Mark Cleared!");
-
-    return true;
 }
 
 bool CMomentumPlayer::CanSprint() const
@@ -1915,12 +1845,7 @@ void CMomentumPlayer::TimerCommand_Restart(int track)
     const auto pStart = g_pMomentumTimer->GetStartTrigger(track);
     if (pStart)
     {
-        const auto pStartMark = GetStartMark(track);
-        if (pStartMark)
-        {
-            pStartMark->Teleport(this);
-        }
-        else
+        if (!g_pSavelocSystem->TeleportToStartMark(track))
         {
             // Don't set angles if still in start zone.
             QAngle ang = pStart->GetLookAngles();
@@ -2142,6 +2067,12 @@ void CMomentumPlayer::RestoreRunState(bool bFromPractice)
         m_nPerfectSyncTicks = pState->m_nSavedPerfectSyncTicks;
         m_nStrafeTicks = pState->m_nSavedStrafeTicks;
     }
+}
+
+bool CMomentumPlayer::IsInZone(MomZoneType_t eZoneType)
+{
+    const auto pCurrentZoneTrigger = GetCurrentZoneTrigger();
+    return pCurrentZoneTrigger && pCurrentZoneTrigger->GetZoneType() == eZoneType && pCurrentZoneTrigger->IsTouching(this);
 }
 
 void CMomentumPlayer::PostThink()

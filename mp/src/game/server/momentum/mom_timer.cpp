@@ -327,32 +327,6 @@ void CMomentumTimer::DisablePractice(CMomentumPlayer *pPlayer)
 
 //--------- Commands --------------------------------
 
-CON_COMMAND(mom_start_mark_create, "Marks a starting point inside the start trigger for a more customized starting location.\n")
-{
-    const auto pPlayer = CMomentumPlayer::GetLocalPlayer();
-    if (pPlayer)
-    {
-        pPlayer->CreateStartMark();
-    }
-}
-
-CON_COMMAND(mom_start_mark_clear, "Clears the saved start location for your current track, if there is one.\n"
-                                  "You may also specify the track number to clear as the parameter; "
-                                  "\"mom_start_mark_clear 2\" clears track 2's start mark.")
-{
-    const auto pPlayer = CMomentumPlayer::GetLocalPlayer();
-    if (pPlayer)
-    {
-        int track = pPlayer->m_Data.m_iCurrentTrack;
-        if (args.ArgC() > 1)
-        {
-            track = Q_atoi(args[1]);
-        }
-
-        pPlayer->ClearStartMark(track);
-    }
-}
-
 CON_COMMAND_F(mom_timer_stop, "Stops the timer if it is currently running.\n", FCVAR_CLIENTCMD_CAN_EXECUTE)
 {
     const auto pPlayer = CMomentumPlayer::GetLocalPlayer();
