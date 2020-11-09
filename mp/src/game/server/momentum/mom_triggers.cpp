@@ -45,7 +45,6 @@ CBaseMomentumTrigger::CBaseMomentumTrigger()
 
 void CBaseMomentumTrigger::Spawn()
 {
-    AddSpawnFlags(SF_TRIGGER_ALLOW_CLIENTS);
     BaseClass::Spawn();
     InitTrigger();
 
@@ -271,6 +270,7 @@ CBaseMomZoneTrigger::CBaseMomZoneTrigger()
 void CBaseMomZoneTrigger::Spawn()
 {
     Precache();
+    AddSpawnFlags(SF_TRIGGER_ALLOW_CLIENTS);
     BaseClass::Spawn();
 }
 
