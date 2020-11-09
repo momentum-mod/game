@@ -2818,7 +2818,7 @@
     target(target_destination) : "Entity to look at" : : "Name of entity that dead players will face while in intermission at this spot."
 ]
 
-@PointClass base(Targetname) iconsprite("editor/info_landmark") = info_landmark : 
+@PointClass base(Targetname, Parentname, Angles) studio("models/editor/playerstart.mdl") = info_landmark : 
     "An entity that acts as a landmark for transitions to another level. There should be a corresponding info_landmark entity in the next map. Entities will be transitioned to the next level relative to the info_landmark entities."
 [
 ]
