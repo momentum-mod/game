@@ -374,11 +374,14 @@ public:
 
 enum TeleportMode_t
 {
-    TELEPORT_DEFAULT = 0,
-    TELEPORT_RESET,
-    TELEPORT_KEEP_NEGATIVE_Z,
-    TELEPORT_SNAP_TO_DESTINATION,
-    TELEPORT_LANDMARK,
+    TELEPORT_DEFAULT = 0,               // Default behavior, do nothing
+    TELEPORT_RESET,                     // Reset velocity
+    TELEPORT_KEEP_NEGATIVE_Z,           // Only keep any downwards velocity and reset horizontal velocity
+    TELEPORT_SNAP_TO_DESTINATION,       // Redirect the teleported object's angles and velocity to the destinaton's angles
+    TELEPORT_LANDMARK,                  // Offset the teleported object from the destination by their offset from the landmark, 
+                                        // optionally taking the landmark and destination's angles into account
+
+    TELEPORT_COUNT
 };
 
 // Our teleport trigger override with extra convenience features
@@ -412,6 +415,7 @@ protected:
     string_t m_Landmark;
     Vector m_vecVelocityScaler;
     bool m_bResetAngles;
+    bool m_bReorientLandmark;
     bool m_bFail;
     EHANDLE m_hDestinationEnt;
 };

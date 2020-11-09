@@ -62,17 +62,23 @@
 [
     target(target_destination) : "Remote Destination" : : "The entity specifying the point to which the player should be teleported."
 	
-	landmark(target_destination) : "Local Destination Landmark" : : "In landmark mode, teleported entities are offset from the target by their initial offset from the landmark, angles and velocity are also reoriented to the destination."
+    landmark(target_destination) : "Local Destination Landmark" : : "In landmark mode, teleported entities are offset from the target by their initial offset from the landmark, angles and velocity are also reoriented to the destination if enabled."
     
     velocityscale(vector) : "Velocity Scale Factor (X Y Z)" : "1 1 1" : "Scale the player's velocity per-axis"
     
-    stop(choices) : "Velocity mode" : 1 = 
+    mode(choices) : "Teleport mode" : 1 = 
     [
-        0 : "Keep velocity"
+        0 : "Default (do nothing)"
         1 : "Reset velocity"
         2 : "Keep negative Z (downwards) velocity only"
-        3 : "Reorient velocity to destination angles"
+        3 : "Redirect velocity to destination angles"
         4 : "Landmark teleport"
+    ]
+	
+	reorient_landmark(choices) : "Reorient Landmark" : 0 : "(Landmark mode only) Reorient origin, angles and velocity from the landmark's local space to the destination's. This means the destination room does not have to face the same way." =
+    [
+        0 : "No"
+        1 : "Yes"
     ]
     
     resetang(choices) : "Reset the player angles on teleport" : 1 =
@@ -86,26 +92,15 @@
         0 : "False"
         1 : "True"
     ]
-]
-
-@SolidClass base(TeleTrigger) = trigger_momentum_teleport : "A trigger volume that teleports entities that touch it. Entities are teleported to the Remote Destination. "+
-    "The entity can have its Angles and Velocity reset by boolean settings." 
-[
-    // In other places default values for the spawnflags get carried over. But for some reason, I couldn't make it happen here
-    spawnflags(flags) =
+	
+	spawnflags(flags) =
     [
         8388608: "Teleport the player on EndTouch() instead of StartTouch()" : 0
-        1: "Clients" : 1
-        2: "NPCs" : 0
-        4: "Pushables": 0
-        8: "Physics Objects" : 0
-        16: "Only player ally NPCs" : 0
-        32: "Only clients in vehicles" : 0
-        64: "Everything (not including physics debris)" : 0
-        512: "Only clients *not* in vehicles" : 0
-        1024: "Physics debris" : 0
-        2048: "Only NPCs in vehicles (respects player ally flag)" : 0
     ]
+]
+
+@SolidClass base(TeleTrigger) = trigger_teleport : "A trigger volume that teleports entities that touch it. Entities are teleported to the Remote Destination." 
+[
 ]
 
 @PointClass base(Targetname) = env_momentum_surface_teleport : "An entity that teleports the player when they stand on a specified material surface"

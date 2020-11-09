@@ -7165,24 +7165,6 @@
                         "so it will be 0 when the entity is on the point, and 1 when the entity is at the edge of the radius."
 ]
 
-@SolidClass base(Trigger) = trigger_teleport : 
-    "A trigger volume that teleports entities that touch it. Entities are teleported to the Remote Destination, and have their angles "+
-    "set to that of the Remote Destination's. If a Local Destination Landmark is specified, teleported entities are offset from the target "+
-    "by their initial offset from the landmark, and their angles are left alone."
-[
-    target(target_destination) : "Remote Destination" : : "The entity specifying the point to which entities should be teleported."
-    landmark(target_destination) : "Local Destination Landmark" : : "If specified, then teleported entities are offset from the target by their initial offset from the landmark."
-    reorient_landmark(choices) : "Reorient Landmark" : 0 : "Reorient angles and velocity in case the destination is rotated" =
-    [
-        0 : "No"
-        1 : "Yes"
-    ]
-    spawnflags(flags) =
-    [
-        32: "Preserve angles even when a local landmark is not specified" : 0
-    ]
-]
-
 @SolidClass base(Trigger) = trigger_teleport_relative : 
     "A trigger volume that teleports entities that touch it. Entities are teleported by Offset from their current position. Useful to get " +
     "objects out of situations where levels or entities suddenly appear interseting with them."

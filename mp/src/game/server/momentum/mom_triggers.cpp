@@ -719,7 +719,13 @@ void CTriggerTrickZone::OnEndTouch(CBaseEntity *pOther)
 
 //----------------------------------------------------------------------------------------------
 
-bool TeleportEntity(CBaseEntity* pTeleportTo, CBaseEntity* pEntToTeleport, CBaseEntity* pLandmark = nullptr, int iMode = 0, Vector vecVelocityScaler = Vector(1.0f, 1.0f, 1.0f), bool bResetAngles = true)
+bool MomTeleportEntity(CBaseEntity* pTeleportTo, 
+                    CBaseEntity* pEntToTeleport, 
+                    CBaseEntity* pLandmark = nullptr, 
+                    int iMode = 0, 
+                    Vector vecVelocityScaler = Vector(1.0f, 1.0f, 1.0f), 
+                    bool bResetAngles = true, 
+                    bool bReorientLandmark = false)
 {
     if (!(pTeleportTo && pEntToTeleport))
         return false;
@@ -734,16 +740,15 @@ bool TeleportEntity(CBaseEntity* pTeleportTo, CBaseEntity* pEntToTeleport, CBase
 
     switch (iMode)
     {
-        // Redundant due to the velocity scaler but needed to maintain compatibility with existing maps that use momentum teleports
+        // Redundant due to the velocity scaler but kept just in case anyone wants a straightforward way to reset velocity
         case TELEPORT_RESET:
         {
-            pVelocity = const_cast<Vector*>(&vec3_origin);
+            pVelocity->Init();
             break;
         }
         case TELEPORT_KEEP_NEGATIVE_Z:
         {
-            pVelocity->x = 0;
-            pVelocity->y = 0;
+            pVelocity->x = pVelocity->y = 0;
 
             if (pVelocity->z > 0.0f)
                 pVelocity->z = 0;
@@ -775,34 +780,45 @@ bool TeleportEntity(CBaseEntity* pTeleportTo, CBaseEntity* pEntToTeleport, CBase
                 return false;
             }
 
+            Vector vecNewOrigin;
+
+            // Old landmark behavior is just use the origin offset from the landmark without any transformations
+            if (!bReorientLandmark)
+            {
+                vecNewOrigin = pTeleportTo->GetAbsOrigin() + (pEntToTeleport->GetAbsOrigin() - pLandmark->GetAbsOrigin());
+
+                pEntToTeleport->Teleport(&vecNewOrigin, nullptr, nullptr);
+
+                return true;
+            }
+            
+            Vector vecNewVelocity;
+            QAngle angNewAngles;
+
             matrix3x4_t pTransformMatrix;
             matrix3x4_t pLocalLandmarkMatrix;
             matrix3x4_t pRemoteLandmarkMatrix = pTeleportTo->EntityToWorldTransform();
 
-            Vector vecLandmarkOffset = pEntToTeleport->GetAbsOrigin() - pLandmark->GetAbsOrigin();
-
             MatrixInvert(pLandmark->EntityToWorldTransform(), pLocalLandmarkMatrix);
             ConcatTransforms(pRemoteLandmarkMatrix, pLocalLandmarkMatrix, pTransformMatrix);
 
-            // pVelocity already points to the teleportee's velocity, so we have to use a new one here
-            Vector vecNewVelocity;
-
-            *pAngles = TransformAnglesToWorldSpace(pEntToTeleport->GetAbsAngles(), pTransformMatrix);
-            VectorTransform(pEntToTeleport->GetAbsOrigin(), pTransformMatrix, *pOrigin);
+            angNewAngles = TransformAnglesToWorldSpace(pEntToTeleport->GetAbsAngles(), pTransformMatrix);
+            VectorTransform(pEntToTeleport->GetAbsOrigin(), pTransformMatrix, vecNewOrigin);
             VectorRotate(pEntToTeleport->GetAbsVelocity(), pTransformMatrix, vecNewVelocity);
 
-            *pVelocity = vecNewVelocity;
-            break;
+            pEntToTeleport->Teleport(&vecNewOrigin, &angNewAngles, &vecNewVelocity);
+
+            return true;
         }
         default:
         {
-            // vphysics objects get stopped even when no velocity is sent, so just send the current velocity
+            // vphysics objects get stopped if pVelocity is null
             if (pEntToTeleport->GetMoveType() != MOVETYPE_VPHYSICS)
                 pVelocity = nullptr;
         }
     };
 
-    if (!bResetAngles && iMode < TELEPORT_SNAP_TO_DESTINATION)
+    if (!bResetAngles && iMode != TELEPORT_SNAP_TO_DESTINATION)
         pAngles = nullptr;
 
     pEntToTeleport->Teleport(pOrigin, pAngles, pVelocity);
@@ -811,14 +827,15 @@ bool TeleportEntity(CBaseEntity* pTeleportTo, CBaseEntity* pEntToTeleport, CBase
 }
 
 //----------- CTriggerTeleport -----------------------------------------------------------------
-LINK_ENTITY_TO_CLASS(trigger_momentum_teleport, CTriggerMomentumTeleport);
+LINK_ENTITY_TO_CLASS(trigger_teleport, CTriggerMomentumTeleport);
 
 BEGIN_DATADESC(CTriggerMomentumTeleport)
-    DEFINE_KEYFIELD(m_iMode, FIELD_INTEGER, "stop"),
+    DEFINE_KEYFIELD(m_iMode, FIELD_INTEGER, "mode"),
     DEFINE_KEYFIELD(m_vecVelocityScaler, FIELD_VECTOR, "velocityscale"),
     DEFINE_KEYFIELD(m_bResetAngles, FIELD_BOOLEAN, "resetang"),
     DEFINE_KEYFIELD(m_bFail, FIELD_BOOLEAN, "fail"),
     DEFINE_KEYFIELD(m_Landmark, FIELD_STRING, "landmark"),
+    DEFINE_KEYFIELD(m_bReorientLandmark, FIELD_BOOLEAN, "reorient_landmark"),
 END_DATADESC()
 
 CTriggerMomentumTeleport::CTriggerMomentumTeleport()
@@ -826,6 +843,7 @@ CTriggerMomentumTeleport::CTriggerMomentumTeleport()
     m_iMode = TELEPORT_DEFAULT;
     m_vecVelocityScaler.Init(1.0f, 1.0f, 1.0f);
     m_bResetAngles = true;
+    m_bReorientLandmark = false;
 }
 
 void CTriggerMomentumTeleport::Touch(CBaseEntity* pOther)
@@ -833,7 +851,6 @@ void CTriggerMomentumTeleport::Touch(CBaseEntity* pOther)
     if (!PassesTriggerFilters(pOther))
         return;
 
-    // SF_TELE_ONEXIT defaults to 0 so ents that inherit from this class and call this method DO fire the tp logic
     if (pOther && !HasSpawnFlags(SF_TELE_ONEXIT))
     {
         HandleTeleport(pOther);
@@ -863,19 +880,29 @@ void CTriggerMomentumTeleport::HandleTeleport(CBaseEntity *pOther)
         }
         else
         {
-            DevWarning("CTriggerTeleport cannot teleport, pDestinationEnt and m_target are null!\n");
+            DevWarning("trigger_teleport: invalid destination entity!\n");
             return;
         }
     }
 
     CBaseEntity *pLandmark = nullptr;
 
-    if (m_iMode == TELEPORT_LANDMARK && m_Landmark != NULL_STRING)
+    if (m_Landmark != NULL_STRING)
     {
         pLandmark = gEntList.FindEntityByName(nullptr, m_Landmark, nullptr, pOther, pOther);
+
+        // Legacy trigger_teleports assume landmark mode if the landmark entity is valid,
+        // and someone who specifies a landmark almost certainly intends to make it a landmark teleport
+        if (pLandmark)
+        {
+            m_iMode = TELEPORT_LANDMARK;
+        }
     }
 
-    TeleportEntity(m_hDestinationEnt.Get(), pOther, pLandmark, m_iMode, m_vecVelocityScaler, m_bResetAngles);
+    // Deprecated spawnflag (SF_TELEPORT_PRESERVE_ANGLES = 1 << 5) from the old trigger_teleport
+    const bool bResetAngles = HasSpawnFlags(1 << 5) ? false : m_bResetAngles;
+
+    MomTeleportEntity(m_hDestinationEnt.Get(), pOther, pLandmark, m_iMode, m_vecVelocityScaler, bResetAngles, m_bReorientLandmark);
 
     if (m_bFail)
         OnFailTeleport(pOther);
@@ -950,7 +977,7 @@ void CEnvSurfaceTeleport::UpdateMaterialThink()
         }
     }
 
-    TeleportEntity(m_hDestinationEnt.Get(), pPlayer, nullptr, TELEPORT_RESET);
+    MomTeleportEntity(m_hDestinationEnt.Get(), pPlayer, nullptr, TELEPORT_DEFAULT, Vector(0.0f, 0.0f, 0.0f));
 }
 //----------------------------------------------------------------------------------------------
 
