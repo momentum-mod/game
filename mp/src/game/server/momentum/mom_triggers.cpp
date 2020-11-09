@@ -920,6 +920,7 @@ void CTriggerMomentumTeleport::OnFailTeleport(CBaseEntity *pEntTeleported)
 int CTriggerMomentumTeleport::DrawDebugTextOverlays(void) 
 {
     int text_offset = BaseClass::DrawDebugTextOverlays();
+    static const char *szTeleportMode[TELEPORT_COUNT] = { "default", "reset", "keep downwards speed", "redirect", "landmark teleport" };
 
     char tempstr[255];
 
@@ -929,6 +930,39 @@ int CTriggerMomentumTeleport::DrawDebugTextOverlays(void)
         EntityText(text_offset, tempstr, 0);
         text_offset++;
     }
+
+    if (m_iMode >= 0 && m_iMode < TELEPORT_COUNT)
+    {
+        Q_snprintf(tempstr, sizeof(tempstr), "Teleport mode: %s", szTeleportMode[m_iMode]);
+        EntityText(text_offset, tempstr, 0);
+        text_offset++;
+    }
+
+    Q_snprintf(tempstr, sizeof(tempstr), "Velocity scale: %.2f %.2f %.2f", m_vecVelocityScaler.x, m_vecVelocityScaler.y, m_vecVelocityScaler.z);
+    EntityText(text_offset, tempstr, 0);
+    text_offset++;
+
+    if (m_Landmark != NULL_STRING) 
+    {
+        Q_snprintf(tempstr, sizeof(tempstr), "Landmark: %s", m_Landmark.ToCStr());
+        EntityText(text_offset, tempstr, 0);
+        text_offset++;
+
+        Q_snprintf(tempstr, sizeof(tempstr), "Reorient landmark: %s", m_bReorientLandmark ? "yes" : "no");
+        EntityText(text_offset, tempstr, 0);
+        text_offset++;
+    }
+
+    if (m_iMode < TELEPORT_SNAP_TO_DESTINATION)
+    {
+        Q_snprintf(tempstr, sizeof(tempstr), "Reset angles: %s", m_bResetAngles ? "yes" : "no");
+        EntityText(text_offset, tempstr, 0);
+        text_offset++;
+    }
+
+    Q_snprintf(tempstr, sizeof(tempstr), "Fail teleport: %s", m_bFail ? "yes" : "no");
+    EntityText(text_offset, tempstr, 0);
+    text_offset++;
 
     return text_offset;
 }
@@ -2493,16 +2527,7 @@ int CTriggerMomentumCatapult::DrawDebugTextOverlays()
 {
     int text_offset = BaseClass::DrawDebugTextOverlays();
 
-
     char tempstr[255];
-
-    Q_snprintf(tempstr, sizeof(tempstr), "Name: %s", GetDebugName());
-    EntityText(text_offset, tempstr, 0);
-    text_offset++;
-
-    Q_snprintf(tempstr, sizeof(tempstr), "Position: %f, %f, %f", GetAbsOrigin().x, GetAbsOrigin().y, GetAbsOrigin().z);
-    EntityText(text_offset, tempstr, 0);
-    text_offset++;
 
     if (m_target != NULL_STRING)
     {
