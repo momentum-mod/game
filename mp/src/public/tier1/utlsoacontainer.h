@@ -311,19 +311,103 @@ public:
 
 };
 
-class CFltX4AttributeIterator : public CStridedConstPtr<fltx4>
+
+class CFltx4StridedPtr
+{
+protected:
+	fltx4 *m_pData;
+	size_t m_nStride;
+
+public:
+	FORCEINLINE CFltx4StridedPtr( void *pData, size_t nByteStride )
+	{
+		m_pData = reinterpret_cast<fltx4*>( pData );
+		m_nStride = nByteStride / sizeof( fltx4 );
+	}
+
+	FORCEINLINE CFltx4StridedPtr() = default;
+	fltx4 *operator->() const
+	{
+		return m_pData;
+	}
+
+	fltx4 &operator*() const
+	{
+		return *m_pData;
+	}
+
+	FORCEINLINE operator fltx4*()
+	{
+		return m_pData;
+	}
+
+	FORCEINLINE CFltx4StridedPtr& operator++()
+	{
+		m_pData += m_nStride;
+		return *this;
+	}
+
+	FORCEINLINE void operator+=( size_t nNumElements )
+	{
+		m_pData += nNumElements * m_nStride;
+	}
+};
+
+class CFltx4StridedConstPtr
+{
+protected:
+	const fltx4 *m_pData;
+	size_t m_nStride;
+
+public:
+	FORCEINLINE CFltx4StridedConstPtr( void const *pData, size_t nByteStride )
+	{
+		m_pData = reinterpret_cast<const fltx4*>( pData );
+		m_nStride = nByteStride / sizeof( fltx4 );
+	}
+
+	FORCEINLINE CFltx4StridedConstPtr() = default;
+
+	const fltx4 *operator->() const
+	{
+		return m_pData;
+	}
+
+	const fltx4 &operator*() const
+	{
+		return *m_pData;
+	}
+
+	FORCEINLINE operator const fltx4 *() const
+	{
+		return m_pData;
+	}
+
+	FORCEINLINE CFltx4StridedConstPtr &operator++()
+	{
+		m_pData += m_nStride;
+		return *this;
+	}
+
+	FORCEINLINE void operator+=( size_t nNumElements )
+	{
+		m_pData += nNumElements*m_nStride;
+	}
+};
+
+class CFltX4AttributeIterator : public CFltx4StridedConstPtr
 {
 	FORCEINLINE CFltX4AttributeIterator( CSOAContainer const *pContainer, int nAttribute, int nRowNumber = 0 )
-		: CStridedConstPtr<fltx4>( pContainer->ConstRowPtr( nAttribute, nRowNumber), 
+		: CFltx4StridedConstPtr( pContainer->ConstRowPtr( nAttribute, nRowNumber), 
 								   pContainer->ItemByteStride( nAttribute ) )
 	{
 	}
 };
 
-class CFltX4AttributeWriteIterator : public CStridedPtr<fltx4>
+class CFltX4AttributeWriteIterator : public CFltx4StridedPtr
 {
 	FORCEINLINE CFltX4AttributeWriteIterator( CSOAContainer const *pContainer, int nAttribute, int nRowNumber = 0 )
-		: CStridedPtr<fltx4>( pContainer->RowPtr( nAttribute, nRowNumber), 
+		: CFltx4StridedPtr( pContainer->RowPtr( nAttribute, nRowNumber), 
 							  pContainer->ItemByteStride( nAttribute ) )
 	{
 	}

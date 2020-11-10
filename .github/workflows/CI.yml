@@ -52,7 +52,7 @@ jobs:
 
   build-linux:
     runs-on: ubuntu-latest
-    container: gocnak/steam-runtime-i386:momentum
+    container: scell555/steam-runtime-gcc-9:momentum
     env:
       USING_DOCKER: true
     steps:
@@ -62,7 +62,7 @@ jobs:
         run: ./creategameprojects
       - name: Building the game
         working-directory: mp/src
-        run: make -j$(nproc --all) -f games.mak
+        run: make -j$(nproc --all) -f games.mak all-targets
       - name: Prepare artifacts
         id: prepare_artifacts
         shell: bash
