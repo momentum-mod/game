@@ -1,6 +1,9 @@
 #include "os_utils.h"
 
 #ifdef POSIX
+
+#include "cbase.h"
+
 void *GetModuleHandle(const char *name)
 {
 	void *handle;

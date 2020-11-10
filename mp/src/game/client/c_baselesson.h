@@ -4,9 +4,7 @@
 //
 //=============================================================================//
 
-#ifndef _C_BASELESSON_H_
-#define _C_BASELESSON_H_
-
+#pragma once
 
 #include "GameEventListener.h"
 #include "hud_locator_target.h"
@@ -449,6 +447,3 @@ private:
 	friend class LessonVariableInfo;
 	friend int LessonActionFromString( const char *pchName );
 };
-
-
-#endif // _C_BASELESSON_H_

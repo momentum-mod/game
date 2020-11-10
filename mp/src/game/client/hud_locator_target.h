@@ -5,12 +5,7 @@
 //
 //=============================================================================
 
-#ifndef L4D_HUD_LOCATOR_H
-#define L4D_HUD_LOCATOR_H
-#ifdef _WIN32
 #pragma once
-#endif
-
 
 #include "vgui_controls/PHandle.h"
 
@@ -177,6 +172,3 @@ extern int Locator_AddTarget();
 extern void Locator_RemoveTarget( int hTarget );
 CLocatorTarget *Locator_GetTargetFromHandle( int hTarget );
 void Locator_ComputeTargetIconPositionFromHandle( int hTarget );
-
-
-#endif // L4D_HUD_LOCATOR_H

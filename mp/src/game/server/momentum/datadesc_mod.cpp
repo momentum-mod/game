@@ -8,6 +8,8 @@
 #include "datadesc_mod.h"
 #include "saverestore.h"
 
+// memdbgon must be the last include file in a .cpp file!!!
+#include "tier0/memdbgon.h"
 
 // Sets a field's value to a specific string.
 char *Datadesc_SetFieldString( const char *szValue, CBaseEntity *pObject, typedescription_t *pField, fieldtype_t *pFieldType )
@@ -26,28 +28,28 @@ char *Datadesc_SetFieldString( const char *szValue, CBaseEntity *pObject, typede
 
 	case FIELD_TIME:
 	case FIELD_FLOAT:
-		(*(float *)((char *)pObject + fieldOffset)) = atof( szValue );
+		(*(float *)((char *)pObject + fieldOffset)) = Q_atof( szValue );
 		fieldtype = FIELD_FLOAT;
 		break;
 
 	case FIELD_BOOLEAN:
-		(*(bool *)((char *)pObject + fieldOffset)) = (bool)(atoi( szValue ) != 0);
+		(*(bool *)((char *)pObject + fieldOffset)) = (bool)(Q_atoi( szValue ) != 0);
 		fieldtype = FIELD_BOOLEAN;
 		break;
 
 	case FIELD_CHARACTER:
-		(*(char *)((char *)pObject + fieldOffset)) = (char)atoi( szValue );
+		(*(char *)((char *)pObject + fieldOffset)) = (char)Q_atoi( szValue );
 		fieldtype = FIELD_CHARACTER;
 		break;
 
 	case FIELD_SHORT:
-		(*(short *)((char *)pObject + fieldOffset)) = (short)atoi( szValue );
+		(*(short *)((char *)pObject + fieldOffset)) = (short)Q_atoi( szValue );
 		fieldtype = FIELD_SHORT;
 		break;
 
 	case FIELD_INTEGER:
 	case FIELD_TICK:
-		(*(int *)((char *)pObject + fieldOffset)) = atoi( szValue );
+		(*(int *)((char *)pObject + fieldOffset)) = Q_atoi( szValue );
 		fieldtype = FIELD_INTEGER;
 		break;
 
@@ -123,77 +125,6 @@ bool ReadUnregisteredKeyfields(CBaseEntity *pTarget, const char *szKeyName, vari
 		variant->SetString(AllocPooledString(szValue)); // MAKE_STRING causes badness, must pool
 		return true;
 	}
-
-#if 0
-	if ( FStrEq( szKeyName, "targetname" ) )
-	{
-		variant->SetString(pTarget->GetEntityName());
-		return true;
-	}
-
-	if( FStrEq( szKeyName, "origin" ) )
-	{
-		variant->SetPositionVector3D(pTarget->GetAbsOrigin());
-		return true;
-	}
-
-	if( FStrEq( szKeyName, "angles" ) /*|| FStrEq( szKeyName, "angle" )*/ )
-	{
-		Vector angles;
-		AngleVectors(pTarget->GetAbsAngles(), &angles);
-		variant->SetVector3D(angles);
-		return true;
-	}
-
-	if ( FStrEq( szKeyName, "rendercolor" ) || FStrEq( szKeyName, "rendercolor32" ))
-	{
-		// Copy it over since we're not going to use the alpha
-		color32 theircolor = pTarget->GetRenderColor();
-		color32 color;
-		color.r = theircolor.r;
-		color.g = theircolor.g;
-		color.b = theircolor.b;
-		variant->SetColor32(color);
-		return true;
-	}
-	
-	if ( FStrEq( szKeyName, "renderamt" ) )
-	{
-		char szAlpha = pTarget->GetRenderColor().a;
-		variant->SetString(MAKE_STRING(&szAlpha));
-		return true;
-	}
-
-	if ( FStrEq( szKeyName, "disableshadows" ))
-	{
-		variant->SetBool((pTarget->GetEffects() & EF_NOSHADOW) != NULL);
-		return true;
-	}
-
-	if ( FStrEq( szKeyName, "mins" ))
-	{
-		variant->SetVector3D(pTarget->CollisionProp()->OBBMinsPreScaled());
-		return true;
-	}
-
-	if ( FStrEq( szKeyName, "maxs" ))
-	{
-		variant->SetVector3D(pTarget->CollisionProp()->OBBMaxsPreScaled());
-		return true;
-	}
-
-	if ( FStrEq( szKeyName, "disablereceiveshadows" ))
-	{
-		variant->SetBool((pTarget->GetEffects() & EF_NORECEIVESHADOW) != NULL);
-		return true;
-	}
-
-	if ( FStrEq( szKeyName, "nodamageforces" ))
-	{
-		variant->SetBool((pTarget->GetEFlags() & EFL_NO_DAMAGE_FORCES) != NULL);
-		return true;
-	}
-#endif
 
 	return false;
 }

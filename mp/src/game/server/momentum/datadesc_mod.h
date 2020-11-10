@@ -4,8 +4,7 @@
 //
 //=============================================================================//
 
-
-#include "cbase.h"
+#pragma once
 
 char *Datadesc_SetFieldString( const char *szValue, CBaseEntity *pObject, typedescription_t *pField, fieldtype_t *pFieldType = NULL );
 

@@ -20,10 +20,6 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-//=========================================================
-// Configuración
-//=========================================================
-
 #define LESSON_PRIORITY_MAX 1000
 #define LESSON_PRIORITY_NONE 0
 #define LESSON_MIN_TIME_ON_SCREEN_TO_MARK_DISPLAYED 1.5f
@@ -113,8 +109,6 @@ void CBaseLesson::AddPrerequisite( const char *pchLessonName )
 	m_Prerequisites.AddToTail(pPrerequisite);
 }
 
-//=========================================================
-//=========================================================
 void CBaseLesson::SetRoot( CBaseLesson *pRoot )
 {
 	m_pRoot = pRoot;
@@ -123,8 +117,6 @@ void CBaseLesson::SetRoot( CBaseLesson *pRoot )
 		m_pRoot->m_OpenOpportunities.AddToTail( this );
 }
 
-//=========================================================
-//=========================================================
 bool CBaseLesson::ShouldShowSpew()
 {
 	// @DEBUG
@@ -136,15 +128,11 @@ bool CBaseLesson::ShouldShowSpew()
 	return ( Q_stristr( GetName(), gameinstructor_verbose_lesson.GetString() ) != NULL );
 }
 
-//=========================================================
-//=========================================================
 bool CBaseLesson::NoPriority() const
 {
 	return ( m_iPriority == LESSON_PRIORITY_NONE );
 }
 
-//=========================================================
-//=========================================================
 bool CBaseLesson::IsLocked() const
 {
 	if ( m_fLockDuration == 0.0f )
@@ -161,8 +149,6 @@ bool CBaseLesson::IsLocked() const
 	return ( gpGlobals->curtime > m_fStartTime + LESSON_MIN_TIME_BEFORE_LOCK_ALLOWED && gpGlobals->curtime < fLockTime + m_fLockDuration );
 }
 
-//=========================================================
-//=========================================================
 bool CBaseLesson::IsLearned() const
 {
 	if ( m_iDisplayLimit > 0 && m_iDisplayCount >= m_iDisplayLimit )
@@ -174,8 +160,6 @@ bool CBaseLesson::IsLearned() const
 	return false;
 }
 
-//=========================================================
-//=========================================================
 bool CBaseLesson::PrerequisitesHaveBeenMet() const
 {
 	for ( int i = 0; i < m_Prerequisites.Count(); ++i )
@@ -191,8 +175,6 @@ bool CBaseLesson::PrerequisitesHaveBeenMet() const
 	return true;
 }
 
-//=========================================================
-//=========================================================
 bool CBaseLesson::IsTimedOut()
 {
 	VPROF_BUDGET( "CBaseLesson::IsTimedOut", "GameInstructor" );
@@ -236,8 +218,6 @@ bool CBaseLesson::IsTimedOut()
 	return bTimedOut;
 }
 
-//=========================================================
-//=========================================================
 void CBaseLesson::ResetDisplaysAndSuccesses()
 {
 	m_iDisplayCount		= 0;
@@ -245,8 +225,6 @@ void CBaseLesson::ResetDisplaysAndSuccesses()
 	m_iSuccessCount		= 0;
 }
 
-//=========================================================
-//=========================================================
 bool CBaseLesson::IncDisplayCount()
 {
 	if ( m_iDisplayCount < m_iDisplayLimit )
@@ -258,8 +236,6 @@ bool CBaseLesson::IncDisplayCount()
 	return false;
 }
 
-//=========================================================
-//=========================================================
 bool CBaseLesson::IncSuccessCount()
 {
 	if ( m_iSuccessCount < m_iSuccessLimit )
@@ -271,8 +247,6 @@ bool CBaseLesson::IncSuccessCount()
 	return false;
 }
 
-//=========================================================
-//=========================================================
 void CBaseLesson::Init()
 {
 	m_pRoot				= NULL;
@@ -314,8 +288,6 @@ void CBaseLesson::Init()
 	m_iNumDelayedPlayerSwaps = 0;
 }
 
-//=========================================================
-//=========================================================
 void CBaseLesson::TakePlaceOf( CBaseLesson *pLesson )
 {
 	// Transfer over marked as displayed so a replaced lesson won't count as an extra display
@@ -323,8 +295,6 @@ void CBaseLesson::TakePlaceOf( CBaseLesson *pLesson )
 	pLesson->m_bWasDisplayed		= false;
 }
 
-//=========================================================
-//=========================================================
 void CBaseLesson::MarkSucceeded()
 {
 	if ( !m_bSuccessCounted )
@@ -334,16 +304,12 @@ void CBaseLesson::MarkSucceeded()
 	}
 }
 
-//=========================================================
-//=========================================================
 void CBaseLesson::CloseOpportunity( const char *pchReason )
 {
 	SetCloseReason(pchReason);
 	m_bIsOpenOpportunity = false;
 }
 
-//=========================================================
-//=========================================================
 bool CBaseLesson::DoDelayedPlayerSwaps() const
 {
 	// A bot has swapped places with a player or player with a bot...
@@ -377,8 +343,6 @@ bool CBaseLesson::DoDelayedPlayerSwaps() const
 // CTextLesson
 //
 
-//=========================================================
-//=========================================================
 void CTextLesson::Init()
 {
 	m_szDisplayText			= "";
@@ -387,16 +351,12 @@ void CTextLesson::Init()
 	m_szGamepadBinding		= "";
 }
 
-//=========================================================
-//=========================================================
 void CTextLesson::Start()
 {
 	// TODO: Display some text
 	//m_szDisplayText
 }
 
-//=========================================================
-//=========================================================
 void CTextLesson::Stop()
 {
 	// TODO: Clean up text
@@ -441,8 +401,6 @@ void CIconLesson::Init()
 	m_szCaptionColor		= gameinstructor_default_captioncolor.GetString();
 }
 
-//=========================================================
-//=========================================================
 void CIconLesson::Start()
 {
 	if ( !DoDelayedPlayerSwaps() )
@@ -506,8 +464,6 @@ void CIconLesson::Start()
 	Locator_ComputeTargetIconPositionFromHandle( m_hLocatorTarget );
 }
 
-//=========================================================
-//=========================================================
 void CIconLesson::Stop()
 {
 	if ( !DoDelayedPlayerSwaps() )
@@ -519,8 +475,6 @@ void CIconLesson::Stop()
 	m_fOnScreenStartTime = 0.0f;
 }
 
-//=========================================================
-//=========================================================
 void CIconLesson::Update()
 {
 	if ( !DoDelayedPlayerSwaps() )
@@ -2591,15 +2545,6 @@ bool CScriptedIconLesson::ProcessElementAction( int iAction, bool bNot, const ch
 
 bool CScriptedIconLesson::ProcessElementAction( int iAction, bool bNot, const char *pchVarName, EHANDLE &hVar, const CGameInstructorSymbol *pchParamName, float fParam, C_BaseEntity *pParam, const char *pchParam )
 {
-	// First try to let the mod act on the action
-	/*bool bModHandled = false;
-	bool bModReturn = Mod_ProcessElementAction( iAction, bNot, pchVarName, hVar, pchParamName, fParam, pParam, pchParam, bModHandled );
-
-	if ( bModHandled )
-	{
-		return bModReturn;
-	}*/
-
 	C_BasePlayer *pVar = dynamic_cast<C_BasePlayer*>(hVar.Get());
 
 	switch ( iAction )
@@ -3312,59 +3257,6 @@ bool CScriptedIconLesson::ProcessElementAction( int iAction, bool bNot, const ch
 
 			return true;
 		}
-
-		/*case LESSON_ACTION_GET_POTENTIAL_USE_TARGET:
-		{
-			int iTemp = static_cast<int>( fParam );
-
-			if ( iTemp <= 0 || iTemp > 2 )
-			{
-				if ( gameinstructor_verbose.GetInt() > 0 && ShouldShowSpew() )
-				{
-					ConColorMsg( CBaseLesson::m_rgbaVerbosePlain, "\t[entityINVALID] = C_BaseEntity::Instance([%s]->GetPotentialUseEntity())\n", pchVarName );
-					ConColorMsg( CBaseLesson::m_rgbaVerboseClose, "\tParam selecting string is out of range!\n" );
-				}
-
-				return false;
-			}
-
-			// Use entity2 if it was specified, otherwise, use entity1
-			CHandle<C_BaseEntity> *pHandle;
-			char const *pchParamNameTemp = NULL;
-
-			if ( iTemp == 2 )
-			{
-				pHandle = &m_hEntity2;
-				pchParamNameTemp = "entity2";
-			}
-			else
-			{
-				pHandle = &m_hEntity1;
-				pchParamNameTemp = "entity1";
-			}
-
-			C_BasePlayer *pBasePlayer = ToBasePlayer( pVar );
-
-			if ( !pBasePlayer )
-			{
-				if ( gameinstructor_verbose.GetInt() > 0 && ShouldShowSpew() )
-				{
-					ConColorMsg( CBaseLesson::m_rgbaVerbosePlain, "\t[%s] = C_BaseEntity::Instance([%s]->GetPotentialUseEntity())\n", pchParamNameTemp, pchVarName );
-					ConColorMsg( CBaseLesson::m_rgbaVerboseClose, "\tVar handle as Player returned NULL!\n" );
-				}
-
-				return false;
-			}
-
-			pHandle->Set( C_BaseEntity::Instance( pBasePlayer->GetPotentialUseEntity() ) );
-
-			if ( gameinstructor_verbose.GetInt() > 0 && ShouldShowSpew() )
-			{
-				ConColorMsg( CBaseLesson::m_rgbaVerbosePlain, "\t[%s] = C_BaseEntity::Instance([%s]->GetPotentialUseEntity())\n", pchParamNameTemp, pchVarName );
-			}
-
-			return true;
-		}*/
 	}
 
 	DevWarning( "Invalid lesson action type used with \"%s\" variable type.\n", pchVarName );
@@ -3583,7 +3475,4 @@ void CScriptedIconLesson::PreReadLessonsFromFile()
 	CScriptedIconLesson::LessonActionMap.Insert( "use target is", LESSON_ACTION_USE_TARGET_IS );
 	CScriptedIconLesson::LessonActionMap.Insert( "get use target", LESSON_ACTION_GET_USE_TARGET );
 	CScriptedIconLesson::LessonActionMap.Insert( "get potential use target", LESSON_ACTION_GET_POTENTIAL_USE_TARGET );
-
-	// Add mod actions to the map
-	//Mod_PreReadLessonsFromFile();
 }

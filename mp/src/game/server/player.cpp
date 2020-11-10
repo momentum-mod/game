@@ -5819,7 +5819,7 @@ bool CBasePlayer::ClientCommand( const CCommand &args )
 {
 	const char *cmd = args[0];
 #ifdef _DEBUG
-	if( stricmp( cmd, "test_SmokeGrenade" ) == 0 )
+	if( Q_stricmp( cmd, "test_SmokeGrenade" ) == 0 )
 	{
 		if ( sv_cheats && sv_cheats->GetBool() )
 		{
@@ -5847,7 +5847,7 @@ bool CBasePlayer::ClientCommand( const CCommand &args )
 	{
 		return true;
 	}
-	else if ( stricmp( cmd, "spectate" ) == 0 ) // join spectator team & start observer mode
+	else if ( Q_stricmp( cmd, "spectate" ) == 0 ) // join spectator team & start observer mode
 	{
 		if ( GetTeamNumber() == TEAM_SPECTATOR )
 			return true;
@@ -5870,7 +5870,7 @@ bool CBasePlayer::ClientCommand( const CCommand &args )
 		StartObserverMode( OBS_MODE_ROAMING );
 		return true;
 	}
-	else if ( stricmp( cmd, "spec_mode" ) == 0 ) // new observer mode
+	else if ( Q_stricmp( cmd, "spec_mode" ) == 0 ) // new observer mode
 	{
 		int mode;
 
@@ -5890,7 +5890,7 @@ bool CBasePlayer::ClientCommand( const CCommand &args )
 		// check for parameters.
 		if ( args.ArgC() >= 2 )
 		{
-			mode = atoi( args[1] );
+			mode = Q_atoi( args[1] );
 
 			if ( mode < OBS_MODE_IN_EYE || mode > LAST_PLAYER_OBSERVERMODE )
 				mode = OBS_MODE_IN_EYE;
@@ -5929,7 +5929,7 @@ bool CBasePlayer::ClientCommand( const CCommand &args )
 
 		return true;
 	}
-	else if ( stricmp( cmd, "spec_next" ) == 0 ) // chase next player
+	else if ( Q_stricmp( cmd, "spec_next" ) == 0 ) // chase next player
 	{
 		if ( GetObserverMode() > OBS_MODE_FIXED )
 		{
@@ -5947,7 +5947,7 @@ bool CBasePlayer::ClientCommand( const CCommand &args )
 		
 		return true;
 	}
-	else if ( stricmp( cmd, "spec_prev" ) == 0 ) // chase previous player
+	else if ( Q_stricmp( cmd, "spec_prev" ) == 0 ) // chase previous player
 	{
 		if ( GetObserverMode() > OBS_MODE_FIXED )
 		{
@@ -5966,11 +5966,11 @@ bool CBasePlayer::ClientCommand( const CCommand &args )
 		return true;
 	}
 	
-	else if ( stricmp( cmd, "spec_player" ) == 0 ) // chase next player
+	else if ( Q_stricmp( cmd, "spec_player" ) == 0 ) // chase next player
 	{
 		if ( GetObserverMode() > OBS_MODE_FIXED && args.ArgC() == 2 )
 		{
-			int index = atoi( args[1] );
+			int index = Q_atoi( args[1] );
 
 			CBasePlayer * target;
 
@@ -5992,20 +5992,20 @@ bool CBasePlayer::ClientCommand( const CCommand &args )
 		return true;
 	}
 
-	else if ( stricmp( cmd, "spec_goto" ) == 0 ) // chase next player
+	else if ( Q_stricmp( cmd, "spec_goto" ) == 0 ) // chase next player
 	{
 		if ( ( GetObserverMode() == OBS_MODE_FIXED ||
 			   GetObserverMode() == OBS_MODE_ROAMING ) &&
 			 args.ArgC() == 6 )
 		{
 			Vector origin;
-			origin.x = atof( args[1] );
-			origin.y = atof( args[2] );
-			origin.z = atof( args[3] );
+			origin.x = Q_atof( args[1] );
+			origin.y = Q_atof( args[2] );
+			origin.z = Q_atof( args[3] );
 
 			QAngle angle;
-			angle.x = atof( args[4] );
-			angle.y = atof( args[5] );
+			angle.x = Q_atof( args[4] );
+			angle.y = Q_atof( args[5] );
 			angle.z = 0.0f;
 
             #define SPECGOTO_MAX_VALUE 0xFFFF/2.0f
@@ -6024,7 +6024,7 @@ bool CBasePlayer::ClientCommand( const CCommand &args )
 
         return true;
 	}
-	else if ( stricmp( cmd, "playerperf" ) == 0 )
+	else if ( Q_stricmp( cmd, "playerperf" ) == 0 )
 	{
 		int nRecip = entindex();
 		if ( args.ArgC() >= 2 )
@@ -6692,10 +6692,6 @@ void CStripWeapons::StripWeapons(inputdata_t &data, bool stripSuit)
 	{
 		pPlayer = (CBasePlayer *)data.pActivator;
 	}
-	else if ( !g_pGameRules->IsDeathmatch() )
-	{
-		pPlayer = UTIL_GetLocalPlayer();
-	}
 
 	if ( pPlayer )
 	{
@@ -7023,10 +7019,6 @@ void CMovementSpeedMod::InputEnable(inputdata_t &data)
 	{
 		pPlayer = (CBasePlayer *)data.pActivator;
 	}
-	else if ( !g_pGameRules->IsDeathmatch() )
-	{
-		pPlayer = UTIL_GetLocalPlayer();
-	}
 
 	if ( pPlayer )
 	{
@@ -7069,10 +7061,6 @@ void CMovementSpeedMod::InputDisable(inputdata_t &data)
 	{
 		pPlayer = (CBasePlayer *)data.pActivator;
 	}
-	else if ( !g_pGameRules->IsDeathmatch() )
-	{
-		pPlayer = UTIL_GetLocalPlayer();
-	}
 
 	if ( pPlayer )
 	{
@@ -7105,10 +7093,6 @@ void CMovementSpeedMod::InputSetAdditionalButtons(inputdata_t &data)
 	if ( data.pActivator && data.pActivator->IsPlayer() )
 	{
 		pPlayer = (CBasePlayer *)data.pActivator;
-	}
-	else if ( !g_pGameRules->IsDeathmatch() )
-	{
-		pPlayer = UTIL_GetLocalPlayer();
 	}
 
 	bool bAlreadyDisabled = false;
@@ -8125,7 +8109,7 @@ CON_COMMAND( mp_disable_autokick, "Prevents a userid from being auto-kicked" )
 		return;
 	}
 
-	int userID = atoi( args[1] );
+	int userID = Q_atoi( args[1] );
 	DisableAutokick disable( userID );
 	ForEachPlayer( disable );
 }

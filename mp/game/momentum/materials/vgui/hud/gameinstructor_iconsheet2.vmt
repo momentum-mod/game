@@ -1,6 +1,6 @@
-SDK_UnlitGeneric
+UnlitGeneric
 {
-$baseTexture "vgui\hud\gameinstructor_iconsheet2"
+$baseTexture "vgui/hud/gameinstructor_iconsheet2"
 $translucent 1
 $alpha 1
 $vertexalpha 1

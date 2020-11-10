@@ -5,13 +5,7 @@
 // $NoKeywords: $
 //=============================================================================//
 
-#ifndef VARIANT_TOOLS_H
-#define VARIANT_TOOLS_H
-#ifdef _WIN32
 #pragma once
-#endif
-
-#include "cbase.h"
 
 // Quick way to define variants in a datadesc.
 extern ISaveRestoreOps *variantFuncs;
@@ -39,5 +33,3 @@ bool Variant_Greater(variant_t val1, variant_t val2, bool bLenAllowed = true);
 
 // val1 >= val2
 bool Variant_GreaterOrEqual(variant_t val1, variant_t val2, bool bLenAllowed = true);
-
-#endif

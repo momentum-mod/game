@@ -708,7 +708,7 @@ struct TimedOverlay_t
 void CBaseEntity::AddTimedOverlay( const char *msg, int endTime )
 {
 	TimedOverlay_t *pNewTO = new TimedOverlay_t;
-	int len = strlen(msg);
+	int len = Q_strlen(msg);
 	pNewTO->msg = new char[len + 1];
 	Q_strncpy(pNewTO->msg,msg, len+1);
 	pNewTO->msgEndTime = gpGlobals->curtime + endTime;
@@ -3851,7 +3851,7 @@ void CBaseEntity::OnEntityEvent( EntityEvent_t event, void *pEventData )
 }
 
 
-ConVar ent_messages_draw( "ent_messages_draw", "0", FCVAR_CHEAT, "Visualizes all entity input/output activity." );
+ConVar ent_messages_draw( "ent_messages_draw", "0", FCVAR_MAPPING, "Visualizes all entity input/output activity." );
 
 
 //-----------------------------------------------------------------------------
@@ -4955,7 +4955,7 @@ void CC_Ent_Name( const CCommand& args )
 {
 	SetDebugBits(UTIL_GetCommandClient(),args[1],OVERLAY_NAME_BIT);
 }
-static ConCommand ent_name("ent_name", CC_Ent_Name, 0, FCVAR_CHEAT);
+static ConCommand ent_name("ent_name", CC_Ent_Name, 0, FCVAR_MAPPING);
 
 //------------------------------------------------------------------------------
 
@@ -4979,7 +4979,7 @@ public:
 		char* substring = (char*)partial;
 		if (Q_strstr(partial, cmdname))
 		{
-			substring = (char*)partial + strlen(cmdname) + 1;
+			substring = (char*)partial + Q_strlen(cmdname) + 1;
 		}
 
 		int checklen = Q_strlen(substring);
@@ -5041,7 +5041,7 @@ void CC_Ent_Remove( const CCommand& args )
 	}
 	else 
 	{
-		int index = atoi( args[1] );
+		int index = Q_atoi( args[1] );
 		if ( index )
 		{
 			pEntity = CBaseEntity::Instance( index );
@@ -5200,7 +5200,7 @@ void CC_Find_Ent( const CCommand& args )
 
 	Msg("Found %d matches.\n", iCount);
 }
-static ConCommand find_ent("find_ent", CC_Find_Ent, "Find and list all entities with classnames or targetnames that contain the specified substring.\nFormat: find_ent <substring>\n", FCVAR_CHEAT);
+static ConCommand find_ent("find_ent", CC_Find_Ent, "Find and list all entities with classnames or targetnames that contain the specified substring.\nFormat: find_ent <substring>\n", FCVAR_MAPPING);
 
 //------------------------------------------------------------------------------
 void CC_Find_Ent_Index( const CCommand& args )
@@ -5211,7 +5211,7 @@ void CC_Find_Ent_Index( const CCommand& args )
 		return;
 	}
 
-	int iIndex = atoi(args[1]);
+	int iIndex = Q_atoi(args[1]);
 	CBaseEntity	*pEnt = UTIL_EntityByIndex( iIndex );
 	if ( pEnt )
 	{
@@ -5222,7 +5222,7 @@ void CC_Find_Ent_Index( const CCommand& args )
 		Msg("Found no entity at %d.\n", iIndex);
 	}
 }
-static ConCommand find_ent_index("find_ent_index", CC_Find_Ent_Index, "Display data for entity matching specified index.\nFormat: find_ent_index <index>\n", FCVAR_CHEAT);
+static ConCommand find_ent_index("find_ent_index", CC_Find_Ent_Index, "Display data for entity matching specified index.\nFormat: find_ent_index <index>\n", FCVAR_MAPPING);
 
 // Purpose : 
 //------------------------------------------------------------------------------
@@ -5312,7 +5312,7 @@ void CC_Ent_FireTarget( const CCommand& args )
 {
 	ConsoleFireTargets(UTIL_GetCommandClient(),args[1]);
 }
-static ConCommand firetarget("firetarget", CC_Ent_FireTarget, 0, FCVAR_CHEAT);
+static ConCommand firetarget("firetarget", CC_Ent_FireTarget, 0, FCVAR_MAPPING);
 
 class CEntFireAutoCompletionFunctor : public ICommandCallback, public ICommandCompletionCallback
 {
@@ -5372,7 +5372,7 @@ public:
 			}
 			if ( command.ArgC() >= 5 )
 			{
-				delay = atof( command.Arg( 4 ) );
+				delay = Q_atof( command.Arg( 4 ) );
 			}
 
 			g_EventQueue.AddEvent( target, action, value, delay, pPlayer, pPlayer );
@@ -5391,7 +5391,7 @@ public:
 		char *substring = (char *)partial;
 		if ( Q_strstr( partial, cmdname ) )
 		{
-			substring = (char *)partial + strlen( cmdname ) + 1;
+			substring = (char *)partial + Q_strlen( cmdname ) + 1;
 		}
 
 		int checklen = 0;
@@ -5416,7 +5416,7 @@ private:
 		char *substring = (char *)partial;
 		if ( Q_strstr( partial, cmdname ) )
 		{
-			substring = (char *)partial + strlen( cmdname ) + 1;
+			substring = (char *)partial + Q_strlen( cmdname ) + 1;
 		}
 
 		int checklen = 0;
@@ -5567,7 +5567,7 @@ void CC_Ent_Info( const CCommand& args )
 				}
 			}
 
-			delete ent;
+			UTIL_RemoveImmediate(ent);
 		}
 		else
 		{
@@ -5575,7 +5575,7 @@ void CC_Ent_Info( const CCommand& args )
 		}
 	}
 }
-static ConCommand ent_info("ent_info", CC_Ent_Info, "Usage:\n   ent_info <class name>\n", FCVAR_CHEAT);
+static ConCommand ent_info("ent_info", CC_Ent_Info, "Usage:\n   ent_info <class name>\n", FCVAR_MAPPING);
 
 //------------------------------------------------------------------------------
 // Purpose : 
@@ -5640,8 +5640,6 @@ void CC_Ent_Info_Datatable(const CCommand& args)
 
 		if (ent)
 		{
-#define ENT_INFO_BY_HIERARCHY 1
-#ifdef ENT_INFO_BY_HIERARCHY
 			CUtlVector<const char*> dmap_namelist;
 
 			CUtlVector< CUtlVector<const char*> > dmap_fieldlist;
@@ -5686,33 +5684,8 @@ void CC_Ent_Info_Datatable(const CCommand& args)
 				dmap_fieldlist[i].RemoveAll();
 				dmap_fieldtypelist[i].RemoveAll();
 			}
-#else // This sorts by field type instead
-			CUtlVector<const char*> fieldlist[FIELD_TYPECOUNT];
 
-			datamap_t* dmap;
-			for (dmap = ent->GetDataDescMap(); dmap != NULL; dmap = dmap->baseMap)
-			{
-				// search through all the actions in the data description, printing out details
-				for (int i = 0; i < dmap->dataNumFields; i++)
-				{
-					fieldlist[dmap->dataDesc[i].fieldType].AddToTail(dmap->dataDesc[i].fieldName);
-				}
-			}
-
-			for (int i = 0; i < FIELD_TYPECOUNT; i++)
-			{
-				const char* typestring = g_FieldStrings[i];
-				for (int index = 0; index < fieldlist[i].Count(); index++)
-				{
-					ClientPrint(pPlayer, HUD_PRINTCONSOLE, UTIL_VarArgs("  %s (%i): %s\n", typestring, i, fieldlist[i][index]));
-				}
-
-				// Clean up after ourselves
-				fieldlist[i].RemoveAll();
-			}
-#endif
-
-			delete ent;
+			UTIL_RemoveImmediate(ent);
 		}
 		else
 		{
@@ -5720,7 +5693,7 @@ void CC_Ent_Info_Datatable(const CCommand& args)
 		}
 	}
 }
-static ConCommand ent_info_datatable("ent_info_datatable", CC_Ent_Info_Datatable, "Usage:\n   ent_info_datatable <class name>\n", FCVAR_CHEAT);
+static ConCommand ent_info_datatable("ent_info_datatable", CC_Ent_Info_Datatable, "Usage:\n   ent_info_datatable <class name>\n", FCVAR_MAPPING);
 
 //------------------------------------------------------------------------------
 // Purpose : 
@@ -5731,7 +5704,7 @@ void CC_Ent_Messages( const CCommand& args )
 {
 	SetDebugBits(UTIL_GetCommandClient(),args[1],OVERLAY_MESSAGE_BIT);
 }
-static ConCommand ent_messages("ent_messages", CC_Ent_Messages ,"Toggles input/output message display for the selected entity(ies).  The name of the entity will be displayed as well as any messages that it sends or receives.\n\tArguments:   	{entity_name} / {class_name} / no argument picks what player is looking at", FCVAR_CHEAT);
+static ConCommand ent_messages("ent_messages", CC_Ent_Messages ,"Toggles input/output message display for the selected entity(ies).  The name of the entity will be displayed as well as any messages that it sends or receives.\n\tArguments:   	{entity_name} / {class_name} / no argument picks what player is looking at", FCVAR_MAPPING);
 
 
 //------------------------------------------------------------------------------
@@ -5768,7 +5741,7 @@ void CC_Ent_Picker( void )
 	// Remember the player that's making this request
 	CBaseEntity::m_nDebugPlayer = UTIL_GetCommandClientIndex();
 }
-static ConCommand picker("picker", CC_Ent_Picker, "Toggles 'picker' mode.  When picker is on, the bounding box, pivot and debugging text is displayed for whatever entity the player is looking at.\n\tArguments:	full - enables all debug information", FCVAR_CHEAT);
+static ConCommand picker("ent_picker", CC_Ent_Picker, "Toggles 'picker' mode.  When picker is on, the bounding box, pivot and debugging text is displayed for whatever entity the player is looking at.\n\tArguments:	full - enables all debug information", FCVAR_MAPPING);
 
 //------------------------------------------------------------------------------
 // Purpose : 
@@ -5779,7 +5752,7 @@ void CC_Ent_Pivot( const CCommand& args )
 {
 	SetDebugBits(UTIL_GetCommandClient(),args[1],OVERLAY_PIVOT_BIT);
 }
-static ConCommand ent_pivot("ent_pivot", CC_Ent_Pivot, "Displays the pivot for the given entity(ies).\n\t(y=up=green, z=forward=blue, x=left=red). \n\tArguments:   	{entity_name} / {class_name} / no argument picks what player is looking at ", FCVAR_CHEAT);
+static ConCommand ent_pivot("ent_pivot", CC_Ent_Pivot, "Displays the pivot for the given entity(ies).\n\t(y=up=green, z=forward=blue, x=left=red). \n\tArguments:   	{entity_name} / {class_name} / no argument picks what player is looking at ", FCVAR_MAPPING);
 
 //------------------------------------------------------------------------------
 // Purpose : 
@@ -5788,7 +5761,7 @@ static ConCommand ent_pivot("ent_pivot", CC_Ent_Pivot, "Displays the pivot for t
 //------------------------------------------------------------------------------
 void CC_Ent_Step( const CCommand& args )
 {
-	int nSteps = atoi(args[1]);
+	int nSteps = Q_atoi(args[1]);
 	if (nSteps <= 0)
 	{
 		nSteps = 1;
@@ -6375,10 +6348,6 @@ void CBaseEntity::RemoveAllDecals( void )
 	MessageEnd();
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: 
-// Input  : set - 
-//-----------------------------------------------------------------------------
 void CBaseEntity::ModifyOrAppendCriteria( AI_CriteriaSet& set )
 {
 	// TODO
@@ -6427,11 +6396,6 @@ void CBaseEntity::ModifyOrAppendCriteria( AI_CriteriaSet& set )
 	}
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: 
-// Input  : set - 
-//			"" - 
-//-----------------------------------------------------------------------------
 void CBaseEntity::AppendContextToCriteria( AI_CriteriaSet& set, const char *prefix /*= ""*/ )
 {
 	RemoveExpiredConcepts();
@@ -6482,7 +6446,7 @@ int CBaseEntity::GetContextCount() const
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: 
+// Purpose: Get a context's name by its index
 // Input  : index - 
 // Output : const char
 //-----------------------------------------------------------------------------
@@ -6498,7 +6462,7 @@ const char *CBaseEntity::GetContextName( int index ) const
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: 
+// Purpose: Get a context's value by its index
 // Input  : index - 
 // Output : const char
 //-----------------------------------------------------------------------------
@@ -6622,7 +6586,7 @@ bool CBaseEntity::HasContext( const char *nameandvalue ) const
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: 
+// Purpose: Get a context's value by its name
 // Input  : index - 
 // Output : const char
 //-----------------------------------------------------------------------------
@@ -6663,20 +6627,12 @@ void CBaseEntity::RemoveContext( const char *contextName )
 	}
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: 
-// Input  : inputdata - 
-//-----------------------------------------------------------------------------
 void CBaseEntity::InputAddContext( inputdata_t& inputdata )
 {
 	const char *contextName = inputdata.value.String();
 	AddContext( contextName );
 }
 
-//-----------------------------------------------------------------------------
-// Purpose:
-// Input  : inputdata -
-//-----------------------------------------------------------------------------
 void CBaseEntity::InputIncrementContext(inputdata_t &inputdata)
 {
     const char *contextName = inputdata.value.String();
@@ -6806,7 +6762,8 @@ void CBaseEntity::InputRemoveHealth(inputdata_t& inputdata)
 }
 
 //-----------------------------------------------------------------------------
-// Purpose:
+// Purpose: Input handler for setting the entity's health.
+// Input  : Integer health points to set.
 //-----------------------------------------------------------------------------
 void CBaseEntity::InputSetHealth(inputdata_t& inputdata)
 {
@@ -6823,7 +6780,8 @@ void CBaseEntity::InputSetHealth(inputdata_t& inputdata)
 }
 
 //-----------------------------------------------------------------------------
-// Purpose:
+// Purpose: Input handler for setting the entity's max health.
+// Input  : Integer health points to set as max.
 //-----------------------------------------------------------------------------
 void CBaseEntity::InputSetMaxHealth(inputdata_t& inputdata)
 {
@@ -6882,7 +6840,7 @@ void CBaseEntity::InputFireOutput(inputdata_t& inputdata)
 
 		float flDelay = 0.0f;
 		if (data[4])
-			flDelay = atof(data[4]);
+			flDelay = Q_atof(data[4]);
 
 		FireNamedOutput(data[0], parameter, pActivator, pCaller, flDelay);
 		//Msg("Output Name: %s, Activator: %s, Caller: %s, Data: %s, Delay: %f\n", data[0], pActivator->GetDebugName(), pCaller->GetDebugName(), parameter.String(), flDelay);
@@ -7053,7 +7011,7 @@ void CBaseEntity::InputAcceptInput(inputdata_t& inputdata)
 
 		int iOutputID = -1;
 		if (data[4])
-			iOutputID = atoi(data[4]);
+			iOutputID = Q_atoi(data[4]);
 
 		AcceptInput(data[0], pActivator, pCaller, parameter, iOutputID);
 		Msg("Input Name: %s, Activator: %s, Caller: %s, Data: %s, Output ID: %i\n", data[0], pActivator ? pActivator->GetDebugName() : "None", pCaller ? pCaller->GetDebugName() : "None", parameter.String(), iOutputID);
@@ -7382,7 +7340,7 @@ void CBaseEntity::AddContext(const char *contextName, bool increment)
             // Set the existing context to the new value, or increment if requested
             if (increment)
             {
-                int iValue = atoi(value) + atoi(m_ResponseContexts[iIndex].m_iszValue.ToCStr());
+                int iValue = Q_atoi(value) + Q_atoi(m_ResponseContexts[iIndex].m_iszValue.ToCStr());
                 Q_snprintf(value, 128, "%d", iValue);
                 m_ResponseContexts[iIndex].m_iszValue = AllocPooledString(value);
             }
@@ -7486,10 +7444,6 @@ void CBaseEntity::InputAddOutput( inputdata_t &inputdata )
 }
 
 
-//-----------------------------------------------------------------------------
-// Purpose: 
-// Input  : &inputdata - 
-//-----------------------------------------------------------------------------
 void CBaseEntity::InputChangeVariable( inputdata_t &inputdata )
 {
 	const char *szKeyName = NULL;
@@ -7545,10 +7499,6 @@ void CBaseEntity::InputChangeVariable( inputdata_t &inputdata )
 	}
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: 
-// Input  : *conceptName - 
-//-----------------------------------------------------------------------------
 void CBaseEntity::DispatchResponse( const char *conceptName )
 {
 	IResponseSystem *rs = GetResponseSystem();
@@ -7640,11 +7590,8 @@ void CC_Ent_Show_Response_Criteria( const CCommand& args )
 		pEntity->DumpResponseCriteria();
 	}
 }
-static ConCommand ent_show_response_criteria("ent_show_response_criteria", CC_Ent_Show_Response_Criteria, "Print, to the console, an entity's current criteria set used to select responses.\n\tArguments:   	{entity_name} / {class_name} / no argument picks what player is looking at ", FCVAR_CHEAT);
+static ConCommand ent_show_response_criteria("ent_show_response_criteria", CC_Ent_Show_Response_Criteria, "Print, to the console, an entity's current criteria set used to select responses.\n\tArguments:   	{entity_name} / {class_name} / no argument picks what player is looking at ", FCVAR_MAPPING);
 
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
 CAI_BaseNPC	*CBaseEntity::MyNPCPointer( void ) 
 { 
 	if ( IsNPC() ) 
@@ -7897,7 +7844,7 @@ void CBaseEntity::RemoveRecipientsIfNotCloseCaptioning( CRecipientFilter& filter
 		if ( !cvarvalue[ 0 ] )
 			continue;
 
-		int value = atoi( cvarvalue );
+		int value = Q_atoi( cvarvalue );
 		// No close captions?
 		if ( value == 0 )
 		{
@@ -8313,7 +8260,7 @@ public:
 		char *substring = (char *)partial;
 		if ( Q_strstr( partial, cmdname ) )
 		{
-			substring = (char *)partial + strlen( cmdname ) + 1;
+			substring = (char *)partial + Q_strlen( cmdname ) + 1;
 		}
 
 		int checklen = Q_strlen( substring );
@@ -8324,7 +8271,7 @@ public:
 };
 
 static CEntCreateAutoCompletionFunctor g_EntCreateAutoComplete;
-static ConCommand ent_create("ent_create", &g_EntCreateAutoComplete, "Creates an entity of the given type where the player is looking.  Additional parameters can be passed in in the form: ent_create <entity name> <param 1 name> <param 1> <param 2 name> <param 2>...<param N name> <param N>", FCVAR_GAMEDLL | FCVAR_CHEAT, &g_EntCreateAutoComplete);
+static ConCommand ent_create("ent_create", &g_EntCreateAutoComplete, "Creates an entity of the given type where the player is looking.  Additional parameters can be passed in in the form: ent_create <entity name> <param 1 name> <param 1> <param 2 name> <param 2>...<param N name> <param N>", FCVAR_GAMEDLL | FCVAR_MAPPING, &g_EntCreateAutoComplete);
 
 class CEntCreateAimedAutoCompletionFunctor : public CEntCreateAutoCompletionFunctor
 {
@@ -8334,7 +8281,7 @@ public:
 
 static CEntCreateAimedAutoCompletionFunctor g_EntCreateAimedAutoComplete;
 
-static ConCommand ent_create_aimed("ent_create_aimed", &g_EntCreateAimedAutoComplete, "Creates an entity of the given type where the player is looking.  Additional parameters can be passed in in the form: ent_create_aimed <entity name> <param 1 name> <param 1> <param 2 name> <param 2>...<param N name> <param N>", FCVAR_CHEAT, &g_EntCreateAimedAutoComplete);
+static ConCommand ent_create_aimed("ent_create_aimed", &g_EntCreateAimedAutoComplete, "Creates an entity of the given type where the player is looking.  Additional parameters can be passed in in the form: ent_create_aimed <entity name> <param 1 name> <param 1> <param 2 name> <param 2>...<param N name> <param N>", FCVAR_MAPPING, &g_EntCreateAimedAutoComplete);
 
 //------------------------------------------------------------------------------
 // Purpose: Teleport a specified entity to where the player is looking
@@ -8344,7 +8291,7 @@ bool CC_GetCommandEnt( const CCommand& args, CBaseEntity **ent, Vector *vecTarge
 	// Find the entity
 	*ent = NULL;
 	// First try using it as an entindex
-	int iEntIndex = atoi( args[1] );
+	int iEntIndex = Q_atoi( args[1] );
 	if ( iEntIndex )
 	{
 		*ent = CBaseEntity::Instance( iEntIndex );
@@ -8423,7 +8370,7 @@ public:
 		char *substring = (char *)partial;
 		if ( Q_strstr( partial, cmdname ) )
 		{
-			substring = (char *)partial + strlen( cmdname ) + 1;
+			substring = (char *)partial + Q_strlen( cmdname ) + 1;
 		}
 
 		int checklen = Q_strlen( substring );
@@ -8434,7 +8381,7 @@ public:
 };
 
 static CEntTeleportAutoCompletionFunctor g_EntTeleportAutoComplete;
-static ConCommand ent_teleport("ent_teleport", &g_EntTeleportAutoComplete, "Teleport the specified entity to where the player is looking.\n\tFormat: ent_teleport <entity name>", FCVAR_CHEAT, &g_EntTeleportAutoComplete);
+static ConCommand ent_teleport("ent_teleport", &g_EntTeleportAutoComplete, "Teleport the specified entity to where the player is looking.\n\tFormat: ent_teleport <entity name>", FCVAR_MAPPING, &g_EntTeleportAutoComplete);
 
 //------------------------------------------------------------------------------
 // Purpose: Orient a specified entity to match the player's angles
