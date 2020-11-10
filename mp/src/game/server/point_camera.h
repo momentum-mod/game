@@ -5,17 +5,8 @@
 // $NoKeywords: $
 //=============================================================================//
 
-#ifndef CAMERA_H
-#define CAMERA_H
-#ifdef _WIN32
 #pragma once
-#endif
 
-#include "cbase.h"
-
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
 class CPointCamera : public CBaseEntity
 {
 public:
@@ -63,9 +54,6 @@ public:
 	CPointCamera	*m_pNext;
 };
 
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
 class CPointCameraOrtho : public CPointCamera
 {
 public:
@@ -109,4 +97,3 @@ private:
 };
 
 CPointCamera *GetPointCameraList();
-#endif // CAMERA_H

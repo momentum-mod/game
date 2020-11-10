@@ -549,29 +549,6 @@ const char *CLocatorTarget::UseBindingImage( char *pchIconTextureName, size_t bu
 	// We counted at least one binding... this should not be NULL!
 	Assert( pchBinding );
 
-	/*if ( input->ControllerModeActive() && 
-		 ( Q_strcmp( pchBinding, "A_BUTTON" ) == 0 || 
-		   Q_strcmp( pchBinding, "B_BUTTON" ) == 0 || 
-		   Q_strcmp( pchBinding, "X_BUTTON" ) == 0 || 
-		   Q_strcmp( pchBinding, "Y_BUTTON" ) == 0 || 
-		   Q_strcmp( pchBinding, "L_SHOULDER" ) == 0 || 
-		   Q_strcmp( pchBinding, "R_SHOULDER" ) == 0 || 
-		   Q_strcmp( pchBinding, "L_TRIGGER" ) == 0 || 
-		   Q_strcmp( pchBinding, "R_TRIGGER" ) == 0 || 
-		   Q_strcmp( pchBinding, "BACK" ) == 0 || 
-		   Q_strcmp( pchBinding, "START" ) == 0 || 
-		   Q_strcmp( pchBinding, "STICK1" ) == 0 || 
-		   Q_strcmp( pchBinding, "STICK2" ) == 0 || 
-		   Q_strcmp( pchBinding, "UP" ) == 0 || 
-		   Q_strcmp( pchBinding, "DOWN" ) == 0 || 
-		   Q_strcmp( pchBinding, "LEFT" ) == 0 || 
-		   Q_strcmp( pchBinding, "RIGHT" ) == 0 ) )
-	{
-		// Use a blank background for the button icons
-		Q_strncpy( pchIconTextureName, "icon_blank", bufSize );
-		return pchBinding;
-	}*/
-
 	if ( Q_strcmp( pchBinding, "MOUSE1" ) == 0 )
 	{
 		Q_strncpy( pchIconTextureName, "icon_mouseLeft", bufSize );
@@ -663,9 +640,6 @@ int CLocatorTarget::GetIconHeight( void )
 	return m_tall;
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
 class CLocatorPanel : public vgui::EditablePanel
 {
 	DECLARE_CLASS_SIMPLE( CLocatorPanel, vgui::EditablePanel );
@@ -674,7 +648,6 @@ public:
 	~CLocatorPanel( void );
 
 	virtual void PerformLayout( void );
-	virtual void OnTick( void );
 	virtual void PaintBackground( void );
 	virtual void Paint( void );
 	void ValidateTexture( int *pTextureID, const char *pszTextureName );
@@ -776,16 +749,12 @@ int Locator_AddTarget()
 	return s_pLocatorPanel ? s_pLocatorPanel->AddTarget() : -1;
 }
 
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
 void Locator_RemoveTarget( int hTarget )
 {
 	if ( CLocatorPanel *pPanel = GetPlayerLocatorPanel() )
 		pPanel->RemoveTarget( hTarget );
 }
 
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
 CLocatorTarget *Locator_GetTargetFromHandle( int hTarget )
 {
 	if ( CLocatorPanel *pPanel = GetPlayerLocatorPanel() )
@@ -810,9 +779,6 @@ void Locator_ComputeTargetIconPositionFromHandle( int hTarget )
 	}
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
 CLocatorPanel::CLocatorPanel( Panel *parent, const char *name ) : EditablePanel(parent,name)
 {
 	Assert( s_pLocatorPanel == NULL );
@@ -828,18 +794,12 @@ CLocatorPanel::CLocatorPanel( Panel *parent, const char *name ) : EditablePanel(
     LoadControlSettings("resource/UI/Locator.res");
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
 CLocatorPanel::~CLocatorPanel( void )
 {
 	Assert( s_pLocatorPanel == this );
 	s_pLocatorPanel = NULL;
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
 void CLocatorPanel::PerformLayout( void )
 {
 	BaseClass::PerformLayout();
@@ -884,8 +844,6 @@ void CLocatorPanel::GetTargetPosition( const Vector &vecDelta, float flRadius, f
 	*ypos = (int)((ScreenHeight() / 2) - (flRadius * 0.6f * ca));
 }
 
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
 void CLocatorPanel::DeactivateAllTargets()
 {
 	for( int i = 0 ; i < MAX_LOCATOR_TARGETS ; i++ )
@@ -983,9 +941,6 @@ void CLocatorPanel::AnimateIconAlpha( int flags, int *alpha, float fadeStart )
 	*alpha = static_cast<int>( 255.0f * flScale );
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
 void CLocatorPanel::AnimateIconPosition( int flags, int *x, int *y )
 {
 	int newX = *x;
@@ -1006,25 +961,11 @@ void CLocatorPanel::AnimateIconPosition( int flags, int *x, int *y )
 	*y = newY;
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
-void CLocatorPanel::OnTick( void )
-{
-
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
 void CLocatorPanel::PaintBackground( void )
 {
 	return;
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
 void CLocatorPanel::Paint( void )
 {
 	ValidateTexture( &m_textureID_ArrowLeft, "vgui/hud/icon_arrow_left" );
@@ -1554,6 +1495,7 @@ void CLocatorPanel::DrawPointerBackground( CLocatorTarget *pTarget, int nPointer
 
 	DevMsg("[TODO] vgui::surface()->DrawWordBubble \n");
 
+	// We currently don't have this in vguimatsurface
 	//vgui::surface()->DrawWordBubble( nPosX, nPosY, nPosX + nBackgroundWide, nPosY + nBackgroundTall, locator_background_border_thickness.GetInt(),  rgbaBackground, rgbaBorder, bPointer, nPointerX, nPointerY, ScreenWidth() * ICON_SIZE );
 }
 
@@ -1621,17 +1563,6 @@ void CLocatorPanel::DrawStaticIcon( CLocatorTarget *pTarget )
 
 		int nWide = pVguiTarget->GetWide();
 		int nTall = pVguiTarget->GetTall();
-
-		/*
-		const char *pchLookup = pTarget->GetVguiTargetLookup();
-		if ( pchLookup[ 0 ] != '\0' )
-		{
-			bool bLookupSuccess = false;
-			bLookupSuccess = pVguiTarget->LookupElementBounds( pchLookup, nPanelX, nPanelY, nWide, nTall );
-
-			Assert( bLookupSuccess );
-		}
-		*/
 
 		if ( nVguiTargetEdge == vgui::Label::a_north || 
 			 nVguiTargetEdge == vgui::Label::a_center || 
@@ -1765,17 +1696,6 @@ void CLocatorPanel::DrawDynamicIcon( CLocatorTarget *pTarget, bool bDrawCaption,
 
 		int nWide = pVguiTarget->GetWide();
 		int nTall = pVguiTarget->GetTall();
-
-		/*
-		const char *pchLookup = pTarget->GetVguiTargetLookup();
-		
-		if ( pchLookup[ 0 ] != '\0' )
-		{
-			bool bLookupSuccess = false;
-			bLookupSuccess = pVguiTarget->LookupElementBounds( pchLookup, nTargetX, nTargetY, nWide, nTall );
-			Assert( bLookupSuccess );
-		}
-		*/
 
 		if ( nVguiTargetEdge == vgui::Label::a_north || 
 			 nVguiTargetEdge == vgui::Label::a_center || 
@@ -2100,8 +2020,6 @@ void CLocatorPanel::DrawSimpleArrow( int x, int y, int iconWide, int iconTall )
 	vgui::surface()->DrawTexturedRect( x, y, x + iconWide, y + iconTall );
 }
 
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
 void CLocatorPanel::GetIconPositionForOffscreenTarget( const Vector &vecDelta, float flDist, int *pXPos, int *pYPos )
 {
 	float xpos, ypos;
@@ -2135,8 +2053,6 @@ CLocatorTarget *CLocatorPanel::GetPointerForHandle( int hTarget )
 	return NULL;
 }
 
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
 int CLocatorPanel::AddTarget()
 {
 	for( int i = 0 ; i < MAX_LOCATOR_TARGETS ; i++ )
@@ -2154,8 +2070,6 @@ int CLocatorPanel::AddTarget()
 	return -1;
 }
 
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
 void CLocatorPanel::RemoveTarget( int hTarget )
 {
 	CLocatorTarget *pTarget = GetPointerForHandle( hTarget );
@@ -2165,4 +2079,3 @@ void CLocatorPanel::RemoveTarget( int hTarget )
 		pTarget->Deactivate();
 	}
 }
-

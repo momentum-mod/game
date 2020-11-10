@@ -910,7 +910,7 @@ void CC_Global_Set( const CCommand &args )
 		return;
 	}
 
-	int nState = atoi( szState );
+	int nState = Q_atoi( szState );
 
 	int nIndex = GlobalEntity_GetIndex( szGlobal );
 
@@ -1468,9 +1468,9 @@ bool CMathCounter::KeyValue(const char *szKeyName, const char *szValue)
 	//
 	// Set the initial value of the counter.
 	//
-	if (!stricmp(szKeyName, "startvalue"))
+	if (!Q_stricmp(szKeyName, "startvalue"))
 	{
-		m_OutValue.Init(atof(szValue));
+		m_OutValue.Init(Q_atof(szValue));
 		return(true);
 	}
 
@@ -1701,23 +1701,17 @@ void CMathCounter::InputSubtract( inputdata_t &inputdata )
 }
 
 
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
 void CMathCounter::InputGetValue( inputdata_t &inputdata )
 {
 	float flOutValue = m_OutValue.Get();
 	m_OnGetValue.Set( flOutValue, inputdata.pActivator, inputdata.pCaller );
 }
 
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
 void CMathCounter::InputEnable( inputdata_t &inputdata )
 {
 	m_bDisabled = false;
 }
 
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
 void CMathCounter::InputDisable( inputdata_t &inputdata )
 {
 	m_bDisabled = true;
@@ -2115,13 +2109,13 @@ void CMathCounterAdvanced::InputRandomInt( inputdata_t &inputdata )
 	char *sSpace = strchr( szInput, ' ' );
 	if ( sSpace )
 	{
-		i1 = atoi(szInput);
-		i2 = atoi(sSpace+1);
+		i1 = Q_atoi(szInput);
+		i2 = Q_atoi(sSpace+1);
 	}
 	else
 	{
 		// No space, assume anything from 0 to X
-		i2 = atoi(szInput);
+		i2 = Q_atoi(szInput);
 	}
 
 	float fNewValue = RandomInt(i1, i2);
@@ -2147,13 +2141,13 @@ void CMathCounterAdvanced::InputRandomFloat( inputdata_t &inputdata )
 	char *sSpace = strchr( szInput, ' ' );
 	if ( sSpace )
 	{
-		f1 = atof(szInput);
-		f2 = atof(sSpace+1);
+		f1 = Q_atof(szInput);
+		f2 = Q_atof(sSpace+1);
 	}
 	else
 	{
 		// No space, assume anything from 0 to X
-		f2 = atof(szInput);
+		f2 = Q_atof(szInput);
 	}
 
 	float fNewValue = RandomFloat(f1, f2);
@@ -2186,12 +2180,6 @@ void CMathCounterAdvanced::UpdateOutValue(CBaseEntity *pActivator, float fNewVal
 
 	if (m_bPreserveValue)
 	{
-		//float fOriginal = m_OutValue.Get();
-		//DevMsg("Preserve Before: %f\n", fOriginal);
-		//BaseClass::UpdateOutValue(pActivator, fNewValue);
-		//DevMsg("Preserve After: %f\n", fOriginal);
-		//m_OutValue.Init(fOriginal);
-
 		variant_t var;
 		var.SetFloat(fNewValue);
 		m_OutValue.FireOutput( var, pActivator, this );
@@ -2525,9 +2513,6 @@ BEGIN_DATADESC( CLogicCompare )
 END_DATADESC()
 
 
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
 void CLogicCompare::Spawn()
 {
 	// Empty initial values are equivalent to 0
@@ -2706,8 +2691,6 @@ BEGIN_DATADESC( CLogicBranch )
 END_DATADESC()
 
 
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
 void CLogicBranch::UpdateOnRemove()
 {
 	for ( int i = 0; i < m_Listeners.Count(); i++ )
@@ -2815,8 +2798,6 @@ bool CLogicBranch::GetLogicBranchState()
 }
 
 
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
 void CLogicBranch::AddLogicBranchListener( CBaseEntity *pEntity )
 {
 	if ( m_Listeners.Find( pEntity ) == -1 )
@@ -2825,9 +2806,6 @@ void CLogicBranch::AddLogicBranchListener( CBaseEntity *pEntity )
 	}
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
 int CLogicBranch::DrawDebugTextOverlays( void )
 {
 	int text_offset = BaseClass::DrawDebugTextOverlays();
@@ -2843,188 +2821,6 @@ int CLogicBranch::DrawDebugTextOverlays( void )
 	}
 
 	return text_offset;
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: Autosaves when triggered
-//-----------------------------------------------------------------------------
-class CLogicAutosave : public CLogicalEntity
-{
-	DECLARE_CLASS( CLogicAutosave, CLogicalEntity );
-
-protected:
-	// Inputs
-	void InputSave( inputdata_t &inputdata );
-	void InputSaveDangerous( inputdata_t &inputdata );
-	void InputSetMinHitpointsThreshold( inputdata_t &inputdata );
-
-	DECLARE_DATADESC();
-	bool m_bForceNewLevelUnit;
-	int m_minHitPoints;
-	int m_minHitPointsToCommit;
-};
-
-LINK_ENTITY_TO_CLASS(logic_autosave, CLogicAutosave);
-
-BEGIN_DATADESC( CLogicAutosave )
-	DEFINE_KEYFIELD( m_bForceNewLevelUnit, FIELD_BOOLEAN, "NewLevelUnit" ),
-	DEFINE_KEYFIELD( m_minHitPoints, FIELD_INTEGER, "MinimumHitPoints" ),
-	DEFINE_KEYFIELD( m_minHitPointsToCommit, FIELD_INTEGER, "MinHitPointsToCommit" ),
-	// Inputs
-	DEFINE_INPUTFUNC( FIELD_VOID, "Save", InputSave ),
-	DEFINE_INPUTFUNC( FIELD_FLOAT, "SaveDangerous", InputSaveDangerous ),
-	DEFINE_INPUTFUNC( FIELD_INTEGER, "SetMinHitpointsThreshold", InputSetMinHitpointsThreshold ),
-END_DATADESC()
-
-//-----------------------------------------------------------------------------
-// Purpose: Save!
-//-----------------------------------------------------------------------------
-void CLogicAutosave::InputSave( inputdata_t &inputdata )
-{
-	if ( m_bForceNewLevelUnit )
-	{
-		engine->ClearSaveDir();
-	}
-
-	engine->ServerCommand( "autosave\n" );
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: Save safely!
-//-----------------------------------------------------------------------------
-void CLogicAutosave::InputSaveDangerous( inputdata_t &inputdata )
-{
-	CBasePlayer *pPlayer = UTIL_PlayerByIndex( 1 );
-
-	if ( g_ServerGameDLL.m_fAutoSaveDangerousTime != 0.0f && g_ServerGameDLL.m_fAutoSaveDangerousTime >= gpGlobals->curtime )
-	{
-		// A previous dangerous auto save was waiting to become safe
-
-		if ( pPlayer->GetDeathTime() == 0.0f || pPlayer->GetDeathTime() > gpGlobals->curtime )
-		{
-			// The player isn't dead, so make the dangerous auto save safe
-			engine->ServerCommand( "autosavedangerousissafe\n" );
-		}
-	}
-
-	if ( m_bForceNewLevelUnit )
-	{
-		engine->ClearSaveDir();
-	}
-
-	if ( pPlayer->GetHealth() >= m_minHitPoints )
-	{
-		engine->ServerCommand( "autosavedangerous\n" );
-		g_ServerGameDLL.m_fAutoSaveDangerousTime = gpGlobals->curtime + inputdata.value.Float();
-
-		// Player must have this much health when we go to commit, or we don't commit.
-		g_ServerGameDLL.m_fAutoSaveDangerousMinHealthToCommit = m_minHitPointsToCommit;
-	}
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: Autosaves when triggered
-//-----------------------------------------------------------------------------
-class CLogicActiveAutosave : public CLogicAutosave
-{
-	DECLARE_CLASS( CLogicActiveAutosave, CLogicAutosave );
-
-	void InputEnable( inputdata_t &inputdata )
-	{
-		m_flStartTime = -1;
-		SetThink( &CLogicActiveAutosave::SaveThink );
-		SetNextThink( gpGlobals->curtime );
-	}
-
-	void InputDisable( inputdata_t &inputdata )
-	{
-		SetThink( NULL );
-	}
-
-	void SaveThink()
-	{
-		CBasePlayer *pPlayer = UTIL_GetLocalPlayer();
-		if ( pPlayer )
-		{
-			if ( m_flStartTime < 0 )
-			{
-				if ( pPlayer->GetHealth() <= m_minHitPoints )
-				{
-					m_flStartTime = gpGlobals->curtime;
-				}
-			}
-			else
-			{
-				if ( pPlayer->GetHealth() >= m_TriggerHitPoints )
-				{
-					inputdata_t inputdata;
-					DevMsg( 2, "logic_active_autosave (%s, %d) triggered\n", STRING( GetEntityName() ), entindex() );
-					if ( !m_flDangerousTime )
-					{
-						InputSave( inputdata );
-					}
-					else
-					{
-						inputdata.value.SetFloat( m_flDangerousTime );
-						InputSaveDangerous( inputdata );
-					}
-					m_flStartTime = -1;
-				}
-				else if ( m_flTimeToTrigger > 0 && gpGlobals->curtime - m_flStartTime > m_flTimeToTrigger )
-				{
-					m_flStartTime = -1;
-				}
-			}
-		}
-
-		float thinkInterval = ( m_flStartTime < 0 ) ? 1.0 : 0.5;
-		SetNextThink( gpGlobals->curtime + thinkInterval );
-	}
-
-	DECLARE_DATADESC();
-
-	int m_TriggerHitPoints;
-	float m_flTimeToTrigger;
-	float m_flStartTime;
-	float m_flDangerousTime;
-};
-
-LINK_ENTITY_TO_CLASS(logic_active_autosave, CLogicActiveAutosave);
-
-BEGIN_DATADESC( CLogicActiveAutosave )
-	DEFINE_KEYFIELD( m_TriggerHitPoints, FIELD_INTEGER, "TriggerHitPoints" ),
-	DEFINE_KEYFIELD( m_flTimeToTrigger, FIELD_FLOAT, "TimeToTrigger" ),
-	DEFINE_KEYFIELD( m_flDangerousTime, FIELD_FLOAT, "DangerousTime" ),
-	DEFINE_FIELD( m_flStartTime, FIELD_TIME ),
-	DEFINE_THINKFUNC( SaveThink ),
-	DEFINE_INPUTFUNC( FIELD_VOID, "Enable", InputEnable ),
-	DEFINE_INPUTFUNC( FIELD_VOID, "Disable", InputDisable ),
-END_DATADESC()
-
-
-//-----------------------------------------------------------------------------
-// Purpose: Keyfield set func
-//-----------------------------------------------------------------------------
-void CLogicAutosave::InputSetMinHitpointsThreshold( inputdata_t &inputdata )
-{
-	int setTo = inputdata.value.Int();
-	AssertMsg1(setTo >= 0 && setTo <= 100, "Tried to set autosave MinHitpointsThreshold to %d!\n", setTo);
-	m_minHitPoints = setTo;
-}
-
-// Finds the named physics object.  If no name, returns the world
-// If a name is specified and an object not found - errors are reported
-IPhysicsObject *FindPhysicsObjectByNameOrWorld( string_t name, CBaseEntity *pErrorEntity )
-{
-	if ( !name )
-		return g_PhysWorldObject;
-
-	IPhysicsObject *pPhysics = FindPhysicsObjectByName( name.ToCStr(), pErrorEntity );
-	if ( !pPhysics )
-	{
-		DevWarning("%s: can't find %s\n", pErrorEntity->GetClassname(), name.ToCStr());
-	}
-	return pPhysics;
 }
 
 class CLogicCollisionPair : public CLogicalEntity
@@ -3122,7 +2918,6 @@ class CLogicBranchList : public CLogicalEntity
 {
 	DECLARE_CLASS( CLogicBranchList, CLogicalEntity );
 
-	virtual void Spawn();
 	virtual void Activate();
 	virtual int DrawDebugTextOverlays( void );
 
@@ -3199,14 +2994,6 @@ END_DATADESC()
 
 
 //-----------------------------------------------------------------------------
-// Purpose: Called before spawning, after key values have been set.
-//-----------------------------------------------------------------------------
-void CLogicBranchList::Spawn( void )
-{
-}
-
-
-//-----------------------------------------------------------------------------
 // Finds all the logic_branches that we are monitoring and register ourselves with them.
 //-----------------------------------------------------------------------------
 void CLogicBranchList::Activate( void )
@@ -3272,8 +3059,6 @@ void CLogicBranchList::InputTest( inputdata_t &inputdata )
 }
 
 
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
 void CLogicBranchList::DoTest( CBaseEntity *pActivator )
 {
 	bool bOneTrue = false;
@@ -3319,9 +3104,6 @@ void CLogicBranchList::DoTest( CBaseEntity *pActivator )
 	}
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
 int CLogicBranchList::DrawDebugTextOverlays( void )
 {
 	int text_offset = BaseClass::DrawDebugTextOverlays();
@@ -3366,11 +3148,6 @@ public:
 	inline void LCDevMsg(int lvl, const char *msg, const char *append = NULL) { developer.GetInt() >= lvl ? ConColorMsg(m_MsgColor, msg, append) : (void)0; }
 	inline void LCWarning(const char *msg, const char *append = NULL) { ConColorMsg(m_WarningColor, msg, append); }
 	inline void LCDevWarning(int lvl, const char *msg, const char *append = NULL) { developer.GetInt() >= lvl ? ConColorMsg(m_WarningColor, msg, append) : (void)0; }
-
-	//inline void LCMsg(const char *msg, const char *append = NULL) { ColorSpewMessage(SPEW_MESSAGE, &m_MsgColor, msg, append); }
-	//inline void LCDevMsg(int lvl, const char *msg, const char *append = NULL) { developer.GetInt() >= lvl ? ColorSpewMessage(SPEW_MESSAGE, &m_MsgColor, msg, append) : (void)0; }
-	//inline void LCWarning(const char *msg, const char *append = NULL) { ColorSpewMessage(SPEW_MESSAGE, &m_WarningColor, msg, append); }
-	//inline void LCDevWarning(int lvl, const char *msg, const char *append = NULL) { developer.GetInt() >= lvl ? ColorSpewMessage(SPEW_MESSAGE, &m_WarningColor, msg, append) : (void)0; }
 
 	// Inputs
 	void InputSendMsg( inputdata_t &inputdata ) { !m_bNewLineNotAuto ? LCMsg("%s\n", inputdata.value.String()) : LCMsg("%s", inputdata.value.String()); }
@@ -3458,8 +3235,6 @@ BEGIN_DATADESC( CLogicConvar )
 
 END_DATADESC()
 
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
 const char *CLogicConvar::GetConVarString( inputdata_t &inputdata )
 {
 	if (!sv_allow_logic_convar.GetBool())
@@ -3503,8 +3278,6 @@ const char *CLogicConvar::GetConVarString( inputdata_t &inputdata )
 	return pCVar.GetString();
 }
 
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
 void CLogicConvar::InputGetValue( inputdata_t &inputdata )
 {
 	const char *pCVarString = GetConVarString(inputdata);
@@ -3512,8 +3285,6 @@ void CLogicConvar::InputGetValue( inputdata_t &inputdata )
 		m_OutValue.Set( AllocPooledString( pCVarString ), inputdata.pActivator, this );
 }
 
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
 void CLogicConvar::InputTest( inputdata_t &inputdata )
 {
 	const char *pCVarString = GetConVarString(inputdata);
@@ -3578,8 +3349,6 @@ BEGIN_DATADESC( CLogicFormat )
 
 END_DATADESC()
 
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
 void CLogicFormat::InputGetFormattedString( inputdata_t &inputdata )
 {
 	char szFormatted[256];
@@ -3625,7 +3394,7 @@ void CLogicFormat::FormatString(const char *szStringToFormat, char *szOutput, in
 	{
 		if (inparam)
 		{
-			curparam = atoi(szToken);
+			curparam = Q_atoi(szToken);
 			if (curparam < MAX_LOGIC_FORMAT_PARAMETERS /*&& szParameters[curparam] != NULL*/) //if (curparam < MAX_FORMAT_PARAMETERS)
 			{
 				Q_snprintf(szFormatted, sizeof(szFormatted), "%s%s", szFormatted, szParameters[curparam]);
@@ -3716,17 +3485,11 @@ DEFINE_OUTPUT( m_OnFailed, "OnFailed" ),
 END_DATADESC()
 
 
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
 inline CBaseEntity *CLogicKeyfieldAccessor::GetTarget(CBaseEntity *pCaller, CBaseEntity *pActivator)
 {
 	return gEntList.FindEntityByName(NULL, m_target, this, pActivator, pCaller);
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
 bool CLogicKeyfieldAccessor::TestKey(CBaseEntity *pTarget, const char *szKeyName)
 {
 	variant_t variant;
@@ -3742,9 +3505,6 @@ bool CLogicKeyfieldAccessor::TestKey(CBaseEntity *pTarget, const char *szKeyName
 	}
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
 bool CLogicKeyfieldAccessor::SetKeyValue(CBaseEntity *pTarget, const char *szKeyName, const char *szValue)
 {
 	if (pTarget->KeyValue(szKeyName, szValue))
@@ -3764,9 +3524,6 @@ bool CLogicKeyfieldAccessor::SetKeyValue(CBaseEntity *pTarget, const char *szKey
 	}
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
 bool CLogicKeyfieldAccessor::SetKeyValueBits(CBaseEntity *pTarget, const char *szKeyName, int iValue, bool bRemove)
 {
 	variant_t variant;
@@ -3789,9 +3546,6 @@ bool CLogicKeyfieldAccessor::SetKeyValueBits(CBaseEntity *pTarget, const char *s
 	}
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
 void CLogicKeyfieldAccessor::InputTest(inputdata_t &inputdata)
 {
 	CBaseEntity *pTarget = GetTarget(inputdata.pCaller, inputdata.pActivator);
@@ -3801,9 +3555,6 @@ void CLogicKeyfieldAccessor::InputTest(inputdata_t &inputdata)
 	}
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
 void CLogicKeyfieldAccessor::InputTestKey(inputdata_t &inputdata)
 {
 	const char *input = inputdata.value.String();
@@ -3814,9 +3565,6 @@ void CLogicKeyfieldAccessor::InputTestKey(inputdata_t &inputdata)
 	}
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
 void CLogicKeyfieldAccessor::InputTestTarget(inputdata_t &inputdata)
 {
 	m_target = inputdata.value.StringID();
@@ -3827,17 +3575,11 @@ void CLogicKeyfieldAccessor::InputTestTarget(inputdata_t &inputdata)
 	}
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
 void CLogicKeyfieldAccessor::InputSetKey(inputdata_t &inputdata)
 {
 	m_iszKey = inputdata.value.StringID();
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
 void CLogicKeyfieldAccessor::InputSetValue(inputdata_t &inputdata)
 {
 	const char *input = inputdata.value.String();
@@ -3848,9 +3590,6 @@ void CLogicKeyfieldAccessor::InputSetValue(inputdata_t &inputdata)
 	}
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
 void CLogicKeyfieldAccessor::InputAddBits(inputdata_t &inputdata)
 {
 	int input = inputdata.value.Int();
@@ -3861,9 +3600,6 @@ void CLogicKeyfieldAccessor::InputAddBits(inputdata_t &inputdata)
 	}
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
 void CLogicKeyfieldAccessor::InputRemoveBits(inputdata_t &inputdata)
 {
 	int input = inputdata.value.Int();
@@ -3917,8 +3653,6 @@ BEGIN_DATADESC( CMathClamp )
 
 END_DATADESC()
 
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
 void CMathClamp::InputClampValue( inputdata_t &inputdata )
 {
 	ClampValue(inputdata.value, &inputdata);
@@ -3948,8 +3682,6 @@ inline float CMathClamp::ClampValue(float input, float min, float max, int *boun
 		return input;
 }
 
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
 void CMathClamp::ClampValue(variant_t var, inputdata_t *inputdata)
 {
 	// Don't convert up here in case of invalid type
@@ -4087,9 +3819,9 @@ bool CMathBits::KeyValue(const char *szKeyName, const char *szValue)
 	//
 	// Set the initial value of the counter.
 	//
-	if (!stricmp(szKeyName, "startvalue"))
+	if (!Q_stricmp(szKeyName, "startvalue"))
 	{
-		m_OutValue.Init(atoi(szValue));
+		m_OutValue.Init(Q_atoi(szValue));
 		return(true);
 	}
 
@@ -4208,7 +3940,7 @@ void CMathBits::InputSetValue( inputdata_t &inputdata )
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: Input handler for updating the value.
+// Purpose: Input handler for updating the value without firing OutValue.
 // Input  : Bit value to set.
 //-----------------------------------------------------------------------------
 void CMathBits::InputSetValueNoFire( inputdata_t &inputdata )
@@ -4223,6 +3955,7 @@ void CMathBits::InputSetValueNoFire( inputdata_t &inputdata )
 }
 
 //-----------------------------------------------------------------------------
+// Purpose: Input handler for getting the current value via OnGetValue
 //-----------------------------------------------------------------------------
 void CMathBits::InputGetValue( inputdata_t &inputdata )
 {
@@ -4288,15 +4021,11 @@ void CMathBits::InputContainsAllBits( inputdata_t &inputdata )
 		m_OnFalse.FireOutput(inputdata.pActivator, this);
 }
 
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
 void CMathBits::InputEnable( inputdata_t &inputdata )
 {
 	m_bDisabled = false;
 }
 
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
 void CMathBits::InputDisable( inputdata_t &inputdata )
 {
 	m_bDisabled = true;
@@ -4482,7 +4211,7 @@ bool CMathVector::KeyValue(const char *szKeyName, const char *szValue)
 	//
 	// Set the initial value of the counter.
 	//
-	if (!stricmp(szKeyName, "startvalue"))
+	if (!Q_stricmp(szKeyName, "startvalue"))
 	{
 		Vector vec;
 		UTIL_StringToVector( vec.Base(), szValue );
@@ -4498,24 +4227,14 @@ bool CMathVector::KeyValue(const char *szKeyName, const char *szValue)
 //-----------------------------------------------------------------------------
 bool CMathVector::KeyValue( const char *szKeyName, const Vector &vecValue ) 
 {
-	//
 	// Set the initial value of the counter.
-	//
-	if (!stricmp(szKeyName, "startvalue"))
+	if (!Q_stricmp(szKeyName, "startvalue"))
 	{
 		m_OutValue.Init(vecValue);
 		return true;
 	}
 
-	// So, CLogicalEntity descends from CBaseEntity...
-	// Yup.
-	// ...and CBaseEntity has a version of KeyValue that takes vectors.
-	// Yup.
-	// Since it's virtual, I could easily override it just like I could with a KeyValue that takes strings, right?
-	// Sounds right to me.
-	// So let me override it.
-	// *No suitable function exists*
-	return CBaseEntity::KeyValue(szKeyName, vecValue);
+	return KeyValue(szKeyName, vecValue);
 }
 
 //-----------------------------------------------------------------------------
@@ -4581,16 +4300,6 @@ void CMathVector::InputDivide( inputdata_t &inputdata )
 		cur.z /= vec.z;
 
 	UpdateOutValue( inputdata.pActivator, cur );
-
-	//if (vec.x != 0 && vec.y != 0 && vec.z != 0)
-	//{
-	//	UpdateOutValue( inputdata.pActivator, cur / vec );
-	//}
-	//else
-	//{
-	//	DevMsg( 1, "LEVEL DESIGN ERROR: Divide by zero in math_vector\n" );
-	//	UpdateOutValue( inputdata.pActivator, cur );
-	//}
 }
 
 
@@ -4647,8 +4356,6 @@ void CMathVector::InputSetValueNoFire( inputdata_t &inputdata )
 	m_OutValue.Init( vec );
 }
 
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
 void CMathVector::InputGetValue( inputdata_t &inputdata )
 {
 	Vector cur;
@@ -4656,22 +4363,16 @@ void CMathVector::InputGetValue( inputdata_t &inputdata )
 	m_OnGetValue.Set( cur, inputdata.pActivator, inputdata.pCaller );
 }
 
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
 void CMathVector::InputEnable( inputdata_t &inputdata )
 {
 	m_bDisabled = false;
 }
 
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
 void CMathVector::InputDisable( inputdata_t &inputdata )
 {
 	m_bDisabled = true;
 }
 
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
 void CMathVector::PointAt( Vector &origin, Vector &target, Vector &out )
 {
 	out = origin - target;
@@ -4685,8 +4386,6 @@ void CMathVector::PointAt( Vector &origin, Vector &target, Vector &out )
 	out[2] = ang[2];
 }
 
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
 void CMathVector::InputPointAtLocation( inputdata_t &inputdata )
 {
 	if( m_bDisabled )
@@ -4706,8 +4405,6 @@ void CMathVector::InputPointAtLocation( inputdata_t &inputdata )
 	UpdateOutValue( inputdata.pActivator, cur );
 }
 
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
 void CMathVector::InputPointAtEntity( inputdata_t &inputdata )
 {
 	if( m_bDisabled )
@@ -4732,8 +4429,6 @@ void CMathVector::InputPointAtEntity( inputdata_t &inputdata )
 	UpdateOutValue( inputdata.pActivator, cur );
 }
 
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
 void CMathVector::InputNormalize( inputdata_t &inputdata )
 {
 	if( m_bDisabled )
@@ -4748,8 +4443,6 @@ void CMathVector::InputNormalize( inputdata_t &inputdata )
 	UpdateOutValue( inputdata.pActivator, cur );
 }
 
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
 void CMathVector::InputNormalizeAngles( inputdata_t &inputdata )
 {
 	if( m_bDisabled )
@@ -4766,8 +4459,6 @@ void CMathVector::InputNormalizeAngles( inputdata_t &inputdata )
 	UpdateOutValue( inputdata.pActivator, cur );
 }
 
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
 void CMathVector::InputVectorAngles( inputdata_t &inputdata )
 {
 	if( m_bDisabled )
@@ -4783,8 +4474,6 @@ void CMathVector::InputVectorAngles( inputdata_t &inputdata )
 	UpdateOutValue( inputdata.pActivator, Vector(ang.x, ang.y, ang.z) );
 }
 
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
 void CMathVector::InputAngleVectorForward( inputdata_t &inputdata )
 {
 	if( m_bDisabled )
@@ -4799,8 +4488,6 @@ void CMathVector::InputAngleVectorForward( inputdata_t &inputdata )
 	UpdateOutValue( inputdata.pActivator, cur );
 }
 
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
 void CMathVector::InputAngleVectorRight( inputdata_t &inputdata )
 {
 	if( m_bDisabled )
@@ -4815,8 +4502,6 @@ void CMathVector::InputAngleVectorRight( inputdata_t &inputdata )
 	UpdateOutValue( inputdata.pActivator, cur );
 }
 
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
 void CMathVector::InputAngleVectorUp( inputdata_t &inputdata )
 {
 	if( m_bDisabled )
@@ -4831,8 +4516,6 @@ void CMathVector::InputAngleVectorUp( inputdata_t &inputdata )
 	UpdateOutValue( inputdata.pActivator, cur );
 }
 
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
 void CMathVector::SetCoordinate(float value, char coord, CBaseEntity *pActivator)
 {
 	if( m_bDisabled )
@@ -4852,8 +4535,6 @@ void CMathVector::SetCoordinate(float value, char coord, CBaseEntity *pActivator
 	UpdateOutValue( pActivator, vec );
 }
 
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
 void CMathVector::GetCoordinate(char coord, CBaseEntity *pActivator)
 {
 	if( m_bDisabled )
@@ -4872,8 +4553,6 @@ void CMathVector::GetCoordinate(char coord, CBaseEntity *pActivator)
 	}
 }
 
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
 void CMathVector::AddCoordinate(float value, char coord, CBaseEntity *pActivator)
 {
 	if( m_bDisabled )
@@ -4893,8 +4572,6 @@ void CMathVector::AddCoordinate(float value, char coord, CBaseEntity *pActivator
 	UpdateOutValue( pActivator, vec );
 }
 
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
 void CMathVector::SubtractCoordinate(float value, char coord, CBaseEntity *pActivator)
 {
 	if( m_bDisabled )
@@ -4980,17 +4657,9 @@ private:
 	bool TestKey(CBaseEntity *pTarget, const char *szKeyName);
 	bool SetKeyValue(CBaseEntity *pTarget, const char *szKeyName, const char *szValue);
 	bool SetKeyValueBits(CBaseEntity *pTarget, const char *szKeyName, int iValue, bool bRemove = false);
-
-	//DECLARE_DATADESC();
 };
 
 LINK_ENTITY_TO_CLASS(logic_datadesc_accessor, CLogicFieldAccessor);
-
-
-//BEGIN_DATADESC(CLogicFieldAccessor)
-
-//END_DATADESC()
-
 
 
 //-----------------------------------------------------------------------------
@@ -5156,13 +4825,6 @@ BEGIN_DATADESC( CGameGlobalVars )
 
 END_DATADESC()
 
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-//void CGameGlobalVars::InputGetCurtime( inputdata_t &inputdata )
-//{
-//	m_OutCurtime.Set(gpGlobals->curtime, inputdata.pActivator, this);
-//}
-
 
 #define MathModCalc(val1, val2, op) \
 	switch (op) \
@@ -5230,7 +4892,7 @@ END_DATADESC()
 //-----------------------------------------------------------------------------
 bool CMathMod::KeyValue(const char *szKeyName, const char *szValue)
 {
-	if (!stricmp(szKeyName, "startvalue"))
+	if (!Q_stricmp(szKeyName, "startvalue"))
 	{
 		// It converts later anyway
 		m_Mod.SetString(AllocPooledString(szValue));
@@ -5240,26 +4902,16 @@ bool CMathMod::KeyValue(const char *szKeyName, const char *szValue)
 	return BaseClass::KeyValue(szKeyName, szValue);
 }
 
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
 void CMathMod::InputSetMod( inputdata_t &inputdata )
 {
 	m_Mod = inputdata.value;
-	//if (inputdata.value.FieldType() == FIELD_STRING)
-	//	m_Mod = Variant_Parse(inputdata.value.String());
-	//else
-	//	m_Mod = inputdata.value;
 }
 
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
 void CMathMod::InputSetOperator( inputdata_t &inputdata )
 {
 	m_Operator = inputdata.value.String()[0];
 }
 
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
 void CMathMod::InputModInt( inputdata_t &inputdata )
 {
 	m_Mod.Convert(FIELD_INTEGER);
@@ -5272,8 +4924,6 @@ void CMathMod::InputModInt( inputdata_t &inputdata )
 	m_OutInt.Set( out, inputdata.pActivator, this );
 }
 
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
 void CMathMod::InputModFloat( inputdata_t &inputdata )
 {
 	m_Mod.Convert(FIELD_FLOAT);
@@ -5284,8 +4934,6 @@ void CMathMod::InputModFloat( inputdata_t &inputdata )
 	m_OutFloat.Set( out, inputdata.pActivator, this );
 }
 
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
 void CMathMod::InputModVector( inputdata_t &inputdata )
 {
 	m_Mod.Convert(FIELD_VECTOR);
@@ -5359,8 +5007,6 @@ BEGIN_DATADESC( CLogicModelInfo )
 
 END_DATADESC()
 
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
 inline CBaseAnimating *CLogicModelInfo::GetTarget(inputdata_t &inputdata)
 {
 	CBaseEntity *pEntity = gEntList.FindEntityByName(NULL, STRING(m_target), this, inputdata.pActivator, inputdata.pCaller);
@@ -5369,8 +5015,6 @@ inline CBaseAnimating *CLogicModelInfo::GetTarget(inputdata_t &inputdata)
 	return pEntity->GetBaseAnimating();
 }
 
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
 inline int CLogicModelInfo::GetPoseParameterIndex(CBaseAnimating *pTarget)
 {
 	if (m_iPoseParameterIndex == -1)
@@ -5378,8 +5022,6 @@ inline int CLogicModelInfo::GetPoseParameterIndex(CBaseAnimating *pTarget)
 	return m_iPoseParameterIndex;
 }
 
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
 void CLogicModelInfo::InputGetNumSkins( inputdata_t &inputdata )
 {
 	CBaseAnimating *pAnimating = GetTarget(inputdata);
@@ -5389,8 +5031,6 @@ void CLogicModelInfo::InputGetNumSkins( inputdata_t &inputdata )
 	}
 }
 
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
 void CLogicModelInfo::InputLookupSequence( inputdata_t &inputdata )
 {
 	CBaseAnimating *pAnimating = GetTarget(inputdata);
@@ -5405,8 +5045,6 @@ void CLogicModelInfo::InputLookupSequence( inputdata_t &inputdata )
 	}
 }
 
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
 void CLogicModelInfo::InputLookupActivity( inputdata_t &inputdata )
 {
 	CBaseAnimating *pAnimating = GetTarget(inputdata);
@@ -5416,7 +5054,7 @@ void CLogicModelInfo::InputLookupActivity( inputdata_t &inputdata )
 		if (iActivity == -1)
 		{
 			// Check if it's a raw activity ID
-			iActivity = atoi(inputdata.value.String());
+			iActivity = Q_atoi(inputdata.value.String());
 			if (!ActivityList_NameForIndex(iActivity))
 			{
 				Msg("%s received invalid LookupActivity %s\n", GetDebugName(), inputdata.value.String());
@@ -5433,8 +5071,6 @@ void CLogicModelInfo::InputLookupActivity( inputdata_t &inputdata )
 	}
 }
 
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
 void CLogicModelInfo::InputSetPoseParameterName( inputdata_t &inputdata )
 {
 	m_iszPoseParameterName = inputdata.value.StringID();
@@ -5448,8 +5084,6 @@ void CLogicModelInfo::InputSetPoseParameterName( inputdata_t &inputdata )
 	}
 }
 
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
 void CLogicModelInfo::InputSetPoseParameterValue( inputdata_t &inputdata )
 {
 	CBaseAnimating *pAnimating = GetTarget(inputdata);
@@ -5465,8 +5099,6 @@ void CLogicModelInfo::InputSetPoseParameterValue( inputdata_t &inputdata )
 	}
 }
 
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
 void CLogicModelInfo::InputGetPoseParameter( inputdata_t &inputdata )
 {
 	CBaseAnimating *pAnimating = GetTarget(inputdata);
@@ -5627,8 +5259,6 @@ BEGIN_DATADESC( CLogicEntityPosition )
 
 END_DATADESC()
 
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
 inline CBaseEntity *CLogicEntityPosition::GetTarget(CBaseEntity *pActivator, CBaseEntity *pCaller)
 {
 	// Always reset with procedurals
@@ -5637,8 +5267,6 @@ inline CBaseEntity *CLogicEntityPosition::GetTarget(CBaseEntity *pActivator, CBa
 	return m_hTarget.Get();
 }
 
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
 Vector CLogicEntityPosition::GetPosition(CBaseEntity *pEntity)
 {
 	switch (m_iPositionType)
@@ -5666,8 +5294,6 @@ Vector CLogicEntityPosition::GetPosition(CBaseEntity *pEntity)
 	return vec3_origin;
 }
 
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
 QAngle CLogicEntityPosition::GetAngles(CBaseEntity *pEntity)
 {
 	switch (m_iPositionType)
@@ -5697,8 +5323,6 @@ QAngle CLogicEntityPosition::GetAngles(CBaseEntity *pEntity)
 	return vec3_angle;
 }
 
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
 void CLogicEntityPosition::InputGetPosition( inputdata_t &inputdata )
 {
 	CBaseEntity *pEntity = GetTarget(inputdata.pActivator, inputdata.pCaller);
@@ -5713,8 +5337,6 @@ void CLogicEntityPosition::InputGetPosition( inputdata_t &inputdata )
 	m_OutAngles.Set( GetAngles(pEntity), pEntity, this );
 }
 
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
 void CLogicEntityPosition::InputSetPosition( inputdata_t &inputdata )
 {
 	CBaseEntity *pEntity = GetTarget(inputdata.pActivator, inputdata.pCaller);
@@ -5734,8 +5356,6 @@ void CLogicEntityPosition::InputSetPosition( inputdata_t &inputdata )
 		pEntity->SetAbsOrigin(vec);
 }
 
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
 void CLogicEntityPosition::InputPredictPosition( inputdata_t &inputdata )
 {
 	CBaseEntity *pEntity = GetTarget(inputdata.pActivator, inputdata.pCaller);
@@ -5778,8 +5398,6 @@ public:
 
 	void InputSetValue(inputdata_t &inputdata);
 
-	//bool ReadUnregisteredKeyfields(CBaseEntity *pTarget, const char *szKeyName, variant_t *variant);
-
 	COutputString m_OutValue;
 	COutputEvent m_OnFailed;
 
@@ -5808,17 +5426,11 @@ DEFINE_OUTPUT( m_OnFailed, "OnFailed" ),
 END_DATADESC()
 
 
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
 inline CBaseEntity *CLogicContextAccessor::GetTarget(CBaseEntity *pCaller, CBaseEntity *pActivator)
 {
 	return gEntList.FindEntityByName(NULL, m_target, this, pActivator, pCaller);
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
 bool CLogicContextAccessor::TestContext(CBaseEntity *pTarget, const char *szKeyName)
 {
 	int idx = pTarget->FindContextByName( szKeyName );
@@ -5835,8 +5447,6 @@ bool CLogicContextAccessor::TestContext(CBaseEntity *pTarget, const char *szKeyN
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
 void CLogicContextAccessor::SetContext(CBaseEntity *pTarget, const char *szKeyName, string_t szValue)
 {
 	pTarget->AddContext(szKeyName, STRING(szValue));
@@ -5844,9 +5454,6 @@ void CLogicContextAccessor::SetContext(CBaseEntity *pTarget, const char *szKeyNa
 	m_OutValue.Set(szValue, pTarget, this);
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
 void CLogicContextAccessor::InputTest(inputdata_t &inputdata)
 {
 	CBaseEntity *pTarget = GetTarget(inputdata.pCaller, inputdata.pActivator);
@@ -5856,9 +5463,6 @@ void CLogicContextAccessor::InputTest(inputdata_t &inputdata)
 	}
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
 void CLogicContextAccessor::InputTestContext(inputdata_t &inputdata)
 {
 	const char *input = inputdata.value.String();
@@ -5869,9 +5473,6 @@ void CLogicContextAccessor::InputTestContext(inputdata_t &inputdata)
 	}
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
 void CLogicContextAccessor::InputTestTarget(inputdata_t &inputdata)
 {
 	m_target = inputdata.value.StringID();
@@ -5882,17 +5483,11 @@ void CLogicContextAccessor::InputTestTarget(inputdata_t &inputdata)
 	}
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
 void CLogicContextAccessor::InputSetContext(inputdata_t &inputdata)
 {
 	m_iszContext = inputdata.value.StringID();
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
 void CLogicContextAccessor::InputSetValue(inputdata_t &inputdata)
 {
 	CBaseEntity *pTarget = GetTarget(inputdata.pCaller, inputdata.pActivator);
@@ -5976,9 +5571,6 @@ extern const char *GetDefaultLightstyleString( int styleIndex );
 
 static const char *s_pLightPatternContext = "PatternContext";
 
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
 void CMathLightPattern::Spawn()
 {
 	BaseClass::Spawn();
@@ -5987,9 +5579,6 @@ void CMathLightPattern::Spawn()
 		StartPatternThink();
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
 void CMathLightPattern::OutputCurPattern()
 {
 	// This code looks messy, but it does what it's supposed to and is safe enough.
@@ -6014,9 +5603,6 @@ void CMathLightPattern::OutputCurPattern()
 	m_OutLetter.Set( AllocPooledString(szLetter), this, this );
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
 void CMathLightPattern::StartPatternThink()
 {
 	// Output our current/next one immediately.
@@ -6026,9 +5612,6 @@ void CMathLightPattern::StartPatternThink()
 	SetContextThink( &CMathLightPattern::PatternThink, gpGlobals->curtime, s_pLightPatternContext );
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
 void CMathLightPattern::PatternThink()
 {
 	// Output our current/next one
@@ -6039,19 +5622,14 @@ void CMathLightPattern::PatternThink()
 	if (STRING(m_iszPattern)[m_NextLetter] == '\0')
 		m_NextLetter = 0;
 
-	//m_OutLetter.Set(AllocPooledString(UTIL_VarArgs("%c", m_NextLetter)), this, this);
-
 	SetNextThink( gpGlobals->curtime + m_flPatternSpeed, s_pLightPatternContext );
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
 bool CMathLightPattern::KeyValue( const char *szKeyName, const char *szValue )
 {
 	if ( FStrEq( szKeyName, "style" ) )
 	{
-		m_iszPattern = AllocPooledString(GetDefaultLightstyleString(atoi(szValue)));
+		m_iszPattern = AllocPooledString(GetDefaultLightstyleString(Q_atoi(szValue)));
 	}
 	else
 		return BaseClass::KeyValue( szKeyName, szValue );
@@ -6059,27 +5637,18 @@ bool CMathLightPattern::KeyValue( const char *szKeyName, const char *szValue )
 	return true;
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
 void CMathLightPattern::InputSetStyle( inputdata_t &inputdata )
 {
 	m_iszPattern = AllocPooledString(GetDefaultLightstyleString(inputdata.value.Int()));
 	m_NextLetter = 0;
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
 void CMathLightPattern::InputSetPattern( inputdata_t &inputdata )
 {
 	m_iszPattern = inputdata.value.StringID();
 	m_NextLetter = 0;
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
 void CMathLightPattern::InputEnable( inputdata_t &inputdata )
 {
 	if (VerifyPatternValid())
@@ -6088,17 +5657,11 @@ void CMathLightPattern::InputEnable( inputdata_t &inputdata )
 		Warning("%s tried to enable without valid pattern\n", GetDebugName());
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
 void CMathLightPattern::InputDisable( inputdata_t &inputdata )
 {
 	SetContextThink( NULL, TICK_NEVER_THINK, s_pLightPatternContext );
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
 void CMathLightPattern::InputToggle( inputdata_t &inputdata )
 {
 	if (GetNextThink(s_pLightPatternContext) != TICK_NEVER_THINK)
@@ -6200,17 +5763,11 @@ BEGIN_DATADESC( CLogicSequence )
 
 END_DATADESC()
 
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
 CLogicSequence::CLogicSequence()
 {
 	m_CurCase.Init( 1 );
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
 void CLogicSequence::Activate( void )
 {
 	BaseClass::Activate();
@@ -6233,7 +5790,7 @@ bool CLogicSequence::KeyValue( const char *szKeyName, const char *szValue )
 {
 	if (FStrEq( szKeyName, "StartCase" ))
 	{
-		m_CurCase.Init( atoi(szValue) );
+		m_CurCase.Init( Q_atoi(szValue) );
 	}
 	else
 		return BaseClass::KeyValue( szKeyName, szValue );
@@ -6241,9 +5798,6 @@ bool CLogicSequence::KeyValue( const char *szKeyName, const char *szValue )
 	return true;
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
 void CLogicSequence::TestCase( int iCase, string_t iszValue, CBaseEntity *pActivator )
 {
 	if (m_bDisabled)
@@ -6285,74 +5839,47 @@ void CLogicSequence::TestCase( int iCase, string_t iszValue, CBaseEntity *pActiv
 	}
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
 void CLogicSequence::SequenceComplete( string_t iszValue, CBaseEntity *pActivator )
 {
 	m_OnSequenceComplete.Set( iszValue, pActivator, this );
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
 void CLogicSequence::InputEnable( inputdata_t &inputdata )
 {
 	m_bDisabled = false;
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
 void CLogicSequence::InputDisable( inputdata_t &inputdata )
 {
 	m_bDisabled = true;
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
 void CLogicSequence::InputToggle( inputdata_t &inputdata )
 {
 	m_bDisabled = (m_bDisabled == false);
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
 void CLogicSequence::InputInValue( inputdata_t &inputdata )
 {
 	TestCase( m_CurCase.Get(), inputdata.value.StringID(), inputdata.pActivator );
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
 void CLogicSequence::InputSetCurrentCase( inputdata_t &inputdata )
 {
 	m_CurCase.Set( inputdata.value.Int(), inputdata.pActivator, this );
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
 void CLogicSequence::InputSetCurrentCaseNoFire( inputdata_t &inputdata )
 {
 	m_CurCase.Init( inputdata.value.Int() );
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
 void CLogicSequence::InputIncrementSequence( inputdata_t &inputdata )
 {
 	int iInc = inputdata.value.Int();
 	m_CurCase.Set( m_CurCase.Get() + (iInc != 0 ? iInc : 1), inputdata.pActivator, this );
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
 void CLogicSequence::InputResetSequence( inputdata_t &inputdata )
 {
 	m_CurCase.Set( 1, inputdata.pActivator, this );
@@ -6473,17 +6000,11 @@ END_DATADESC()
 
 CGaussianRandomStream CMathGenerate::m_GaussianStream;
 
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
 CMathGenerate::CMathGenerate()
 {
 	m_GaussianStream.AttachToStream( random );
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
 void CMathGenerate::Spawn()
 {
 	BaseClass::Spawn();
@@ -6492,14 +6013,11 @@ void CMathGenerate::Spawn()
 		StartGenerating();
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
 bool CMathGenerate::KeyValue( const char *szKeyName, const char *szValue )
 {
 	if (FStrEq( szKeyName, "InitialValue" ))
 	{
-		m_OutValue.Init( atof(szValue) );
+		m_OutValue.Init( Q_atof(szValue) );
 	}
 	else
 		return BaseClass::KeyValue( szKeyName, szValue );
@@ -6507,30 +6025,22 @@ bool CMathGenerate::KeyValue( const char *szKeyName, const char *szValue )
 	return true;
 }
 
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
 void CMathGenerate::InputSetValue( inputdata_t &inputdata )
 {
 	UpdateOutValue(inputdata.value.Float(), inputdata.pActivator);
 }
 
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
 void CMathGenerate::InputSetValueNoFire( inputdata_t &inputdata )
 {
 	m_OutValue.Init(inputdata.value.Float());
 }
 
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
 void CMathGenerate::InputGetValue( inputdata_t &inputdata )
 {
 	float flOutValue = m_OutValue.Get();
 	m_OnGetValue.Set( flOutValue, inputdata.pActivator, inputdata.pCaller );
 }
 
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
 void CMathGenerate::InputSetGenerateType( inputdata_t &inputdata )
 {
 	m_iGenerateType = (GenerateType_t)inputdata.value.Int();
@@ -6543,24 +6053,18 @@ void CMathGenerate::InputSetGenerateType( inputdata_t &inputdata )
 	}
 }
 
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
 void CMathGenerate::InputEnable( inputdata_t &inputdata )
 {
 	m_bDisabled = false;
 	StartGenerating();
 }
 
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
 void CMathGenerate::InputDisable( inputdata_t &inputdata )
 {
 	m_bDisabled = true;
 	StopGenerating();
 }
 
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
 void CMathGenerate::InputToggle( inputdata_t &inputdata )
 {
 	m_bDisabled ? InputEnable(inputdata) : InputDisable(inputdata);
@@ -6574,9 +6078,7 @@ void CMathGenerate::UpdateOutValue( float fNewValue, CBaseEntity *pActivator )
 {
 	if ((m_flMin != 0) || (m_flMax != 0))
 	{
-		//
 		// Fire an output any time we reach or exceed our maximum value.
-		//
 		if ( fNewValue >= m_flMax || (m_iGenerateType == GENERATE_SINE_WAVE && fNewValue >= (m_flMax * 0.995f)) )
 		{
 			if ( !m_bHitMax )
@@ -6596,9 +6098,7 @@ void CMathGenerate::UpdateOutValue( float fNewValue, CBaseEntity *pActivator )
 			m_bHitMax = false;
 		}
 
-		//
 		// Fire an output any time we reach or go below our minimum value.
-		//
 		if ( fNewValue <= m_flMin )
 		{
 			if ( !m_bHitMin )
@@ -6633,9 +6133,7 @@ void CMathGenerate::UpdateOutValueSine( float fNewValue, CBaseEntity *pActivator
 {
 	if ((m_flMin != 0) || (m_flMax != 0))
 	{
-		//
 		// Fire an output any time we reach or exceed our maximum value.
-		//
 		if ( fNewValue >= (m_flMax * 0.995f) )
 		{
 			if ( !m_bHitMax )
@@ -6655,9 +6153,7 @@ void CMathGenerate::UpdateOutValueSine( float fNewValue, CBaseEntity *pActivator
 			m_bHitMax = false;
 		}
 
-		//
 		// Fire an output any time we reach or go below our minimum value.
-		//
 		if ( fNewValue <= (m_flMin * 1.005f) )
 		{
 			if ( !m_bHitMin )
@@ -6723,16 +6219,12 @@ void CMathGenerate::StartGenerating()
 	SetNextThink( gpGlobals->curtime + TICK_INTERVAL );
 }
 
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
 void CMathGenerate::StopGenerating()
 {
 	SetThink(NULL);
 	SetNextThink( TICK_NEVER_THINK );
 }
 
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
 void CMathGenerate::GenerateSineWave()
 {
 	// CSineProxy in mathproxy.cpp
@@ -6753,8 +6245,6 @@ void CMathGenerate::GenerateSineWave()
 	SetNextThink( gpGlobals->curtime + TICK_INTERVAL );
 }
 
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
 void CMathGenerate::GenerateLinearRamp()
 {
 	// CLinearRampProxy in mathproxy.cpp
@@ -6773,8 +6263,6 @@ void CMathGenerate::GenerateLinearRamp()
 	SetNextThink( gpGlobals->curtime + TICK_INTERVAL );
 }
 
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
 void CMathGenerate::GenerateUniformNoise()
 {
 	// CUniformNoiseProxy in mathproxy.cpp
@@ -6784,8 +6272,6 @@ void CMathGenerate::GenerateUniformNoise()
 	SetNextThink( gpGlobals->curtime + TICK_INTERVAL );
 }
 
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
 void CMathGenerate::GenerateGaussianNoise()
 {
 	// CGaussianNoiseProxy in mathproxy.cpp
@@ -6805,8 +6291,6 @@ void CMathGenerate::GenerateGaussianNoise()
 	SetNextThink( gpGlobals->curtime + TICK_INTERVAL );
 }
 
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
 void CMathGenerate::GenerateExponential()
 {
 	// CExponentialProxy in mathproxy.cpp

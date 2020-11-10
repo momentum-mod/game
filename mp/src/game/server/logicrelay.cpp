@@ -49,15 +49,6 @@ BEGIN_DATADESC( CLogicRelay )
 END_DATADESC()
 
 
-
-//-----------------------------------------------------------------------------
-// Purpose: Constructor.
-//-----------------------------------------------------------------------------
-CLogicRelay::CLogicRelay(void)
-{
-}
-
-
 //------------------------------------------------------------------------------
 // Kickstarts a think if we have OnSpawn connections.
 //------------------------------------------------------------------------------
@@ -228,13 +219,6 @@ BEGIN_DATADESC( CLogicRelayQueue )
 
 END_DATADESC()
 
-//-----------------------------------------------------------------------------
-// Purpose: Constructor.
-//-----------------------------------------------------------------------------
-CLogicRelayQueue::CLogicRelayQueue(void)
-{
-}
-
 
 //------------------------------------------------------------------------------
 // Purpose: Turns on the relay, allowing it to fire outputs.
@@ -355,15 +339,6 @@ void CLogicRelayQueue::InputTriggerWithParameter( inputdata_t &inputdata )
 void CLogicRelayQueue::HandleNextQueueItem()
 {
 	LogicRelayQueueInfo_t info = m_QueueItems.Element(0);
-
-	//if (!info.TriggerWithParameter)
-	//{
-	//	m_OnTrigger.FireOutput(info.pActivator, this);
-	//}
-	//else
-	//{
-	//	m_OnTriggerParameter.Set(info.value, info.pActivator, this);
-	//}
 
 	AcceptInput(info.TriggerWithParameter ? "TriggerWithParameter" : "Trigger", info.pActivator, this, info.value, info.outputID);
 

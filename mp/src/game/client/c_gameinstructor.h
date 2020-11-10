@@ -4,9 +4,7 @@
 //
 //=============================================================================//
 
-#ifndef _C_GAMEINSTRUCTOR_H_
-#define _C_GAMEINSTRUCTOR_H_
-
+#pragma once
 
 #include "GameEventListener.h"
 #include "vgui_controls/PHandle.h"
@@ -113,6 +111,3 @@ C_GameInstructor &GetGameInstructor();
 
 void GameInstructor_Init();
 void GameInstructor_Shutdown();
-
-
-#endif // _C_GAMEINSTRUCTOR_H_

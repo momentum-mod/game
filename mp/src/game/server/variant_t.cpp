@@ -20,28 +20,6 @@ void variant_t::SetEntity( CBaseEntity *val )
 
 const char* variant_t::GetDebug()
 {
-	/*
-	case FIELD_BOOLEAN:		*((bool *)data) = bVal != 0;		break;
-	case FIELD_CHARACTER:	*((char *)data) = iVal;				break;
-	case FIELD_SHORT:		*((short *)data) = iVal;			break;
-	case FIELD_INTEGER:		*((int *)data) = iVal;				break;
-	case FIELD_STRING:		*((string_t *)data) = iszVal;		break;
-	case FIELD_FLOAT:		*((float *)data) = flVal;			break;
-	case FIELD_COLOR32:		*((color32 *)data) = rgbaVal;		break;
-
-	case FIELD_VECTOR:
-	case FIELD_POSITION_VECTOR:
-	{
-		((float *)data)[0] = vecVal[0];
-		((float *)data)[1] = vecVal[1];
-		((float *)data)[2] = vecVal[2];
-		break;
-	}
-
-	case FIELD_EHANDLE:		*((EHANDLE *)data) = eVal;			break;
-	case FIELD_CLASSPTR:	*((CBaseEntity **)data) = eVal;		break;
-	*/
-
 	const char* fieldtype = "unknown";
 	switch (FieldType())
 	{
@@ -68,10 +46,7 @@ const char* variant_t::GetDebug()
 	float cmp1 = val1.Float() ? val1.Float() : val1.Int(); \
 	float cmp2 = val2.Float() ? val2.Float() : val2.Int(); \
 	if (lenallowed && val2.FieldType() == FIELD_STRING) \
-		cmp2 = strlen(val2.String());
-
-// Integer parsing has been deactivated for consistency's sake. They now become floats only.
-#define INTEGER_PARSING_DEACTIVATED 1
+		cmp2 = Q_strlen(val2.String());
 
 // "intchar" is the result of me not knowing where to find a version of isdigit that applies to negative numbers and floats.
 #define intchar(c) (c >= '-' && c <= '9')
@@ -81,10 +56,9 @@ const char* variant_t::GetDebug()
 // Expand to other fields when necessary.
 variant_t Variant_Parse(const char *szValue)
 {
-#ifdef INTEGER_PARSING_DEACTIVATED
 	bool isint = true;
 	bool isvector = false;
-	for (size_t i = 0; i < strlen(szValue); i++)
+	for (int i = 0; i < Q_strlen(szValue); i++)
 	{
 		if (!intchar(szValue[i]))
 		{
@@ -100,37 +74,18 @@ variant_t Variant_Parse(const char *szValue)
 	variant_t var;
 
 	if (isint)
-		var.SetFloat(atof(szValue));
+	{
+		var.SetFloat(Q_atof(szValue));
+	}
 	else if (isvector)
 	{
 		var.SetString(MAKE_STRING(szValue));
 		var.Convert(FIELD_VECTOR);
 	}
 	else
-		var.SetString(MAKE_STRING(szValue));
-#else
-	bool isint = true;
-	bool isfloat = false;
-	for (size_t i = 0; i < strlen(szValue); i++)
 	{
-		if (szValue[i] == '.')
-			isfloat = true;
-		else if (!intchar(szValue[i]))
-			isint = false;
-	}
-
-	variant_t var = variant_t();
-
-	if (isint)
-	{
-		if (isfloat)
-			var.SetFloat(atof(szValue));
-		else
-			var.SetInt(atoi(szValue));
-	}
-	else
 		var.SetString(MAKE_STRING(szValue));
-#endif
+	}
 
 	return var;
 }
@@ -193,9 +148,6 @@ bool Variant_Equal(variant_t val1, variant_t val2, bool bLenAllowed)
 // val1 > val2
 bool Variant_Greater(variant_t val1, variant_t val2, bool bLenAllowed)
 {
-	//if (!val2.Convert(val1.FieldType()))
-	//	return false;
-
 	// Add more fields if they become necessary
 	switch (val1.FieldType())
 	{
@@ -212,7 +164,7 @@ bool Variant_Greater(variant_t val1, variant_t val2, bool bLenAllowed)
 		Vector vec2; val2.Vector3D(vec2);
 		return (vec1.x > vec2.x) && (vec1.y > vec2.y) && (vec1.z > vec2.z);
 	}
-	default:				return strlen(val1.String()) > strlen(val2.String());
+	default:				return Q_strlen(val1.String()) > Q_strlen(val2.String());
 	}
 
 	return false;
@@ -221,9 +173,6 @@ bool Variant_Greater(variant_t val1, variant_t val2, bool bLenAllowed)
 // val1 >= val2
 bool Variant_GreaterOrEqual(variant_t val1, variant_t val2, bool bLenAllowed)
 {
-	//if (!val2.Convert(val1.FieldType()))
-	//	return false;
-
 	// Add more fields if they become necessary
 	switch (val1.FieldType())
 	{
@@ -240,7 +189,7 @@ bool Variant_GreaterOrEqual(variant_t val1, variant_t val2, bool bLenAllowed)
 		Vector vec2; val2.Vector3D(vec2);
 		return (vec1.x >= vec2.x) && (vec1.y >= vec2.y) && (vec1.z >= vec2.z);
 	}
-	default:				return strlen(val1.String()) >= strlen(val2.String());
+	default:				return Q_strlen(val1.String()) >= Q_strlen(val2.String());
 	}
 
 	return false;

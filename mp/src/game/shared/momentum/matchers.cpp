@@ -10,12 +10,13 @@
 #include "matchers.h"
 #include "fmtstr.h"
 
-// glibc (Linux) uses these tokens when including <regex>, so we must not #define them
-#undef max
-#undef min
+// glibc (Linux) uses these tokens (min & max) when including <regex>, so we must not #define them
+#include "tier0/valve_minmax_off.h"
 #include <regex>
-#undef MINMAX_H
-#include "minmax.h"
+#include "tier0/valve_minmax_on.h"
+
+// memdbgon must be the last include file in a .cpp file!!!
+#include "tier0/memdbgon.h"
 
 ConVar mapbase_wildcards_enabled("mapbase_wildcards_enabled", "1", FCVAR_NONE, "Toggles Mapbase's '?' wildcard and true '*' features. Useful for maps that have '?' in their targetnames.");
 ConVar mapbase_regex_enabled("mapbase_regex_enabled", "1", FCVAR_NONE, "Toggles Mapbase's regex matching handover.");
@@ -222,18 +223,19 @@ bool Matcher_NamesMatch_MutualWildcard(const char *pszQuery, const char *szValue
 	return false;
 }
 
-// Matcher_Compare is a deprecated alias originally used when Matcher_Match didn't support wildcards.
-/*
-bool Matcher_Compare(const char *pszQuery, const char *szValue)
+bool AppearsToBeANumber( char const *token )
 {
-	return Matcher_Match(pszQuery, szValue);
-#if 0
-	// I have to do this so wildcards could test *before* the response system comparison.
-	// I know it removes the operators twice, but I won't worry about it.
-	bool match = Matcher_NamesMatch(Matcher_RemoveOperators(pszQuery), szValue);
-	if (match)
-		return Matcher_Match(pszQuery, szValue);
-	return false;
-#endif
+	if ( Q_atof( token ) != 0.0f )
+		return true;
+
+	char const *p = token;
+	while ( *p )
+	{
+		if ( *p != '0' )
+			return false;
+
+		p++;
+	}
+
+	return true;
 }
-*/

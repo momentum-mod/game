@@ -36,10 +36,6 @@ void SVGameInstructorDisable_ChangeCallback( IConVar *var, const char *pOldValue
 
 extern ConVar sv_gameinstructor_disable;
 
-//=========================================================
-// Comandos de consola
-//=========================================================
-
 ConVar gameinstructor_verbose("gameinstructor_verbose", "0", FCVAR_CHEAT, "Set to 1 for standard debugging or 2 (in combo with gameinstructor_verbose_lesson) to show update actions.");
 ConVar gameinstructor_verbose_lesson("gameinstructor_verbose_lesson", "", FCVAR_CHEAT, "Display more verbose information for lessons have this name." );
 ConVar gameinstructor_find_errors("gameinstructor_find_errors", "1", FCVAR_CHEAT, "Set to 1 and the game instructor will run EVERY scripted command to uncover errors." );
@@ -49,9 +45,7 @@ ConVar gameinstructor_start_sound_cooldown( "gameinstructor_start_sound_cooldown
 
 ConVar sv_gameinstructor_disable( "sv_gameinstructor_disable", "0", FCVAR_REPLICATED, "Force all clients to disable their game instructors.", SVGameInstructorDisable_ChangeCallback );
 
-//=========================================================
-// Activa o Desactiva el Instructor del lado del cliente.
-//=========================================================
+// Enable or Disable the game instructor based on the client setting
 void EnableDisableInstructor()
 {
 	bool bEnabled = ( !sv_gameinstructor_disable.GetBool() && gameinstructor_enable.GetBool() );
@@ -65,16 +59,12 @@ void EnableDisableInstructor()
 		GetGameInstructor().Shutdown();
 }
 
-//=========================================================
-//=========================================================
 void GameInstructorEnable_ChangeCallback( IConVar *var, const char *pOldValue, float flOldValue )
 {
 	if ( ( flOldValue != 0.0f ) != gameinstructor_enable.GetBool() )
 		EnableDisableInstructor();
 }
 
-//=========================================================
-//=========================================================
 void SVGameInstructorDisable_ChangeCallback( IConVar *var, const char *pOldValue, float flOldValue )
 {
 	if ( !engine )
@@ -83,15 +73,8 @@ void SVGameInstructorDisable_ChangeCallback( IConVar *var, const char *pOldValue
 	EnableDisableInstructor();
 }
 
-
-//=========================================================
-// Initialize the Instructor
-//=========================================================
 bool C_GameInstructor::Init()
 {
-//	if ( &GetGameInstructor() == this )
-	//	return true;
-
 	// Instructor deactivated, don't initialize.
 	if ( !gameinstructor_enable.GetBool() || sv_gameinstructor_disable.GetBool() )
 		return true;
@@ -148,7 +131,7 @@ void C_GameInstructor::Shutdown()
 	CloseAllOpenOpportunities();
 	WriteSaveData();
 
-	// Removemos todas las lecciones.
+	// Clear out all the lessons
 	for ( int i = 0; i < m_Lessons.Count(); ++i )
 	{
 		if ( m_Lessons[ i ] )
@@ -162,15 +145,11 @@ void C_GameInstructor::Shutdown()
 	m_Lessons.RemoveAll();
 	m_LessonGroupConVarToggles.RemoveAll();
 
-	// Paramos de escuchar eventos.
 	StopListeningForAllEvents();
 }
 
-//=========================================================
-//=========================================================
 void C_GameInstructor::UpdateHiddenByOtherElements()
 {
-	//bool bHidden = Mod_HiddenByOtherElements();
 	bool bHidden = false;
 
 	if ( bHidden && !m_bHiddenDueToOtherElements )
@@ -179,8 +158,6 @@ void C_GameInstructor::UpdateHiddenByOtherElements()
 	m_bHiddenDueToOtherElements = bHidden;
 }
 
-//=========================================================
-//=========================================================
 void C_GameInstructor::Update( float frametime )
 {
 	VPROF_BUDGET( "C_GameInstructor::Update", "GameInstructor" );
@@ -283,8 +260,6 @@ void C_GameInstructor::Update( float frametime )
 	m_iCurrentPriority = iCurrentPriority;
 }
 
-//=========================================================
-//=========================================================
 void C_GameInstructor::FireGameEvent( IGameEvent *event )
 {
 	VPROF_BUDGET( "C_GameInstructor::FireGameEvent", "GameInstructor" );
@@ -460,8 +435,6 @@ void C_GameInstructor::FireGameEvent( IGameEvent *event )
 	}
 }
 
-//=========================================================
-//=========================================================
 void C_GameInstructor::DefineLesson( CBaseLesson *pLesson )
 {
 	if ( gameinstructor_verbose.GetInt() > 0 )
@@ -475,15 +448,11 @@ void C_GameInstructor::DefineLesson( CBaseLesson *pLesson )
 	m_Lessons.AddToTail( pLesson );
 }
 
-//=========================================================
-//=========================================================
-const CBaseLesson * C_GameInstructor::GetLesson( const char *pchLessonName )
+const CBaseLesson *C_GameInstructor::GetLesson( const char *pchLessonName )
 {
 	return GetLesson_Internal( pchLessonName );
 }
 
-//=========================================================
-//=========================================================
 bool C_GameInstructor::IsLessonOfSameTypeOpen( const CBaseLesson *pLesson ) const
 {
 	for ( int i = 0; i < m_OpenOpportunities.Count(); ++i )
@@ -497,8 +466,6 @@ bool C_GameInstructor::IsLessonOfSameTypeOpen( const CBaseLesson *pLesson ) cons
 	return false;
 }
 
-//=========================================================
-//=========================================================
 bool C_GameInstructor::ReadSaveData()
 {
 	// for external playtests, don't ever read in persisted instructor state, always start fresh
@@ -557,8 +524,6 @@ bool C_GameInstructor::ReadSaveData()
 	return false;
 }
 
-//=========================================================
-//=========================================================
 bool C_GameInstructor::WriteSaveData()
 {
 	if ( engine->IsPlayingDemo() )
@@ -613,16 +578,12 @@ bool C_GameInstructor::WriteSaveData()
 	return bWriteSuccess;
 }
 
-//=========================================================
-//=========================================================
 void C_GameInstructor::RefreshDisplaysAndSuccesses()
 {
 	m_bHasLoadedSaveData = false;
 	ReadSaveData();
 }
 
-//=========================================================
-//=========================================================
 void C_GameInstructor::ResetDisplaysAndSuccesses()
 {
 	if ( gameinstructor_verbose.GetInt() > 0 )
@@ -639,8 +600,6 @@ void C_GameInstructor::ResetDisplaysAndSuccesses()
 	m_bDirtySaveData = false;
 }
 
-//=========================================================
-//=========================================================
 void C_GameInstructor::MarkDisplayed( const char *pchLessonName )
 {
 	CBaseLesson *pLesson = GetLesson_Internal(pchLessonName);
@@ -660,8 +619,6 @@ void C_GameInstructor::MarkDisplayed( const char *pchLessonName )
 		m_bDirtySaveData = true;
 }
 
-//=========================================================
-//=========================================================
 void C_GameInstructor::MarkSucceeded(const char *pchLessonName)
 {
 	CBaseLesson *pLesson = GetLesson_Internal(pchLessonName);
@@ -681,8 +638,6 @@ void C_GameInstructor::MarkSucceeded(const char *pchLessonName)
 		m_bDirtySaveData = true;
 }
 
-//=========================================================
-//=========================================================
 void C_GameInstructor::PlaySound( const char *pchSoundName )
 {
 	// emit alert sound
@@ -706,8 +661,6 @@ void C_GameInstructor::PlaySound( const char *pchSoundName )
 	}
 }
 
-//=========================================================
-//=========================================================
 bool C_GameInstructor::OpenOpportunity( CBaseLesson *pLesson )
 {
 	// Get the root lesson
@@ -839,8 +792,6 @@ bool C_GameInstructor::OpenOpportunity( CBaseLesson *pLesson )
 	return true;
 }
 
-//=========================================================
-//=========================================================
 void C_GameInstructor::DumpOpenOpportunities()
 {
 	ConColorMsg( CBaseLesson::m_rgbaVerboseHeader, "GAME INSTRUCTOR: " );
@@ -873,16 +824,12 @@ void C_GameInstructor::DumpOpenOpportunities()
 	}
 }
 
-//=========================================================
-//=========================================================
-KeyValues * C_GameInstructor::GetScriptKeys()
+KeyValues *C_GameInstructor::GetScriptKeys()
 {
 	return m_pScriptKeys;
 }
 
-//=========================================================
-//=========================================================
-C_BasePlayer * C_GameInstructor::GetLocalPlayer()
+C_BasePlayer *C_GameInstructor::GetLocalPlayer()
 {
 	C_BasePlayer *pLocalPlayer = C_BasePlayer::GetLocalPlayer();
 
@@ -910,8 +857,6 @@ C_BasePlayer * C_GameInstructor::GetLocalPlayer()
 	return pSpectatedPlayer;
 }
 
-//=========================================================
-//=========================================================
 void C_GameInstructor::EvaluateLessonsForGameRules()
 {
 	// Enable everything by default
@@ -931,8 +876,6 @@ void C_GameInstructor::EvaluateLessonsForGameRules()
 	}
 }
 
-//=========================================================
-//=========================================================
 void C_GameInstructor::SetLessonGroupEnabled( const char *pszGroup, bool bEnabled )
 {
 	for ( int i = 0; i < m_Lessons.Count(); ++i )
@@ -942,8 +885,6 @@ void C_GameInstructor::SetLessonGroupEnabled( const char *pszGroup, bool bEnable
 	}
 }
 
-//=========================================================
-//=========================================================
 void C_GameInstructor::FindErrors()
 {
 	// Loop through all the lesson and run all their scripted actions
@@ -990,8 +931,6 @@ void C_GameInstructor::FindErrors()
 	}
 }
 
-//=========================================================
-//=========================================================
 bool C_GameInstructor::UpdateActiveLesson( CBaseLesson *pLesson, const CBaseLesson *pRootLesson )
 {
 	VPROF_BUDGET( "C_GameInstructor::UpdateActiveLesson", "GameInstructor" );
@@ -1037,8 +976,6 @@ bool C_GameInstructor::UpdateActiveLesson( CBaseLesson *pLesson, const CBaseLess
 	}
 }
 
-//=========================================================
-//=========================================================
 void C_GameInstructor::UpdateInactiveLesson( CBaseLesson *pLesson )
 {
 	VPROF_BUDGET( "C_GameInstructor::UpdateInactiveLesson", "GameInstructor" );
@@ -1061,9 +998,7 @@ void C_GameInstructor::UpdateInactiveLesson( CBaseLesson *pLesson )
 	pLesson->UpdateInactive();
 }
 
-//=========================================================
-//=========================================================
-CBaseLesson * C_GameInstructor::GetLesson_Internal( const char *pchLessonName )
+CBaseLesson *C_GameInstructor::GetLesson_Internal( const char *pchLessonName )
 {
 	for ( int i = 0; i < m_Lessons.Count(); ++i )
 	{
@@ -1078,8 +1013,6 @@ CBaseLesson * C_GameInstructor::GetLesson_Internal( const char *pchLessonName )
 	return NULL;
 }
 
-//=========================================================
-//=========================================================
 void C_GameInstructor::StopAllLessons()
 {
 	// Stop all the current lessons
@@ -1090,8 +1023,6 @@ void C_GameInstructor::StopAllLessons()
 	}
 }
 
-//=========================================================
-//=========================================================
 void C_GameInstructor::CloseAllOpenOpportunities()
 {
 	// Clear out all the open opportunities
@@ -1104,8 +1035,6 @@ void C_GameInstructor::CloseAllOpenOpportunities()
 	Assert( m_OpenOpportunities.Count() == 0 );
 }
 
-//=========================================================
-//=========================================================
 void C_GameInstructor::CloseOpportunity( CBaseLesson *pLesson )
 {
 	UpdateInactiveLesson( pLesson );
@@ -1128,8 +1057,6 @@ void C_GameInstructor::CloseOpportunity( CBaseLesson *pLesson )
 	delete pLesson;
 }
 
-//=========================================================
-//=========================================================
 void C_GameInstructor::ReadLessonsFromFile( const char *pchFileName )
 {
 	// Static init function
@@ -1167,8 +1094,6 @@ void C_GameInstructor::ReadLessonsFromFile( const char *pchFileName )
 	m_pScriptKeys = NULL;
 }
 
-//=========================================================
-//=========================================================
 void C_GameInstructor::InitLessonPrerequisites()
 {
 	for ( int i = 0; i < m_Lessons.Count(); ++i )

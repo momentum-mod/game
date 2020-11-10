@@ -99,15 +99,7 @@ void CFuncMoveLinear::Spawn(void)
 
 	Precache();
 
-	// It is solid?
-	if (m_bSolidBsp)
-	{
-		SetSolid(SOLID_BSP);
-	}
-	else
-	{
-		SetSolid(SOLID_VPHYSICS);
-	}
+    SetSolid(m_bSolidBsp ? SOLID_BSP : SOLID_VPHYSICS);
 
 	if (FClassnameIs(this, "func_water_analog"))
 	{

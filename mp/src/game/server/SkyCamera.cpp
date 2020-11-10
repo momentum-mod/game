@@ -87,7 +87,7 @@ BEGIN_DATADESC( CSkyCamera )
 
 	DEFINE_INPUTFUNC( FIELD_COLOR32, "SetSkyColor", InputSetSkyColor ),
 
-	DEFINE_INPUTFUNC( FIELD_INTEGER, "SetScale", InputSetScale ),
+	DEFINE_INPUTFUNC( FIELD_FLOAT, "SetScale", InputSetScale ),
 
 	DEFINE_THINKFUNC( UpdateThink ),
 
@@ -195,9 +195,6 @@ void CSkyCamera::Activate( )
 #endif
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
 bool CSkyCamera::AcceptInput( const char *szInputName, CBaseEntity *pActivator, CBaseEntity *pCaller, variant_t Value, int outputID )
 {
 	if (!BaseClass::AcceptInput( szInputName, pActivator, pCaller, Value, outputID ))
@@ -212,9 +209,6 @@ bool CSkyCamera::AcceptInput( const char *szInputName, CBaseEntity *pActivator, 
 	return true;
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
 void CSkyCamera::SetCameraEntityMode()
 {
 	m_skyboxData.skycamera = this;
@@ -306,9 +300,6 @@ void CSkyCamera::InputForceUpdate( inputdata_t &inputdata )
 	DoUpdate( true );
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
 void CSkyCamera::InputStartUpdating( inputdata_t &inputdata )
 {
 	if (GetCurrentSkyCamera() == this)

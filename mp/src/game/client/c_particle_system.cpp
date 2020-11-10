@@ -69,17 +69,11 @@ BEGIN_RECV_TABLE_NOBASE( C_ParticleSystem, DT_ParticleSystem )
 	RecvPropBool( RECVINFO( m_bAttachToPlayer ) ),
 END_RECV_TABLE();
 
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
 C_ParticleSystem::C_ParticleSystem()
 {
 	m_bWeatherEffect = false;
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
 void C_ParticleSystem::PreDataUpdate( DataUpdateType_t updateType )
 {
 	m_bOldActive = m_bActive;
@@ -87,9 +81,6 @@ void C_ParticleSystem::PreDataUpdate( DataUpdateType_t updateType )
 	BaseClass::PreDataUpdate( updateType );
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
 void C_ParticleSystem::PostDataUpdate( DataUpdateType_t updateType )
 {
 	BaseClass::PostDataUpdate( updateType );
@@ -115,24 +106,18 @@ void C_ParticleSystem::PostDataUpdate( DataUpdateType_t updateType )
 				// Delayed here so that we don't get invalid abs queries on level init with active particle systems
 				SetNextClientThink( gpGlobals->curtime );
 			}
+			else if ( !m_bDestroyImmediately )
+			{
+				m_pEffectEntity->ParticleProp()->StopEmission();
+			}
 			else
 			{
-                if (!m_bDestroyImmediately)
-                {
-                    m_pEffectEntity->ParticleProp()->StopEmission();
-                }
-                else
-                {
-                    m_pEffectEntity->ParticleProp()->StopEmissionAndDestroyImmediately();
-                }
+				m_pEffectEntity->ParticleProp()->StopEmissionAndDestroyImmediately();
 			}
 		}
 	}
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
 void C_ParticleSystem::ClientThink( void )
 {
 	if ( m_bActive )
@@ -190,9 +175,6 @@ void C_ParticleSystem::ClientThink( void )
 //======================================================================================================================
 // PARTICLE SYSTEM DISPATCH EFFECT
 //======================================================================================================================
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
 void ParticleEffectCallback( const CEffectData &data )
 {
 	if ( SuppressingParticleEffects() )
@@ -278,9 +260,6 @@ DECLARE_CLIENT_EFFECT( "ParticleEffect", ParticleEffectCallback );
 //======================================================================================================================
 // PARTICLE SYSTEM STOP EFFECT
 //======================================================================================================================
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
 void ParticleEffectStopCallback( const CEffectData &data )
 {
 	if ( data.m_hEntity.Get() )

@@ -28,11 +28,6 @@ CPointCamera* GetPointCameraList()
 	return g_PointCameraList.m_pClassList;
 }
 
-// These are already built into CBaseEntity
-//	DEFINE_KEYFIELD( m_iName, FIELD_STRING, "targetname" ),
-//	DEFINE_KEYFIELD( m_iParent, FIELD_STRING, "parentname" ),
-//	DEFINE_KEYFIELD( m_target, FIELD_STRING, "target" ),
-
 LINK_ENTITY_TO_CLASS( point_camera, CPointCamera );
 
 //-----------------------------------------------------------------------------
@@ -321,7 +316,7 @@ void CPointCameraOrtho::Spawn( void )
 
 bool CPointCameraOrtho::KeyValue( const char *szKeyName, const char *szValue )
 {
-	if ( strncmp( szKeyName, "Ortho", 5 ) == 0 )
+	if ( Q_strncmp( szKeyName, "Ortho", 5 ) == 0 )
 	{
 		int iOrtho = atoi(szKeyName + 5);
 		m_OrthoDimensions.Set( iOrtho, atof( szValue ) );
@@ -334,7 +329,7 @@ bool CPointCameraOrtho::KeyValue( const char *szKeyName, const char *szValue )
 
 bool CPointCameraOrtho::GetKeyValue( const char *szKeyName, char *szValue, int iMaxLen )
 {
-	if ( strncmp( szKeyName, "Ortho", 5 ) )
+	if ( Q_strncmp( szKeyName, "Ortho", 5 ) )
 	{
 		int iOrtho = atoi(szKeyName + 5);
 		Q_snprintf( szValue, iMaxLen, "%f", m_OrthoDimensions[iOrtho] );

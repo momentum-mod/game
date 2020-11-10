@@ -4,13 +4,7 @@
 //
 //=============================================================================
 
-#ifndef PARTICLE_SYSTEM_H
-#define PARTICLE_SYSTEM_H
-#ifdef _WIN32
 #pragma once
-#endif
-
-#include "cbase.h"
 
 //-----------------------------------------------------------------------------
 // Purpose: An entity that spawns and controls a particle system
@@ -59,5 +53,3 @@ protected:
 	CNetworkVar( bool,	m_bWeatherEffect );
 	CNetworkVar( bool,	m_bAttachToPlayer );
 };
-
-#endif // PARTICLE_SYSTEM_H

@@ -5,14 +5,7 @@
 // $NoKeywords: $
 //=============================================================================//
 
-#ifndef MAPBASE_MATCHERS_H
-#define MAPBASE_MATCHERS_H
-#ifdef _WIN32
 #pragma once
-#endif
-
-
-#define MAPBASE_MATCHERS 1
 
 // Compares with != and the like. Basically hijacks the response system matching.
 // This also loops back around to Matcher_NamesMatch.
@@ -43,26 +36,6 @@ bool Matcher_NamesMatch_Classic( const char *pszQuery, const char *szValue );
 // szValue = The value tested against the query. This value can use wildcards as well.
 bool Matcher_NamesMatch_MutualWildcard( const char *pszQuery, const char *szValue );
 
-// Deprecated; do not use
-static inline bool Matcher_Compare( const char *pszQuery, const char *szValue ) { return Matcher_Match( pszQuery, szValue ); }
-
 // Taken from the Response System.
 // Checks if the specified string appears to be a number of some sort.
-static bool AppearsToBeANumber( char const *token )
-{
-	if ( atof( token ) != 0.0f )
-		return true;
-
-	char const *p = token;
-	while ( *p )
-	{
-		if ( *p != '0' )
-			return false;
-
-		p++;
-	}
-
-	return true;
-}
-
-#endif
+bool AppearsToBeANumber( char const *token );

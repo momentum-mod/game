@@ -5,10 +5,9 @@
 // $NoKeywords: $
 //
 //=============================================================================//
-#ifndef LOGICRELAY_H
-#define LOGICRELAY_H
 
-#include "cbase.h"
+#pragma once
+
 #include "entityinput.h"
 #include "entityoutput.h"
 #include "eventqueue.h"
@@ -17,8 +16,6 @@ class CLogicRelay : public CLogicalEntity
 {
 public:
 	DECLARE_CLASS( CLogicRelay, CLogicalEntity );
-
-	CLogicRelay();
 
 	void Activate();
 	void Think();
@@ -57,14 +54,10 @@ struct LogicRelayQueueInfo_t
 	int outputID;
 };
 
-//#define LOGIC_RELAY_QUEUE_LIMIT 16
-
 class CLogicRelayQueue : public CLogicalEntity
 {
 public:
 	DECLARE_CLASS( CLogicRelayQueue, CLogicalEntity );
-
-	CLogicRelayQueue();
 
 	// Input handlers
 	void InputEnable( inputdata_t &inputdata );
@@ -99,5 +92,3 @@ private:
 	bool m_bDontQueueWhenDisabled; // Don't add to queue while disabled, only when waiting for refire
 	CUtlVector<LogicRelayQueueInfo_t> m_QueueItems;
 };
-
-#endif //LOGICRELAY_H

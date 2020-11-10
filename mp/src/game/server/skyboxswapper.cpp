@@ -37,9 +37,6 @@ BEGIN_DATADESC( CSkyboxSwapper )
 END_DATADESC()
 
 
-//-----------------------------------------------------------------------------
-// Purpose: not much
-//-----------------------------------------------------------------------------
 void CSkyboxSwapper::Spawn( void )
 {
 	Precache();
@@ -56,8 +53,8 @@ void CSkyboxSwapper::Precache( void )
 		return;
 	}
 
-	char  name[ MAX_PATH ];
-	char *skyboxsuffix[ 6 ] = { "rt", "bk", "lf", "ft", "up", "dn" };
+	char name[ MAX_PATH ];
+	static const char *skyboxsuffix[ 6 ] = { "rt", "bk", "lf", "ft", "up", "dn" };
 	for ( int i = 0; i < 6; i++ )
 	{
 		Q_snprintf( name, sizeof( name ), "skybox/%s%s", m_iszSkyboxName.ToCStr(), skyboxsuffix[i] );
