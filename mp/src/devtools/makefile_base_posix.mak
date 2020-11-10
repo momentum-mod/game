@@ -87,14 +87,14 @@ CHROOT_NAME=steamrt_scout_i386
 # If we should be running in a chroot, check to see if we are. If not, then prefix everything with the 
 # required chroot
 #
-export STEAM_RUNTIME_PATH := /usr
+export STEAM_RUNTIME_PATH := /opt/gcc-9.2
 ifndef USING_DOCKER
     ifneq ("$(SCHROOT_CHROOT_NAME)", "$(CHROOT_NAME)")
         $(info '$(SCHROOT_CHROOT_NAME)' is not '$(CHROOT_NAME)')
         $(error This makefile should be run from within a chroot. 'schroot --chroot $(CHROOT_NAME) -- $(MAKE) $(MAKEFLAGS)')  
     endif
 endif
-GCC_VER = -4.8
+GCC_VER = -9.2
 P4BIN = p4
 CRYPTOPPDIR=ubuntu12_32
 
@@ -124,7 +124,7 @@ endif
 CCACHE := $(SRCROOT)/devtools/bin/linux/ccache
 
 ifeq ($(origin AR), default)
-	AR = $(STEAM_RUNTIME_PATH)/bin/ar crs
+	AR = /usr/bin/ar crs
 endif
 ifeq ($(origin CC), default)
 	CC = $(CCACHE) $(STEAM_RUNTIME_PATH)/bin/gcc$(GCC_VER)	
@@ -154,10 +154,11 @@ endif
 
 ifeq ($(CLANG_BUILD),1)
 	# Clang specific flags
-else ifeq ($(GCC_VER),-4.8)
+else ifeq ($(GCC_VER),-9.2)
 	WARN_FLAGS += -Wno-unused-local-typedefs
 	WARN_FLAGS += -Wno-unused-result
 	WARN_FLAGS += -Wno-narrowing
+	WARN_FLAGS += -Wno-class-memaccess
 	# WARN_FLAGS += -Wno-unused-function
 endif
 
@@ -173,7 +174,7 @@ ifeq ($(TARGET_PLATFORM),linux64)
 	LIBSTDCXXPIC := $(shell $(CXX) -print-file-name=libstdc++-pic.a)
 else
 	# pentium4 = MMX, SSE, SSE2 - no SSE3 (added in prescott) # -msse3 -mfpmath=sse
-	ARCH_FLAGS += -m32 -march=$(MARCH_TARGET) -mtune=core2 $(SSE_GEN_FLAGS)
+	ARCH_FLAGS += -m32 -fabi-compat-version=2 -march=$(MARCH_TARGET) -mtune=core2 $(SSE_GEN_FLAGS)
 	LD_SO = ld-linux.so.2
 	LIBSTDCXX := $(shell $(CXX) $(ARCH_FLAGS) -print-file-name=libstdc++.so)
 	LIBSTDCXXPIC := $(shell $(CXX) $(ARCH_FLAGS) -print-file-name=libstdc++.so)
