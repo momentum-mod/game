@@ -383,6 +383,9 @@ CON_COMMAND_F(mom_restart_stage,
     if (!pPlayer)
         return;
 
+    if (g_pRunSafeguards->IsSafeguarded(RUN_SAFEGUARD_RESTART_STAGE))
+        return;
+
     int stage = 0, track = 0;
     if (args.ArgC() > 1)
     {
@@ -395,14 +398,11 @@ CON_COMMAND_F(mom_restart_stage,
         track = pPlayer->m_Data.m_iCurrentTrack;
     }
 
-    if (pPlayer->m_iLinearTracks.Get(track) == true)
+    if (pPlayer->m_iLinearTracks.Get(track))
     {
-        Warning("Not on a staged map! Use mom_restart instead.\n");
+        Warning("You are not currently on a staged track! Use mom_restart instead.\n");
         return;
     }
-
-    if (g_pRunSafeguards->IsSafeguarded(RUN_SAFEGUARD_RESTART_STAGE))
-        return;
 
     pPlayer->TimerCommand_RestartStage(stage, track);
 }
