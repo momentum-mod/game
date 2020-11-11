@@ -309,7 +309,7 @@ void ChatPanel::GetTimestamp(char *pBuffer, int maxLen)
 {
     if (!mom_chat_timestamps_enable.GetBool())
     {
-        Q_snprintf(pBuffer, maxLen, "");
+        *pBuffer = '\0';
         return;
     }
 

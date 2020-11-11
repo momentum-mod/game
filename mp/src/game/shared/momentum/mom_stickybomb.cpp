@@ -261,7 +261,7 @@ void CMomStickybomb::Explode(trace_t *pTrace, CBaseEntity *pOther)
         &&
         (pGrenadesZone->m_iExplosivePreventionType == CNoGrenadesZone::FIZZLE_ON_DET
         ||
-        pGrenadesZone->m_iExplosivePreventionType == CNoGrenadesZone::FIZZLE_ON_DET_AIRBORNE_ONLY && !m_bDidHitWorld))
+        (pGrenadesZone->m_iExplosivePreventionType == CNoGrenadesZone::FIZZLE_ON_DET_AIRBORNE_ONLY && !m_bDidHitWorld)))
     {
         Fizzle();
         return;

@@ -18,7 +18,7 @@
 class CStudioHdr;
 
 #pragma pack(1)
-class CModelSoundsCache : public IBaseCacheInfo
+class CModelSoundsCache final : public IBaseCacheInfo
 {
 public:
 	CUtlVector< unsigned short > sounds;

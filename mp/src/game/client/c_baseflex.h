@@ -75,7 +75,6 @@ struct FS_LocalToGlobal_t
 	FS_LocalToGlobal_t( const FS_LocalToGlobal_t& src )
 	{
 		m_Key = src.m_Key;
-		delete m_Mapping;
 		m_Mapping = new int[ src.m_nCount ];
 		Q_memcpy( m_Mapping, src.m_Mapping, src.m_nCount * sizeof( int ) );
 
@@ -84,7 +83,7 @@ struct FS_LocalToGlobal_t
 
 	~FS_LocalToGlobal_t()
 	{
-		delete m_Mapping;
+		delete[] m_Mapping;
 		m_nCount = 0;
 		m_Mapping = 0;
 	}
