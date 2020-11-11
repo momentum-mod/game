@@ -380,7 +380,7 @@ void CMomConcProjectile::Explode(trace_t *pTrace, int bitsDamageType)
         // But we don't want to lose the trait of a handheld-like jump with a drop conc so an extra flag here helps out.
         // Remember that m_bIsHandheld only affects the grenade owner
 
-        if (pEntity == GetThrower() && m_bIsHandheld || flDistance < 16.0f)
+        if ((pEntity == GetThrower() && m_bIsHandheld) || flDistance < 16.0f)
         {
             // These values are close (~within 0.01) of TFC
             float flLateralPower = CONC_LATERAL_POWER;

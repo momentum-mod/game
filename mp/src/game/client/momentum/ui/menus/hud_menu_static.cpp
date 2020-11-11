@@ -34,7 +34,7 @@ bool CHudMenuStatic::IsMenuDisplayed() { return m_bMenuDisplayed && m_bMenuTakes
 
 bool CHudMenuStatic::IsMenuDisplayed(const char *pszName)
 {
-    return IsMenuDisplayed() && FStrEq(pszName, m_pszFilenameNoExt) || FStrEq(pszName, m_kvFromFile->GetName());
+    return IsMenuDisplayed() && (FStrEq(pszName, m_pszFilenameNoExt) || FStrEq(pszName, m_kvFromFile->GetName()));
 }
 
 void CHudMenuStatic::Init(void)

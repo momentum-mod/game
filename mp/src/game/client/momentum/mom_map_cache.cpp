@@ -379,7 +379,7 @@ void CMapCache::SetMapGamemode(const char *pMapName /* = nullptr*/)
 
     if (eGameModeOverride)
     {
-        if (m_pCurrentMapData && m_pCurrentMapData->m_eType == eGameModeOverride
+        if ((m_pCurrentMapData && m_pCurrentMapData->m_eType == eGameModeOverride)
             || g_pGameModeSystem->GetGameModeFromMapName(pMapName)->GetType() == eGameModeOverride)
         {
             mom_gamemode_override.Revert();

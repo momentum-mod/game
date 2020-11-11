@@ -216,7 +216,7 @@ void CWeaponBase::ItemPostFrame()
             }
         }
 
-        if (!IsUseable() && m_flNextPrimaryAttack < gpGlobals->curtime
+        if ((!IsUseable() && m_flNextPrimaryAttack < gpGlobals->curtime)
 #ifdef CLIENT_DLL
             || m_bInReloadAnimation
 #endif

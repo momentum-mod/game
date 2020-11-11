@@ -165,7 +165,7 @@ protected:
 //			template params: T = local class, P = parameter struct
 //-----------------------------------------------------------------------------
 template< class T, class P >
-class CCallResult : private CCallbackBase
+class CCallResult final : private CCallbackBase
 {
 public:
 	typedef void (T::*func_t)( P*, bool );

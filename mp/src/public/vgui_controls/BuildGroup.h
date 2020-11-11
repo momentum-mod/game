@@ -31,7 +31,7 @@ namespace vgui
 // Purpose: a BuildGroup is a list of panels contained in a window (the contextPanel)
 //			Members of this group are viewable and editable in Build Mode, via the BuildModeDialog wizard
 //-----------------------------------------------------------------------------
-class BuildGroup
+class BuildGroup final
 {
 	DECLARE_HANDLES( BuildGroup, 20 );
 

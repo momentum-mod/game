@@ -379,8 +379,8 @@ bool CMomentumGameRules::AllowDamage(CBaseEntity *pVictim, const CTakeDamageInfo
     // Allow self damage from rockets, generic bombs and stickies
     if (pVictim == info.GetAttacker() && (FClassnameIs(info.GetInflictor(), "momentum_rocket") ||
                                           FClassnameIs(info.GetInflictor(), "momentum_generic_bomb") ||
-                                          FClassnameIs(info.GetInflictor(), "momentum_stickybomb")) ||
-                                          FClassnameIs(info.GetInflictor(), "momentum_concgrenade"))
+                                          FClassnameIs(info.GetInflictor(), "momentum_stickybomb") ||
+                                          FClassnameIs(info.GetInflictor(), "momentum_concgrenade")))
         return true;
 
     return !pVictim->IsPlayer();
