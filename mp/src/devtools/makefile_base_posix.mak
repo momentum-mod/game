@@ -166,6 +166,9 @@ WARN_FLAGS += -Wno-unknown-pragmas -Wno-unused-parameter -Wno-unused-value -Wno-
 WARN_FLAGS += -Wno-sign-compare -Wno-reorder -Wno-invalid-offsetof -Wno-float-equal -Werror=return-type
 WARN_FLAGS += -fdiagnostics-show-option -Wformat -Wformat-security
 
+# warnings that should be noticed
+WARN_FLAGS += -Werror=parentheses
+
 ifeq ($(TARGET_PLATFORM),linux64)
 	# nocona = pentium4 + 64bit + MMX, SSE, SSE2, SSE3 - no SSSE3 (that's three s's - added in core2)
 	ARCH_FLAGS += -march=$(MARCH_TARGET) -mtune=core2
