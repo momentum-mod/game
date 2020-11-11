@@ -626,7 +626,7 @@ void DispGetFaceInfo( mapbrush_t *pBrush )
 	// we don't support displacement on entities at the moment!!
 	if( pBrush->entitynum != 0 )
 	{
-		char* pszEntityName = ValueForKey( &g_LoadingMap->entities[pBrush->entitynum], "classname" );
+		const char* pszEntityName = ValueForKey( &g_LoadingMap->entities[pBrush->entitynum], "classname" );
 		Error( "Error: displacement found on a(n) %s entity - not supported (entity %d, brush %d)\n", pszEntityName, pBrush->entitynum, pBrush->id );
 	}
 

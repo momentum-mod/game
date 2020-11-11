@@ -24,20 +24,21 @@ void Usage( void )
 bool LoadFileIntoBuffer( const char *pFileName, CUtlBuffer &buf )
 {
 	struct	_stat statBuf;
+	FILE *fp;
+    int nBytesRead;
 	if( _stat( pFileName, &statBuf ) != 0 )
 	{
 		goto error;
 	}
 
 	buf.EnsureCapacity( statBuf.st_size );
-	FILE *fp;
 	fp = fopen( pFileName, "rb" );
 	if( !fp )
 	{
 		goto error;
 	}
 	
-	int nBytesRead = fread( buf.Base(), 1, statBuf.st_size, fp );
+	nBytesRead = fread( buf.Base(), 1, statBuf.st_size, fp );
 	fclose( fp );
 
 	buf.SeekPut( CUtlBuffer::SEEK_HEAD, nBytesRead );

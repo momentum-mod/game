@@ -63,7 +63,7 @@ class CHudKeyPressDisplay : public CHudElement, public Panel
     CPanelAnimationVarAliasType(float, jump_count_xpos, "jump_count_xpos", "80", "proportional_float");
 
   private:
-    int GetTextCenter(HFont font, wchar_t *wstring);
+    int GetTextCenter(HFont font, const wchar_t *wstring);
 
     bool m_bIsDucked;
     int m_nButtonsToggled;
@@ -331,7 +331,7 @@ void CHudKeyPressDisplay::Reset()
     m_fJumpColorUntil = 0;
 }
 
-int CHudKeyPressDisplay::GetTextCenter(HFont font, wchar_t *wstring)
+int CHudKeyPressDisplay::GetTextCenter(HFont font, const wchar_t *wstring)
 {
     return GetWide() / 2 - UTIL_ComputeStringWidth(font, wstring) / 2;
 }

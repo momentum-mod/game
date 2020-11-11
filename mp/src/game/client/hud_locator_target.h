@@ -58,7 +58,7 @@ public:
 	float		m_flNextBindingTick;
 	float		m_flNextOcclusionTest;
 	int			m_iBindingChoicesCount;
-	const char	*(m_pchBindingChoices[ MAX_LOCATOR_BINDINGS_SHOWN ]);
+	const char	*m_pchBindingChoices[ MAX_LOCATOR_BINDINGS_SHOWN ];
 	int			m_iBindChoicesOriginalToken[ MAX_LOCATOR_BINDINGS_SHOWN ];
 
 	// Fields for drawing

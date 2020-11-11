@@ -50,6 +50,14 @@ $Configuration
 		$AdditionalOptions	"$BASE /Gw" [$VS2013]
 		// Strip unreferenced inline functions from object files to shrink .obj files and .lib files,
 		// improve linker speed, and improve conformance. Requires VS 2013 Update 3
-		$AdditionalOptions	"$BASE /Zc:inline" [$VS2013]
+		$AdditionalOptions	"$BASE /Zc:inline /permissive- /std:c++17 /Zc:__cplusplus" [$VS2013]
+	}
+}
+
+$Configuration "Debug"
+{
+	$Compiler
+	{
+		$AdditionalOptions	"$BASE /JMC"
 	}
 }

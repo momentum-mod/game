@@ -26,31 +26,36 @@ private:
     static size_t m_iModuleSize;
 };
 
-enum PatchType
+enum PatchType : char
 {
     PATCH_IMMEDIATE = true,
     PATCH_REFERENCE = false
 };
 
-class CEnginePatch
+class CEnginePatch final
 {
+    CEnginePatch(const char*, const char*, const char*, size_t, PatchType, bool);
 public:
-    CEnginePatch(const char*, char*, char*, size_t, bool);
-    CEnginePatch(const char*, char*, char*, size_t, bool, int);
-    CEnginePatch(const char*, char*, char*, size_t, bool, float);
-    CEnginePatch(const char*, char*, char*, size_t, bool, char*, size_t);
+    CEnginePatch(const char*, const char*, const char*, size_t, PatchType, int);
+    CEnginePatch(const char*, const char*, const char*, size_t, PatchType, float);
+    CEnginePatch(const char*, const char*, const char*, size_t, PatchType, const char*, size_t);
 
-    void ApplyPatch();
+    void ApplyPatch() const;
 
 private:
     const char *m_sName;
 
-    char *m_pSignature;
-    char *m_pMask;
-    char *m_pPatch;
+    const char *m_pSignature;
+    const char *m_pMask;
+    union
+    {
+        const char *m_pPatch;
+        char m_patch[4];
+    };
 
     size_t m_iOffset;
     size_t m_iLength;
 
-    bool m_bImmediate;
+    bool m_bImmediate : 1;
+    bool m_bIsPtr : 1;
 };
