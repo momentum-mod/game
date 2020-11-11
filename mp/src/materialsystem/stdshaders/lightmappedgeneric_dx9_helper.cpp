@@ -667,7 +667,7 @@ void DrawLightmappedGeneric_DX9_Internal(CBaseVSShader *pShader, IMaterialVar** 
 		bool hasNormalMapAlphaEnvmapMask = IS_FLAG_SET( MATERIAL_VAR_NORMALMAPALPHAENVMAPMASK );
 
         // Parallax cubemaps
-        bool hasParallaxCorrection = !isnan(*params[info.m_nEnvmapParallaxObb1]->GetVecValue());
+        bool hasParallaxCorrection = !IS_NAN(*params[info.m_nEnvmapParallaxObb1]->GetVecValue());
 
 		if ( hasFlashlight )				
 		{
