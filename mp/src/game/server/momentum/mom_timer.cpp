@@ -383,9 +383,6 @@ CON_COMMAND_F(mom_restart_stage,
     if (!pPlayer)
         return;
 
-    if (g_pRunSafeguards->IsSafeguarded(RUN_SAFEGUARD_RESTART_STAGE))
-        return;
-
     int stage = 0, track = 0;
     if (args.ArgC() > 1)
     {
@@ -404,6 +401,8 @@ CON_COMMAND_F(mom_restart_stage,
         return;
     }
 
+    if (g_pRunSafeguards->IsSafeguarded(RUN_SAFEGUARD_RESTART_STAGE))
+        return;
 
     pPlayer->TimerCommand_RestartStage(stage, track);
 }
