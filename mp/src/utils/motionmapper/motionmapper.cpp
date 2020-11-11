@@ -2162,7 +2162,7 @@ void split(char *str, char *sep, char **sp)
 }
 
 	
-int checkCommand(char *str, char *cmd, int numOptions, int numSplit)
+int checkCommand(const char *str, const char *cmd, int numOptions, int numSplit)
 {
 	if(strcmp(str, cmd) == 0)
 	{

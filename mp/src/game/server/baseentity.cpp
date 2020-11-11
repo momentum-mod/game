@@ -6892,7 +6892,7 @@ void CBaseEntity::InputReplaceOutput(inputdata_t& inputdata)
 		return;
 
 	int iter = 0;
-	char* data[2];
+	char* data[2] {nullptr, nullptr};
 	char* sToken = strtok(sParameter, ": ");
 	while (sToken && iter < 2)
 	{

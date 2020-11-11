@@ -174,7 +174,7 @@ void SpeedometerLabel::Colorize()
     m_flNextUpdateCheck = gpGlobals->curtime + MOM_COLORIZATION_CHECK_FREQUENCY;
 }
 
-void SpeedometerLabel::SetFadeOutAnimation(char *animationName, float *animationAlpha)
+void SpeedometerLabel::SetFadeOutAnimation(const char *animationName, float *animationAlpha)
 {
     Q_strncpy(m_pszAnimationName, animationName, sizeof(m_pszAnimationName));
     m_pflAlpha = animationAlpha;

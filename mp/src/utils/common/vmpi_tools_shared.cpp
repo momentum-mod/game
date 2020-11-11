@@ -191,6 +191,7 @@ int VMPI_SendFileChunk( const void *pvChunkPrefix, int lenPrefix, tchar const *p
 	HANDLE hMapping = NULL;
 	void const *pvMappedData = NULL;
 	int iResult = 0;
+    int iMappedFileSize = INVALID_FILE_SIZE;
 
 	hFile = ::CreateFile( ptchFileName, GENERIC_READ, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL );
 	if ( !hFile || ( hFile == INVALID_HANDLE_VALUE ) )
@@ -204,7 +205,7 @@ int VMPI_SendFileChunk( const void *pvChunkPrefix, int lenPrefix, tchar const *p
 	if ( !pvMappedData )
 		goto done;
 
-	int iMappedFileSize = ::GetFileSize( hFile, NULL );
+	iMappedFileSize = ::GetFileSize( hFile, NULL );
 	if ( INVALID_FILE_SIZE == iMappedFileSize )
 		goto done;
 
@@ -294,7 +295,7 @@ void VMPI_ExceptionFilter( unsigned long uCode, void *pvExceptionInfo )
 	struct
 	{
 		int code;
-		char *pReason;
+		const char *pReason;
 	} errors[] =
 	{
 		ERR_RECORD( EXCEPTION_ACCESS_VIOLATION ),
@@ -322,7 +323,7 @@ void VMPI_ExceptionFilter( unsigned long uCode, void *pvExceptionInfo )
 
 	int nErrors = sizeof( errors ) / sizeof( errors[0] );
 	int i=0;
-	char *pchReason = NULL;
+	const char *pchReason = NULL;
 	char chUnknownBuffer[32];
 	for ( i; ( i < nErrors ) && !pchReason; i++ )
 	{

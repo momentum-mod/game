@@ -30,7 +30,7 @@
 // m_pPatch:        Patch bytes (int/float/char*)
 // m_iLength:       Patch length (only with char* patches)
 //==============================
-CEnginePatch g_EnginePatches[] =
+const CEnginePatch g_EnginePatches[] =
 {
 #ifdef _WIN32
     // Prevent the culling of skyboxes at high FOVs
@@ -207,16 +207,16 @@ bool CEngineBinary::SetMemoryProtection(void* pAddress, size_t iLength, int iPro
 void CEngineBinary::ApplyAllPatches()
 {
 #if !defined (OSX) // No OSX patches
-    for (int i = 0; i < sizeof(g_EnginePatches) / sizeof(*g_EnginePatches); i++)
+    for (int i = 0; i < ARRAYSIZE(g_EnginePatches); i++)
         g_EnginePatches[i].ApplyPatch();
 #endif
 }
 
 CEngineBinary g_EngineBinary;
 
-void CEnginePatch::ApplyPatch()
+void CEnginePatch::ApplyPatch() const
 {
-    if (!m_pPatch)
+    if (m_bIsPtr && !m_pPatch)
     {
         Warning("Engine patch \"%s\" FAILED: No value provided\n", m_sName);
         return;
@@ -231,7 +231,7 @@ void CEnginePatch::ApplyPatch()
         // Memory is write-protected so it needs to be lifted before the patch is applied
         if (CEngineBinary::SetMemoryProtection(pMemory, m_iLength, MEM_READ|MEM_WRITE|MEM_EXEC))
         {
-            Q_memcpy(pMemory, m_pPatch, m_iLength);
+            Q_memcpy(pMemory, m_bIsPtr ? m_pPatch : m_patch, m_iLength);
 
             CEngineBinary::SetMemoryProtection(pMemory, m_iLength, MEM_READ|MEM_EXEC);
 
@@ -248,36 +248,37 @@ void CEnginePatch::ApplyPatch()
     }
 }
 
-CEnginePatch::CEnginePatch(const char* name, char* signature, char* mask, size_t offset, bool immediate)
+CEnginePatch::CEnginePatch(const char* name, const char* signature, const char* mask, size_t offset, PatchType immediate, bool isPtr)
 {
     m_sName = name;
     m_pSignature = signature;
     m_pMask = mask;
     m_iOffset = offset;
     m_iLength = 0;
-    m_bImmediate = immediate;
     m_pPatch = nullptr;
+    m_bImmediate = immediate == PATCH_IMMEDIATE;
+    m_bIsPtr = isPtr;
 }
 
 // Converting numeric types into bytes
-CEnginePatch::CEnginePatch(const char* name, char* signature, char* mask, size_t offset, bool immediate, int value)
-    : CEnginePatch(name, signature, mask, offset, immediate)
+CEnginePatch::CEnginePatch(const char* name, const char* signature, const char* mask, size_t offset, PatchType immediate, int value)
+    : CEnginePatch(name, signature, mask, offset, immediate, false)
 {
+    COMPILE_TIME_ASSERT(sizeof(int) == sizeof(m_patch));
     m_iLength = sizeof(value);
-    m_pPatch = new char[m_iLength];
-    Q_memcpy(m_pPatch, &value, m_iLength);
+    Q_memcpy(m_patch, &value, m_iLength);
 }
 
-CEnginePatch::CEnginePatch(const char* name, char* signature, char* mask, size_t offset, bool immediate, float value)
-    : CEnginePatch(name, signature, mask, offset, immediate)
+CEnginePatch::CEnginePatch(const char* name, const char* signature, const char* mask, size_t offset, PatchType immediate, float value)
+    : CEnginePatch(name, signature, mask, offset, immediate, false)
 {
+    COMPILE_TIME_ASSERT(sizeof(float) == sizeof(m_patch));
     m_iLength = sizeof(value);
-    m_pPatch = new char[m_iLength];
-    Q_memcpy(m_pPatch, &value, m_iLength);
+    Q_memcpy(m_patch, &value, sizeof(value));
 }
 
-CEnginePatch::CEnginePatch(const char* name, char* signature, char* mask, size_t offset, bool immediate, char* bytes, size_t length)
-    : CEnginePatch(name, signature, mask, offset, immediate)
+CEnginePatch::CEnginePatch(const char* name, const char* signature, const char* mask, size_t offset, PatchType immediate, const char* bytes, size_t length)
+    : CEnginePatch(name, signature, mask, offset, immediate, true)
 {
     m_iLength = length;
     m_pPatch = bytes;

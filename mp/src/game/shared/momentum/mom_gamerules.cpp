@@ -313,7 +313,7 @@ void CMomentumGameRules::RunPointServerCommandWhitelisted(const char *pCmd)
     vec.PurgeAndDeleteElements();
 }
 
-static char* const g_szWhitelistedClientCmds[] = {
+static const char* const g_szWhitelistedClientCmds[] = {
     "r_screenoverlay",
     "play",
     "playgamesound"

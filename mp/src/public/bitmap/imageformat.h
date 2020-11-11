@@ -20,11 +20,6 @@ enum NormalDecodeMode_t
 	NORMAL_DECODE_ATI2N_ALPHA	= 2
 };
 
-// Forward declaration
-#ifdef _WIN32
-typedef enum _D3DFORMAT D3DFORMAT;
-#endif
-
 //-----------------------------------------------------------------------------
 // The various image format types
 //-----------------------------------------------------------------------------
@@ -106,7 +101,6 @@ enum ImageFormat
 	NUM_IMAGE_FORMATS
 };
 
-#if defined( POSIX  ) || defined( DX_TO_GL_ABSTRACTION )
 typedef enum _D3DFORMAT
 	{
 		D3DFMT_INDEX16,
@@ -159,7 +153,6 @@ typedef enum _D3DFORMAT
 		
 		D3DFMT_UNKNOWN
 	} D3DFORMAT;
-#endif
 
 //-----------------------------------------------------------------------------
 // Color structures
