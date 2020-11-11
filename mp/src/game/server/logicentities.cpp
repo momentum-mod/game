@@ -33,7 +33,9 @@ extern CServerGameDLL g_ServerGameDLL;
 class CLogicCompareInteger : public CLogicalEntity
 {
 public:
-	DECLARE_CLASS( CLogicCompareInteger, CLogicalEntity );
+	DECLARE_CLASS( CLogicCompareInteger, CLogicalEntity )
+
+	CLogicCompareInteger() : m_bStrLenAllowed(false) {}
 
 	// outputs
 	COutputVariant m_OnEqual;
@@ -42,7 +44,7 @@ public:
 	// data
 	variant_t m_iValue;
 	bool m_iShouldCompareToValue;
-	bool m_bStrLenAllowed = true;
+	bool m_bStrLenAllowed;
 	int DrawDebugTextOverlays(void);
 
 	DECLARE_DATADESC();
@@ -198,6 +200,8 @@ class CTimerEntity : public CLogicalEntity
 {
 public:
 	DECLARE_CLASS( CTimerEntity, CLogicalEntity );
+
+	CTimerEntity() : m_bUseBoundsForTimerInputs(false) {}
 
 	void Spawn( void );
 	void Think( void );
@@ -2202,6 +2206,10 @@ void CMathCounterAdvanced::UpdateOutValue(CBaseEntity *pActivator, float fNewVal
 class CLogicCase : public CLogicalEntity
 {
 	DECLARE_CLASS( CLogicCase, CLogicalEntity );
+
+public:
+	CLogicCase() : m_bMultipleCasesAllowed(false) {}
+
 private:
 	string_t m_nCase[MAX_LOGIC_CASES];
 
@@ -2456,6 +2464,8 @@ class CLogicCompare : public CLogicalEntity
 	DECLARE_CLASS( CLogicCompare, CLogicalEntity );
 
 public:
+	CLogicCompare() : m_bStrLenAllowed(false) {}
+
 	int DrawDebugTextOverlays(void);
 
 	void Spawn();

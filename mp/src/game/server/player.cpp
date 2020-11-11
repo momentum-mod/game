@@ -578,7 +578,9 @@ CBasePlayer::CBasePlayer( )
 
 	m_flLastObjectiveTime = -1.f;
 
-    m_hPostProcessCtrl.Set(NULL);
+	m_bDrawPlayerModelExternally = false;
+
+	m_hPostProcessCtrl.Set(NULL);
 }
 
 CBasePlayer::~CBasePlayer( )

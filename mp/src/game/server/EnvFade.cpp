@@ -101,7 +101,7 @@ void CEnvFade::Fade(CBaseEntity *pTarget, bool bReverse)
 		fadeFlags |= FFADE_STAYOUT;
 	}
 
-	if (m_spawnflags & SF_FADE_DONT_PURGE)
+	if (!(m_spawnflags & SF_FADE_DONT_PURGE))
 	{
 		fadeFlags |= FFADE_PURGE;
 	}

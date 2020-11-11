@@ -436,6 +436,8 @@ C_BasePlayer::C_BasePlayer() : m_iv_vecViewOffset("C_BasePlayer::m_iv_vecViewOff
 
 	m_nForceVisionFilterFlags = 0;
 	m_nLocalPlayerVisionFlags = 0;
+
+	m_bDrawPlayerModelExternally = false;
 }
 
 //-----------------------------------------------------------------------------
