@@ -4269,6 +4269,11 @@
     // Keys
     InitialValue(string) : "Initial value" : : "Initial value for the input value."
     CompareValue(string) : "Compare value" : : "The value to compare against."
+    StrLenAllowed(choices) : "String length allowed" : 0 : "Whether the input value (if it's numerical) can be compared against the Compare value's string length (if it is one)" =
+    [
+        0 : "No"
+        1 : "Yes"
+    ]
     
     // Inputs
     input SetValue(string) : "Sets the value that will be compared against the compare value."
@@ -4446,26 +4451,37 @@
 ]
 
 
-// NEEDHELP: Unused in HL2, not clear what it's useful for.
+// Original Comment >>> NEEDHELP: Unused in HL2, not clear what it's useful for.
+// 
+// Apparently, this entity's usefulness was called into question at some point by Valve programmers.
+// Either way, I've changed it a lot, so this may (or may not) be useful now.
 @PointClass base(Targetname) iconsprite("editor/logic_multicompare.vmt") = logic_multicompare :
     "Compares a set of inputs to each other. If they are all the same, fires an OnEqual output. " +
-    "If any are different, fires the OnNotEqual output."
+    "If any are different, fires the OnNotEqual output." +
+    "There is currently no way to remove inputs."
 [
-    // keys
-    IntegerValue(integer) : "Integer Value (optional)"
-    ShouldComparetoValue(choices) : "Should use Integer Value" : 0 =
+    // Keys
+    IntegerValue(string) : "Reference Value (optional)" : : "The value all inputs are compared to if ''Should use Reference Value'' is enabled."
+    ShouldComparetoValue(choices) : "Should use Reference Value" : 0 : "If enabled, all inputs are compared to the reference value. If not enabled, they are instead compared to the last input added." =
+    [
+        0 : "No"
+        1 : "Yes"
+    ]
+    StrLenAllowed(choices) : "String length allowed" : 0 : "Whether the input value (if it's numerical) can be compared against the Compare value's string length (if it is one)" =
     [
         0 : "No"
         1 : "Yes"
     ]
 
     // Inputs
-    input InputValue(integer) : "Input value"
-    input CompareValues(void) : "Compares the values and fires appropriate outputs"
+    input InputValue(string) : "Adds a value to our set of inputs and fires CompareValues automatically, comparing existing inputs to this one if set to do so."
+    input InputValueNoFire(string) : "Adds a value to our set of inputs without firing CompareValues."
+    input SetReferenceValue(string) : "Sets our reference value."
+    input CompareValues(void) : "Compares the values and fires appropriate outputs."
 
     // Outputs
-    output OnEqual(void) : "Fires if the values are equal"
-    output OnNotEqual(void) : "Fires if the values are not equal"
+    output OnEqual(string) : "Fires if the compared value is equal to all of our inputs. Passes the compared value."
+    output OnNotEqual(string) : "Fires if the compared value is equal to all of our inputs. Passes the violator."
 ]
 
 @PointClass base(Targetname, EnableDisable) iconsprite("editor/logic_relay.vmt") = logic_relay :
@@ -4485,7 +4501,6 @@
     input Trigger(void) : "Triggers the relay, causing its OnTrigger output to fire if it is enabled."
     input TriggerWithParameter(string) : "Triggers the relay with a parameter, causing its OnTriggerParameter output to fire if it is enabled."
     input Toggle(void) : "Toggle the relay between enabled and disabled."
-    //input CancelPending(void) : "Cancel any events fired by this relay that are currently pending in the I/O event queue."
     input EnableRefire(void) : "If fast retrigger is disabled, the relay will not be able to fire again until its most delayed output has been fired. "+
         "This input allows the relay to fire again early if it is in this state."
     
@@ -4547,6 +4562,12 @@
     LowerRandomBound(string) : "Minimum Random Interval" : : "If 'Use Random Time' is set, this is the minimum time between timer fires. The time will be a random number between this and the 'Maximum Random Interval'."
     UpperRandomBound(string) : "Maximum Random Interval" : : "If 'Use Random Time' is set, this is the maximum time between timer fires. The time will be a random number between the 'Minimum Random Interval' and this."
     RefireTime(string) : "Refire Interval" : : "If 'Use Random Time' isn't set, this is the time between timer fires, in seconds."
+	
+    UseBoundsForTimerInputs(choices) : "Limit Timer Inputs" : 0 : "Allows the Minumum/Maximum Random Interval keyvalues to limit the total timer value when it receives AddToTimer or SubtractFromTimer inputs." =
+    [
+        0 : "No"
+        1 : "Yes"
+    ]
 
     // Inputs
     input RefireTime(integer) : "Set a new Refire Interval."

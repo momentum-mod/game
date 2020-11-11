@@ -25,6 +25,8 @@ class CFuncBrush : public CBaseEntity
 public:
 	DECLARE_CLASS( CFuncBrush, CBaseEntity );
 
+	CFuncBrush() : m_bSolidBsp(true) {}
+
 	virtual void Spawn( void );
 	bool CreateVPhysics( void );
 

@@ -63,7 +63,7 @@ public:
 	CPointCameraOrtho();
 	~CPointCameraOrtho();
 
-	enum
+	enum OrthoDimensions_t
 	{
 		ORTHO_TOP,
 		ORTHO_BOTTOM,

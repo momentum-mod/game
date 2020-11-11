@@ -391,6 +391,8 @@ CBaseEntity::CBaseEntity( bool bServerOnly )
 	SetSolid( SOLID_NONE );
 	ClearSolidFlags();
 
+	m_iViewHideFlags = 0;
+
 	m_nModelIndex = 0;
 	m_bDynamicModelAllowed = false;
 	m_bDynamicModelPending = false;
@@ -8271,7 +8273,7 @@ public:
 };
 
 static CEntCreateAutoCompletionFunctor g_EntCreateAutoComplete;
-static ConCommand ent_create("ent_create", &g_EntCreateAutoComplete, "Creates an entity of the given type where the player is looking.  Additional parameters can be passed in in the form: ent_create <entity name> <param 1 name> <param 1> <param 2 name> <param 2>...<param N name> <param N>", FCVAR_GAMEDLL | FCVAR_MAPPING, &g_EntCreateAutoComplete);
+static ConCommand ent_create("ent_create", &g_EntCreateAutoComplete, "Creates an entity of the given type where the player is looking.  Additional parameters can be passed in in the form: ent_create <entity name> <param 1 name> <param 1> <param 2 name> <param 2>...<param N name> <param N>", FCVAR_MAPPING, &g_EntCreateAutoComplete);
 
 class CEntCreateAimedAutoCompletionFunctor : public CEntCreateAutoCompletionFunctor
 {

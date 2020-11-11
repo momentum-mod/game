@@ -253,7 +253,7 @@ END_DATADESC()
 #define SF_AMBIENT_SOUND_START_SILENT		16
 #define SF_AMBIENT_SOUND_NOT_LOOPING		32
 
-static const char *g_SoundEndContext = "SoundEnd";
+#define SOUND_END_CONTEXT "SoundEnd"
 
 
 //-----------------------------------------------------------------------------
@@ -927,7 +927,7 @@ void CAmbientGeneric::SendSound( SoundFlags_t flags)
 			UTIL_EmitAmbientSound(pSoundSource->GetSoundSourceIndex(), pSoundSource->GetAbsOrigin(), szSoundFile, 
 						0, SNDLVL_NONE, iFlags, 0);
 
-			SetContextThink( NULL, TICK_NEVER_THINK, g_SoundEndContext );
+			SetContextThink( NULL, TICK_NEVER_THINK, SOUND_END_CONTEXT );
 
 			m_fActive = false;
 		}
@@ -937,7 +937,7 @@ void CAmbientGeneric::SendSound( SoundFlags_t flags)
 			UTIL_EmitAmbientSound(pSoundSource->GetSoundSourceIndex(), pSoundSource->GetAbsOrigin(), szSoundFile, 
 				(m_dpv.vol * 0.01), m_iSoundLevel, iFlags, m_dpv.pitch, 0.0f, &duration);
 
-			SetContextThink( &CAmbientGeneric::SoundEnd, gpGlobals->curtime + duration, g_SoundEndContext );
+			SetContextThink( &CAmbientGeneric::SoundEnd, gpGlobals->curtime + duration, SOUND_END_CONTEXT );
 
 			// Only mark active if this is a looping sound.  If not looping, each
 			// trigger will cause the sound to play.  If the sound is still
@@ -956,7 +956,7 @@ void CAmbientGeneric::SendSound( SoundFlags_t flags)
 			UTIL_EmitAmbientSound(m_nSoundSourceEntIndex, GetAbsOrigin(), szSoundFile, 
 					0, SNDLVL_NONE, iFlags, 0);
 
-			SetContextThink( NULL, TICK_NEVER_THINK, g_SoundEndContext );
+			SetContextThink( NULL, TICK_NEVER_THINK, SOUND_END_CONTEXT );
 
 			m_fActive = false;
 		}

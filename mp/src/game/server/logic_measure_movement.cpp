@@ -38,6 +38,8 @@ class CLogicMeasureMovement : public CLogicalEntity
 	DECLARE_CLASS( CLogicMeasureMovement, CLogicalEntity );
 
 public:
+	CLogicMeasureMovement() : m_bOutputPosition(false) {}
+
 	virtual void Activate();
 
 	void SetMeasureTarget( const char *pName );

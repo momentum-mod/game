@@ -18,9 +18,6 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-ConVar mapbase_wildcards_enabled("mapbase_wildcards_enabled", "1", FCVAR_NONE, "Toggles Mapbase's '?' wildcard and true '*' features. Useful for maps that have '?' in their targetnames.");
-ConVar mapbase_regex_enabled("mapbase_regex_enabled", "1", FCVAR_NONE, "Toggles Mapbase's regex matching handover.");
-
 #ifdef CLIENT_DLL
 // FIXME: There is no clientside equivalent to the RS code
 static bool ResponseSystemCompare(const char *criterion, const char *value) { return Matcher_NamesMatch(criterion, value); }
@@ -65,29 +62,25 @@ bool Matcher_RunCharCompare(const char *pszQuery, const char *szValue)
 			switch (*pszQuery)
 			{
 				case '*':
-					{
-						// Return true at classic trailing *
-						if ( *(pszQuery+1) == 0 )
-							return true;
+				{
+					// Return true at classic trailing *
+					if ( *(pszQuery+1) == 0 )
+						return true;
 
-						if (mapbase_wildcards_enabled.GetBool())
-						{
-							// There's text after this * which we need to test.
-							// This recursion allows for multiple wildcards
-							int vlen = Q_strlen(szValue);
-							++pszQuery;
-							for (int i = 0; i < vlen; i++)
-							{
-								if (Matcher_RunCharCompare(pszQuery, szValue + i))
-									return true;
-							}
-						}
-						return false;
-					} break;
+					// There's text after this * which we need to test.
+					// This recursion allows for multiple wildcards
+					int vlen = Q_strlen(szValue);
+					++pszQuery;
+					for (int i = 0; i < vlen; i++)
+					{
+						if (Matcher_RunCharCompare(pszQuery, szValue + i))
+							return true;
+					}
+\
+					return false;
+				}
 				case '?':
-					// Just skip if we're capable of lazy wildcards
-					if (mapbase_wildcards_enabled.GetBool())
-						break;
+					break;
 				default:
 					return false;
 			}
@@ -135,7 +128,7 @@ bool Matcher_NamesMatch(const char *pszQuery, const char *szValue)
 		return true;
 
 	// Check for regex
-	if ( *pszQuery == '@' && mapbase_regex_enabled.GetBool() )
+	if ( *pszQuery == '@' )
 	{
 		// Make sure it has a forward slash
 		// (prevents confusion with instance fixup escape)

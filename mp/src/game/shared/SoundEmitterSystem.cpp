@@ -41,6 +41,7 @@ static ConVar sv_snd_filter( "sv_snd_filter", "", FCVAR_REPLICATED, "Filters out
 
 extern ISoundEmitterSystemBase *soundemitterbase;
 static ConVar *g_pClosecaption = NULL;
+static ConVar *g_pHostTimescale = NULL;
 
 static bool g_bPermitDirectSoundPrecache = false;
 
@@ -117,8 +118,6 @@ void Hack_FixEscapeChars( char *str )
 	*o = 0;
 	Q_strncpy( str, osave, len );
 }
-
-static const ConVar *pHostTimescale;
 
 //-----------------------------------------------------------------------------
 // Purpose: 
@@ -214,6 +213,7 @@ public:
 #endif
 		g_pClosecaption = cvar->FindVar("closecaption");
 		Assert(g_pClosecaption);
+		g_pHostTimescale = cvar->FindVar("host_timescale");
 		return soundemitterbase->ModInit();
 	}
 
@@ -313,7 +313,6 @@ public:
 			}
 		}
 #endif
-		pHostTimescale = cvar->FindVar( "host_timescale" );
 	}
 
 	virtual void LevelInitPostEntity()
@@ -526,7 +525,7 @@ public:
 			(soundlevel_t)params.soundlevel,
 			ep.m_nFlags,
 			// Scale pitch by timescale, and clamp to prevent overflow because it's sent as a byte
-			pHostTimescale->GetFloat() != 0.0f ? clamp(FastFloatToSmallInt(params.pitch * pHostTimescale->GetFloat()), 0, 255) : params.pitch,
+			g_pHostTimescale->GetFloat() != 0.0f ? clamp(FastFloatToSmallInt(params.pitch * g_pHostTimescale->GetFloat()), 0, 255) : params.pitch,
 			ep.m_nSpecialDSP,
 			ep.m_pOrigin,
 			NULL,
@@ -602,7 +601,7 @@ public:
 				ep.m_SoundLevel, 
 				ep.m_nFlags, 
 				// Scale pitch by timescale, and clamp to prevent overflow because it's sent as a byte
-				pHostTimescale->GetFloat() != 0.0f ? clamp(FastFloatToSmallInt(ep.m_nPitch * pHostTimescale->GetFloat()), 0, 255) : ep.m_nPitch,
+				g_pHostTimescale->GetFloat() != 0.0f ? clamp(FastFloatToSmallInt(ep.m_nPitch * g_pHostTimescale->GetFloat()), 0, 255) : ep.m_nPitch,
 				ep.m_nSpecialDSP,
 				ep.m_pOrigin,
 				NULL, 
@@ -825,9 +824,9 @@ public:
 		}
 
 		// Scale pitch by timescale, and clamp to prevent overflow because it's sent as a byte
-		if ( pHostTimescale->GetFloat() != 0.0f )
+		if ( g_pHostTimescale->GetFloat() != 0.0f )
 		{
-			params.pitch = clamp(FastFloatToSmallInt(params.pitch * pHostTimescale->GetFloat()), 0, 255);
+			params.pitch = clamp(FastFloatToSmallInt(params.pitch * g_pHostTimescale->GetFloat()), 0, 255);
 		}
 
 #if defined( CLIENT_DLL )
@@ -959,9 +958,9 @@ public:
 		if ( pSample && ( Q_stristr( pSample, ".wav" ) || Q_stristr( pSample, ".mp3" )) )
 		{
 			// Scale pitch by timescale, and clamp to prevent overflow because it's sent as a byte
-			if ( pHostTimescale->GetFloat() != 0.0f )
+			if ( g_pHostTimescale->GetFloat() != 0.0f )
 			{
-				pitch = clamp(FastFloatToSmallInt(pitch * pHostTimescale->GetFloat()), 0, 255);
+				pitch = clamp(FastFloatToSmallInt(pitch * g_pHostTimescale->GetFloat()), 0, 255);
 			}
 
 #if defined( CLIENT_DLL )

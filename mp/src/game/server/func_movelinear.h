@@ -22,6 +22,8 @@ class CFuncMoveLinear : public CBaseToggle
 public:
 	DECLARE_CLASS( CFuncMoveLinear, CBaseToggle );
 
+	CFuncMoveLinear() : m_bSolidBsp(true) {};
+
 	void		Spawn( void );
 	void		Precache( void );
 	bool		CreateVPhysics( void );

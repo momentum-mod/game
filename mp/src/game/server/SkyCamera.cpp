@@ -129,6 +129,8 @@ CSkyCamera::CSkyCamera()
 	g_SkyList.Insert( this );
 	m_skyboxData.fog.maxdensity = 1.0f;
 	m_skyboxData.skycolor.Init(0, 0, 0, 0);
+	m_skyboxData.fog.farz = 0;
+	m_bUseAnglesForSky = false;
 }
 
 CSkyCamera::~CSkyCamera()

@@ -52,7 +52,7 @@ public:
 
 	DECLARE_SERVERCLASS();
     
-    CBaseDoor() : m_bIsBhopBlock(false) {};
+    CBaseDoor() : m_bIsBhopBlock(false), m_bSolidBsp(true) {};
 
 	void Spawn( void );
 	void Precache( void );
