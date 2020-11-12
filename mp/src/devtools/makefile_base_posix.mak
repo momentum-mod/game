@@ -81,17 +81,19 @@ COPY_DLL_TO_SRV = 0
 LDFLAGS += -Wl,--build-id
 
 # Building the game on Linux requires a CHROOT environment, please read https://github.com/momentum-mod/game/wiki/Building-The-Game/#linux for more info!
-CHROOT_NAME=steamrt_scout_i386
+CHROOT_NAME=steamrt_scout_amd64
 
 #
 # If we should be running in a chroot, check to see if we are. If not, then prefix everything with the 
 # required chroot
 #
 export STEAM_RUNTIME_PATH := /opt/gcc-9.2
-ifndef USING_DOCKER
-    ifneq ("$(SCHROOT_CHROOT_NAME)", "$(CHROOT_NAME)")
-        $(info '$(SCHROOT_CHROOT_NAME)' is not '$(CHROOT_NAME)')
-        $(error This makefile should be run from within a chroot. 'schroot --chroot $(CHROOT_NAME) -- $(MAKE) $(MAKEFLAGS)')  
+ifeq ("$(wildcard /run/systemd/container)","")
+    ifndef USING_DOCKER
+        ifneq ("$(SCHROOT_CHROOT_NAME)", "$(CHROOT_NAME)")
+            $(info '$(SCHROOT_CHROOT_NAME)' is not '$(CHROOT_NAME)')
+            $(error This makefile should be run from within a chroot. 'schroot --chroot $(CHROOT_NAME) -- $(MAKE) $(MAKEFLAGS)')  
+        endif
     endif
 endif
 GCC_VER = -9.2
