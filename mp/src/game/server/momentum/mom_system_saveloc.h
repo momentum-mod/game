@@ -74,9 +74,9 @@ class CSaveLocSystem : public CAutoGameSystem
 public:
     CSaveLocSystem(const char* pName);
     ~CSaveLocSystem();
-    void PostInit() OVERRIDE;
-    void LevelInitPreEntity() OVERRIDE;
-    void LevelShutdownPreEntity() OVERRIDE;
+    void PostInit() override;
+    void LevelInitPreEntity() override;
+    void LevelShutdownPreEntity() override;
 
     // Online
     // Called when the UI wants to request savelocs
