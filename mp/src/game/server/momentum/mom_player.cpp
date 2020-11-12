@@ -480,14 +480,6 @@ void CMomentumPlayer::Spawn()
         m_iLandTick = 0;
         ResetRunStats();
 
-        g_pSavelocSystem->ClearAllStartMarks(START_MARK);
-
-        // Load startmarks after player spawn
-        if (g_pSavelocSystem->LoadStartMarks())
-            DevLog("Loaded startmarks from the savedlocs file!\n");
-        else
-            DevWarning("ERROR: Failed loading startmarks from the savedlocs file.\n");
-
         g_MapZoneSystem.DispatchMapInfo(this);
 
         // Reset current checkpoint trigger upon spawn

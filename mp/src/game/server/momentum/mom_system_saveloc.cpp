@@ -265,6 +265,7 @@ void CSaveLocSystem::PostInit()
 void CSaveLocSystem::LevelInitPreEntity()
 {
     m_bHintedStartMarkForLevel = false;
+    ClearAllStartMarks(START_MARK);
 
     // Note: We are not only loading in PostInit because if players edit their savelocs file (add
     // savelocs from a friend or something), then we want to reload on map load again,
@@ -273,12 +274,16 @@ void CSaveLocSystem::LevelInitPreEntity()
         return;
 
     KeyValues *kvMapSavelocs = m_pSavedLocsKV->FindKey(gpGlobals->mapname.ToCStr());
-    if (kvMapSavelocs && !kvMapSavelocs->IsEmpty())
-    {
-        m_iCurrentSavelocIndx = kvMapSavelocs->GetInt(SAVELOC_KV_KEY_CURRENTINDEX);
+    if (!kvMapSavelocs || kvMapSavelocs->IsEmpty())
+        return;
 
-        AddSavelocsFromKV(kvMapSavelocs->FindKey(SAVELOC_KV_KEY_SAVELOCS));
-    }
+    m_iCurrentSavelocIndx = kvMapSavelocs->GetInt(SAVELOC_KV_KEY_CURRENTINDEX);
+    AddSavelocsFromKV(kvMapSavelocs->FindKey(SAVELOC_KV_KEY_SAVELOCS));
+
+    if (LoadStartMarks())
+        DevLog("Loaded startmarks from the savedlocs KV!\n");
+    else
+        DevWarning("Failed loading startmarks from the savedlocs file.\n");
 }
 
 bool CSaveLocSystem::LoadStartMarks()
