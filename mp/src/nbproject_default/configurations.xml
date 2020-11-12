@@ -17,8 +17,8 @@
       <makefileType>
         <makeTool>
           <buildCommandWorkingDir>.</buildCommandWorkingDir>
-          <buildCommand>schroot --chroot steamrt_scout_i386 -- make -f games.mak</buildCommand>
-          <cleanCommand>schroot --chroot steamrt_scout_i386 -- make clean -f games.mak</cleanCommand>
+          <buildCommand>schroot --chroot steamrt_scout_amd64 -- make -f games.mak</buildCommand>
+          <cleanCommand>schroot --chroot steamrt_scout_amd64 -- make clean -f games.mak</cleanCommand>
           <executablePath></executablePath>
           <ccTool>
             <incDir>
@@ -92,8 +92,8 @@
       <makefileType>
         <makeTool>
           <buildCommandWorkingDir>.</buildCommandWorkingDir>
-          <buildCommand>schroot --chroot steamrt_scout_i386 -- make -f games.mak</buildCommand>
-          <cleanCommand>schroot --chroot steamrt_scout_i386 -- make clean -f games.mak</cleanCommand>
+          <buildCommand>schroot --chroot steamrt_scout_amd64 -- make -f games.mak</buildCommand>
+          <cleanCommand>schroot --chroot steamrt_scout_amd64 -- make clean -f games.mak</cleanCommand>
           <executablePath></executablePath>
           <ccTool>
             <incDir>
