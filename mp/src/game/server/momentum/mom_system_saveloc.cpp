@@ -600,6 +600,12 @@ bool CSaveLocSystem::CreateStartMark()
     if (!pPlayer)
         return false;
 
+    if (!pPlayer->GetGroundEntity())
+    {
+        Warning("Must be on ground to create a start mark!\n");
+        return false;
+    }
+
     StartMarkType_t type;
     int iMarkIndex;
     SavedLocation_t **pSaveLocAtIndex;
