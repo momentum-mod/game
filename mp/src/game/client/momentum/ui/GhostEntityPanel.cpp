@@ -55,7 +55,7 @@ void CGhostEntityPanel::Init(C_MomentumOnlineGhostEntity* pEnt)
 
 void CGhostEntityPanel::OnThink()
 {
-    SetPos(static_cast<int>(m_iPosX + m_OffsetX + 0.5f), static_cast<int>(m_iPosY + m_OffsetY + 0.5f));
+    SetPos(static_cast<int>(m_iPosX - GetWide() / 2), static_cast<int>(m_iPosY + m_iOffsetY));
 
     if (m_pEntity)
     {

@@ -15,7 +15,6 @@
 		"tabPosition"	"0"
 		"paintborder"	"1"
         "BgColor_override" "BlackHO"
-        "OffsetX" "-74"
         "OffsetY" "-60"
 	}
 
@@ -35,7 +34,7 @@
         "ControlName"       "Label"
         "fieldName"         "GhostEntityPanelName"
         "xpos" "0"
-        "ypos" "2"
+        "ypos" "0"
         "wide" "100"
         "tall" "0"
         "pin_to_sibling" "GhostEntityPanelAvatar"

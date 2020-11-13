@@ -23,10 +23,7 @@ class CGhostEntityPanel : public vgui::EditablePanel
 
     bool GetEntityPosition(int& sx, int& sy);
 
-    // Offset from entity that we should draw
-    CPanelAnimationVar(int, m_OffsetX, "OffsetX", "-74");
-    CPanelAnimationVar(int, m_OffsetY, "OffsetY", "-60");
-
+    CPanelAnimationVar(int, m_iOffsetY, "OffsetY", "-60");
 
   private:
     bool m_bPaintName;
