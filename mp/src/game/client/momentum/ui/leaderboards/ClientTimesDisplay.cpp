@@ -10,8 +10,8 @@
 #include "vgui/ISurface.h"
 #include "IGameUIFuncs.h"
 #include "voice_status.h"
-#include <inputsystem/iinputsystem.h>
 #include "vgui_controls/AnimationController.h"
+#include "ienginevgui.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -20,17 +20,20 @@ using namespace vgui;
 
 #define UPDATE_INTERVAL 15.0f
 
+CClientTimesDisplay *g_pClientTimes = nullptr;
+
 //-----------------------------------------------------------------------------
 // Purpose: Constructor
 //-----------------------------------------------------------------------------
-CClientTimesDisplay::CClientTimesDisplay(IViewPort *pViewPort) : EditablePanel(nullptr, PANEL_TIMES)
+CClientTimesDisplay::CClientTimesDisplay() : EditablePanel(nullptr, "times")
 {
     SetSize(10, 10); // Quiet the "parent not sized yet" spew, actual size in leaderboards.res
 
     m_bToggledOpen = false;
     m_flNextUpdateTime = 0.0f;
 
-    m_pViewPort = pViewPort;
+    SetParent(enginevgui->GetPanel(PANEL_CLIENTDLL));
+
     // initialize dialog
     SetProportional(true);
     SetKeyBoardInputEnabled(false);
@@ -72,12 +75,9 @@ CClientTimesDisplay::~CClientTimesDisplay()
 //-----------------------------------------------------------------------------
 // Purpose: clears everything in the scoreboard and all it's state
 //-----------------------------------------------------------------------------
-void CClientTimesDisplay::Reset() { Reset(false); }
 
 void CClientTimesDisplay::Reset(bool bFullReset)
 {
-    m_flNextUpdateTime = 0.0f;
-
     // add all the sections
     if (m_pTimes)
     {
@@ -133,12 +133,17 @@ void CClientTimesDisplay::ShowPanel(bool bShow)
 
     if (bShow)
     {
-        Reset(true);
+        Update(true);
         SetVisible(true);
         MoveToFront();
         RequestFocus();
 
-        const auto pSpecUI = m_pViewPort->FindPanelByName(PANEL_SPECGUI);
+        const auto pViewPort = dynamic_cast<IViewPort *>(g_pClientMode->GetViewport());
+
+        if (!pViewPort)
+            return;
+
+        const auto pSpecUI = pViewPort->FindPanelByName(PANEL_SPECGUI);
         if (pSpecUI && pSpecUI->IsVisible() && ipanel()->IsMouseInputEnabled(pSpecUI->GetVPanel()))
             SetMouseInputEnabled(true);
     }
@@ -155,7 +160,7 @@ void CClientTimesDisplay::SetMouseInputEnabled(bool bState)
     if (bState)
     {
         m_bToggledOpen = true;
-        g_pClientMode->GetViewportAnimationController()->StartAnimationSequence(GetParent(), "LeaderboardsBgFocusGain");
+        GetAnimationController()->StartAnimationSequence(this, "LeaderboardsBgFocusGain");
         engine->ClientCmd_Unrestricted("gameui_preventescapetoshow\n");
         SetKeyBoardInputEnabled(true);
     }
@@ -176,7 +181,7 @@ void CClientTimesDisplay::Close()
     SetMouseInputEnabled(false);
     SetKeyBoardInputEnabled(false);
 
-    g_pClientMode->GetViewportAnimationController()->StartAnimationSequence(GetParent(), "LeaderboardsBgFocusLost");
+    GetAnimationController()->StartAnimationSequence(this, "LeaderboardsBgFocusLost");
 }
 
 void CClientTimesDisplay::OnKeyCodeReleased(KeyCode code)
@@ -209,23 +214,33 @@ void CClientTimesDisplay::FireGameEvent(IGameEvent *event)
     }
 }
 
-bool CClientTimesDisplay::NeedsUpdate() { return (m_flNextUpdateTime < gpGlobals->curtime); }
-
 //-----------------------------------------------------------------------------
 // Purpose: Recalculate the internal scoreboard data
 //-----------------------------------------------------------------------------
-void CClientTimesDisplay::Update() { Update(false); }
 
-void CClientTimesDisplay::Update(bool pFullUpdate)
+void CClientTimesDisplay::Update(bool bFullUpdate)
 {
-    if (!NeedsUpdate())
-        return;
-
-    FillScoreBoard(pFullUpdate);
+    FillScoreBoard(bFullUpdate);
 
     MoveToCenterOfScreen();
 
+    if (m_bNeedsControlUpdate)
+    {
+        m_pStats->NeedsUpdate();
+        m_pHeader->Reset();
+        m_pTimes->ReloadCurrentPanel();
+        m_bNeedsControlUpdate = false;
+    }
+
     m_flNextUpdateTime = gpGlobals->curtime + UPDATE_INTERVAL;
+}
+
+void CClientTimesDisplay::TryUpdate(bool bFullUpdate)
+{
+    if (m_flNextUpdateTime < gpGlobals->curtime)
+    {
+        Update(bFullUpdate);
+    }
 }
 
 //-----------------------------------------------------------------------------
@@ -294,5 +309,21 @@ void CClientTimesDisplay::OnReloadControls()
 {
     BaseClass::OnReloadControls();
 
-    LevelInitPostEntity();
+    // OnReloadControls gets called before reloading controls but we need to update after
+    m_bNeedsControlUpdate = true;
+}
+
+void CClientTimesDisplay::InitPanel()
+{
+    if (g_pClientTimes)
+        return;
+
+    g_pClientTimes = new CClientTimesDisplay;
+}
+
+void CClientTimesDisplay::OnThink()
+{
+    BaseClass::OnThink();
+
+    TryUpdate(false);
 }

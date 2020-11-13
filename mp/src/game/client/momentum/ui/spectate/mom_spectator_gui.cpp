@@ -29,6 +29,7 @@
 #include "util/mom_util.h"
 #include "c_mom_online_ghost.h"
 #include "hud_chat.h"
+#include "leaderboards/ClientTimesDisplay.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -227,7 +228,7 @@ void CMOMSpectatorGUI::ShowPanel(bool bShow)
 
         if (m_bSpecScoreboard)
         {
-            m_pViewPort->ShowPanel(PANEL_TIMES, false);
+            g_pClientTimes->ShowPanel(false);
         }
     }
 }

@@ -106,6 +106,8 @@ class CLeaderboardsTimes : public vgui::EditablePanel
     void OnReplayDownloadProgress(KeyValues *pKv);
     void OnReplayDownloadEnd(KeyValues *pKv);
 
+    void ReloadCurrentPanel();
+
 protected:
     void OnCommand(const char* command) override;
     void ApplySchemeSettings(vgui::IScheme* pScheme) override;
@@ -123,6 +125,8 @@ protected:
     void LocalTimesCallback(MomReplayAsyncHandle handle);
 
     void ConvertLocalTimes(KeyValues *pKv);
+
+    void SwitchPanel(Panel *pToPanel);
 
 private:
 
@@ -153,7 +157,7 @@ private:
         ICON_TOTAL // Used to control the amount of icons available
     };
 
-    Color m_cFirstPlace, m_cSecondPlace, m_cThirdPlace;
+    Color m_cFirstPlace, m_cSecondPlace, m_cThirdPlace, m_cItemDefault;
     vgui::IBorder *pPlayerBorder;
 
     Panel *m_pCurrentLeaderboards;

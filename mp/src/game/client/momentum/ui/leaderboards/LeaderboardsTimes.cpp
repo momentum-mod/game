@@ -89,14 +89,13 @@ CLeaderboardsTimes::CLeaderboardsTimes(CClientTimesDisplay* pParent) : BaseClass
 
     m_iFlaggedRuns = RUNFLAG_NONE;
 
-    m_pCurrentLeaderboards = m_pLocalLeaderboards;
-
     SetDefLessFunc(m_mapAvatarsToImageList);
     SetDefLessFunc(m_mapReplayDownloads);
 
     pPlayerBorder = nullptr;
     m_pImageList = nullptr;
-    LevelInit();
+
+    SwitchPanel(m_pLocalLeaderboards);
 }
 
 CLeaderboardsTimes::~CLeaderboardsTimes()
@@ -128,7 +127,7 @@ void CLeaderboardsTimes::LevelInit()
     m_mapAvatarsToImageList.RemoveAll();
 
     SetupDefaultIcons();
-    Reset(false);
+    Reset(true);
     m_vLocalTimes.PurgeAndDeleteElements();
     m_vOnlineTimes.PurgeAndDeleteElements();
     m_vAroundTimes.PurgeAndDeleteElements();
@@ -323,6 +322,9 @@ void CLeaderboardsTimes::SetPlaceColors(SectionedListPanel* panel, TimeType_t ty
     if (itemCount == 0)
         return;
 
+    // We need to force the panel to resort its items now
+    m_pCurrentLeaderboards->InvalidateLayout(true);
+
     if (type == TIMES_LOCAL || type == TIMES_TOP10)
     {
         panel->SetItemBgColor(panel->GetItemIDFromRow(0), m_cFirstPlace);
@@ -331,7 +333,14 @@ void CLeaderboardsTimes::SetPlaceColors(SectionedListPanel* panel, TimeType_t ty
             panel->SetItemBgColor(panel->GetItemIDFromRow(1), m_cSecondPlace);
 
             if (itemCount > 2)
+            {
                 panel->SetItemBgColor(panel->GetItemIDFromRow(2), m_cThirdPlace);
+
+                for(int i = 3; i < itemCount; ++i)
+                {
+                    panel->SetItemBgColor(panel->GetItemIDFromRow(i), m_cItemDefault);
+                }
+            }
         }
     }
     else
@@ -827,6 +836,7 @@ void CLeaderboardsTimes::OnCommand(const char* pCommand)
     bool isLocal = FStrEq(pCommand, "ShowLocal");
     bool isFriends = FStrEq(pCommand, "ShowFriends");
     bool isGlobal = FStrEq(pCommand, "ShowGlobal");
+
     bool isFilter = FStrEq(pCommand, "ShowFilter");
     bool isReset = FStrEq(pCommand, "ResetFlags");
     bool isFlagScrollOnly = FStrEq(pCommand, "ToggleScrollOnly");
@@ -835,47 +845,22 @@ void CLeaderboardsTimes::OnCommand(const char* pCommand)
     bool isFlagSideways = FStrEq(pCommand, "ToggleSideways");
     bool isFlagBackwards = FStrEq(pCommand, "ToggleBackwards");
     bool isFlagBonus = FStrEq(pCommand, "ToggleBonus");
-    if (isTop10 || isAround)
+
+    if (isTop10 || isGlobal)
     {
-        m_pFriendsLeaderboardsButton->SetEnabled(true);
-
-        m_pGlobalTop10Button->SetEnabled(!isTop10);
-        m_pGlobalAroundButton->SetEnabled(isTop10);
-
-        // Show the right type of leaderboards
-        m_pCurrentLeaderboards->SetVisible(false);
-        m_pCurrentLeaderboards = isTop10 ? m_pTop10Leaderboards : m_pAroundLeaderboards;
-        m_pCurrentLeaderboards->SetVisible(true);
-
-        FillLeaderboards(false);
+        SwitchPanel(m_pTop10Leaderboards);
     }
-    else if (isLocal || isFriends || isGlobal)
+    else if (isAround)
     {
-        // Show the right type of leaderboards
-        m_pCurrentLeaderboards->SetVisible(false);
-        m_pCurrentLeaderboards =
-            isGlobal ? m_pTop10Leaderboards : (isLocal ? m_pLocalLeaderboards : m_pFriendsLeaderboards);
-        m_pCurrentLeaderboards->SetVisible(true);
-
-        m_pGlobalLeaderboardsButton->SetEnabled(!isGlobal && !isFriends);
-        m_pGlobalAroundButton->SetEnabled(true);
-        m_pGlobalTop10Button->SetEnabled(!isGlobal);
-        m_pFriendsLeaderboardsButton->SetEnabled(!isFriends);
-        m_pLocalLeaderboardsButton->SetEnabled(!isLocal);
-
-        m_pGlobalTop10Button->SetVisible(isGlobal || isFriends);
-        m_pGlobalAroundButton->SetVisible(isGlobal || isFriends);
-        m_pFriendsLeaderboardsButton->SetVisible(isGlobal || isFriends);
-
-        if (isLocal)
-            m_pOnlineTimesStatus->SetVisible(false);
-
-        else if (isFriends)
-        {
-            m_pGlobalAroundButton->SetEnabled(true);
-            m_pGlobalTop10Button->SetEnabled(true);
-        }
-        FillLeaderboards(false);
+        SwitchPanel(m_pAroundLeaderboards);
+    }
+    else if (isLocal)
+    {
+        SwitchPanel(m_pLocalLeaderboards);
+    }
+    else if (isFriends)
+    {
+        SwitchPanel(m_pFriendsLeaderboards);
     }
     else if (isFilter)
     {
@@ -931,6 +916,7 @@ void CLeaderboardsTimes::ApplySchemeSettings(IScheme* pScheme)
     m_cFirstPlace = pScheme->GetColor("FirstPlace", Color(240, 210, 147, 50));
     m_cSecondPlace = pScheme->GetColor("SecondPlace", Color(175, 175, 175, 50));
     m_cThirdPlace = pScheme->GetColor("ThirdPlace", Color(205, 127, 50, 50));
+    m_cItemDefault = pScheme->GetColor("ItemDefault", Color(0, 0, 0, 0));
 
     pPlayerBorder = pScheme->GetBorder("LeaderboardsPlayerBorder");
 
@@ -1151,4 +1137,79 @@ void CLeaderboardsTimes::OnLocalTimesReady(int nRequestIndex)
     m_vLocalTimes.RedoSort();
 
     FillLeaderboards(false);
+}
+
+void CLeaderboardsTimes::SwitchPanel(Panel *pToPanel)
+{
+    // To avoid inconsistent state, we start from scratch
+    m_pLocalLeaderboards->SetVisible(false);
+    m_pTop10Leaderboards->SetVisible(false);
+    m_pFriendsLeaderboards->SetVisible(false);
+    m_pAroundLeaderboards->SetVisible(false);
+
+    // We will have to disable exactly 1 of each group here
+    m_pLocalLeaderboardsButton->SetEnabled(true);
+    m_pGlobalLeaderboardsButton->SetEnabled(true);
+
+    m_pGlobalTop10Button->SetEnabled(true);
+    m_pFriendsLeaderboardsButton->SetEnabled(true);
+    m_pGlobalAroundButton->SetEnabled(true);
+
+    // Local+global button will always be visible
+    m_pLocalLeaderboardsButton->SetVisible(true);
+    m_pGlobalLeaderboardsButton->SetVisible(true);
+
+    m_pGlobalTop10Button->SetVisible(false);
+    m_pFriendsLeaderboardsButton->SetVisible(false);
+    m_pGlobalAroundButton->SetVisible(false);
+
+
+    // Do we want to switch to a global panel? Then we show the global times buttons and disable the "global" button
+    if (pToPanel == m_pTop10Leaderboards || pToPanel == m_pFriendsLeaderboards || pToPanel == m_pAroundLeaderboards)
+    {
+        m_pGlobalLeaderboardsButton->SetEnabled(false);
+
+        m_pGlobalTop10Button->SetVisible(true);
+        m_pFriendsLeaderboardsButton->SetVisible(true);
+        m_pGlobalAroundButton->SetVisible(true);
+
+        if (pToPanel == m_pTop10Leaderboards)
+        {
+            m_pGlobalTop10Button->SetEnabled(false);
+            m_pTop10Leaderboards->SetVisible(true);
+            m_pCurrentLeaderboards = m_pTop10Leaderboards;
+        }
+        else if (pToPanel == m_pFriendsLeaderboards)
+        {
+            m_pFriendsLeaderboardsButton->SetEnabled(false);
+            m_pFriendsLeaderboards->SetVisible(true);
+            m_pCurrentLeaderboards = m_pFriendsLeaderboards;
+        }
+        else if (pToPanel == m_pAroundLeaderboards)
+        {
+            m_pGlobalAroundButton->SetEnabled(false);
+            m_pAroundLeaderboards->SetVisible(true);
+            m_pCurrentLeaderboards = m_pAroundLeaderboards;
+        }
+    }
+    else if (pToPanel == m_pLocalLeaderboards)
+    {
+        m_pOnlineTimesStatus->SetVisible(false);
+        m_pLocalLeaderboardsButton->SetEnabled(false);
+
+        m_pLocalLeaderboards->SetVisible(true);
+        m_pCurrentLeaderboards = m_pLocalLeaderboards;
+    }
+    else
+    {
+        // Obviously don't call this with any other panel!
+        Warning("Tried to switch to invalid panel on leaderboards!\n");
+        return;
+    }
+    FillLeaderboards(false);
+}
+
+void CLeaderboardsTimes::ReloadCurrentPanel()
+{
+    SwitchPanel(m_pCurrentLeaderboards);
 }

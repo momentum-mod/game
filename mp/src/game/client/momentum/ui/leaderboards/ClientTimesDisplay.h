@@ -18,25 +18,24 @@ class CLeaderboardsHeader;
 //-----------------------------------------------------------------------------
 // Purpose: Game ScoreBoard
 //-----------------------------------------------------------------------------
-class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, public CGameEventListener, public CAutoGameSystem
+class CClientTimesDisplay : public vgui::EditablePanel, public CGameEventListener, public CAutoGameSystem
 {
     DECLARE_CLASS_SIMPLE(CClientTimesDisplay, vgui::EditablePanel);
 
   public:
-    CClientTimesDisplay(IViewPort *pViewPort);
+    CClientTimesDisplay();
     ~CClientTimesDisplay();
 
-    const char* GetName() override { return PANEL_TIMES; }
-    void SetData(KeyValues *data) override{};
-    void Reset() override;
-    bool NeedsUpdate() override;
-    void Update() override;
-    void Update(bool bFullUpdate);
-    void Reset(bool bFullReset);
-    
-    bool HasInputElements() override { return true; }
+    // CBaseGameSystem defines Init already
+    static void InitPanel();
 
-    void ShowPanel(bool bShow) override;
+    void OnThink() override;
+
+    void Update(bool bFullUpdate = false);
+    void TryUpdate(bool bFullUpdate = false);
+    void Reset(bool bFullReset = false);
+
+    void ShowPanel(bool bShow);
 
     void SetMouseInputEnabled(bool bState) override;
 
@@ -78,11 +77,10 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
     CLeaderboardsStats *m_pStats;
     CLeaderboardsTimes *m_pTimes;
 
-    IViewPort *m_pViewPort;
-
     float m_flNextUpdateTime;
 
     bool m_bToggledOpen;
+    bool m_bNeedsControlUpdate;
 
     // methods
     void FillScoreBoard();
@@ -90,3 +88,5 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
 
     void SetLeaderboardsHideHud(bool bState);
 };
+
+extern CClientTimesDisplay *g_pClientTimes;

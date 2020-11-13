@@ -79,10 +79,6 @@ class CHudViewport : public CBaseViewport
 
     IViewPortPanel *CreatePanelByName(const char *pzName) OVERRIDE
     {
-        if (FStrEq(PANEL_TIMES, pzName))
-        {
-            return new CClientTimesDisplay(this);
-        }
         if (FStrEq(PANEL_TRICK_LIST, pzName))
         {
             return new TrickList(this);
@@ -102,7 +98,6 @@ class CHudViewport : public CBaseViewport
     void CreateDefaultPanels() OVERRIDE
     {
         AddNewPanel(CreatePanelByName(PANEL_REPLAY), "PANEL_REPLAY");
-        AddNewPanel(CreatePanelByName(PANEL_TIMES), "PANEL_TIMES");
         AddNewPanel(CreatePanelByName(PANEL_SPECGUI), "PANEL_SPECGUI");
         AddNewPanel(CreatePanelByName(PANEL_TRICK_LIST), "PANEL_TRICK_LIST");
         // BaseClass::CreateDefaultPanels(); // MOM_TODO: do we want the other panels?
@@ -167,11 +162,11 @@ int ClientModeMOMNormal::HudElementKeyInput(int down, ButtonCode_t keynum, const
     }
 
     // Detach the mouse if the user right-clicked while the leaderboards are open
-    if (m_pLeaderboards && m_pLeaderboards->IsVisible())
+    if (g_pClientTimes->IsVisible())
     {
         if (keynum == MOUSE_RIGHT)
         {
-            m_pLeaderboards->SetMouseInputEnabled(true);
+            g_pClientTimes->SetMouseInputEnabled(true);
             return 0;
         }
     }
@@ -257,7 +252,6 @@ void ClientModeMOMNormal::SetupPointers()
 {
     m_pHudMenuStatic = GET_HUDELEMENT(CHudMenuStatic);
     m_pHudMapFinished = GET_HUDELEMENT(CHudMapFinishedDialog);
-    m_pLeaderboards = dynamic_cast<CClientTimesDisplay *>(m_pViewport->FindPanelByName(PANEL_TIMES));
     m_pSpectatorGUI = dynamic_cast<CMOMSpectatorGUI *>(m_pViewport->FindPanelByName(PANEL_SPECGUI));
     m_pTrickList = dynamic_cast<TrickList*>(m_pViewport->FindPanelByName(PANEL_TRICK_LIST));
 }
