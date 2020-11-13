@@ -16,9 +16,10 @@ Scheme
 	Colors
 	{
         // original alpha was 225
-        "FirstPlace" "240 210 147 50"
-        "SecondPlace" "175 175 175 50"
-        "ThirdPlace" "205 127 50 50"
+        "FirstPlace"    "240 210 147 50"
+        "SecondPlace"   "175 175 175 50"
+        "ThirdPlace"    "205 127 50 50"
+        "ItemDefault"   "Blank"
 	}
 	
 	///////////////////// BASE SETTINGS ////////////////////////

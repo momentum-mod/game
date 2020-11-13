@@ -261,7 +261,6 @@ enum WallRunState
     WALLRUN_SCRAMBLE // basically waterjumping - vertical velocity is allowed
 };
 
-#define PANEL_TIMES "times"
 #define PANEL_REPLAY "replaycontrols"
 #define PANEL_TRICK_LIST "tricks"
 
