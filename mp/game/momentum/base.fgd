@@ -871,11 +871,10 @@
 [
     spawnflags(flags) = 
     [
-        1: "Clients" : 1
-        2: "NPCs" : 0
+        1: "Local Player" : 1
+        2: "Ghosts" : 0
         4: "Pushables": 0
         8: "Physics Objects" : 0
-        16: "Only player ally NPCs" : 0
         64: "Everything (not including physics debris)" : 0
         1024: "Physics debris" : 0
         4096: "Disallow Bots" : 0
