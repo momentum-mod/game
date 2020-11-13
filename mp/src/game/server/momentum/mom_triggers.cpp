@@ -270,7 +270,7 @@ CBaseMomZoneTrigger::CBaseMomZoneTrigger()
 void CBaseMomZoneTrigger::Spawn()
 {
     Precache();
-    AddSpawnFlags(SF_TRIGGER_ALLOW_CLIENTS);
+    AddSpawnFlags(SF_TRIGGER_ALLOW_CLIENTS | SF_TRIGGER_ALLOW_GHOSTS);
     BaseClass::Spawn();
 }
 

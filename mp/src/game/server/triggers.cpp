@@ -152,19 +152,6 @@ void CBaseTrigger::InputTouchTest( inputdata_t &inputdata )
 	TouchTest();
 }
 
-//------------------------------------------------------------------------------
-//------------------------------------------------------------------------------
-void CBaseTrigger::Spawn()
-{
-	if ( HasSpawnFlags( SF_TRIGGER_ONLY_PLAYER_ALLY_NPCS ) )
-	{
-		// Automatically set this trigger to work with NPC's.
-		AddSpawnFlags( SF_TRIGGER_ALLOW_NPCS );
-	}
-
-	BaseClass::Spawn();
-}
-
 
 //------------------------------------------------------------------------------
 // Cleanup
@@ -355,7 +342,7 @@ bool CBaseTrigger::PassesTriggerFilters(CBaseEntity *pOther)
 	// First test spawn flag filters
 	if ( HasSpawnFlags(SF_TRIGGER_ALLOW_ALL) ||
 		(HasSpawnFlags(SF_TRIGGER_ALLOW_CLIENTS) && (pOther->GetFlags() & FL_CLIENT)) ||
-		(HasSpawnFlags(SF_TRIGGER_ALLOW_NPCS) && (pOther->GetFlags() & FL_NPC)) ||
+		(HasSpawnFlags(SF_TRIGGER_ALLOW_GHOSTS) && (pOther->GetFlags() & FL_GHOST)) ||
 		(HasSpawnFlags(SF_TRIGGER_ALLOW_PUSHABLES) && FClassnameIs(pOther, "func_pushable")) ||
 		(HasSpawnFlags(SF_TRIGGER_ALLOW_PHYSICS) && pOther->GetMoveType() == MOVETYPE_VPHYSICS) 
 #if defined( HL2_EPISODIC ) || defined( TF_DLL )		
@@ -368,19 +355,6 @@ bool CBaseTrigger::PassesTriggerFilters(CBaseEntity *pOther)
 #endif
 		)
 	{
-		if ( pOther->GetFlags() & FL_NPC )
-		{
-			CAI_BaseNPC *pNPC = pOther->MyNPCPointer();
-
-			if ( HasSpawnFlags( SF_TRIGGER_ONLY_PLAYER_ALLY_NPCS ) )
-			{
-				if ( !pNPC || !pNPC->IsPlayerAlly() )
-				{
-					return false;
-				}
-			}
-		}
-
 		bool bOtherIsPlayer = pOther->IsPlayer();
 
 		if ( bOtherIsPlayer )
@@ -4134,13 +4108,6 @@ LINK_ENTITY_TO_CLASS( trigger_playermovement, CTriggerPlayerMovement );
 //-----------------------------------------------------------------------------
 void CTriggerPlayerMovement::Spawn( void )
 {
-	if( HasSpawnFlags( SF_TRIGGER_ONLY_PLAYER_ALLY_NPCS ) )
-	{
-		// @Note (toml 01-07-04): fix up spawn flag collision coding error. Remove at some point once all maps fixed up please!
-		DevMsg("*** trigger_playermovement using obsolete spawnflag. Remove and reset with new value for \"Disable auto player movement\"\n" );
-		RemoveSpawnFlags(SF_TRIGGER_ONLY_PLAYER_ALLY_NPCS);
-		AddSpawnFlags(SF_TRIGGER_MOVE_AUTODISABLE);
-	}
 	BaseClass::Spawn();
 
 	InitTrigger();
@@ -4348,21 +4315,10 @@ bool CBaseVPhysicsTrigger::PassesTriggerFilters( CBaseEntity *pOther )
 	// First test spawn flag filters
 	if ( HasSpawnFlags(SF_TRIGGER_ALLOW_ALL) ||
 		(HasSpawnFlags(SF_TRIGGER_ALLOW_CLIENTS) && (pOther->GetFlags() & FL_CLIENT)) ||
-		(HasSpawnFlags(SF_TRIGGER_ALLOW_NPCS) && (pOther->GetFlags() & FL_NPC)) ||
+		(HasSpawnFlags(SF_TRIGGER_ALLOW_GHOSTS) && (pOther->GetFlags() & FL_GHOST)) ||
 		(HasSpawnFlags(SF_TRIGGER_ALLOW_PUSHABLES) && FClassnameIs(pOther, "func_pushable")) ||
 		(HasSpawnFlags(SF_TRIGGER_ALLOW_PHYSICS) && pOther->GetMoveType() == MOVETYPE_VPHYSICS))
 	{
-		bool bOtherIsPlayer = pOther->IsPlayer();
-		if( HasSpawnFlags(SF_TRIGGER_ONLY_PLAYER_ALLY_NPCS) && !bOtherIsPlayer )
-		{
-			CAI_BaseNPC *pNPC = pOther->MyNPCPointer();
-
-			if( !pNPC || !pNPC->IsPlayerAlly() )
-			{
-				return false;
-			}
-		}
-
 		CBaseFilter *pFilter = m_hFilter.Get();
 		return (!pFilter) ? true : pFilter->PassesFilter( this, pOther );
 	}
