@@ -83,14 +83,14 @@
     
     resetang(choices) : "Reset the player angles on teleport" : 1 =
     [
-        0 : "False"
-        1 : "True"
+        0 : "No"
+        1 : "Yes"
     ]
     
     fail(choices) : "Indicates whether this teleport is for failing a level" : 0 =
     [
-        0 : "False"
-        1 : "True"
+        0 : "No"
+        1 : "Yes"
     ]
 	
 	spawnflags(flags) =
@@ -247,7 +247,7 @@
     //output OnResetOnehop(void) : "Fires when the hop is being reset."
 ]
 
-@SolidClass base(Trigger) = trigger_momentum_userinput : "Trigger that fires on user KeyPress if inside trigger."
+@SolidClass base(MomentumTrigger) = trigger_momentum_userinput : "Trigger that fires on user KeyPress if inside trigger."
 [
     output OnKeyPressed(void) : "Fires when the desired key is pressed"
     output OnKeyHeld(void) : "Fires every tick while the desired key is held"
@@ -310,21 +310,23 @@
         0 : "Decreasing"
         1 : "Increasing"
     ]
+]
+
+@SolidClass base(func_brush, MomentumPush) = func_shootboost : "Entity that pushes the player when it is damaged"
+[
+    target(target_destination) : "Trigger" : : "If specified, the player must be inside this trigger for the boost to work."
+	
     spawnflags(flags) = 
     [ 
         524288: "Use the direction vector as final force instead of calculating it by force amount" : 0
     ]
 ]
 
-@SolidClass base(func_brush, MomentumPush) = func_shootboost : "Entity that pushes the player when it is damaged"
-[
-    target(target_destination) : "Trigger" : : "If specified, the player must be inside this trigger for the boost to work."
-]
-
 @SolidClass base(MomentumTrigger, MomentumPush) = trigger_momentum_push : "A trigger volume that modifies velocity of players that touch it."
 [
     spawnflags(flags) = 
     [ 
+        524288: "Use the direction vector as final force instead of calculating it by force amount" : 0
         1048576: "Only allow for one touch before reseting" : 1
         2097152: "Modify player velocity on StartTouch" : 0
         4194304: "Modify player velocity on EndTouch" : 1
