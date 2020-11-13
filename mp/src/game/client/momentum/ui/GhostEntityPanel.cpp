@@ -5,10 +5,8 @@
 #include "view.h"
 #include "mom_shareddefs.h"
 #include "vgui/IVGui.h"
-#include "vgui/ILocalize.h"
 #include "vgui_controls/ImagePanel.h"
 #include <vgui_controls/Label.h>
-#include <vgui/ISurface.h>
 #include "vgui_avatarimage.h"
 #include "c_mom_online_ghost.h"
 
@@ -65,8 +63,6 @@ void CGhostEntityPanel::OnThink()
         {
             m_pAvatarImage->SetAvatarSteamID(CSteamID(m_pEntity->GetSteamID()), k_EAvatarSize64x64);
         }
-
-        // MOM_TODO: Blink the panel if they're typing? Maybe an icon or something? Idk
 
         if (m_bPaintName)
         {
