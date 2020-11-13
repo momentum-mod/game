@@ -244,7 +244,7 @@ static KeyValues *ParseZones(CChunk *pRootChunk)
         triggerKV->SetString("zoneNum", zoneN);
         if (type == ZONE_TYPE_START)
         {
-            auto propsKV = triggerKV->FindKey("zoneProps", true);
+            auto propsKV = triggerKV->FindKey("zoneProps", true)->FindKey("properties", true);
 
             const auto spawnFlags = V_atoi(pChunk->FindKey("spawnflags"));
             if (const auto &key = pChunk->FindKey("speed_limit"))
