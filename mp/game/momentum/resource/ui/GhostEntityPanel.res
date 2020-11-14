@@ -7,7 +7,7 @@
 		// "xpos"			"cs-0.5"
 		// "ypos"			"50"
 		"wide"			"80"
-		"tall"			"36"
+		"tall"			"0" // set in code
 		"autoResize"	"0"
 		"pinCorner"		"0"
 		"visible"		"1"

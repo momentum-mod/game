@@ -38,9 +38,7 @@ CGhostEntityPanel::CGhostEntityPanel() : BaseClass(g_pClientMode->GetViewport(),
     SetPaintBackgroundEnabled(false);
 
     m_pAvatarImage->SetDrawFriend(false);
-    m_pAvatarImage->SetAvatarSize(32, 32);
     m_pAvatarImagePanel->SetImage(m_pAvatarImage);
-    m_pAvatarImagePanel->SetSize(32, 32);
 }
 
 void CGhostEntityPanel::Init(C_MomentumOnlineGhostEntity* pEnt)
@@ -128,11 +126,17 @@ void CGhostEntityPanel::OnTick()
     m_pAvatarImagePanel->SetVisible(mom_entpanels_enable_avatars.GetBool());
 }
 
+void CGhostEntityPanel::PerformLayout()
+{
+    BaseClass::PerformLayout();
+    SetTall(m_pAvatarImagePanel->GetTall() + m_pNameLabel->GetTall() + m_pAvatarImagePanel->GetYPos() + m_pNameLabel->GetYPos());
+    m_pAvatarImage->SetAvatarSize(m_pAvatarImagePanel->GetWide(), m_pAvatarImagePanel->GetTall());
+}
+
 bool CGhostEntityPanel::ShouldDraw()
 {
     return mom_entpanels_enable.GetBool() && (mom_entpanels_enable_avatars.GetBool() || mom_entpanels_enable_names.GetBool());
 }
-
 
 bool CGhostEntityPanel::GetEntityPosition(int& sx, int& sy)
 {

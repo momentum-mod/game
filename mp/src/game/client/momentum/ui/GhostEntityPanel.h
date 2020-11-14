@@ -16,6 +16,7 @@ class CGhostEntityPanel : public vgui::EditablePanel
     void Init(C_MomentumOnlineGhostEntity *pEntity);
     void OnThink() override;
     void OnTick() override;
+    void PerformLayout() override;
 
     bool ShouldDraw();
 
