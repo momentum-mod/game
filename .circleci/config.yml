@@ -15,7 +15,7 @@ jobs:
       - run:
           name: Building the game
           working_directory: mp/src
-          command: make -j$(nproc --all) -f games.mak all-targets
+          command: make -j8 -f games.mak all-targets
       - run:
           name: Zipping up artifacts
           command: tar --exclude=*.{dbg,dll} -C mp/game -czvf binaries_linux.tar.gz bin momentum/bin
