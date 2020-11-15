@@ -159,7 +159,7 @@ public:
 
 	CNetworkVar( int, m_iMinWind );			// the slowest the wind can normally blow
 	CNetworkVar( int, m_iMaxWind );			// the fastest the wind can normally blow
-    CNetworkVar(int, m_windRadius); // the radius this entity affects with its windiness, so a map can have multiple
+    CNetworkVar(float, m_windRadius); // the radius this entity affects with its windiness, so a map can have multiple
 	CNetworkVar( float, m_windRadiusInner );		// the inner-radius for noticable distance fading
     CNetworkVar(int, m_iMinGust);   // the slowest that a gust can be
 	CNetworkVar( int, m_iMaxGust );			// the fastest that a gust can be
