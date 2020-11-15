@@ -2255,29 +2255,29 @@ void CMomentumPlayer::InputAddCollectible(inputdata_t& inputdata)
     CBaseEntity *pRequiredEntity = nullptr;
     int iWeight = 1;
 
-    char sParameter[MAX_PATH];
-    Q_strncpy(sParameter, inputdata.value.String(), sizeof(sParameter));
+    char szInputValue[MAX_PATH];
+    Q_strncpy(szInputValue, inputdata.value.String(), sizeof(szInputValue));
 
-    if (Q_strlen(sParameter))
+    if (Q_strlen(szInputValue))
     {
-        pRequiredEntity = gEntList.FindEntityByName(nullptr, inputdata.value.String(), this, inputdata.pActivator, inputdata.pCaller);
+        pRequiredEntity = gEntList.FindEntityByName(nullptr, szInputValue, this, inputdata.pActivator, inputdata.pCaller);
 
         // By default, treat the parameter as a targetname for the required collectible
         if (!pRequiredEntity)
         {
-            if (strchr(sParameter, ':')) // <required>:<weight>
+            if (strchr(szInputValue, ':')) // <required>:<weight>
             {
-                CUtlVector<char *> parameters;
-                V_SplitString(sParameter, ":", parameters);
+                CUtlVector<char*> parameters;
+                V_SplitString(szInputValue, ":", parameters);
 
                 pRequiredEntity = gEntList.FindEntityByName(nullptr, parameters[0], this, inputdata.pActivator, inputdata.pCaller);
-                iWeight = V_isdigit(*parameters[1]) ? atoi(parameters[1]) : 1;
+                iWeight = V_isdigit(*parameters[1]) ? Q_atoi(parameters[1]) : 1;
 
                 parameters.PurgeAndDeleteElements();
             }
-            else if (V_isdigit(*sParameter)) // <weight>
+            else if (V_isdigit(*szInputValue)) // <weight>
             {
-                iWeight = atoi(sParameter);
+                iWeight = Q_atoi(szInputValue);
             }
             else
             {
@@ -2340,9 +2340,7 @@ bool CMomentumPlayerCollectibles::HasCollectible(const char *pName)
 void CMomentumPlayerCollectibles::SaveToKeyValues(KeyValues *kv) const
 {
     if (m_CollectibleList.IsEmpty())
-    {
         return;
-    }
 
     KeyValues *collectibles = new KeyValues("collectibles");
 
