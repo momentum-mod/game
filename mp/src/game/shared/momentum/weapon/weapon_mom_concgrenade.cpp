@@ -47,7 +47,7 @@ CMomentumConcGrenade::CMomentumConcGrenade()
     m_flThrowTime = 0.0f;
     m_flTimer = 0.0f;
     m_iPrimaryAmmoType = AMMO_TYPE_GRENADE;
-    m_bRepress = false;
+    m_bNeedsRepress = false;
 }
 
 bool CMomentumConcGrenade::Deploy()
@@ -55,7 +55,7 @@ bool CMomentumConcGrenade::Deploy()
     m_bPrimed = false;
     m_flThrowTime = 0.0f;
     m_flTimer = 0.0f;
-    m_bRepress = false;
+    m_bNeedsRepress = false;
 
     return BaseClass::Deploy();
 }
@@ -65,14 +65,14 @@ bool CMomentumConcGrenade::Holster(CBaseCombatWeapon *pSwitchingTo)
     m_bPrimed = false;
     m_flThrowTime = 0.0f;
     m_flTimer = 0.0f;
-    m_bRepress = false;
+    m_bNeedsRepress = false;
 
     return BaseClass::Holster(pSwitchingTo);
 }
 
 void CMomentumConcGrenade::PrimaryAttack()
 {
-    if (m_bPrimed || m_flThrowTime > 0.0f || m_bRepress)
+    if (m_bPrimed || m_flThrowTime > 0.0f || m_bNeedsRepress)
         return;
 
     CMomentumPlayer *pPlayer = GetPlayerOwner();
@@ -82,7 +82,7 @@ void CMomentumConcGrenade::PrimaryAttack()
 
     WeaponSound(GetWeaponSound("timer"));
     m_bPrimed = true;
-    m_bRepress = true;
+    m_bNeedsRepress = true;
 
     if (m_flTimer <= 0)
     {
@@ -111,7 +111,7 @@ void CMomentumConcGrenade::ItemPostFrame()
     {
         StartGrenadeThrow();
         m_bPrimed = false;
-        m_bRepress = false;
+        m_bNeedsRepress = false;
 
         if (m_flTimer > 0.0f && gpGlobals->curtime - m_flTimer > 0.5f) // throw conc with remaining fuse timer
         {
@@ -127,8 +127,10 @@ void CMomentumConcGrenade::ItemPostFrame()
         ThrowGrenade(GetMaxTimer());
         m_bPrimed = false;
     }
-    else if (!(pPlayer->m_nButtons & IN_ATTACK))
-        m_bRepress = false;
+    else if (!(pPlayer->m_nButtons & IN_ATTACK)) // Require player to release and repress +attack before another grenade can be thrown
+    {
+        m_bNeedsRepress = false;
+    }
     else
     {
         BaseClass::ItemPostFrame();
