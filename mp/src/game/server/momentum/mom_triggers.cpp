@@ -844,6 +844,7 @@ CTriggerMomentumTeleport::CTriggerMomentumTeleport()
     m_vecVelocityScaler.Init(1.0f, 1.0f, 1.0f);
     m_bResetAngles = true;
     m_bReorientLandmark = false;
+    m_bFail = false;
 }
 
 void CTriggerMomentumTeleport::Touch(CBaseEntity* pOther)
