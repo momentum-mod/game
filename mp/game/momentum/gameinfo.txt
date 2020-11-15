@@ -20,6 +20,38 @@
         test_hardware 1
     }
 
+    mount
+    {
+        440
+        {
+            "tf"
+            {
+                "vpk"	"tf2_misc_dir"
+                "vpk"	"tf2_sound_misc_dir"
+                "vpk"	"tf2_sound_vo_english_dir"
+                "vpk"	"tf2_textures_dir"
+                "dir"	"download"
+            }
+        }
+        240
+        {
+            "cstrike"
+            {
+                "vpk"	"cstrike_pak_dir"
+                "dir"	"download"
+            }
+        }
+        // *appid*
+        // {
+            // "head"	"0" // put this at head
+            // "mod_folder"
+            // {
+                // "vpk"	"vpk_name" // mounts file: GameDir\mod_folder\vpk_name.vpk
+                // "dir"	"dir_inside" // mounts folder: GameDir\mod_folder\dir_inside
+            // }
+        // }
+    }
+
     FileSystem
     {
         SteamAppId				669270 // Source SDK Base 2013 Multiplayer = 243750

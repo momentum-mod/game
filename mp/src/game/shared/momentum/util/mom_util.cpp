@@ -68,34 +68,101 @@ void MomUtil::DispatchConCommand(const char *pszCommand)
 }
 #endif
 
+static void MountGames(bool &gotCS, bool &gotTF)
+{
+    KeyValuesAD gameinfo("GameInfo");
+    gameinfo->LoadFromFile(filesystem, "gameinfo.txt");
+    KeyValues *pMounts = gameinfo->FindKey("mount");
+    if (!pMounts)
+        return;
+    char path[MAX_PATH];
+    CUtlVector<CUtlString> dirs;
+    FOR_EACH_TRUE_SUBKEY(pMounts, pMount)
+    {
+        const auto appId = static_cast<AppId_t>(V_atoui64(pMount->GetName()));
+        if (!SteamApps()->BIsAppInstalled(appId))
+        {
+            Warning("AppId %lu not installed!\n", appId);
+            continue;
+        }
+        gotCS |= appId == 240;
+        gotTF |= appId == 440;
+        SteamApps()->GetAppInstallDir(appId, path, sizeof(path));
+        const SearchPathAdd_t head = pMount->GetBool("head") ? PATH_ADD_TO_HEAD : PATH_ADD_TO_TAIL;
+        FOR_EACH_TRUE_SUBKEY(pMount, pModDir)
+        {
+            const char *const modDir = pModDir->GetName();
+            const CFmtStr mod("%s" CORRECT_PATH_SEPARATOR_S "%s", path, modDir);
+            dirs.AddToTail(mod.Get());
+            FOR_EACH_VALUE(pModDir, pPath)
+            {
+                const char *const keyName = pPath->GetName();
+                if (FStrEq(keyName, "vpk"))
+                {
+                    const CFmtStr file("%s" CORRECT_PATH_SEPARATOR_S "%s.vpk", mod.Get(), pPath->GetString());
+                    filesystem->AddSearchPath(file, "GAME", head);
+                }
+                else if (FStrEq(keyName, "dir"))
+                {
+                    const CFmtStr folder("%s" CORRECT_PATH_SEPARATOR_S "%s", mod.Get(), pPath->GetString());
+                    filesystem->AddSearchPath(folder, "GAME", head);
+                }
+                else
+                    Warning("Unknown key \"%s\" in mounts\n", keyName);
+            }
+        }
+    }
+    for (const auto &dir : dirs)
+    {
+        g_pFullFileSystem->AddSearchPath(dir, "GAME");
+    }
+}
+
 void MomUtil::MountGameFiles()
 {
     if (SteamApps())
     {
+        bool gotCS = false, gotTF = false;
+        MountGames(gotCS, gotTF);
+
         char installPath[MAX_PATH];
         uint32 folderLen;
 
         // CS:S
-        folderLen = SteamApps()->GetAppInstallDir(240, installPath, MAX_PATH);
-        if (folderLen)
+        if (!gotCS)
         {
-            filesystem->AddSearchPath(CFmtStr("%s/cstrike/cstrike_pak.vpk", installPath), "GAME");
-            filesystem->AddSearchPath(CFmtStr("%s/cstrike/download", installPath), "GAME");
-            filesystem->AddSearchPath(CFmtStr("%s/cstrike/download", installPath), "download");
-            filesystem->AddSearchPath(CFmtStr("%s/cstrike", installPath), "GAME");
+            folderLen = SteamApps()->GetAppInstallDir(240, installPath, MAX_PATH);
+            if (folderLen)
+            {
+                filesystem->AddSearchPath(CFmtStr("%s/cstrike/cstrike_pak.vpk", installPath), "GAME");
+                filesystem->AddSearchPath(CFmtStr("%s/cstrike/download", installPath), "GAME");
+                filesystem->AddSearchPath(CFmtStr("%s/cstrike/download", installPath), "download");
+                filesystem->AddSearchPath(CFmtStr("%s/cstrike", installPath), "GAME");
+            }
+        }
+        else
+        {
+            Warning("Overridden default CS mount logic!\n");
         }
 
         // TF2
-        folderLen = SteamApps()->GetAppInstallDir(440, installPath, MAX_PATH);
-        if (folderLen)
+        if (!gotTF)
         {
-            filesystem->AddSearchPath(CFmtStr("%s/tf/tf2_misc.vpk", installPath), "GAME");
-            filesystem->AddSearchPath(CFmtStr("%s/tf/tf2_sound_misc.vpk", installPath), "GAME");
-            filesystem->AddSearchPath(CFmtStr("%s/tf/tf2_sound_vo_english.vpk", installPath), "GAME");
-            filesystem->AddSearchPath(CFmtStr("%s/tf/tf2_textures.vpk", installPath), "GAME");
-            filesystem->AddSearchPath(CFmtStr("%s/tf/download", installPath), "GAME");
-            filesystem->AddSearchPath(CFmtStr("%s/tf/download", installPath), "download");
-            filesystem->AddSearchPath(CFmtStr("%s/tf", installPath), "GAME");
+            folderLen = SteamApps()->GetAppInstallDir(440, installPath, MAX_PATH);
+            if (folderLen)
+            {
+                filesystem->AddSearchPath(CFmtStr("%s/tf/tf2_misc.vpk", installPath), "GAME");
+                filesystem->AddSearchPath(CFmtStr("%s/tf/tf2_sound_misc.vpk", installPath), "GAME");
+                filesystem->AddSearchPath(CFmtStr("%s/tf/tf2_sound_vo_english.vpk", installPath), "GAME");
+                filesystem->AddSearchPath(CFmtStr("%s/tf/tf2_textures.vpk", installPath), "GAME");
+                filesystem->AddSearchPath(CFmtStr("%s/tf/download", installPath), "GAME");
+                filesystem->AddSearchPath(CFmtStr("%s/tf/download", installPath), "download");
+                filesystem->AddSearchPath(CFmtStr("%s/tf", installPath), "GAME");
+            }
+        }
+        else
+        {
+            Warning("Overridden default TF2 mount logic!\n");
         }
 
         if (developer.GetInt())
