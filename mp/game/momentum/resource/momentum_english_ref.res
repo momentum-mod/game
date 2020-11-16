@@ -120,6 +120,7 @@
         "MOM_Tickrate_Warning" "For your times to be able to submit, you must\nuse the default tickrate for this gamemode!"
         "MOM_GameMode_Overridden" "For your times to able to submit,\nyou must restart the map in its correct gamemode!"
         "MOM_Practice_Warning" "Upon disabling practice mode, you will\nreturn to your current spot in the run!\nTo cancel this, stop your timer with\n\"mom_timer_stop\"!"
+        "MOM_Mapping_Warning" "For your times to be able to submit,\nyou must disable mapping mode!"
         "MOM_NoTimer" "No Timer"
         "MOM_PracticeMode" "Practice Mode"
 

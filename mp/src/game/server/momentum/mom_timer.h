@@ -12,12 +12,14 @@ class CMomentumTimer : public CAutoGameSystemPerFrame
     CMomentumTimer();
 
     // CAutoGameSystemPerFrame
-    void LevelInitPostEntity() OVERRIDE;
-    void LevelShutdownPreEntity() OVERRIDE;
-    void FrameUpdatePreEntityThink() OVERRIDE;
+    bool Init() override;
+    void LevelInitPostEntity() override;
+    void LevelShutdownPreEntity() override;
+    void FrameUpdatePreEntityThink() override;
 
     // HUD messages
     void DispatchCheatsMessage(CMomentumPlayer *pPlayer);
+    void DispatchMappingMessage(CMomentumPlayer *pPlayer);
     void DispatchTickrateMessage(CMomentumPlayer *pPlayer);
     void DispatchOverrideMessage(CMomentumPlayer *pPlayer);
     void DispatchResetMessage(CMomentumPlayer *pPlayer) const;
@@ -88,6 +90,7 @@ class CMomentumTimer : public CAutoGameSystemPerFrame
     bool m_bShouldUseStartZoneOffset;
     float m_flDistFixTraceCorners[8]; // array of floats representing the trace distance from each corner of the
                                       // player's collision hull
+    bool m_bMapping;
 };
 
 extern CMomentumTimer *g_pMomentumTimer;

@@ -2,6 +2,7 @@
 
 #include "mom_timer.h"
 
+#include "mom_gamerules.h"
 #include "mom_player_shared.h"
 #include "mom_replay_system.h"
 #include "mom_system_saveloc.h"
@@ -10,6 +11,7 @@
 #include "movevars_shared.h"
 #include "run/mom_run_safeguards.h"
 #include "trigger_trace_enums.h"
+#include "tier0/icommandline.h"
 
 #include "tier0/memdbgon.h"
 
@@ -20,6 +22,12 @@ CMomentumTimer::CMomentumTimer() : CAutoGameSystemPerFrame("CMomentumTimer"),
       m_bCanStart(false), m_bWasCheatsMsgShown(false),
       m_iTrackNumber(0), m_bShouldUseStartZoneOffset(false)
 {
+}
+
+bool CMomentumTimer::Init()
+{
+    m_bMapping = CommandLine()->FindParm("-mapping") != 0;
+    return true;
 }
 
 void CMomentumTimer::LevelInitPostEntity() { m_bWasCheatsMsgShown = false; }
@@ -54,6 +62,11 @@ void CMomentumTimer::DispatchCheatsMessage(CMomentumPlayer *pPlayer)
     UTIL_ShowMessage("CHEATER", pPlayer);
     // MOM_TODO play a special sound here?
     m_bWasCheatsMsgShown = true;
+}
+
+void CMomentumTimer::DispatchMappingMessage(CMomentumPlayer *pPlayer)
+{
+    UTIL_ShowMessage("MAPPING", pPlayer);
 }
 
 void CMomentumTimer::DispatchTickrateMessage(CMomentumPlayer *pPlayer)
@@ -116,6 +129,11 @@ bool CMomentumTimer::Start(CMomentumPlayer *pPlayer)
         // We also allow different tickrates, but warn the player that times won't submit on anything other than the
         // default tickrate for the current game mode
         DispatchTickrateMessage(pPlayer);
+    }
+    if (m_bMapping && GameRulesMomentum()->OnOfficialMap())
+    {
+        // Warn the player that he has enabled mapping mode
+        DispatchMappingMessage(pPlayer);
     }
 
     m_iStartTick = gpGlobals->tickcount;
