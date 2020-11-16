@@ -932,3 +932,11 @@ class CTriggerMomentumCatapult : public CBaseMomentumTrigger
     bool m_bEveryTick;
     float m_flHeightOffset;
 };
+
+class CTeleportDestination : public CPointEntity
+{
+    DECLARE_CLASS(CTeleportDestination, CPointEntity);
+
+public:
+    CTeleportDestination() = default;
+};

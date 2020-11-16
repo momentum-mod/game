@@ -2274,7 +2274,6 @@ void CTriggerPush::Touch( CBaseEntity *pOther )
 	}
 }
 
-LINK_ENTITY_TO_CLASS( info_teleport_destination, CPointEntity );
 
 //-----------------------------------------------------------------------------
 // Teleport Relative trigger
