@@ -1295,9 +1295,7 @@ void CTriggerLimitMovement::ToggleButtons(CMomRunEntity* pEnt, bool bEnable)
 
 //-----------------------------------------------------------------------------------------------
 
-CUtlVector<VariablePush> g_VariablePushes;
-
-void InitVariablePush(CBaseEntity *pOther, Vector vecForce, float flDuration, float flBias, bool bIncreasing)
+void CMomentumTriggerSystem::InitVariablePush(CBaseEntity *pOther, Vector vecForce, float flDuration, float flBias, bool bIncreasing)
 {
     VariablePush push;
 
@@ -1309,14 +1307,14 @@ void InitVariablePush(CBaseEntity *pOther, Vector vecForce, float flDuration, fl
     push.m_flBias = flBias;
     push.m_bIncreasing = bIncreasing;
 
-    g_VariablePushes.AddToTail(push);
+    m_VariablePushes.AddToTail(push);
 }
 
-void DoVariablePushes()
+void CMomentumTriggerSystem::DoVariablePushes()
 {
-    FOR_EACH_VEC(g_VariablePushes, i)
+    FOR_EACH_VEC(m_VariablePushes, i)
     {
-        VariablePush *pPush = &g_VariablePushes[i];
+        VariablePush *pPush = &m_VariablePushes[i];
 
         if (pPush->m_iElapsedTicks == 0)
         {
@@ -1328,7 +1326,7 @@ void DoVariablePushes()
             DevLog("Variable push: %d ticks in %.4f seconds, average %.4f seconds per tick\n", 
                 pPush->m_iElapsedTicks, Plat_FloatTime() - pPush->m_flStartTime, (Plat_FloatTime() - pPush->m_flStartTime) / pPush->m_iElapsedTicks);
         
-            g_VariablePushes.Remove(i);
+            m_VariablePushes.Remove(i);
             continue;
         }
 
@@ -1347,7 +1345,7 @@ void DoVariablePushes()
     }
 }
 
-void PushEntity(CBaseEntity *pEntity, Vector vecPush, int iMode, float flVariableDuration = 1.0f, float flVariableBias = 0.5f, bool bVariableIncreasing = false)
+void MomPushEntity(CBaseEntity *pEntity, Vector vecPush, int iMode, float flVariableDuration = 1.0f, float flVariableBias = 0.5f, bool bVariableIncreasing = false)
 {
     switch (iMode)
     {
@@ -1366,7 +1364,7 @@ void PushEntity(CBaseEntity *pEntity, Vector vecPush, int iMode, float flVariabl
         pEntity->SetBaseVelocity(vecPush);
         return;
     case PUSH_VARIABLE:
-        InitVariablePush(pEntity, vecPush, flVariableDuration, flVariableBias, bVariableIncreasing);
+        g_MomentumTriggerSystem.InitVariablePush(pEntity, vecPush, flVariableDuration, flVariableBias, bVariableIncreasing);
         return;
     default:
         DevWarning("PushEntity: invalid mode %d, defaulting to set velocity\n", iMode);
@@ -1436,7 +1434,7 @@ int CFuncShootBoost::OnTakeDamage(const CTakeDamageInfo &info)
 
         Vector finalVel = HasSpawnFlags(SF_PUSH_DIRECTION_AS_FINAL_FORCE) ? vecAbsDir : vecAbsDir.Normalized() * m_flPushForce;
 
-        PushEntity(pInflictor, finalVel, m_iIncrease, m_flVariablePushDuration, m_flVariablePushBias, m_bVariablePushIncreasing);
+        MomPushEntity(pInflictor, finalVel, m_iIncrease, m_flVariablePushDuration, m_flVariablePushBias, m_bVariablePushIncreasing);
     }
     // As we don't want to break it, we don't call BaseClass::OnTakeDamage(info);
     // OnTakeDamage returns the damage dealt
@@ -1568,7 +1566,7 @@ void CTriggerMomentumPush::OnSuccessfulTouch(CBaseEntity *pOther)
 
         Vector finalVel = HasSpawnFlags(SF_PUSH_DIRECTION_AS_FINAL_FORCE) ? vecAbsDir : vecAbsDir.Normalized() * m_flPushForce;
 
-        PushEntity(pOther, finalVel, m_iIncrease, m_flVariablePushDuration, m_flVariablePushBias, m_bVariablePushIncreasing);
+        MomPushEntity(pOther, finalVel, m_iIncrease, m_flVariablePushDuration, m_flVariablePushBias, m_bVariablePushIncreasing);
     }
 } 
 

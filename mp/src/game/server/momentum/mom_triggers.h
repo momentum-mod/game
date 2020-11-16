@@ -610,28 +610,34 @@ enum PushMode_t
     PUSH_COUNT
 };
 
-struct VariablePush
-{
-    CBaseEntity *m_pEntity;
-    Vector m_vecPushForce;
-    int m_iElapsedTicks;
-    int m_iNumTicks;
-
-    float m_flDuration;
-    float m_flBias;
-
-    bool m_bIncreasing;
-
-    // For debugging
-    float m_flStartTime;
-};
-
-void InitVariablePush(CBaseEntity *pOther, Vector vecForce, float flDuration, float flBias, bool bIncreasing);
-void DoVariablePushes();
-
+// System to handle per-tick events independently outside entity think, such as variable pushes
 class CMomentumTriggerSystem : public CAutoGameSystemPerFrame
 {
+public:
     virtual void FrameUpdatePostEntityThink() override;
+
+    void InitVariablePush(CBaseEntity *pOther, Vector vecForce, float flDuration, float flBias, bool bIncreasing);
+
+private:
+    void DoVariablePushes();
+
+    struct VariablePush
+    {
+        CBaseEntity *m_pEntity;
+        Vector m_vecPushForce;
+        int m_iElapsedTicks;
+        int m_iNumTicks;
+
+        float m_flDuration;
+        float m_flBias;
+
+        bool m_bIncreasing;
+
+        // For debugging
+        float m_flStartTime;
+    };
+
+    CUtlVector<VariablePush> m_VariablePushes;
 };
 
 // CFuncShootBoost
