@@ -2564,3 +2564,14 @@ LINK_ENTITY_TO_CLASS(info_teleport_destination, CTeleportDestination);
 IMPLEMENT_SERVERCLASS_ST(CTeleportDestination, DT_TeleportDestination)
 END_SEND_TABLE();
 
+void CTeleportDestination::Spawn()
+{
+    Precache();
+    BaseClass::Spawn();
+}
+
+void CTeleportDestination::Precache()
+{
+    BaseClass::Precache();
+    PrecacheMaterial(MOM_ZONE_DRAW_MATERIAL);
+}

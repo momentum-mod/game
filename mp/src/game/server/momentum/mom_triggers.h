@@ -941,6 +941,9 @@ class CTeleportDestination : public CPointEntity
 public:
     CTeleportDestination() = default;
 
+    void Spawn() override;
+    void Precache() override;
+
     // always send to all clients
     int UpdateTransmitState() override { return SetTransmitState(FL_EDICT_ALWAYS); }
 };

@@ -127,4 +127,9 @@ class C_TeleportDestination : public C_BaseEntity
 
   public:
     C_TeleportDestination() = default;
+
+    bool ShouldDraw() override { return true; }
+    int DrawModel(int flags) override;
+    void Spawn() override;
+    void Precache() override;
 };
