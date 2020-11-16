@@ -216,6 +216,11 @@ CHEATER
 #MOM_Cheater_Message
 }
 
+MAPPING
+{
+#MOM_Mapping_Warning
+}
+
 $position 0.6 0.6
 
 NON_DEFAULT_TICKRATE

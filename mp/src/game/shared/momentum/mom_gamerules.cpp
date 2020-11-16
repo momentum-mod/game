@@ -24,6 +24,9 @@ REGISTER_GAMERULES_CLASS(CMomentumGameRules);
 
 CMomentumGameRules::CMomentumGameRules()
 {
+#ifdef GAME_DLL
+    m_bOnOfficialMap = false;
+#endif
 }
 
 CMomentumGameRules::~CMomentumGameRules() {}
@@ -255,6 +258,7 @@ void CMomentumGameRules::ClientCommandKeyValues(edict_t *pEntity, KeyValues *pKe
         {
             KeyValuesAD pData(static_cast<KeyValues *>(pTrackPtr));
             g_MapZoneSystem.LoadZonesFromSite(pData, CBaseEntity::Instance(pEntity));
+            m_bOnOfficialMap = true;
         }
     }
 }

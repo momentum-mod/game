@@ -58,12 +58,16 @@ class CMomentumGameRules : public CSingleplayRules
 
     bool IsManualMapChangeOkay(const char **pszReason) override;
 
+    bool OnOfficialMap() const { return m_bOnOfficialMap; }
+
   private:
     // void AdjustPlayerDamageTaken(CTakeDamageInfo *pInfo);
     // float AdjustPlayerDamageInflicted(float damage);
     Vector DropToGround(CBaseEntity *pMainEnt, const Vector &vPos, const Vector &vMins, const Vector &vMaxs);
 
     int DefaultFOV(void) OVERRIDE;
+
+    bool m_bOnOfficialMap;
 #endif
 };
 
