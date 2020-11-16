@@ -2558,3 +2558,5 @@ int CTriggerMomentumCatapult::DrawDebugTextOverlays()
 }
 
 //-----------------------------------------------------------------------------------------------
+
+LINK_ENTITY_TO_CLASS(info_teleport_destination, CTeleportDestination);
