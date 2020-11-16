@@ -1970,6 +1970,7 @@ void Menu::OnMenuItemSelected(Panel *panel)
 		{
 			activeItemSet = true;
 			m_iActivatedItem = i;
+			m_iCurrentlySelectedItemID = i;
 			break;
 		}
 	}

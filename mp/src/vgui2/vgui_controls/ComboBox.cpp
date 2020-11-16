@@ -729,13 +729,7 @@ void ComboBox::OnMenuItemSelected()
 	//if ( m_bAllowEdit )
 	{
 		int idx = GetActiveItem();
-		if ( idx >= 0 )
-		{
-			wchar_t name[ 256 ];
-			GetItemText( idx, name, sizeof( name ) );
-
-			OnSetText( name );
-		}
+		SelectMenuItem(idx);
 	}
 
 	Repaint();
