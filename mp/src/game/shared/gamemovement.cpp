@@ -974,8 +974,7 @@ void CGameMovement::CheckParameters( void )
 		float maxspeed;
 
 		spd = ( mv->m_flForwardMove * mv->m_flForwardMove ) +
-			  ( mv->m_flSideMove * mv->m_flSideMove ) +
-			  ( mv->m_flUpMove * mv->m_flUpMove );
+			  ( mv->m_flSideMove * mv->m_flSideMove );
 
 		maxspeed = mv->m_flClientMaxSpeed;
 		if ( maxspeed != 0.0 )
