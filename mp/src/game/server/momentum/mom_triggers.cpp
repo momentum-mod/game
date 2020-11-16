@@ -2560,3 +2560,7 @@ int CTriggerMomentumCatapult::DrawDebugTextOverlays()
 //-----------------------------------------------------------------------------------------------
 
 LINK_ENTITY_TO_CLASS(info_teleport_destination, CTeleportDestination);
+
+IMPLEMENT_SERVERCLASS_ST(CTeleportDestination, DT_TeleportDestination)
+END_SEND_TABLE();
+

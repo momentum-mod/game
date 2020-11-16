@@ -526,3 +526,11 @@ RecvPropBool(RECVINFO(m_bStuckOnGround)),
 RecvPropBool(RECVINFO(m_bAllowingJump)),
 RecvPropBool(RECVINFO(m_bDisableGravity)),
 END_RECV_TABLE();
+
+// ======================================
+
+LINK_ENTITY_TO_CLASS(info_teleport_destination, C_TeleportDestination);
+
+IMPLEMENT_CLIENTCLASS_DT(C_TeleportDestination, DT_TeleportDestination, CTeleportDestination)
+END_RECV_TABLE();
+
