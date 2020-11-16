@@ -936,7 +936,11 @@ class CTriggerMomentumCatapult : public CBaseMomentumTrigger
 class CTeleportDestination : public CPointEntity
 {
     DECLARE_CLASS(CTeleportDestination, CPointEntity);
+    DECLARE_NETWORKCLASS();
 
 public:
     CTeleportDestination() = default;
+
+    // always send to all clients
+    int UpdateTransmitState() override { return SetTransmitState(FL_EDICT_ALWAYS); }
 };
