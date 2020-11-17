@@ -589,3 +589,11 @@ void C_TeleportDestination::Precache()
     BaseClass::Precache();
     PrecacheMaterial(MOM_ZONE_DRAW_MATERIAL);
 }
+
+void C_TeleportDestination::GetRenderBounds(Vector &mins, Vector &maxs) 
+{
+    // force render bounds as this was drawing only when the origin was in view
+    float dim = mom_teledests_dimensions.GetFloat() / 2.0f;
+    mins.Init(-dim, -dim, 0);
+    maxs.Init(dim, dim, 0);
+}
