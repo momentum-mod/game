@@ -132,4 +132,5 @@ class C_TeleportDestination : public C_BaseEntity
     int DrawModel(int flags) override;
     void Spawn() override;
     void Precache() override;
+    void GetRenderBounds(Vector &mins, Vector &maxs) override;
 };
