@@ -69,6 +69,7 @@ struct PBR_Vars_t
     int mraoScale2;
     int emissionScale;
     int emissionScale2;
+    int hsv;
 };
 
 // Beginning the shader
@@ -94,6 +95,7 @@ BEGIN_VS_SHADER(PBR, "PBR shader")
         SHADER_PARAM(MRAOSCALE2, SHADER_PARAM_TYPE_COLOR, "[1 1 1]", "Factors for metalness, roughness, and ambient occlusion");
         SHADER_PARAM(EMISSIONSCALE, SHADER_PARAM_TYPE_COLOR, "[1 1 1]", "Color to multiply emission texture with");
         SHADER_PARAM(EMISSIONSCALE2, SHADER_PARAM_TYPE_COLOR, "[1 1 1]", "Color to multiply emission texture with");
+        SHADER_PARAM(HSV, SHADER_PARAM_TYPE_COLOR, "[1 1 1]", "HSV color to transform $basetexture texture with");
     END_SHADER_PARAMS;
 
     // Setting up variables for this shader
@@ -123,6 +125,7 @@ BEGIN_VS_SHADER(PBR, "PBR shader")
         info.mraoScale2 = MRAOSCALE2;
         info.emissionScale = EMISSIONSCALE;
         info.emissionScale2 = EMISSIONSCALE2;
+        info.hsv = HSV;
     };
 
     // Initializing parameters
@@ -245,12 +248,12 @@ BEGIN_VS_SHADER(PBR, "PBR shader")
         bool bHasEnvTexture = (info.envMap != -1) && params[info.envMap]->IsTexture();
         bool bIsAlphaTested = IS_FLAG_SET(MATERIAL_VAR_ALPHATEST) != 0;
         bool bHasFlashlight = UsingFlashlight(params);
-        bool bHasColor = (info.baseColor != -1) && params[info.baseColor]->IsDefined();
         bool bLightMapped = !IS_FLAG_SET(MATERIAL_VAR_MODEL);
         bool bHasMraoScale = (info.mraoScale != -1) && params[info.mraoScale]->IsDefined();
         bool bHasMraoScale2 = (info.mraoScale2 != -1) && params[info.mraoScale2]->IsDefined();
         bool bHasEmissionScale = (info.emissionScale != -1) && params[info.emissionScale]->IsDefined();
         bool bHasEmissionScale2 = (info.emissionScale2 != -1) && params[info.emissionScale2]->IsDefined();
+        bool bHasHSV = (info.hsv != -1) && params[info.hsv]->IsDefined();
 
         // Determining whether we're dealing with a fully opaque material
         BlendType_t nBlendType = EvaluateBlendRequirements(info.baseTexture, true);
@@ -365,6 +368,7 @@ BEGIN_VS_SHADER(PBR, "PBR shader")
                 SET_STATIC_PIXEL_SHADER_COMBO(LIGHTMAPPED, bLightMapped);
                 SET_STATIC_PIXEL_SHADER_COMBO(EMISSIVE, bHasEmissionTexture);
                 SET_STATIC_PIXEL_SHADER_COMBO(WVT, bIsWVT);
+                SET_STATIC_PIXEL_SHADER_COMBO(HSV, bHasHSV);
                 SET_STATIC_PIXEL_SHADER(pbr_ps20b);
             }
             else
@@ -382,6 +386,7 @@ BEGIN_VS_SHADER(PBR, "PBR shader")
                 SET_STATIC_PIXEL_SHADER_COMBO(EMISSIVE, bHasEmissionTexture);
                 SET_STATIC_PIXEL_SHADER_COMBO(PARALLAXOCCLUSION, useParallax);
                 SET_STATIC_PIXEL_SHADER_COMBO(WVT, bIsWVT);
+                SET_STATIC_PIXEL_SHADER_COMBO(HSV, bHasHSV);
                 SET_STATIC_PIXEL_SHADER(pbr_ps30);
             }
 
@@ -406,16 +411,17 @@ BEGIN_VS_SHADER(PBR, "PBR shader")
             }
 
             // Setting up basecolor tint
-            Vector color;
-            if (bHasColor)
+            Vector4D hsv;
+            if (bHasHSV)
             {
-                params[info.baseColor]->GetVecValue(color.Base(), 3);
+                params[info.hsv]->GetVecValue(hsv.Base(), 3);
+				hsv.w = pShaderAPI->GetLightMapScaleFactor();
             }
             else
             {
-                color.Init(1.0f, 1.0f, 1.0f);
+                hsv.Init(1.0f, 1.0f, 1.0f, pShaderAPI->GetLightMapScaleFactor() );
             }
-            pShaderAPI->SetPixelShaderConstant(PSREG_SELFILLUMTINT, color.Base());
+            pShaderAPI->SetPixelShaderConstant(PSREG_SELFILLUMTINT, hsv.Base());
 
             // Setting up mrao scale
             Vector mraoScale;
@@ -639,7 +645,7 @@ BEGIN_VS_SHADER(PBR, "PBR shader")
             SetVertexShaderTextureTransform(VERTEX_SHADER_SHADER_SPECIFIC_CONST_0, info.baseTextureTransform);
 
             // This is probably important
-            SetModulationPixelShaderDynamicState_LinearColorSpace(1);
+            SetModulationPixelShaderDynamicState_LinearColorSpace(PSREG_DIFFUSE_MODULATION);
 
             // Send ambient cube to the pixel shader, force to black if not available
             pShaderAPI->SetPixelShaderStateAmbientLightCube(PSREG_AMBIENT_CUBE, !lightState.m_bAmbientLight);
@@ -661,15 +667,6 @@ BEGIN_VS_SHADER(PBR, "PBR shader")
 
             // Sending fog info to the pixel shader
             pShaderAPI->SetPixelShaderFogParams(PSREG_FOG_PARAMS);
-
-            // Set up shader modulation color
-            float modulationColor[4] = { 1.0, 1.0, 1.0, 1.0 };
-            ComputeModulationColor(modulationColor);
-            float flLScale = pShaderAPI->GetLightMapScaleFactor();
-            modulationColor[0] *= flLScale;
-            modulationColor[1] *= flLScale;
-            modulationColor[2] *= flLScale;
-            pShaderAPI->SetPixelShaderConstant(PSREG_DIFFUSE_MODULATION, modulationColor);
 
             // More flashlight related stuff
             if (bHasFlashlight)
