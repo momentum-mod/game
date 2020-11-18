@@ -70,6 +70,7 @@ struct PBR_Vars_t
     int emissionScale;
     int emissionScale2;
     int hsv;
+    int hsv_blend;
 };
 
 // Beginning the shader
@@ -81,8 +82,8 @@ BEGIN_VS_SHADER(PBR, "PBR shader")
         SHADER_PARAM(FRAME2, SHADER_PARAM_TYPE_INTEGER, "0", "frame number for $basetexture2");
         SHADER_PARAM(ALPHATESTREFERENCE, SHADER_PARAM_TYPE_FLOAT, "0", "");
         SHADER_PARAM(ENVMAP, SHADER_PARAM_TYPE_ENVMAP, "", "Set the cubemap for this material.");
-        SHADER_PARAM(MRAOTEXTURE, SHADER_PARAM_TYPE_TEXTURE, "", "Texture with metalness in R, roughness in G, ambient occlusion in B.");
-        SHADER_PARAM(MRAOTEXTURE2, SHADER_PARAM_TYPE_TEXTURE, "", "Texture with metalness in R, roughness in G, ambient occlusion in B.");
+        SHADER_PARAM(MRAOTEXTURE, SHADER_PARAM_TYPE_TEXTURE, "", "Texture with metalness in R, roughness in G, ambient occlusion in B, HSV blend in A.");
+        SHADER_PARAM(MRAOTEXTURE2, SHADER_PARAM_TYPE_TEXTURE, "", "Texture with metalness in R, roughness in G, ambient occlusion in B, HSV blend in A.");
         SHADER_PARAM(EMISSIONTEXTURE, SHADER_PARAM_TYPE_TEXTURE, "", "Emission texture");
         SHADER_PARAM(EMISSIONTEXTURE2, SHADER_PARAM_TYPE_TEXTURE, "", "Emission texture");
         SHADER_PARAM(NORMALTEXTURE, SHADER_PARAM_TYPE_TEXTURE, "", "Normal texture (deprecated, use $bumpmap)");
@@ -96,6 +97,7 @@ BEGIN_VS_SHADER(PBR, "PBR shader")
         SHADER_PARAM(EMISSIONSCALE, SHADER_PARAM_TYPE_COLOR, "[1 1 1]", "Color to multiply emission texture with");
         SHADER_PARAM(EMISSIONSCALE2, SHADER_PARAM_TYPE_COLOR, "[1 1 1]", "Color to multiply emission texture with");
         SHADER_PARAM(HSV, SHADER_PARAM_TYPE_COLOR, "[1 1 1]", "HSV color to transform $basetexture texture with");
+        SHADER_PARAM(HSV_BLEND, SHADER_PARAM_TYPE_BOOL, "0", "Blend untransformed color and HSV transformed color");
     END_SHADER_PARAMS;
 
     // Setting up variables for this shader
@@ -126,6 +128,7 @@ BEGIN_VS_SHADER(PBR, "PBR shader")
         info.emissionScale = EMISSIONSCALE;
         info.emissionScale2 = EMISSIONSCALE2;
         info.hsv = HSV;
+        info.hsv_blend = HSV_BLEND;
     };
 
     // Initializing parameters
@@ -254,6 +257,7 @@ BEGIN_VS_SHADER(PBR, "PBR shader")
         bool bHasEmissionScale = (info.emissionScale != -1) && params[info.emissionScale]->IsDefined();
         bool bHasEmissionScale2 = (info.emissionScale2 != -1) && params[info.emissionScale2]->IsDefined();
         bool bHasHSV = (info.hsv != -1) && params[info.hsv]->IsDefined();
+        bool bBlendHSV = bHasHSV && IsBoolSet(info.hsv_blend, params);
 
         // Determining whether we're dealing with a fully opaque material
         BlendType_t nBlendType = EvaluateBlendRequirements(info.baseTexture, true);
@@ -369,6 +373,7 @@ BEGIN_VS_SHADER(PBR, "PBR shader")
                 SET_STATIC_PIXEL_SHADER_COMBO(EMISSIVE, bHasEmissionTexture);
                 SET_STATIC_PIXEL_SHADER_COMBO(WVT, bIsWVT);
                 SET_STATIC_PIXEL_SHADER_COMBO(HSV, bHasHSV);
+                SET_STATIC_PIXEL_SHADER_COMBO(HSV_BLEND, bBlendHSV);
                 SET_STATIC_PIXEL_SHADER(pbr_ps20b);
             }
             else
@@ -387,6 +392,7 @@ BEGIN_VS_SHADER(PBR, "PBR shader")
                 SET_STATIC_PIXEL_SHADER_COMBO(PARALLAXOCCLUSION, useParallax);
                 SET_STATIC_PIXEL_SHADER_COMBO(WVT, bIsWVT);
                 SET_STATIC_PIXEL_SHADER_COMBO(HSV, bHasHSV);
+                SET_STATIC_PIXEL_SHADER_COMBO(HSV_BLEND, bBlendHSV);
                 SET_STATIC_PIXEL_SHADER(pbr_ps30);
             }
 
@@ -415,7 +421,7 @@ BEGIN_VS_SHADER(PBR, "PBR shader")
             if (bHasHSV)
             {
                 params[info.hsv]->GetVecValue(hsv.Base(), 3);
-				hsv.w = pShaderAPI->GetLightMapScaleFactor();
+                hsv.w = pShaderAPI->GetLightMapScaleFactor();
             }
             else
             {

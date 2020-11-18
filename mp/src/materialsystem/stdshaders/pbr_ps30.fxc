@@ -11,6 +11,7 @@
 // STATIC: "PARALLAXOCCLUSION"          "0..1"
 // STATIC: "WVT"                        "0..1"
 // STATIC: "HSV"                        "0..1"
+// STATIC: "HSV_BLEND"                  "0..1"
 
 // DYNAMIC: "WRITEWATERFOGTODESTALPHA"  "0..1"
 // DYNAMIC: "PIXELFOGTYPE"              "0..1"
@@ -24,6 +25,8 @@
 // SKIP: ( $FLASHLIGHT == 0 ) && ( $FLASHLIGHTSHADOWS == 1 )
 // Flashlight shadow filter mode is irrelevant if there is no flashlight
 // SKIP: ( $FLASHLIGHT == 0 ) && ( $FLASHLIGHTDEPTHFILTERMODE != 0 )
+
+// SKIP: !$HSV && $HSV_BLEND
 
 #include "common_ps_fxc.h"
 #include "common_flashlight_fxc.h"
@@ -127,17 +130,10 @@ float4 main(PS_INPUT i) : COLOR
 #endif
     albedo.xyz *= g_DiffuseModulation;
 
-#if HSV
-    float3 albedoHSV = rgb2hsv(albedo.rgb);
-    albedoHSV.x = fmod(albedoHSV.x + g_HSV.x, 1.0);
-    albedoHSV.yz = clamp(albedoHSV.yz * g_HSV.yz, 0.0, 1.0);
-    albedo.xyz = hsv2rgb(albedoHSV);
-#endif
-
 #if WVT
-    float3 mrao = lerp(tex2D(MRAOTextureSampler, correctedTexCoord).xyz * g_MraoScale.xyz, tex2D(MRAO2TextureSampler, correctedTexCoord).xyz * g_Mrao2Scale.xyz, i.blend);
+    float4 mrao = lerp(tex2D(MRAOTextureSampler, correctedTexCoord) * float4(g_MraoScale.xyz, 1), tex2D(MRAO2TextureSampler, correctedTexCoord) * float4(g_Mrao2Scale.xyz, 1), i.blend);
 #else
-    float3 mrao = tex2D(MRAOTextureSampler, correctedTexCoord).xyz * g_MraoScale.xyz;
+    float4 mrao = tex2D(MRAOTextureSampler, correctedTexCoord) * float4(g_MraoScale.xyz, 1);
 #endif
     float metalness = mrao.x, roughness = mrao.y, ambientOcclusion = mrao.z;
 
@@ -146,6 +142,17 @@ float4 main(PS_INPUT i) : COLOR
     float3 emission = lerp(tex2D(EmissionTextureSampler, correctedTexCoord).xyz * g_EmissionScale.xyz, tex2D(Emission2TextureSampler, correctedTexCoord).xyz * g_Emission2Scale.xyz, i.blend);
 #else
     float3 emission = tex2D(EmissionTextureSampler, correctedTexCoord).xyz  * g_EmissionScale.xyz;
+#endif
+#endif
+
+#if HSV
+    float3 albedoHSV = rgb2hsv(albedo.rgb);
+    albedoHSV.x = fmod(albedoHSV.x + g_HSV.x, 1.0);
+    albedoHSV.yz = clamp(albedoHSV.yz * g_HSV.yz, 0.0, 1.0);
+#if !HSV_BLEND
+    albedo.xyz = hsv2rgb(albedoHSV);
+#else
+    albedo.xyz = lerp(albedo.xyz, hsv2rgb(albedoHSV), mrao.w);
 #endif
 #endif
 
@@ -170,7 +177,11 @@ float4 main(PS_INPUT i) : COLOR
     float3 modulHSV = rgb2hsv(modul.rgb);
     modulHSV.x = fmod(modulHSV.x + g_HSV.x, 1.0);
     modulHSV.yz = clamp(modulHSV.yz * g_HSV.yz, 0.0, 1.0);
+#if !HSV_BLEND
     modul.xyz = hsv2rgb(modulHSV);
+#else
+    modul.xyz = lerp(modul.xyz, hsv2rgb(modulHSV), mrao.w);
+#endif
 #endif
 
 #ifdef LIGHTMAPPED
