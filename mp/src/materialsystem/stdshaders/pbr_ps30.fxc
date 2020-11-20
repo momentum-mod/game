@@ -143,6 +143,16 @@ float4 main(PS_INPUT i) : COLOR
 #else
     float3 emission = tex2D(EmissionTextureSampler, correctedTexCoord).xyz  * g_EmissionScale.xyz;
 #endif
+#if HSV
+    float3 emissionHSV = rgb2hsv(emission);
+    emissionHSV.x = fmod(emissionHSV.x + g_HSV.x, 1.0);
+    emissionHSV.yz = clamp(emissionHSV.yz * g_HSV.yz, 0.0, 1.0);
+#if !HSV_BLEND
+    emission.xyz = hsv2rgb(emissionHSV);
+#else
+    emission.xyz = lerp(emission.xyz, hsv2rgb(emissionHSV), mrao.w);
+#endif
+#endif
 #endif
 
 #if HSV
