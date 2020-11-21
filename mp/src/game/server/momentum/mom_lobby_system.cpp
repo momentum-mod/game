@@ -73,14 +73,7 @@ void CMomentumLobbySystem::HandleNewP2PRequest(SteamNetworkingMessagesSessionReq
     if (!IsInLobby(hUserID))
         return;
 
-    if (IsUserBlocked(hUserID) && !m_vecBlocked.HasElement(hUserID))
-    {
-        m_vecBlocked.AddToTail(hUserID);
-    }
-
-    // MOM_TODO: Make a (temp) block list that only refreshes on game restart?
-
-    if (m_vecBlocked.HasElement(hUserID))
+    if (IsUserBlocked(hUserID))
     {
         const char *pName = SteamFriends()->GetFriendPersonaName(hUserID);
         DevLog("Not allowing %s to talk with us, we've marked them as blocked!\n", pName);
@@ -684,7 +677,7 @@ void CMomentumLobbySystem::CreateLobbyGhostEntity(const CSteamID &lobbyMember)
 
     const char *pName = SteamFriends()->GetFriendPersonaName(lobbyMember);
 
-    if (IsUserBlocked(lobbyMember) || m_vecBlocked.HasElement(lobbyMember))
+    if (IsUserBlocked(lobbyMember))
     {
         Warning("Not allowing %s to talk with us, we have them ignored!\n", pName);
         return;
@@ -808,6 +801,26 @@ void CMomentumLobbySystem::ReceiveP2PPackets()
             auto pMessage = messages[i];
 
             CSteamID fromWho = pMessage->m_identityPeer.GetSteamID();
+
+            const auto findIndex = m_mapLobbyGhosts.Find(fromWho.ConvertToUint64());
+
+            if (IsUserBlocked(fromWho))
+            {
+                if (findIndex != m_mapLobbyGhosts.InvalidIndex())
+                {
+                    // Sender was just blocked, remove their ghost
+                    GetLobbyMemberEntity(fromWho)->Remove();
+                    m_mapLobbyGhosts.RemoveAt(findIndex);
+                }
+
+                pMessage->Release();
+                continue;
+            }
+            else if (findIndex == m_mapLobbyGhosts.InvalidIndex())
+            {
+                // Sender was just unblocked, create their ghost
+                CreateLobbyGhostEntity(fromWho);
+            }
 
             CUtlBuffer buf(pMessage->m_pData, pMessage->m_cbSize, CUtlBuffer::READ_ONLY);
             buf.SetBigEndian(false);

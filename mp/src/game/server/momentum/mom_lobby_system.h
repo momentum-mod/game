@@ -70,8 +70,6 @@ public:
     CUtlMap<uint64, CMomentumOnlineGhostEntity*> *GetOnlineEntMap() { return &m_mapLobbyGhosts;}
 
 private:
-    CUtlVector<CSteamID> m_vecBlocked; // Vector of blocked users (ignore updates/packets from these people)
-
     CUtlMap<uint64, CMomentumOnlineGhostEntity*> m_mapLobbyGhosts;
 
     bool m_bHostingLobby;
