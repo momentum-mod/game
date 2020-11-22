@@ -873,17 +873,15 @@ void CTriggerMomentumTeleport::HandleTeleport(CBaseEntity *pOther)
     if (!pOther)
         return;
 
+    if (m_target != NULL_STRING)
+    {
+        m_hDestinationEnt = gEntList.FindEntityByName(nullptr, m_target, nullptr, pOther, pOther);
+    }
+
     if (!m_hDestinationEnt.Get())
     {
-        if (m_target != NULL_STRING)
-        {
-            m_hDestinationEnt = gEntList.FindEntityByName(nullptr, m_target, nullptr, pOther, pOther);
-        }
-        else
-        {
-            DevWarning("trigger_teleport: invalid destination entity!\n");
-            return;
-        }
+        DevWarning("trigger_teleport: invalid destination entity!\n");
+        return;
     }
 
     CBaseEntity *pLandmark = nullptr;
