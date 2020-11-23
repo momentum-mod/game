@@ -3,6 +3,7 @@
 #include "vgui_controls/PropertyPage.h"
 
 #include "steam/isteammatchmaking.h"
+#include <steam/isteamfriends.h>
 
 class LobbyMembersPanel;
 class LobbyInfoPanel;
@@ -19,6 +20,8 @@ public:
     STEAM_CALLBACK(DrawerPanel_Lobby, OnLobbyEnter, LobbyEnter_t); // When we enter a lobby
     STEAM_CALLBACK(DrawerPanel_Lobby, OnLobbyDataUpdate, LobbyDataUpdate_t); // People/lobby updates status
     STEAM_CALLBACK(DrawerPanel_Lobby, OnLobbyChatUpdate, LobbyChatUpdate_t); // People join/leave
+    STEAM_CALLBACK(DrawerPanel_Lobby, OnPersonaStateChange, PersonaStateChange_t); // People change name
+
     void OnLobbyLeave(); // No dedicated steam callback, thanks valve
 
 protected:

@@ -29,6 +29,7 @@ public:
 
     void AddLobbyMember(const CSteamID &steamID); // Adds a lobby member to the panel
     void UpdateLobbyMemberData(const CSteamID &memberID); // Updates the lobby member's status data on the panel
+    void UpdateLobbyMemberName(const CSteamID &memberID); // Updates just the lobby member's name
 
     static int StaticLobbyMemberSortFunc(vgui::ListPanel *list, const vgui::ListPanelItem &item1, const vgui::ListPanelItem &item2);
 

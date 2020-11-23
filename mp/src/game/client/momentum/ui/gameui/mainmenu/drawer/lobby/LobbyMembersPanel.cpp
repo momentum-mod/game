@@ -165,6 +165,15 @@ void LobbyMembersPanel::UpdateLobbyMemberData(const CSteamID& memberID)
     m_pMemberList->ApplyItemChanges(itemID);
 }
 
+void LobbyMembersPanel::UpdateLobbyMemberName(const CSteamID &memberID)
+{
+    const auto pData = m_pMemberList->GetItem(FindItemIDForLobbyMember(memberID));
+    if (!pData)
+        return;
+
+    pData->SetString("personaname", SteamFriends()->GetFriendPersonaName(memberID));
+}
+
 int LobbyMembersPanel::StaticLobbyMemberSortFunc(ListPanel* list, const ListPanelItem &item1, const ListPanelItem &item2)
 {
     KeyValues *it1 = item1.kv;
