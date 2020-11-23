@@ -20,6 +20,8 @@ public:
 
     void OnLobbyDataUpdate(LobbyDataUpdate_t *pData);
 
+    void UpdateLobbyName();
+
 protected:
     void OnCommand(const char* command) override;
     void OnMousePressed(vgui::MouseCode code) override;
@@ -32,7 +34,6 @@ protected:
 private:
     void LobbyEnterSuccess();
     void SetLobbyTypeImage() const;
-    void UpdateLobbyName();
     void IncrementLobbyType() const;
     void SetLobbyType(int type) const;
     void OnChangeLobbyLimit();
