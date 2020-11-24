@@ -159,6 +159,11 @@ CMomentumOnlineGhostEntity* CMomentumGhostClient::GetOnlineGhostEntityFromID(con
     return g_pMomentumLobbySystem->GetLobbyMemberEntity(id);
 }
 
+CMomentumOnlineGhostEntity* CMomentumGhostClient::GetOnlineGhostEntityFromName(const char *pNamePartial)
+{
+    return g_pMomentumLobbySystem->GetLobbyMemberEntity(pNamePartial);
+}
+
 CUtlMap<uint64, CMomentumOnlineGhostEntity*> *CMomentumGhostClient::GetOnlineGhostMap()
 {
     // MOM_TODO: if (g_pMomentumServerSystem->IsConnected()) // or something

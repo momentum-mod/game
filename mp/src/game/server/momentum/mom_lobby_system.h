@@ -64,6 +64,7 @@ public:
 
     CMomentumOnlineGhostEntity *GetLobbyMemberEntity(const CSteamID &id) { return GetLobbyMemberEntity(id.ConvertToUint64()); }
     CMomentumOnlineGhostEntity *GetLobbyMemberEntity(const uint64 &id);
+    CMomentumOnlineGhostEntity *GetLobbyMemberEntity(const char *pNamePartial);
 
     void ClearCurrentGhosts(bool bLeavingLobby); // Clears the current ghosts stored in the map
 
