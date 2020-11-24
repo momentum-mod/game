@@ -46,7 +46,7 @@ CON_COMMAND(mom_lobby_invite, "Invite friends to your lobby\n")
         SteamFriends()->ActivateGameOverlayInviteDialog(g_pMomentumLobbySystem->GetLobbyId());
 }
 
-CON_COMMAND(mom_lobby_teleport, "Teleport to a given lobby member's SteamID on your map.")
+CON_COMMAND(mom_lobby_teleport, "Teleport to a given lobby member's SteamID (exact) or name (partial) on your map.\n")
 {
     if (args.ArgC() >= 2)
         g_pMomentumLobbySystem->TeleportToLobbyMember(args.Arg(1));
@@ -132,36 +132,43 @@ bool CMomentumLobbySystem::SendSavelocReqPacket(CSteamID& target, SavelocReqPack
 
 void CMomentumLobbySystem::TeleportToLobbyMember(const char *pIDStr)
 {
-    // Check a few things first
     CHECK_STEAM_API(SteamMatchmaking());
 
-    const auto lobbyMemID = CSteamID(Q_atoui64(pIDStr));
+    if (!LobbyValid())
+        return;
 
-    // Are they valid, and even in the lobby?
-    if (lobbyMemID.IsValid() && LobbyValid())
+    const auto pPlayer = CMomentumPlayer::GetLocalPlayer();
+    if (!pPlayer)
+        return;
+
+    if (g_pMomentumTimer->IsRunning())
     {
-        const auto pEnt = GetLobbyMemberEntity(lobbyMemID);
-        if (pEnt)
-        {
-            // Ok cool, but...
-            // Are we spectating or in a run?
-            const auto pPlayer = CMomentumPlayer::GetLocalPlayer();
-            if (pPlayer && pPlayer->GetObserverMode() == OBS_MODE_NONE && !g_pMomentumTimer->IsRunning())
-            {
-                // Teleport em
-                PositionPacket p;
-                if (pEnt->GetCurrentPositionPacketData(&p))
-                {
-                    g_pMomentumTimer->SetCanStart(false);
+        ClientPrint(pPlayer, HUD_PRINTTALK, "You can only teleport to targets when your timer is not running!");
+        return;
+    }
 
-                    pPlayer->Teleport(&p.Position, &p.EyeAngle, nullptr);
-                }
-            }
-            else
-            {
-                Warning("Cannot teleport to player while spectating or in a run!\n");
-            }
+    auto *pOtherEntity = GetLobbyMemberEntity(Q_atoui64(pIDStr));
+
+    if (!pOtherEntity)
+        pOtherEntity = GetLobbyMemberEntity(pIDStr);
+
+    if (!pOtherEntity)
+    {
+        ClientPrint(pPlayer, HUD_PRINTTALK, "Failed to find valid teleport target!");
+        return;
+    }
+
+    if (pPlayer->GetObserverMode() == OBS_MODE_NONE)
+    {
+        PositionPacket p;
+        if (pOtherEntity->GetCurrentPositionPacketData(&p))
+        {
+            pPlayer->ManualTeleport(&p.Position, &p.EyeAngle, nullptr);
         }
+    }
+    else
+    {
+        pPlayer->TrySpectate(pIDStr);
     }
 }
 
