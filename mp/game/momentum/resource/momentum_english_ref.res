@@ -142,6 +142,11 @@
         "MOM_Menu_MapCommands_Reload_Materials"   "Reload all materials"
         "MOM_Menu_MapCommands_Toggle_Cheats"      "Toggle cheats"
 
+    // Chat panel
+        "MOM_Chat_Specific_Typing" "%s1 typing..."
+        "MOM_Chat_Many_Typing" "%s1 people are typing..."
+        "filter_specspawn" "Spectates and Respawns"
+
     //Comparison Panel
         "MOM_Compare_Against" "Comparing against: "
         "MOM_Compare_Time_Overall" "Overall time: "
