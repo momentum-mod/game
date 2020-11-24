@@ -84,7 +84,6 @@ private:
 
     bool IsInSameMapAs(const CSteamID &other);
     bool IsInLobby(const CSteamID &other);
-    bool IsUserBlocked(const CSteamID &other);
 
     void UpdateCurrentLobbyMap(const char *pMapName);
     void UpdateLobbyOwner();

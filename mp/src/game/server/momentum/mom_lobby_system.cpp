@@ -12,6 +12,7 @@
 #include "mom_modulecomms.h"
 #include "mom_timer.h"
 #include "mom_system_steam_richpresence.h"
+#include "util/mom_util.h"
 #include "steam/isteamnetworkingmessages.h"
 
 #include "tier0/memdbgon.h"
@@ -73,7 +74,7 @@ void CMomentumLobbySystem::HandleNewP2PRequest(SteamNetworkingMessagesSessionReq
     if (!IsInLobby(hUserID))
         return;
 
-    if (IsUserBlocked(hUserID))
+    if (MomUtil::IsSteamUserBlocked(hUserID.ConvertToUint64()))
     {
         const char *pName = SteamFriends()->GetFriendPersonaName(hUserID);
         DevLog("Not allowing %s to talk with us, we've marked them as blocked!\n", pName);
@@ -482,15 +483,6 @@ bool CMomentumLobbySystem::IsInLobby(const CSteamID &other)
     return false;
 }
 
-bool CMomentumLobbySystem::IsUserBlocked(const CSteamID &other)
-{
-    CHECK_STEAM_API_B(SteamFriends());
-
-    // Check if this person was block communication'd
-    EFriendRelationship relationship = SteamFriends()->GetFriendRelationship(other);
-    return relationship == k_EFriendRelationshipIgnored || relationship == k_EFriendRelationshipIgnoredFriend;
-}
-
 void CMomentumLobbySystem::UpdateCurrentLobbyMap(const char *pMapName)
 {
     if (!LobbyValid())
@@ -697,7 +689,7 @@ void CMomentumLobbySystem::CreateLobbyGhostEntity(const CSteamID &lobbyMember)
 
     const char *pName = SteamFriends()->GetFriendPersonaName(lobbyMember);
 
-    if (IsUserBlocked(lobbyMember))
+    if (MomUtil::IsSteamUserBlocked(lobbyMember.ConvertToUint64()))
     {
         Warning("Not allowing %s to talk with us, we have them ignored!\n", pName);
         return;
@@ -824,7 +816,7 @@ void CMomentumLobbySystem::ReceiveP2PPackets()
 
             const auto findIndex = m_mapLobbyGhosts.Find(fromWho.ConvertToUint64());
 
-            if (IsUserBlocked(fromWho))
+            if (MomUtil::IsSteamUserBlocked(fromWho.ConvertToUint64()))
             {
                 if (findIndex != m_mapLobbyGhosts.InvalidIndex())
                 {
