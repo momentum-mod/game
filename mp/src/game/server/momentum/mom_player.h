@@ -173,6 +173,8 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
     bool IsSpectatingGhost() const { return m_hObserverTarget.Get() && GetGhostEnt(); }
     CMomentumGhostBaseEntity *GetGhostEnt() const;
 
+    void TrySpectate(const char *pSpecString);
+
     bool StartObserverMode(int mode) OVERRIDE;
     void StopObserverMode() OVERRIDE;
     bool IsValidObserverTarget(CBaseEntity *target) OVERRIDE;
