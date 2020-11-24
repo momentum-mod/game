@@ -95,8 +95,8 @@ public:
     bool SendMessageToLobby(const char *pText);
 
     void ValidateAndSendMessageLocal(const char *pText);
-    ChatValidationState_t ValidateChatMessage(const char *pText, const CSteamID &playerID);
-    void FormatAndPrintMessage(const char *pText, const CSteamID &playerID);
+    ChatValidationState_t ValidateChatMessage(CUtlString &textStr, const CSteamID &playerID);
+    void FormatAndPrintMessage(const CUtlString &textStr, const CSteamID &playerID);
 
     MESSAGE_FUNC(OnChatEntrySend, "ChatEntrySend");
     MESSAGE_FUNC(OnChatEntryStopMessageMode, "ChatEntryStopMessageMode");

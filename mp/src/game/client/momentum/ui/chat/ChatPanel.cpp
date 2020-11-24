@@ -323,22 +323,22 @@ void ChatPanel::OnLobbyMessage(LobbyChatMsg_t *pParam)
         return;
     }
 
-    char message[4096];
-    // MOM_TODO: This won't be just text in the future, if we capitalize on being able to send binary data. Wrap this is
-    // something and parse it
-    SteamMatchmaking()->GetLobbyChatEntry(CSteamID(pParam->m_ulSteamIDLobby), pParam->m_iChatID, nullptr, message, 4096, nullptr);
     if (MomUtil::IsSteamUserBlocked(pParam->m_ulSteamIDUser))
     {
         DevLog("Ignoring message from SteamID %llu (%s) because they are blocked!\n", pParam->m_ulSteamIDUser, SteamFriends()->GetFriendPersonaName(msgSender));
         return;
     }
 
+    CUtlString incomingMessage;
+    incomingMessage.SetLength(MAX_CHAT_LENGTH - 1);
 
-    // MOM_TODO should we allow long messages still?
-    if (ValidateChatMessage(message, msgSender) != CHAT_STATE_OK)
+    // MOM_TODO: This won't be just text in the future, if we capitalize on being able to send binary data. Wrap this is something and parse it
+    SteamMatchmaking()->GetLobbyChatEntry(CSteamID(pParam->m_ulSteamIDLobby), pParam->m_iChatID, nullptr, incomingMessage.GetForModify(), MAX_CHAT_LENGTH - 1, nullptr);
+
+    if (ValidateChatMessage(incomingMessage, msgSender) != CHAT_STATE_OK)
         return;
 
-    FormatAndPrintMessage(message, msgSender);
+    FormatAndPrintMessage(incomingMessage, msgSender);
 }
 
 void ChatPanel::OnLobbyDataUpdate(LobbyDataUpdate_t *pParam)
@@ -564,39 +564,32 @@ void ChatPanel::ValidateAndSendMessageLocal(const char *pText)
 
     const auto localID = SteamUser()->GetSteamID();
 
-    const auto validatorOutcome = ValidateChatMessage(pText, localID);
+    CUtlString text(pText);
+    const auto validatorOutcome = ValidateChatMessage(text, localID);
     if (validatorOutcome == CHAT_STATE_OK)
     {
-        SendMessageToLobby(pText);
+        SendMessageToLobby(text);
 
-        FormatAndPrintMessage(pText, localID);
+        FormatAndPrintMessage(text, localID);
     }
 }
 
-ChatValidationState_t ChatPanel::ValidateChatMessage(const char *pText, const CSteamID &playerID)
+ChatValidationState_t ChatPanel::ValidateChatMessage(CUtlString &textStr, const CSteamID &playerID)
 {
-    // Check if player is spamming
-    if (m_fLastPlayerTalkTime + TALK_INTERVAL >= gpGlobals->curtime)
-        return CHAT_STATE_SPAMMING;
+    textStr.Trim();
 
-    if (!pText || !pText[0])
+    if (textStr.IsEmpty())
         return CHAT_STATE_EMPTY;
 
-    CUtlString str(pText);
-    str.Trim();
-
-    if (str.IsEmpty())
-        return CHAT_STATE_EMPTY;
-
-    const auto textLen = Q_strlen(pText);
-
-    if (textLen > MAX_CHAT_LENGTH - 1)
+    if (textStr.Length() > MAX_CHAT_LENGTH - 1)
         return CHAT_STATE_TOO_LONG;
+
+
 
     return CHAT_STATE_OK;
 }
 
-void ChatPanel::FormatAndPrintMessage(const char *pText, const CSteamID &playerID)
+void ChatPanel::FormatAndPrintMessage(const CUtlString &textStr, const CSteamID &playerID)
 {
     CHECK_STEAM_API(SteamFriends());
     CHECK_STEAM_API(SteamMatchmaking());
@@ -633,7 +626,7 @@ void ChatPanel::FormatAndPrintMessage(const char *pText, const CSteamID &playerI
         bIsSpectating ? pSpecTag : "",
         personName,
         COLOR_NORMAL,
-        pText);
+        textStr.Get());
 
     if (mom_chat_sound_enable.GetBool())
     {
