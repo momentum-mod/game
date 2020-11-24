@@ -320,6 +320,43 @@ public:
 };
 
 // --------------------------------------------------------------------------
+
+#ifdef _WIN32
+#define ___WIDECHAR_PRINT_FORMAT_WIDECHAR LOCCHAR("%s")
+#define ___WIDECHAR_PRINT_FORMAT_ANSICHAR LOCCHAR("%S") // Thanks, microsoft
+#elif defined(POSIX)
+#define ___WIDECHAR_PRINT_FORMAT_WIDECHAR LOCCHAR("%ls")
+#define ___WIDECHAR_PRINT_FORMAT_ANSICHAR LOCCHAR("%s")
+#else
+#warning "ILocalize needs some string macros defined!"
+#endif
+
+template < >
+class CLocalizedStringArg<locchar_t*> : public CLocalizedStringArgPrintfImpl<locchar_t*>
+{
+public:
+	CLocalizedStringArg(locchar_t *pwszValue) : CLocalizedStringArgPrintfImpl<locchar_t*>(pwszValue, ___WIDECHAR_PRINT_FORMAT_WIDECHAR) {}
+};
+
+// --------------------------------------------------------------------------
+
+template < >
+class CLocalizedStringArg<char*> : public CLocalizedStringArgPrintfImpl<char*>
+{
+public:
+	CLocalizedStringArg(char *pszValue) : CLocalizedStringArgPrintfImpl<char*>(pszValue, ___WIDECHAR_PRINT_FORMAT_ANSICHAR) {}
+};
+
+// --------------------------------------------------------------------------
+
+template < >
+class CLocalizedStringArg<const char*> : public CLocalizedStringArgPrintfImpl<const char*>
+{
+public:
+	CLocalizedStringArg(const char *pszValue) : CLocalizedStringArgPrintfImpl<const char*>(pszValue, ___WIDECHAR_PRINT_FORMAT_ANSICHAR) {}
+};
+
+// --------------------------------------------------------------------------
 // Purpose:
 // --------------------------------------------------------------------------
 class CConstructLocalizedString
