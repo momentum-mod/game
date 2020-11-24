@@ -11,7 +11,6 @@
 #include "ChatFilterPanel.h"
 #include "c_playerresource.h"
 #include "fmtstr.h"
-#include "vgui_controls/Label.h"
 
 #include "hud_macros.h"
 #include "hud_spectatorinfo.h"
@@ -26,6 +25,7 @@
 #include "vgui/IInput.h"
 #include "vgui/ISurface.h"
 #include "vgui/IVGui.h"
+#include "vgui_controls/Label.h"
 
 #include "tier0/memdbgon.h"
 
@@ -263,34 +263,35 @@ void ChatPanel::OnThink()
             SteamMatchmaking()->SetLobbyMemberData(m_LobbyID, LOBBY_DATA_TYPING, m_bTyping ? "y" : nullptr);
         }
     }
+}
+
+void ChatPanel::UpdateTypingMembersLabel()
+{
+    static wchar_t wszTypingString[128];
 
     const int count = m_vTypingMembers.Count();
-    if (m_bIsVisible)
+    if (count <= 0)
     {
-        if (count > 0)
-        {
-            CUtlString typingText;
-            if (count <= 3)
-            {
-                FOR_EACH_VEC(m_vTypingMembers, i)
-                {
-                    typingText.Append(SteamFriends()->GetFriendPersonaName(CSteamID(m_vTypingMembers[i])));
-                    typingText.Append(i < count - 1 ? ", " : " ");
-                }
-                typingText.Append("typing...");
-            }
-            else
-            {
-                typingText.Format("%d people are typing...", count);
-            }
-
-            m_pTypingMembers->SetText(typingText.Get());
-        }
-        else
-        {
-            m_pTypingMembers->SetText("");
-        }
+        wszTypingString[0] = L'\0';
     }
+    else if (count <= 3)
+    {
+        CUtlString typingNames;
+        FOR_EACH_VEC(m_vTypingMembers, i)
+        {
+            typingNames.Append(SteamFriends()->GetFriendPersonaName(CSteamID(m_vTypingMembers[i])));
+            if (i < count - 1)
+                typingNames.Append(", ");
+        }
+
+        Q_wcsncpy(wszTypingString, CConstructLocalizedString(g_pVGuiLocalize->FindSafe("#MOM_Chat_Specific_Typing"), typingNames.Get()), sizeof(wszTypingString));
+    }
+    else
+    {
+        Q_wcsncpy(wszTypingString, CConstructLocalizedString(g_pVGuiLocalize->FindSafe("#MOM_Chat_Many_Typing"), count), sizeof(wszTypingString));
+    }
+
+    m_pTypingMembers->SetText(wszTypingString);
 }
 
 void ChatPanel::Clear()
@@ -351,11 +352,15 @@ void ChatPanel::OnLobbyDataUpdate(LobbyDataUpdate_t *pParam)
         if (isTyping)
         {
             if (!isValidIndex)
+            {
                 m_vTypingMembers.AddToTail(pParam->m_ulSteamIDMember);
+                UpdateTypingMembersLabel();
+            }
         }
         else if (isValidIndex)
         {
             m_vTypingMembers.FastRemove(typingIndex);
+            UpdateTypingMembersLabel();
         }
     }
 }
@@ -809,7 +814,9 @@ void ChatPanel::FireGameEvent(IGameEvent *event)
     if (FStrEq(event->GetName(), "lobby_leave"))
     {
         m_LobbyID.Clear();
+
         m_vTypingMembers.RemoveAll();
+        UpdateTypingMembersLabel();
     }
     else if (FStrEq(event->GetName(), "lobby_spec_update_msg"))
     {
@@ -858,6 +865,7 @@ void ChatPanel::FireGameEvent(IGameEvent *event)
         if (!isJoin && !isMap)
         {
             m_vTypingMembers.FindAndRemove(personID.ConvertToUint64());
+            UpdateTypingMembersLabel();
         }
     }
 }
