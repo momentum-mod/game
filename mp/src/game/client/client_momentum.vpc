@@ -100,6 +100,8 @@ $Project "Client (Momentum)"
                     $File "momentum\ui\chat\ChatHistory.h"
                     $File "momentum\ui\chat\ChatLine.cpp"
                     $File "momentum\ui\chat\ChatLine.h"
+                    $File "momentum\ui\chat\ChatCommands.h"
+                    $File "momentum\ui\chat\ChatCommands.cpp"
                 }
 
                 $Folder "Zone Menu"

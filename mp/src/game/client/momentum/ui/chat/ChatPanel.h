@@ -39,6 +39,7 @@ enum ChatValidationState_t
     CHAT_STATE_EMPTY,    // this message is empty
     CHAT_STATE_TOO_LONG, // this message is too long
     CHAT_STATE_MUTED,    // this user is temporarily muted by us
+    CHAT_STATE_COMMAND,  // This message is a command
 };
 
 #define MAX_CHAT_LENGTH 256
