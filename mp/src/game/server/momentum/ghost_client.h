@@ -34,6 +34,7 @@ public:
 
     CMomentumOnlineGhostEntity *GetOnlineGhostEntityFromID(const CSteamID &id) { return GetOnlineGhostEntityFromID(id.ConvertToUint64()); }
     CMomentumOnlineGhostEntity *GetOnlineGhostEntityFromID(const uint64 &id);
+    CMomentumOnlineGhostEntity *GetOnlineGhostEntityFromName(const char *pNamePartial);
 
     CUtlMap<uint64, CMomentumOnlineGhostEntity*> *GetOnlineGhostMap();
 
