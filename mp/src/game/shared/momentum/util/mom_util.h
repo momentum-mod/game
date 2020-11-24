@@ -76,4 +76,6 @@ namespace MomUtil
     // Check to see if a file exists via a known hash for it. Handles reading the file and getting its hash.
     bool FileExists(const char *pFileName, const char *pFileHash, const char *pPath = "GAME");
     bool MapThumbnailExists(const char *pMapName);
+
+    bool IsSteamUserBlocked(uint64 playerID);
 };
