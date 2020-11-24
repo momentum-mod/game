@@ -340,6 +340,19 @@ CMomentumOnlineGhostEntity* CMomentumLobbySystem::GetLobbyMemberEntity(const uin
     return nullptr;
 }
 
+CMomentumOnlineGhostEntity* CMomentumLobbySystem::GetLobbyMemberEntity(const char *pNamePartial)
+{
+    FOR_EACH_MAP_FAST(m_mapLobbyGhosts, i)
+    {
+        const auto pMemberName = SteamFriends()->GetFriendPersonaName(CSteamID(m_mapLobbyGhosts.Key(i)));
+
+        if (Q_stristr(pMemberName, pNamePartial))
+            return m_mapLobbyGhosts[i];
+    }
+
+    return nullptr;
+}
+
 void CMomentumLobbySystem::ClearCurrentGhosts(bool bLeavingLobby)
 {
     if (m_mapLobbyGhosts.Count() == 0)
