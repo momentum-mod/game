@@ -543,3 +543,12 @@ bool MomUtil::MapThumbnailExists(const char* pMapName)
     Q_snprintf(szPath, MAX_PATH, "materials/vgui/maps/%s.vmt", pMapName);
     return g_pFullFileSystem->FileExists(szPath, "GAME");
 }
+
+bool MomUtil::IsSteamUserBlocked(uint64 playerID)
+{
+    CHECK_STEAM_API_B(SteamFriends());
+
+    // Check if this person was block communication'd
+    EFriendRelationship relationship = SteamFriends()->GetFriendRelationship(playerID);
+    return relationship == k_EFriendRelationshipIgnored || relationship == k_EFriendRelationshipIgnoredFriend;
+}
