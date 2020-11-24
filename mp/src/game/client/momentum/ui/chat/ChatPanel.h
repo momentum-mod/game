@@ -94,7 +94,7 @@ public:
 
     bool SendMessageToLobby(const char *pText);
 
-    void ValidateAndSendMessageLocal(const char *pText);
+    bool ValidateAndSendMessageLocal(const char *pText);
     ChatValidationState_t ValidateChatMessage(CUtlString &textStr, const CSteamID &playerID);
     void FormatAndPrintMessage(const CUtlString &textStr, const CSteamID &playerID);
 
@@ -163,6 +163,7 @@ private:
     void GetTimestamp(char *pBuffer, int maxLen);
     int ComputeBreakChar(int width, const char *text, int textlen);
     void UpdateTypingMembersLabel();
+    bool PlayerIsSpamming(CUtlMap<uint64, float> &mapOfDelays, uint64 person, float delayAmount);
 
     int m_nMessageMode;
 
@@ -171,6 +172,8 @@ private:
     int m_iFilterFlags;
     bool m_bEnteringVoice;
 
+    CUtlMap<uint64, float> m_mapChatterSpammerBlocker;
+    CUtlMap<uint64, float> m_mapPlayerSpawnerSpammerBlocker;
     CUtlVector<uint64> m_vTypingMembers;
     CUtlVector<uint64> m_vMomentumOfficers;
     CSteamID m_LobbyID;
