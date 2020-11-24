@@ -196,6 +196,110 @@ void ILocalize::ConstructStringVArgsInternal(wchar_t *unicodeOutput, int unicode
 	ConstructStringVArgsInternal_Impl<wchar_t>( unicodeOutput, unicodeBufferSizeInBytes, formatString, numFormatParameters, argList );
 }
 
+template < typename T >
+void ConstructStringArgsInternal_Impl(T *unicodeOutput, int unicodeBufferSizeInBytes, const T *formatString, int numFormatParameters, const CLocalizedStringArg* argList)
+{
+	static const int k_cMaxFormatStringArguments = 9; // We only look one character ahead and start at %s1
+	Assert( numFormatParameters <= k_cMaxFormatStringArguments );
+
+	// Safety check
+	if ( unicodeOutput == NULL || unicodeBufferSizeInBytes < 1 )
+	{
+		return;
+	}
+
+	if ( !formatString || numFormatParameters > k_cMaxFormatStringArguments )
+	{
+		unicodeOutput[0] = 0;
+		return;
+	}
+
+	int unicodeBufferSize = unicodeBufferSizeInBytes / sizeof(T);
+	const T *searchPos = formatString;
+	T *outputPos = unicodeOutput;
+
+	//assumes we can't have %s10
+	//assume both are 0 terminated?
+	int formatLength = StringFuncs<T>::Length( formatString );
+
+	while ( searchPos[0] != '\0' && unicodeBufferSize > 1 )
+	{
+		if ( formatLength >= 3 && searchPos[0] == '%' && searchPos[1] == 's' )
+		{
+			//this is an escape sequence - %s1, %s2 etc, up to %s9
+
+			int argindex = ( searchPos[2] ) - '0' - 1; // 0 for %s1, 1 for %s2, etc.
+
+			if ( argindex < 0 || argindex > k_cMaxFormatStringArguments )
+			{
+				Warning( "Bad format string in CLocalizeStringTable::ConstructString\n" );
+				*outputPos = '\0';
+				return;
+			}
+
+			if ( argindex < numFormatParameters )
+			{
+				T const *param = (const T*)argList[argindex].GetLocArg();
+
+				if ( param == NULL )
+					param = StringFuncs<T>::NullDebugString();
+
+				int paramSize = StringFuncs<T>::Length(param);
+				if (paramSize >= unicodeBufferSize)
+				{
+					paramSize = unicodeBufferSize - 1;
+				}
+
+				memcpy(outputPos, param, paramSize * sizeof(T));
+
+				unicodeBufferSize -= paramSize;
+				outputPos += paramSize;
+
+				searchPos += 3;
+				formatLength -= 3;
+			}
+			else
+			{
+				AssertMsg( argindex < numFormatParameters, "ConstructStringVArgsInternal_Impl() - Found a %%s# escape sequence whose index was more than the number of args." );
+
+				//copy it over, char by char
+				*outputPos = *searchPos;
+
+				outputPos++;
+				unicodeBufferSize--;
+
+				searchPos++;
+				formatLength--;
+			}
+		}
+		else
+		{
+			//copy it over, char by char
+			*outputPos = *searchPos;
+
+			outputPos++;
+			unicodeBufferSize--;
+
+			searchPos++;
+			formatLength--;
+		}
+	}
+
+	// ensure null termination
+	Assert( outputPos - unicodeOutput < unicodeBufferSizeInBytes/sizeof(T) );
+	*outputPos = L'\0';
+}
+
+void ILocalize::ConstructStringArgsInternal(char *unicodeOutput, int unicodeBufferSizeInBytes, const char *formatString, int numFormatParameters, const CLocalizedStringArg* argList)
+{
+	ConstructStringArgsInternal_Impl<char>( unicodeOutput, unicodeBufferSizeInBytes, formatString, numFormatParameters, argList );
+}
+
+void ILocalize::ConstructStringArgsInternal(wchar_t *unicodeOutput, int unicodeBufferSizeInBytes, const wchar_t *formatString, int numFormatParameters, const CLocalizedStringArg* argList)
+{
+	ConstructStringArgsInternal_Impl<wchar_t>( unicodeOutput, unicodeBufferSizeInBytes, formatString, numFormatParameters, argList );
+}
+
 //-----------------------------------------------------------------------------
 // Purpose: construct string helper
 //-----------------------------------------------------------------------------
