@@ -33,6 +33,9 @@ CHudSpectatorInfo::CHudSpectatorInfo(const char *pName) : CHudElement(pName), Ba
 
     m_CurrentSpecTargetSteamID = 0;
     m_iSpecCount = 0;
+
+    ListenForGameEvent("lobby_spec_update_msg");
+    ListenForGameEvent("lobby_update_msg");
 }
 
 CHudSpectatorInfo::~CHudSpectatorInfo()
@@ -113,6 +116,38 @@ void CHudSpectatorInfo::LevelShutdown()
 {
     m_mapTargetToSpectateList.PurgeAndDeleteElements();
     m_mapSpectatorToTargetMap.RemoveAll();
+}
+
+void CHudSpectatorInfo::FireGameEvent(IGameEvent *event)
+{
+    if (FStrEq(event->GetName(), "lobby_spec_update_msg"))
+    {
+        const auto type = event->GetInt("type", SPEC_UPDATE_INVALID);
+
+        if (type == SPEC_UPDATE_INVALID)
+            return;
+
+        const auto person = Q_atoui64(event->GetString("id"));
+        const auto target = Q_atoui64(event->GetString("target"));
+
+        const auto personID = CSteamID(person);
+        const auto targetID = CSteamID(target);
+
+        SpectatorUpdate(personID, targetID);
+    }
+    else if (FStrEq(event->GetName(), "lobby_update_msg"))
+    {
+        const auto type = event->GetInt("type");
+
+        const auto bIsJoin = (type == LOBBY_UPDATE_MEMBER_JOIN_MAP) || (type == LOBBY_UPDATE_MEMBER_JOIN);
+
+        if (!bIsJoin)
+        {
+            uint64 person = Q_atoui64(event->GetString("id"));
+
+            SpectatorUpdate(CSteamID(person), k_steamIDNil);
+        }
+    }
 }
 
 void CHudSpectatorInfo::SpectatorUpdate(const CSteamID& person, const CSteamID& target)

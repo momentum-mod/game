@@ -6,8 +6,6 @@
 #include "igameevents.h"
 #include "vgui_controls/EditablePanel.h"
 
-class CHudSpectatorInfo;
-
 enum
 {
     CHAT_INTERFACE_LINES = 6,
@@ -164,7 +162,6 @@ private:
 
     void GetTimestamp(char *pBuffer, int maxLen);
     int ComputeBreakChar(int width, const char *text, int textlen);
-    void SpectatorUpdate(const CSteamID &person, const CSteamID &target);
 
     int m_nMessageMode;
 
@@ -184,7 +181,6 @@ private:
     float m_fLastPlayerTalkTime;
 
     vgui::Label *m_pTypingMembers;
-    CHudSpectatorInfo *m_pSpectatorInfo;
 };
 
 extern ChatPanel *g_pChatPanel;
