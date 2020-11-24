@@ -11,6 +11,7 @@
 #include "ChatFilterPanel.h"
 #include "c_playerresource.h"
 #include "fmtstr.h"
+#include "util/mom_util.h"
 
 #include "hud_macros.h"
 #include "hud_spectatorinfo.h"
@@ -326,6 +327,12 @@ void ChatPanel::OnLobbyMessage(LobbyChatMsg_t *pParam)
     // MOM_TODO: This won't be just text in the future, if we capitalize on being able to send binary data. Wrap this is
     // something and parse it
     SteamMatchmaking()->GetLobbyChatEntry(CSteamID(pParam->m_ulSteamIDLobby), pParam->m_iChatID, nullptr, message, 4096, nullptr);
+    if (MomUtil::IsSteamUserBlocked(pParam->m_ulSteamIDUser))
+    {
+        DevLog("Ignoring message from SteamID %llu (%s) because they are blocked!\n", pParam->m_ulSteamIDUser, SteamFriends()->GetFriendPersonaName(msgSender));
+        return;
+    }
+
 
     // MOM_TODO should we allow long messages still?
     if (ValidateChatMessage(message, msgSender) != CHAT_STATE_OK)
