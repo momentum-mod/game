@@ -162,6 +162,7 @@ private:
 
     void GetTimestamp(char *pBuffer, int maxLen);
     int ComputeBreakChar(int width, const char *text, int textlen);
+    void UpdateTypingMembersLabel();
 
     int m_nMessageMode;
 
