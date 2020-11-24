@@ -6,6 +6,7 @@
 #include <ctime>
 #include <steam/isteamuser.h>
 
+#include "ChatCommands.h"
 #include "ChatEntry.h"
 #include "ChatLine.h"
 #include "ChatFilterPanel.h"
@@ -112,6 +113,8 @@ void ChatContainer::OnStopMessageMode()
 
 ChatPanel::ChatPanel() : BaseClass(nullptr, "ChatPanel")
 {
+    ChatCommands::InitCommands();
+
     SetDefLessFunc(m_mapChatterSpammerBlocker);
     SetDefLessFunc(m_mapPlayerSpawnerSpammerBlocker);
 
@@ -608,6 +611,8 @@ ChatValidationState_t ChatPanel::ValidateChatMessage(CUtlString &textStr, const 
     if (textStr.Length() > MAX_CHAT_LENGTH - 1)
         return CHAT_STATE_TOO_LONG;
 
+    if (playerID == SteamUser()->GetSteamID() && ChatCommands::HandleChatCommand(textStr))
+        return CHAT_STATE_COMMAND;
 
     if (PlayerIsSpamming(m_mapChatterSpammerBlocker, playerID.ConvertToUint64(), TALK_INTERVAL))
         return CHAT_STATE_SPAMMING;
