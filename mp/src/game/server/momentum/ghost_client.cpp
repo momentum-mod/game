@@ -1,50 +1,24 @@
 #include "cbase.h"
+
 #include "ghost_client.h"
 #include "mom_online_ghost.h"
 #include "icommandline.h"
 #include "mom_lobby_system.h"
 #include "mom_player_shared.h"
-#include "mom_timer.h"
 
 #include "tier0/memdbgon.h"
 
-CON_COMMAND(mom_spectate, "Start spectating if there are ghosts currently being played.")
+CON_COMMAND(mom_spectate, "Start spectating if there are ghosts currently being played. Valid inputs are:\n1. None (any target or roaming spec if none found)\n"
+                          "2. Player name (partial match)\n3. Player steam ID (exact match)\n")
 {
-    if (gpGlobals->eLoadType == MapLoad_Background)
+    const auto pPlayer = CMomentumPlayer::GetLocalPlayer();
+    if (!pPlayer)
         return;
 
-    auto pPlayer = CMomentumPlayer::GetLocalPlayer();
-    if (pPlayer && !pPlayer->IsObserver())
-    {
-        CBaseEntity *pTarget = nullptr;
-        // If they specified a target, let's go to them
-        if (args.ArgC() > 1)
-        {
-            uint64 target = Q_atoui64(args.Arg(1));
-            const auto pGhost = g_pMomentumGhostClient->GetOnlineGhostEntityFromID(target);
-            if (pGhost && !pGhost->IsSpectating())
-                pTarget = pGhost;
-        }
-
-        if (!pTarget)
-            pTarget = pPlayer->FindNextObserverTarget(false);
-
-        // One last null check
-        if (pTarget)
-        {
-            // Setting ob target first is needed for the specGUI panel to update properly
-            pPlayer->SetObserverTarget(pTarget);
-            pPlayer->StartObserverMode(OBS_MODE_IN_EYE);
-        }
-        else
-        {
-            // Not valid but they still want to spectate? Let's go in roaming mode
-            pPlayer->StartObserverMode(OBS_MODE_ROAMING);
-        }
-    }
+    pPlayer->TrySpectate(args.ArgC() > 1 ? args.Arg(1) : nullptr);
 }
 
-CON_COMMAND(mom_spectate_stop, "Stop spectating.")
+CON_COMMAND(mom_spectate_stop, "Stops spectating.\n")
 {
     auto pPlayer = CMomentumPlayer::GetLocalPlayer();
     if (pPlayer)

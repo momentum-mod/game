@@ -1774,6 +1774,40 @@ CMomentumGhostBaseEntity *CMomentumPlayer::GetGhostEnt() const
     return dynamic_cast<CMomentumGhostBaseEntity *>(m_hObserverTarget.Get());
 }
 
+void CMomentumPlayer::TrySpectate(const char *pSpecString)
+{
+    if (gpGlobals->eLoadType == MapLoad_Background)
+        return;
+
+    CBaseEntity *pTarget = nullptr;
+    // If they specified a target, let's go to them
+    if (pSpecString)
+    {
+        auto *pGhost = g_pMomentumGhostClient->GetOnlineGhostEntityFromID(Q_atoui64(pSpecString));
+
+        if (!pGhost)
+            pGhost = g_pMomentumGhostClient->GetOnlineGhostEntityFromName(pSpecString);
+
+        // They were specific here, we want to fail this command instead of trying to spectate
+        if (!pGhost || pGhost->IsSpectating())
+        {
+            ClientPrint(this, HUD_PRINTTALK, pGhost ? "Unable to spectate, target is spectating!" : "Invalid spectate target!");
+            return;
+        }
+
+        pTarget = pGhost;
+    }
+
+    if (!pTarget)
+        pTarget = FindNextObserverTarget(false);
+
+    if (pTarget)
+        SetObserverTarget(pTarget);
+
+    if (!IsObserver())
+        StartObserverMode(pTarget ? OBS_MODE_IN_EYE : OBS_MODE_ROAMING);
+}
+
 bool CMomentumPlayer::StartObserverMode(int mode)
 {
     if (m_iObserverMode == OBS_MODE_NONE)
