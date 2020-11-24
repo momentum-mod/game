@@ -13,7 +13,6 @@
 #include "fmtstr.h"
 #include "vgui_controls/Label.h"
 
-#include "hud_element_helper.h"
 #include "hud_macros.h"
 #include "hud_spectatorinfo.h"
 #include "iclientmode.h"
@@ -118,8 +117,6 @@ ChatPanel::ChatPanel() : BaseClass(nullptr, "ChatPanel")
     m_flHistoryFadeTime = gpGlobals->curtime;
     m_hChatFont = INVALID_FONT;
 
-    m_pSpectatorInfo = nullptr;
-
     HScheme chatScheme = scheme()->LoadSchemeFromFileEx(enginevgui->GetPanel(PANEL_CLIENTDLL), "resource/ChatScheme.res", "ChatScheme");
     SetScheme(chatScheme);
 
@@ -164,10 +161,7 @@ ChatPanel::ChatPanel() : BaseClass(nullptr, "ChatPanel")
     // https://partner.steamgames.com/doc/api/ISteamFriends#RequestClanOfficerList
 
     // MOM_TODO: query web API for officers / members/ other groups instead of this crap
-    m_vMomentumOfficers.AddToTail(76561198018587940ull); // tuxxi
     m_vMomentumOfficers.AddToTail(76561197979963054ull); // gocnak
-    m_vMomentumOfficers.AddToTail(76561198047369620ull); // rusty
-    m_vMomentumOfficers.AddToTail(76561197982874432ull); // juxtapo
 
     HOOK_MESSAGE(TextMsg);
 }
@@ -184,7 +178,6 @@ void ChatPanel::Init()
 
     g_pChatPanel = new ChatPanel;
 }
-
 
 void ChatPanel::ApplySchemeSettings(IScheme *pScheme)
 {
@@ -371,15 +364,6 @@ void ChatPanel::OnLobbyEnter(LobbyEnter_t *pParam)
 {
     if (pParam->m_EChatRoomEnterResponse == k_EChatRoomEnterResponseSuccess)
         m_LobbyID = pParam->m_ulSteamIDLobby;
-}
-
-void ChatPanel::SpectatorUpdate(const CSteamID& personID, const CSteamID& target)
-{
-    if (!m_pSpectatorInfo)
-        m_pSpectatorInfo = GET_HUDELEMENT(CHudSpectatorInfo);
-
-    if (m_pSpectatorInfo)
-        m_pSpectatorInfo->SpectatorUpdate(personID, target);
 }
 
 void ChatPanel::Reset()
@@ -857,8 +841,6 @@ void ChatPanel::FireGameEvent(IGameEvent *event)
             // Printf(CHAT_FILTER_JOINLEAVE | CHAT_FILTER_SERVERMSG,
             //    "%s is now spectating %s.", pName, pTargetName);
         }
-
-        SpectatorUpdate(personID, target);
     }
     else if (FStrEq(event->GetName(), "lobby_update_msg"))
     {
@@ -873,14 +855,9 @@ void ChatPanel::FireGameEvent(IGameEvent *event)
         const char *pName = SteamFriends()->GetFriendPersonaName(personID);
         Printf(CHAT_FILTER_JOINLEAVE | CHAT_FILTER_SERVERMSG, "%s has %s the %s.", pName, isJoin ? "joined" : "left", isMap ? "map" : "lobby");
 
-        if (!isJoin)
+        if (!isJoin && !isMap)
         {
-            SpectatorUpdate(personID, k_steamIDNil);
-
-            if (!isMap)
-            {
-                m_vTypingMembers.FindAndRemove(personID.ConvertToUint64());
-            }
+            m_vTypingMembers.FindAndRemove(personID.ConvertToUint64());
         }
     }
 }
