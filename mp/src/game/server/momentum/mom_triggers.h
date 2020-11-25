@@ -200,7 +200,6 @@ public:
     // Point-based zone editing
     CUtlVector<Vector> m_vecZonePoints;
 
-
 private:
     friend class CMomPointZoneBuilder;
 
@@ -222,7 +221,7 @@ public:
     CTriggerZone();
 
     void SetZoneNumber(int newZone) { m_iZoneNumber = newZone; }
-    int GetZoneNumber() const { return m_iZoneNumber; };
+    int GetZoneNumber() const { return m_iZoneNumber; }
 
     virtual void OnStartTouch(CBaseEntity* pOther) override;
     virtual void OnEndTouch(CBaseEntity* pOther) override;
@@ -293,8 +292,8 @@ class CTriggerTimerStart : public CTriggerZone
     void Spawn() override;
 
     float GetSpeedLimit() const { return m_fSpeedLimit; }
-    void SetSpeedLimit(const float maxLeaveSpeed);
-    void SetLookAngles(const QAngle &newang);
+    void SetSpeedLimit(const float fMaxLeaveSpeed) { m_fSpeedLimit = fMaxLeaveSpeed; }
+    void SetLookAngles(const QAngle &newang) { m_angLook = newang; }
     const QAngle &GetLookAngles() const { return m_angLook; }
 
     // spawnflags

@@ -381,7 +381,7 @@ bool CBaseMomZoneTrigger::FindStandableGroundBelow(const Vector& traceStartPos, 
 
 const Vector& CBaseMomZoneTrigger::GetRestartPosition()
 {
-    if(m_vecRestartPos == vec3_invalid)
+    if (m_vecRestartPos == vec3_invalid)
     {
         Vector zoneMaxsRel = CollisionProp()->OBBMaxs();
         Vector zoneMaxs;
@@ -516,6 +516,7 @@ CTriggerTimerStart::CTriggerTimerStart()
 {
     m_iZoneNumber = 1;
 }
+
 bool CTriggerTimerStart::ToKeyValues(KeyValues *pKvInto)
 {
     // Structured like this because properties are another DB table for the site
@@ -536,40 +537,38 @@ bool CTriggerTimerStart::ToKeyValues(KeyValues *pKvInto)
     pKvInto->AddSubKey(pZoneProps);
 
     return BaseClass::ToKeyValues(pKvInto);
-};
+}
 
 bool CTriggerTimerStart::LoadFromKeyValues(KeyValues *zoneKV)
 {
-    if (BaseClass::LoadFromKeyValues(zoneKV))
+    if (!BaseClass::LoadFromKeyValues(zoneKV))
+        return false;
+
+    const auto pZoneProps = zoneKV->FindKey("zoneProps");
+    if (!pZoneProps)
+        return false;
+
+    const auto pActualProps = pZoneProps->FindKey("properties");
+    if (!pActualProps)
+        return false;
+
+    SetSpeedLimit(pActualProps->GetFloat("speed_limit", 350.0f));
+    SetIsLimitingSpeed(pActualProps->GetBool("limiting_speed", true));
+    SetStartOnJump(pActualProps->GetBool("start_on_jump", true));
+    SetLimitSpeedType(pActualProps->GetInt("speed_limit_type", SPEED_NORMAL_LIMIT));
+
+    const float nolook = -190.0f;
+    float yaw = pActualProps->GetFloat("yaw", nolook);
+    if (!CloseEnough(yaw, nolook))
     {
-        const auto pZoneProps = zoneKV->FindKey("zoneProps");
-        if (!pZoneProps)
-            return false;
-
-        const auto pActualProps = pZoneProps->FindKey("properties");
-        if (!pActualProps)
-            return false;
-
-        SetSpeedLimit(pActualProps->GetFloat("speed_limit", 350.0f));
-        SetIsLimitingSpeed(pActualProps->GetBool("limiting_speed", true));
-        SetStartOnJump(pActualProps->GetBool("start_on_jump", true));
-        SetLimitSpeedType(pActualProps->GetInt("speed_limit_type", SPEED_NORMAL_LIMIT));
-
-        const float nolook = -190.0f;
-        float yaw = pActualProps->GetFloat("yaw", nolook);
-        if (!CloseEnough(yaw, nolook))
-        {
-            SetHasLookAngles(true);
-            SetLookAngles(QAngle(0.0f, yaw, 0.0f));
-        }
-        else
-        {
-            SetHasLookAngles(false);
-        }
-        return true;
+        SetHasLookAngles(true);
+        SetLookAngles(QAngle(0.0f, yaw, 0.0f));
     }
-
-    return false;
+    else
+    {
+        SetHasLookAngles(false);
+    }
+    return true;
 }
 
 int CTriggerTimerStart::GetZoneType()
@@ -587,8 +586,7 @@ void CTriggerTimerStart::Spawn()
 
     g_pMomentumTimer->SetStartTrigger(m_iTrackNumber, this);
 }
-void CTriggerTimerStart::SetSpeedLimit(const float fSpeed) { m_fSpeedLimit = fSpeed; }
-void CTriggerTimerStart::SetLookAngles(const QAngle &newang) { m_angLook = newang; }
+
 void CTriggerTimerStart::SetIsLimitingSpeed(const bool bIsLimitSpeed)
 {
     if (bIsLimitSpeed)
@@ -606,6 +604,7 @@ void CTriggerTimerStart::SetIsLimitingSpeed(const bool bIsLimitSpeed)
         }
     }
 }
+
 void CTriggerTimerStart::SetHasLookAngles(const bool bHasLook)
 {
     if (bHasLook)
@@ -623,6 +622,7 @@ void CTriggerTimerStart::SetHasLookAngles(const bool bHasLook)
         }
     }
 }
+
 //----------------------------------------------------------------------------------------------
 
 //----------- CTriggerTimerStop ----------------------------------------------------------------
