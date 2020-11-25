@@ -95,7 +95,14 @@ class ShowPlayerClipsCommand : public ChatCommand
     {
         static ConVarRef drawclips("r_drawclipbrushes");
 
-        drawclips.SetValue((drawclips.GetInt() + 1) % 3);
+        if (splitInputStr.Count() < 2)
+        {
+            drawclips.SetValue((drawclips.GetInt() + 1) % 3);
+        }
+        else
+        {
+            drawclips.SetValue(Q_atoi(splitInputStr[1]));
+        }
     }
 };
 
