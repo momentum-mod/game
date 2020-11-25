@@ -196,9 +196,9 @@ void ChatPanel::ApplySchemeSettings(IScheme *pScheme)
     m_cDefaultTextColor = pScheme->GetColor("OffWhite", COLOR_WHITE);
 }
 
-void ChatPanel::OnKeyCodeReleased(KeyCode code)
+void ChatPanel::OnKeyCodeTyped(KeyCode code)
 {
-    if (code == KEY_ENTER || code == KEY_PAD_ENTER || code == KEY_ESCAPE)
+    if (code == KEY_ENTER || code == KEY_PAD_ENTER || (code == KEY_ESCAPE && m_nMessageMode != MESSAGE_MODE_MENU))
     {
         if (code != KEY_ESCAPE)
         {
@@ -212,7 +212,7 @@ void ChatPanel::OnKeyCodeReleased(KeyCode code)
     }
     else
     {
-        BaseClass::OnKeyCodeReleased(code);
+        BaseClass::OnKeyCodeTyped(code);
     }
 }
 

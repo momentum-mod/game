@@ -37,7 +37,7 @@ void ChatEntry::OnKeyCodeTyped(KeyCode code)
     if (GetTextLength() == 0)
         m_iHistoryIndex = QUEUE_ITERATOR_INVALID;
 
-    if (code == KEY_ENTER || code == KEY_PAD_ENTER || code == KEY_ESCAPE)
+    if (code == KEY_ENTER || code == KEY_PAD_ENTER || (code == KEY_ESCAPE && m_pChatParent->GetMessageMode() != MESSAGE_MODE_MENU))
     {
         if (code != KEY_ESCAPE)
         {
@@ -45,11 +45,7 @@ void ChatEntry::OnKeyCodeTyped(KeyCode code)
             AddInputToHistory();
         }
 
-        if (m_pChatParent->GetMessageMode() == MESSAGE_MODE_MENU)
-        {
-            BaseClass::OnKeyCodeTyped(code);
-        }
-        else
+        if (m_pChatParent->GetMessageMode() != MESSAGE_MODE_MENU)
         {
             PostMessage(GetVParent(), new KeyValues("ChatEntryStopMessageMode"));
         }
