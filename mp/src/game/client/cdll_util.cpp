@@ -27,6 +27,8 @@
 #include <vgui/ILocalize.h>
 #include "view.h"
 
+#include "chat/ChatPanel.h"
+
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 																						
@@ -554,6 +556,8 @@ bool GetTargetInScreenSpace( C_BaseEntity *pTargetEntity, int& iX, int& iY, Vect
 //-----------------------------------------------------------------------------
 void ClientPrint( C_BasePlayer *player, int msg_dest, const char *msg_name, const char *param1 /*= NULL*/, const char *param2 /*= NULL*/, const char *param3 /*= NULL*/, const char *param4 /*= NULL*/ )
 {
+	if (msg_dest == HUD_PRINTTALK)
+	    g_pChatPanel->Printf(0, "%s", msg_name);
 }
 
 //-----------------------------------------------------------------------------
