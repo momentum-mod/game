@@ -598,7 +598,7 @@ bool ChatPanel::ValidateAndSendMessageLocal(const char *pText)
         return true;
     }
 
-    return false;
+    return validatorOutcome == CHAT_STATE_COMMAND; // Commands are okay too
 }
 
 ChatValidationState_t ChatPanel::ValidateChatMessage(CUtlString &textStr, const CSteamID &playerID)
