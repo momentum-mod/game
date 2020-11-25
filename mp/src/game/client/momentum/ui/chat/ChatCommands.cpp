@@ -30,13 +30,31 @@ class TrackTeleportCommand : public ChatCommand
 {
     bool CanOperate(const char *pInput) override
     {
-        return FStrEq(pInput, "b") || FStrEq(pInput, "r") ||
-               FStrEq(pInput, "bonus") || FStrEq(pInput, "restart");
+        return FStrEq(pInput, "r") || FStrEq(pInput, "restart");
     }
 
     void Operate(const CUtlString &chatInputStr, const CSplitString &splitInputStr) override
     {
         engine->ClientCmd(CFmtStr("mom_restart %s", splitInputStr.Count() > 1 ? splitInputStr[1] : ""));
+    }
+};
+
+class BonusTeleportCommand : public ChatCommand
+{
+    bool CanOperate(const char *pInput) override
+    {
+        return FStrEq(pInput, "b") || FStrEq(pInput, "bonus");
+    }
+
+    void Operate(const CUtlString &chatInputStr, const CSplitString &splitInputStr) override
+    {
+        if (splitInputStr.Count() < 2)
+        {
+            ClientPrint(CBasePlayer::GetLocalPlayer(), HUD_PRINTTALK, R"(Usage: !b <bonus number> (i.e. "!b 2" or "!bonus 2"))");
+            return;
+        }
+
+        engine->ClientCmd(CFmtStr("mom_restart %s", splitInputStr[1]));
     }
 };
 
@@ -142,6 +160,7 @@ static CUtlVector<ChatCommand *> g_vecCommands;
 void ChatCommands::InitCommands()
 {
     g_vecCommands.AddToTail(new TrackTeleportCommand);
+    g_vecCommands.AddToTail(new BonusTeleportCommand);
     g_vecCommands.AddToTail(new StageTeleportCommand);
     g_vecCommands.AddToTail(new SetStartMarkCommand);
     g_vecCommands.AddToTail(new ShowPlayerClipsCommand);
