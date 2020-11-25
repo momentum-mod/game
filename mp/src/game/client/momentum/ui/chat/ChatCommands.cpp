@@ -23,8 +23,7 @@ public:
     /// </summary>
     /// <param name="chatInputStr">The entire chat input string.</param>
     /// <param name="splitInputStr">The chat input pre-split based on the space (" ") character.</param>
-    /// <returns>True if the operation was successful, else false to defer operation to another command.</returns>
-    virtual bool Operate(const CUtlString &chatInputStr, const CSplitString &splitInputStr) = 0;
+    virtual void Operate(const CUtlString &chatInputStr, const CSplitString &splitInputStr) = 0;
 };
 
 class TrackTeleportCommand : public ChatCommand
@@ -35,10 +34,9 @@ class TrackTeleportCommand : public ChatCommand
                FStrEq(pInput, "bonus") || FStrEq(pInput, "restart");
     }
 
-    bool Operate(const CUtlString &chatInputStr, const CSplitString &splitInputStr) override
+    void Operate(const CUtlString &chatInputStr, const CSplitString &splitInputStr) override
     {
         engine->ClientCmd(CFmtStr("mom_restart %s", splitInputStr.Count() > 1 ? splitInputStr[1] : ""));
-        return true;
     }
 };
 
@@ -49,10 +47,9 @@ class StageTeleportCommand : public ChatCommand
         return FStrEq(pInput, "s") || FStrEq(pInput, "stage");
     }
 
-    bool Operate(const CUtlString &chatInputStr, const CSplitString &splitInputStr) override
+    void Operate(const CUtlString &chatInputStr, const CSplitString &splitInputStr) override
     {
         engine->ClientCmd(CFmtStr("mom_restart_stage %s", splitInputStr.Count() > 1 ? splitInputStr[1] : ""));
-        return true;
     }
 };
 
@@ -63,10 +60,9 @@ class SetStartMarkCommand : public ChatCommand
         return FStrEq(pInput, "setstart");
     }
 
-    bool Operate(const CUtlString &chatInputStr, const CSplitString &splitInputStr) override
+    void Operate(const CUtlString &chatInputStr, const CSplitString &splitInputStr) override
     {
         engine->ClientCmd("mom_start_mark_create");
-        return true;
     }
 };
 
@@ -77,13 +73,11 @@ class ShowPlayerClipsCommand : public ChatCommand
         return FStrEq(pInput, "clips") || FStrEq(pInput, "showclips");
     }
 
-    bool Operate(const CUtlString &chatInputStr, const CSplitString &splitInputStr) override
+    void Operate(const CUtlString &chatInputStr, const CSplitString &splitInputStr) override
     {
         static ConVarRef drawclips("r_drawclipbrushes");
 
         drawclips.SetValue((drawclips.GetInt() + 1) % 3);
-
-        return true;
     }
 };
 
@@ -94,10 +88,9 @@ class ShowTriggersCommand : public ChatCommand
         return FStrEq(pInput, "triggers") || FStrEq(pInput, "showtriggers");
     }
 
-    bool Operate(const CUtlString &chatInputStr, const CSplitString &splitInputStr) override
+    void Operate(const CUtlString &chatInputStr, const CSplitString &splitInputStr) override
     {
         engine->ClientCmd("showtriggers_toggle");
-        return true;
     }
 };
 
@@ -108,10 +101,9 @@ class SpecPlayerCommand : public ChatCommand
         return FStrEq(pInput, "spec") || FStrEq(pInput, "spectate");
     }
 
-    bool Operate(const CUtlString &chatInputStr, const CSplitString &splitInputStr) override
+    void Operate(const CUtlString &chatInputStr, const CSplitString &splitInputStr) override
     {
         engine->ClientCmd(CFmtStr("mom_spectate %s", splitInputStr.Count() > 1 ? splitInputStr[1] : ""));
-        return true;
     }
 };
 
@@ -123,10 +115,9 @@ class StopSpecCommand : public ChatCommand
                FStrEq(pInput, "specstop") || FStrEq(pInput, "stopspec");
     }
 
-    bool Operate(const CUtlString &chatInputStr, const CSplitString &splitInputStr) override
+    void Operate(const CUtlString &chatInputStr, const CSplitString &splitInputStr) override
     {
         engine->ClientCmd("mom_spectate_stop");
-        return true;
     }
 };
 
@@ -137,13 +128,12 @@ class GoToPlayerCommand : public ChatCommand
         return FStrEq(pInput, "goto");
     }
 
-    bool Operate(const CUtlString &chatInputStr, const CSplitString &splitInputStr) override
+    void Operate(const CUtlString &chatInputStr, const CSplitString &splitInputStr) override
     {
         if (splitInputStr.Count() < 2)
-            return false;
+            return;
 
         engine->ClientCmd(CFmtStr("mom_lobby_teleport %s", splitInputStr[1]));
-        return true;
     }
 };
 
@@ -176,8 +166,11 @@ bool ChatCommands::HandleChatCommand(const CUtlString &chatInputStr)
     FOR_EACH_VEC(g_vecCommands, i)
     {
         const auto pCmd = g_vecCommands[i];
-        if (pCmd->CanOperate(pTagStr) && pCmd->Operate(chatInputStr, splitInputStr))
+        if (pCmd->CanOperate(pTagStr))
+        {
+            pCmd->Operate(chatInputStr, splitInputStr);
             return true;
+        }
     }
 
     return false;
