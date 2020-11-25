@@ -14,7 +14,7 @@ public:
     /// <summary>
     ///  Determines if this command should operate on the given input
     /// </summary>
-    /// <param name="pInput">The input to verify; the text immediately following the '/' or '!', e.g. "s" or "stage"</param>
+    /// <param name="pInput">The input to verify; the text immediately following the '/' or '!' or '.', e.g. "s" or "stage"</param>
     /// <returns>true if so, else false</returns>
     virtual bool CanOperate(const char *pInput) = 0;
 
@@ -163,15 +163,15 @@ void ChatCommands::InitCommands()
 
 bool ChatCommands::HandleChatCommand(const CUtlString &chatInputStr)
 {
-    if (chatInputStr[0] != '/' && chatInputStr[0] != '!')
+    if (chatInputStr[0] != '/' && chatInputStr[0] != '!' && chatInputStr[0] != '.')
         return false;
 
     CSplitString splitInputStr(chatInputStr.Get(), " ");
     auto pTagStr = splitInputStr[0];
-    if (Q_strlen(pTagStr) < 2) // Needs to have at least *something*; can't be just "/" or "!"
+    if (Q_strlen(pTagStr) < 2) // Needs to have at least *something*; can't be just "/" or "!" or "."
         return false;
 
-    pTagStr++; // Skip over the "/" or "!"
+    pTagStr++; // Skip over the "/" or "!" or "."
 
     FOR_EACH_VEC(g_vecCommands, i)
     {
