@@ -139,7 +139,7 @@ protected:
     void FireGameEvent(IGameEvent *event) override;
 
     void ApplySchemeSettings(vgui::IScheme *pScheme) override;
-    void OnKeyCodeReleased(vgui::KeyCode code) override;
+    void OnKeyCodeTyped(vgui::KeyCode code) override;
     void OnTick() override;
     void OnThink() override;
     void OnCommand(const char *command) override;
