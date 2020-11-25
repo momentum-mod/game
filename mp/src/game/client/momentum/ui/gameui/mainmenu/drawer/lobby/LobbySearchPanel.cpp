@@ -25,7 +25,7 @@ class LobbyListProvider
 {
 public:
     LobbyListProvider() : m_flLastRequestTime(-LOBBY_REQUEST_DELAY), m_pPanel(nullptr) { }
-    virtual ~LobbyListProvider() {}
+    virtual ~LobbyListProvider() = default;
 
     virtual void SetLobbySearchPanel(LobbySearchPanel *pPanel) { m_pPanel = pPanel; }
 
@@ -45,6 +45,9 @@ public:
     {
         CHECK_STEAM_API_B(SteamMatchmaking());
         CHECK_STEAM_API_B(SteamFriends());
+
+        if (!pLobbyData)
+            return false;
 
         uint64 hAvatarID;
         if (!GetLobbyListAvatar(hLobbyID, hAvatarID))
@@ -473,16 +476,16 @@ void LobbySearchPanel::OnKeyCodeTyped(KeyCode code)
 {
     if (code == KEY_ENTER)
     {
-        const auto selectedItemID = GetSelectedItem(0);
-        const auto pUserData = GetItem(selectedItemID);
-        const auto uLobby = pUserData->GetUint64("lobby");
+        const auto pUserData = GetItem(GetSelectedItem(0));
 
-        MomUtil::DispatchConCommand(CFmtStr("connect_lobby %llu", uLobby));
+        if (pUserData)
+        {
+            MomUtil::DispatchConCommand(CFmtStr("connect_lobby %llu", pUserData->GetUint64("lobby")));
+            return;
+        }
     }
-    else
-    {
-        BaseClass::OnKeyCodeTyped(code);
-    }
+
+    BaseClass::OnKeyCodeTyped(code);
 }
 
 void LobbySearchPanel::OnThink()
