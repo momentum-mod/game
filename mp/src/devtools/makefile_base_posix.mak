@@ -81,13 +81,13 @@ COPY_DLL_TO_SRV = 0
 LDFLAGS += -Wl,--build-id
 
 # Building the game on Linux requires a CHROOT environment, please read https://github.com/momentum-mod/game/wiki/Building-The-Game/#linux for more info!
-CHROOT_NAME=steamrt_scout_amd64
+CHROOT_NAME=steamrt_scout_i386
 
 #
 # If we should be running in a chroot, check to see if we are. If not, then prefix everything with the 
 # required chroot
 #
-export STEAM_RUNTIME_PATH := /opt/gcc-9.2
+export STEAM_RUNTIME_PATH := /usr
 ifeq ("$(wildcard /run/systemd/container)","")
     ifndef USING_DOCKER
         ifneq ("$(SCHROOT_CHROOT_NAME)", "$(CHROOT_NAME)")
@@ -96,7 +96,7 @@ ifeq ("$(wildcard /run/systemd/container)","")
         endif
     endif
 endif
-GCC_VER = -9.2
+GCC_VER = -9
 P4BIN = p4
 CRYPTOPPDIR=ubuntu12_32
 
@@ -126,7 +126,7 @@ endif
 CCACHE := $(SRCROOT)/devtools/bin/linux/ccache
 
 ifeq ($(origin AR), default)
-	AR = /usr/bin/ar crs
+	AR = $(STEAM_RUNTIME_PATH)/bin/ar crs
 endif
 ifeq ($(origin CC), default)
 	CC = $(CCACHE) $(STEAM_RUNTIME_PATH)/bin/gcc$(GCC_VER)	
@@ -155,7 +155,7 @@ endif
 
 ifeq ($(CLANG_BUILD),1)
 	# Clang specific flags
-else ifeq ($(GCC_VER),-9.2)
+else ifeq ($(GCC_VER),-9)
 	WARN_FLAGS += -Wno-unused-local-typedefs
 	WARN_FLAGS += -Wno-unused-result
 	WARN_FLAGS += -Wno-narrowing
@@ -180,8 +180,8 @@ else
 	# pentium4 = MMX, SSE, SSE2 - no SSE3 (added in prescott) # -msse3 -mfpmath=sse
 	ARCH_FLAGS += -m32 -fabi-compat-version=2 -march=$(MARCH_TARGET) -mtune=core2 $(SSE_GEN_FLAGS)
 	LD_SO = ld-linux.so.2
-	LIBSTDCXX := $(shell $(CXX) $(ARCH_FLAGS) -print-file-name=libstdc++.so)
-	LIBSTDCXXPIC := $(shell $(CXX) $(ARCH_FLAGS) -print-file-name=libstdc++.so)
+	LIBSTDCXX := $(shell $(CXX) $(ARCH_FLAGS) -print-file-name=libstdc++.a)
+	LIBSTDCXXPIC := $(shell $(CXX) $(ARCH_FLAGS) -print-file-name=libstdc++.a)
 	LDFLAGS += -m32
 endif
 
