@@ -156,7 +156,10 @@ class GoToPlayerCommand : public ChatCommand
     void Operate(const CUtlString &chatInputStr, const CSplitString &splitInputStr) override
     {
         if (splitInputStr.Count() < 2)
+        {
+            ClientPrint(CBasePlayer::GetLocalPlayer(), HUD_PRINTTALK, R"(Usage: !goto <player> (i.e. "!goto gocnak"))");
             return;
+        }
 
         engine->ClientCmd(CFmtStr("mom_lobby_teleport %s", splitInputStr[1]));
     }
