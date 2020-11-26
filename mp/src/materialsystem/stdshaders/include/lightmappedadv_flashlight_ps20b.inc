@@ -3,6 +3,7 @@
 // !$NORMALMAP && $NORMALMAP2
 // !$DETAILTEXTURE && ( $DETAIL_BLEND_MODE != 0 )
 // !$PHONG && $PHONGMASK
+// !$FLASHLIGHTSHADOWS && $FLASHLIGHTDEPTHFILTERMODE
 // defined $HDRTYPE && defined $HDRENABLED && !$HDRTYPE && $HDRENABLED
 // defined $PIXELFOGTYPE && defined $WRITEWATERFOGTODESTALPHA && ( $PIXELFOGTYPE != 1 ) && $WRITEWATERFOGTODESTALPHA
 // defined $LIGHTING_PREVIEW && defined $HDRTYPE && $LIGHTING_PREVIEW && $HDRTYPE != 0
@@ -35,6 +36,7 @@ class lightmappedadv_flashlight_ps20b_Static_Index
 	unsigned int m_nDETAIL_BLEND_MODE : 2;
 	unsigned int m_nPHONG : 2;
 	unsigned int m_nPHONGMASK : 3;
+	unsigned int m_nFLASHLIGHTDEPTHFILTERMODE : 2;
 #ifdef _DEBUG
 	bool m_bNORMALMAP : 1;
 	bool m_bNORMALMAP2 : 1;
@@ -44,6 +46,7 @@ class lightmappedadv_flashlight_ps20b_Static_Index
 	bool m_bDETAIL_BLEND_MODE : 1;
 	bool m_bPHONG : 1;
 	bool m_bPHONGMASK : 1;
+	bool m_bFLASHLIGHTDEPTHFILTERMODE : 1;
 #endif	// _DEBUG
 public:
 	void SetNORMALMAP( int i )
@@ -118,6 +121,15 @@ public:
 #endif	// _DEBUG
 	}
 
+	void SetFLASHLIGHTDEPTHFILTERMODE( int i )
+	{
+		Assert( i >= 0 && i <= 2 );
+		m_nFLASHLIGHTDEPTHFILTERMODE = i;
+#ifdef _DEBUG
+		m_bFLASHLIGHTDEPTHFILTERMODE = true;
+#endif	// _DEBUG
+	}
+
 	lightmappedadv_flashlight_ps20b_Static_Index( IShaderShadow* pShaderShadow, IMaterialVar** params )
 	{
 		m_nNORMALMAP = 0;
@@ -128,6 +140,7 @@ public:
 		m_nDETAIL_BLEND_MODE = 0;
 		m_nPHONG = 0;
 		m_nPHONGMASK = 0;
+		m_nFLASHLIGHTDEPTHFILTERMODE = 0;
 #ifdef _DEBUG
 		m_bNORMALMAP = false;
 		m_bNORMALMAP2 = false;
@@ -137,17 +150,18 @@ public:
 		m_bDETAIL_BLEND_MODE = false;
 		m_bPHONG = false;
 		m_bPHONGMASK = false;
+		m_bFLASHLIGHTDEPTHFILTERMODE = false;
 #endif	// _DEBUG
 	}
 
 	int GetIndex() const
 	{
-		Assert( m_bNORMALMAP && m_bNORMALMAP2 && m_bWORLDVERTEXTRANSITION && m_bSEAMLESS && m_bDETAILTEXTURE && m_bDETAIL_BLEND_MODE && m_bPHONG && m_bPHONGMASK );
-		return ( 4 * m_nNORMALMAP ) + ( 12 * m_nNORMALMAP2 ) + ( 24 * m_nWORLDVERTEXTRANSITION ) + ( 48 * m_nSEAMLESS ) + ( 96 * m_nDETAILTEXTURE ) + ( 192 * m_nDETAIL_BLEND_MODE ) + ( 384 * m_nPHONG ) + ( 768 * m_nPHONGMASK ) + 0;
+		Assert( m_bNORMALMAP && m_bNORMALMAP2 && m_bWORLDVERTEXTRANSITION && m_bSEAMLESS && m_bDETAILTEXTURE && m_bDETAIL_BLEND_MODE && m_bPHONG && m_bPHONGMASK && m_bFLASHLIGHTDEPTHFILTERMODE );
+		return ( 4 * m_nNORMALMAP ) + ( 12 * m_nNORMALMAP2 ) + ( 24 * m_nWORLDVERTEXTRANSITION ) + ( 48 * m_nSEAMLESS ) + ( 96 * m_nDETAILTEXTURE ) + ( 192 * m_nDETAIL_BLEND_MODE ) + ( 384 * m_nPHONG ) + ( 768 * m_nPHONGMASK ) + ( 3072 * m_nFLASHLIGHTDEPTHFILTERMODE ) + 0;
 	}
 };
 
-#define shaderStaticTest_lightmappedadv_flashlight_ps20b psh_forgot_to_set_static_NORMALMAP + psh_forgot_to_set_static_NORMALMAP2 + psh_forgot_to_set_static_WORLDVERTEXTRANSITION + psh_forgot_to_set_static_SEAMLESS + psh_forgot_to_set_static_DETAILTEXTURE + psh_forgot_to_set_static_DETAIL_BLEND_MODE + psh_forgot_to_set_static_PHONG + psh_forgot_to_set_static_PHONGMASK
+#define shaderStaticTest_lightmappedadv_flashlight_ps20b psh_forgot_to_set_static_NORMALMAP + psh_forgot_to_set_static_NORMALMAP2 + psh_forgot_to_set_static_WORLDVERTEXTRANSITION + psh_forgot_to_set_static_SEAMLESS + psh_forgot_to_set_static_DETAILTEXTURE + psh_forgot_to_set_static_DETAIL_BLEND_MODE + psh_forgot_to_set_static_PHONG + psh_forgot_to_set_static_PHONGMASK + psh_forgot_to_set_static_FLASHLIGHTDEPTHFILTERMODE
 
 
 class lightmappedadv_flashlight_ps20b_Dynamic_Index
