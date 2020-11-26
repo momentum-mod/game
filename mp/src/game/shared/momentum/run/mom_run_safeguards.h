@@ -48,6 +48,7 @@ class CRunSafeguard
     char m_szAction[64];
 
     float m_flLastTimePressed;
+    float m_flLastTimeWarned;
 
     bool m_bIgnoredInMenu;
 

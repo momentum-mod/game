@@ -19,6 +19,9 @@ static MAKE_CONVAR(mom_run_safeguard_doublepress_maxtime, "0.5", FCVAR_ARCHIVE |
     "with the doublepress safeguard mode active.\n",
     0.0f, 5.0f);
 
+static MAKE_CONVAR(mom_run_safeguard_warning_delay, "10.0", FCVAR_ARCHIVE | FCVAR_REPLICATED,
+    "Controls the amount of time (in seconds) between warning the player that the desired command is safeguarded.\n", 0.0f, 30.0f);
+
 static MAKE_CONVAR(mom_run_safeguard_practicemode, "1", FCVAR_ARCHIVE | FCVAR_REPLICATED,
     "Changes the safeguard for enabling practice mode during a run.\n"
     "0 = OFF,\n"
@@ -59,7 +62,7 @@ static MAKE_TOGGLE_CONVAR(mom_run_safeguard_quit_map, "1", FCVAR_ARCHIVE | FCVAR
 static MAKE_TOGGLE_CONVAR(mom_run_safeguard_quit_game, "1", FCVAR_ARCHIVE | FCVAR_REPLICATED, "Changes the safeguard setting for preventing quitting the game while in a run. 0 = OFF, 1 = ON\n");
 
 CRunSafeguard::CRunSafeguard(const char *szAction)
-    : m_flLastTimePressed(0.0f), m_pRelatedVar(nullptr), m_bIgnoredInMenu(true)
+    : m_flLastTimePressed(0.0f), m_flLastTimeWarned(0.0f), m_pRelatedVar(nullptr), m_bIgnoredInMenu(true)
 {
     Q_strncpy(m_szAction, szAction, sizeof(m_szAction));
 }
@@ -67,6 +70,7 @@ CRunSafeguard::CRunSafeguard(const char *szAction)
 void CRunSafeguard::Reset()
 {
     m_flLastTimePressed = -(mom_run_safeguard_doublepress_maxtime.GetFloat());
+    m_flLastTimeWarned = -(mom_run_safeguard_warning_delay.GetFloat());
 }
 
 bool CRunSafeguard::IsSafeguarded(RunSafeguardMode_t mode)
@@ -120,7 +124,12 @@ bool CRunSafeguard::IsMovementKeysSafeguarded(int nButtons, CBasePlayer *pPlayer
 {
     if ((nButtons & (IN_FORWARD | IN_MOVELEFT | IN_MOVERIGHT | IN_BACK | IN_JUMP | IN_DUCK | IN_WALK)) != 0)
     {
+        if (gpGlobals->curtime - m_flLastTimeWarned > mom_run_safeguard_warning_delay.GetFloat())
+        {
             ClientPrint(pPlayer, HUD_PRINTTALK, CFmtStr("You cannot %s when movement keys are held down while the timer is running! You can turn this safeguard off in the Gameplay Settings!\n", m_szAction));
+            m_flLastTimeWarned = gpGlobals->curtime;
+        }
+
         return true;
     }
     return false;
@@ -130,7 +139,12 @@ bool CRunSafeguard::IsDoublePressSafeguarded(CBasePlayer *pPlayer)
 {
     if (gpGlobals->curtime - m_flLastTimePressed > mom_run_safeguard_doublepress_maxtime.GetFloat())
     {
+        if (gpGlobals->curtime - m_flLastTimeWarned > mom_run_safeguard_warning_delay.GetFloat())
+        {
             ClientPrint(pPlayer, HUD_PRINTTALK, CFmtStr("You must double press the key to %s while the timer is running! You can turn this safeguard off in the Gameplay Settings!\n", m_szAction));
+            m_flLastTimeWarned = gpGlobals->curtime;
+        }
+
         m_flLastTimePressed = gpGlobals->curtime;
         return true;
     }
