@@ -3,6 +3,7 @@
 #include "mom_run_safeguards.h"
 #include "in_buttons.h"
 #include "mom_player_shared.h"
+#include "fmtstr.h"
 
 #ifdef CLIENT_DLL
 #include "input.h"
@@ -65,7 +66,7 @@ CRunSafeguard::CRunSafeguard(const char *szAction)
 
 void CRunSafeguard::Reset()
 {
-    m_flLastTimePressed = 0.0f - mom_run_safeguard_doublepress_maxtime.GetFloat();
+    m_flLastTimePressed = -(mom_run_safeguard_doublepress_maxtime.GetFloat());
 }
 
 bool CRunSafeguard::IsSafeguarded(RunSafeguardMode_t mode)
@@ -105,9 +106,9 @@ bool CRunSafeguard::IsSafeguarded(RunSafeguardMode_t mode)
     switch (mode)
     {
     case RUN_SAFEGUARD_MODE_MOVEMENTKEYS:
-        return IsMovementKeysSafeguarded(nButtons);
+        return IsMovementKeysSafeguarded(nButtons, pPlayer);
     case RUN_SAFEGUARD_MODE_DOUBLEPRESS:
-        return IsDoublePressSafeguarded();
+        return IsDoublePressSafeguarded(pPlayer);
     case RUN_SAFEGUARD_MODE_POPUP_CONFIRM:
         return m_pRelatedVar && m_pRelatedVar->GetBool();
     default:
@@ -115,23 +116,21 @@ bool CRunSafeguard::IsSafeguarded(RunSafeguardMode_t mode)
     } 
 }
 
-bool CRunSafeguard::IsMovementKeysSafeguarded(int nButtons)
+bool CRunSafeguard::IsMovementKeysSafeguarded(int nButtons, CBasePlayer *pPlayer)
 {
     if ((nButtons & (IN_FORWARD | IN_MOVELEFT | IN_MOVERIGHT | IN_BACK | IN_JUMP | IN_DUCK | IN_WALK)) != 0)
     {
-        Warning("You cannot %s when movement keys are held down while the timer is running!\n"
-                "You can turn this safeguard off in the Gameplay Settings!\n", m_szAction);
+            ClientPrint(pPlayer, HUD_PRINTTALK, CFmtStr("You cannot %s when movement keys are held down while the timer is running! You can turn this safeguard off in the Gameplay Settings!\n", m_szAction));
         return true;
     }
     return false;
 }
 
-bool CRunSafeguard::IsDoublePressSafeguarded()
+bool CRunSafeguard::IsDoublePressSafeguarded(CBasePlayer *pPlayer)
 {
-    if (gpGlobals->curtime > m_flLastTimePressed + mom_run_safeguard_doublepress_maxtime.GetFloat())
+    if (gpGlobals->curtime - m_flLastTimePressed > mom_run_safeguard_doublepress_maxtime.GetFloat())
     {
-        Warning("You must double press the key to %s while the timer is running!\n"
-                "You can turn this safeguard off in the Gameplay Settings!\n", m_szAction);
+            ClientPrint(pPlayer, HUD_PRINTTALK, CFmtStr("You must double press the key to %s while the timer is running! You can turn this safeguard off in the Gameplay Settings!\n", m_szAction));
         m_flLastTimePressed = gpGlobals->curtime;
         return true;
     }

@@ -42,8 +42,8 @@ class CRunSafeguard
     bool IsIgnoredInMenu() const { return m_bIgnoredInMenu; }
 
   private:
-    bool IsMovementKeysSafeguarded(int nButtons);
-    bool IsDoublePressSafeguarded();
+    bool IsMovementKeysSafeguarded(int nButtons, CBasePlayer *pPlayer);
+    bool IsDoublePressSafeguarded(CBasePlayer *pPlayer);
 
     char m_szAction[64];
 
