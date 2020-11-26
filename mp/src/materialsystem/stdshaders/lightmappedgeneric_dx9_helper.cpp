@@ -171,6 +171,8 @@ void DrawLightmappedAdvFlashlight_DX9( CBaseVSShader* pShader, IMaterialVar** pa
 		if ( vars.m_bBump )
 			nBumpMapVariant = vars.m_bSSBump ? 2 : 1;
 
+		int nShadowFilterMode = g_pHardwareConfig->GetShadowFilterMode();
+
 		if ( g_pHardwareConfig->SupportsShaderModel_3_0() )
 		{
 			DECLARE_STATIC_VERTEX_SHADER( lightmappedadv_flashlight_vs30 );
@@ -191,6 +193,7 @@ void DrawLightmappedAdvFlashlight_DX9( CBaseVSShader* pShader, IMaterialVar** pa
 			SET_STATIC_PIXEL_SHADER_COMBO( DETAIL_BLEND_MODE, nDetailBlendMode );
 			SET_STATIC_PIXEL_SHADER_COMBO( PHONG, bPhong );
 			SET_STATIC_PIXEL_SHADER_COMBO( PHONGMASK, nPhongMaskVariant );
+			SET_STATIC_PIXEL_SHADER_COMBO( FLASHLIGHTDEPTHFILTERMODE, nShadowFilterMode );
 			//SET_STATIC_PIXEL_SHADER_COMBO( PARALLAX_MAPPING, bParallaxMapping );
 			SET_STATIC_PIXEL_SHADER( lightmappedadv_flashlight_ps30 );
 		}
@@ -214,6 +217,7 @@ void DrawLightmappedAdvFlashlight_DX9( CBaseVSShader* pShader, IMaterialVar** pa
 			SET_STATIC_PIXEL_SHADER_COMBO( DETAIL_BLEND_MODE, nDetailBlendMode );
 			SET_STATIC_PIXEL_SHADER_COMBO( PHONG, bPhong );
 			SET_STATIC_PIXEL_SHADER_COMBO( PHONGMASK, nPhongMaskVariant );
+			SET_STATIC_PIXEL_SHADER_COMBO( FLASHLIGHTDEPTHFILTERMODE, nShadowFilterMode );
 			//SET_STATIC_PIXEL_SHADER_COMBO( PARALLAX_MAPPING, bParallaxMapping );
 			SET_STATIC_PIXEL_SHADER( lightmappedadv_flashlight_ps20b );
 		}
