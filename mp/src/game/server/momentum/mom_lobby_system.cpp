@@ -74,7 +74,12 @@ void CMomentumLobbySystem::HandleNewP2PRequest(SteamNetworkingMessagesSessionReq
     if (!IsInLobby(hUserID))
         return;
 
-    if (MomUtil::IsSteamUserBlocked(hUserID.ConvertToUint64()))
+    if (MomUtil::IsSteamUserBlocked(hUserID.ConvertToUint64()) && !m_vecBlocked.HasElement(hUserID))
+    {
+        m_vecBlocked.AddToTail(hUserID);
+    }
+
+    if (m_vecBlocked.HasElement(hUserID))
     {
         const char *pName = SteamFriends()->GetFriendPersonaName(hUserID);
         DevLog("Not allowing %s to talk with us, we've marked them as blocked!\n", pName);
@@ -650,6 +655,8 @@ void CMomentumLobbySystem::HandlePersonaCallback(PersonaStateChange_t* pParam)
         return;
 
     const auto person = CSteamID(pParam->m_ulSteamID);
+    const char *pName = SteamFriends()->GetFriendPersonaName(person);
+
     if (pParam->m_nChangeFlags & k_EPersonaChangeName)
     {
         if (IsInLobby(person))
@@ -657,9 +664,44 @@ void CMomentumLobbySystem::HandlePersonaCallback(PersonaStateChange_t* pParam)
             const auto pGhost = GetLobbyMemberEntity(pParam->m_ulSteamID);
             if (pGhost)
             {
-                const char *pName = SteamFriends()->GetFriendPersonaName(person);
                 pGhost->SetGhostName(pName);
             }
+        }
+    }
+
+    if (pParam->m_nChangeFlags & k_EPersonaChangeRelationshipChanged)
+    {
+        if (MomUtil::IsSteamUserBlocked(person.ConvertToUint64()))
+        {
+            Warning("%s was just blocked!\n", pName);
+
+            if (!m_vecBlocked.HasElement(person))
+            {
+                m_vecBlocked.AddToTail(person);
+            }
+
+            const auto findIndex = m_mapLobbyGhosts.Find(person.ConvertToUint64());
+
+            if (m_mapLobbyGhosts.IsValidIndex(findIndex))
+            {
+                // This player was just blocked by us and their ghost currently exists, remove it
+                const auto pEntity = m_mapLobbyGhosts[findIndex];
+
+                if (pEntity)
+                {
+                    pEntity->Remove();
+                }
+
+                m_mapLobbyGhosts.RemoveAt(findIndex);
+            }
+        }
+        else if (m_vecBlocked.HasElement(person))
+        {
+            Warning("%s was just unblocked!\n", pName);
+            m_vecBlocked.FindAndRemove(person);
+
+            // This player was just unblocked, attempt to spawn their ghost
+            CreateLobbyGhostEntity(person);
         }
     }
 }
@@ -689,7 +731,7 @@ void CMomentumLobbySystem::CreateLobbyGhostEntity(const CSteamID &lobbyMember)
 
     const char *pName = SteamFriends()->GetFriendPersonaName(lobbyMember);
 
-    if (MomUtil::IsSteamUserBlocked(lobbyMember.ConvertToUint64()))
+    if (m_vecBlocked.HasElement(lobbyMember))
     {
         Warning("Not allowing %s to talk with us, we have them ignored!\n", pName);
         return;
@@ -814,24 +856,10 @@ void CMomentumLobbySystem::ReceiveP2PPackets()
 
             CSteamID fromWho = pMessage->m_identityPeer.GetSteamID();
 
-            const auto findIndex = m_mapLobbyGhosts.Find(fromWho.ConvertToUint64());
-
-            if (MomUtil::IsSteamUserBlocked(fromWho.ConvertToUint64()))
+            if (m_vecBlocked.HasElement(fromWho))
             {
-                if (findIndex != m_mapLobbyGhosts.InvalidIndex())
-                {
-                    // Sender was just blocked, remove their ghost
-                    GetLobbyMemberEntity(fromWho)->Remove();
-                    m_mapLobbyGhosts.RemoveAt(findIndex);
-                }
-
                 pMessage->Release();
                 continue;
-            }
-            else if (findIndex == m_mapLobbyGhosts.InvalidIndex())
-            {
-                // Sender was just unblocked, create their ghost
-                CreateLobbyGhostEntity(fromWho);
             }
 
             CUtlBuffer buf(pMessage->m_pData, pMessage->m_cbSize, CUtlBuffer::READ_ONLY);
