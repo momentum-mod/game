@@ -1376,9 +1376,9 @@ void CClientShadowMgr::InitDepthTextureShadows()
 			char strRTName[64];
 			Q_snprintf( strRTName, ARRAYSIZE( strRTName ), "_rt_ShadowDepthTexture_%d", i );
 
-			//depthTex.InitRenderTarget( m_nDepthTextureResolution, m_nDepthTextureResolution, RT_SIZE_OFFSCREEN, dstFormat, MATERIAL_RT_DEPTH_NONE, false, strRTName );
             // SAUL: we want to create a *DEPTH TEXTURE* of specific size, so use RT_SIZE_NO_CHANGE and MATERIAL_RT_DEPTH_ONLY
-            depthTex.InitRenderTarget(m_nDepthTextureResolution, m_nDepthTextureResolution, RT_SIZE_NO_CHANGE, dstFormat, MATERIAL_RT_DEPTH_ONLY, false, strRTName);
+            // However, MATERIAL_RT_DEPTH_ONLY forces point filtering to be enabled which negatively affect PCF, so the standard MATERIAL_RT_DEPTH_NONE works better.
+            depthTex.InitRenderTarget(m_nDepthTextureResolution, m_nDepthTextureResolution, RT_SIZE_NO_CHANGE, dstFormat, MATERIAL_RT_DEPTH_NONE, false, strRTName);
 
             // SAUL: ensure the depth texture size wasn't changed
             Assert(depthTex->GetActualWidth() == m_nDepthTextureResolution);
