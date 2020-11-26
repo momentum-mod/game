@@ -275,8 +275,8 @@
 "ConcussionGrenade.Timer"
 {
     "channel"       "CHAN_AUTO"
-    "volume"        "0.2"
-    "pitch"         "95,100,105"
+    "volume"        "VOL_NORM"
+    "pitch"         "PITCH_NORM"
     "soundlevel"    "SNDLVL_90dB"
 
     "wave"          ")weapons/grenade/conc/conctimer.wav"
