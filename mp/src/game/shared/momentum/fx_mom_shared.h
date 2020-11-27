@@ -12,7 +12,7 @@ void FX_FireBullets(int iEntIndex, const Vector &vOrigin, const QAngle &vAngles,
                     float flSpread);
 
 #ifndef CLIENT_DLL
-void TE_TFExplosion(IRecipientFilter &filter, const Vector &vecOrigin, const Vector &vecNormal, WeaponID_t iWeaponID);
+void TE_TFExplosion(IRecipientFilter &filter, const Vector &vecOrigin, const Vector &vecNormal, WeaponID_t iWeaponID, bool bHandHeld = false);
 
 void TE_TFParticleEffect(IRecipientFilter &filter, float flDelay, const char *pszParticleName,
                          ParticleAttachment_t iAttachType, CBaseEntity *pEntity, const char *pszAttachmentName,

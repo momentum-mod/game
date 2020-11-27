@@ -234,6 +234,7 @@ class CTETFExplosion : public CBaseTempEntity
     Vector m_vecOrigin;
     Vector m_vecNormal;
     WeaponID_t m_iWeaponID;
+    bool m_bHandHeld; // For conc
 };
 
 static CTETFExplosion g_TETFExplosion("TFExplosion");
@@ -243,19 +244,22 @@ CTETFExplosion::CTETFExplosion(const char *name) : CBaseTempEntity(name)
     m_vecOrigin.Init();
     m_vecNormal.Init();
     m_iWeaponID = WEAPON_NONE;
+    m_bHandHeld = false;
 }
 
 IMPLEMENT_SERVERCLASS_ST(CTETFExplosion, DT_TETFExplosion)
     SendPropVector(SENDINFO_NOCHECK(m_vecOrigin)),
     SendPropVector(SENDINFO_NOCHECK(m_vecNormal), 6, 0, -1.0f, 1.0f),
     SendPropInt(SENDINFO_NOCHECK(m_iWeaponID), Q_log2(WEAPON_MAX) + 1, SPROP_UNSIGNED),
-END_SEND_TABLE()
+    SendPropBool(SENDINFO_NOCHECK(m_bHandHeld)),
+END_SEND_TABLE();
 
-void TE_TFExplosion(IRecipientFilter &filter, const Vector &vecOrigin, const Vector &vecNormal, WeaponID_t iWeaponID)
+void TE_TFExplosion(IRecipientFilter &filter, const Vector &vecOrigin, const Vector &vecNormal, WeaponID_t iWeaponID, bool bHandHeld /*= false*/)
 {
     VectorCopy(vecOrigin, g_TETFExplosion.m_vecOrigin);
     VectorCopy(vecNormal, g_TETFExplosion.m_vecNormal);
     g_TETFExplosion.m_iWeaponID = iWeaponID;
+    g_TETFExplosion.m_bHandHeld = bHandHeld;
 
     // Send it over the wire
     g_TETFExplosion.Create(filter);
