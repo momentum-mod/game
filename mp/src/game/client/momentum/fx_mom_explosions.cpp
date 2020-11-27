@@ -10,6 +10,8 @@ static MAKE_TOGGLE_CONVAR(mom_sj_particle_explosion_enable, "1", FCVAR_ARCHIVE, 
 static MAKE_TOGGLE_CONVAR(mom_sj_sound_explosion_enable, "1", FCVAR_ARCHIVE, "Toggles the sticky explosion sound. 0 = OFF, 1 = ON\n");
 static MAKE_TOGGLE_CONVAR(mom_rj_particle_explosion_enable, "1", FCVAR_ARCHIVE, "Toggles the particles for rocket explosions. 0 = OFF, 1 = ON\n");
 static MAKE_TOGGLE_CONVAR(mom_rj_sound_explosion_enable, "1", FCVAR_ARCHIVE, "Toggles the rocket explosion sound. 0 = OFF, 1 = ON\n");
+static MAKE_TOGGLE_CONVAR(mom_conc_particle_explosion_enable, "1", FCVAR_ARCHIVE, "Toggles the particles for conc explosions. 0 = OFF, 1 = ON\n");
+static MAKE_TOGGLE_CONVAR(mom_conc_sound_explosion_enable, "1", FCVAR_ARCHIVE, "Toggles the conc explosion sound. 0 = OFF, 1 = ON\n");
 
 class C_TETFExplosion : public C_BaseTempEntity
 {
@@ -26,6 +28,7 @@ private:
     Vector m_vecOrigin;
     Vector m_vecNormal;
     WeaponID_t m_iWeaponID;
+    bool m_bHandHeld;
 };
 
 C_TETFExplosion::C_TETFExplosion()
@@ -33,6 +36,7 @@ C_TETFExplosion::C_TETFExplosion()
     m_vecOrigin.Init();
     m_vecNormal.Init();
     m_iWeaponID = WEAPON_NONE;
+    m_bHandHeld = false;
 }
 
 void C_TETFExplosion::PostDataUpdate(DataUpdateType_t updateType)
@@ -65,6 +69,11 @@ void C_TETFExplosion::PostDataUpdate(DataUpdateType_t updateType)
             bPlaySound = mom_sj_sound_explosion_enable.GetBool();
             bDispatchParticles = mom_sj_particle_explosion_enable.GetBool();
         }
+        else if (m_iWeaponID == WEAPON_CONCGRENADE)
+        {
+            bPlaySound = mom_conc_sound_explosion_enable.GetBool();
+            bDispatchParticles = mom_conc_particle_explosion_enable.GetBool();
+        }
 
         if (bPlaySound)
         {
@@ -75,8 +84,11 @@ void C_TETFExplosion::PostDataUpdate(DataUpdateType_t updateType)
         if (bDispatchParticles)
         {
             const char *pszEffect;
-
-            if (bIsWater)
+            if (m_bHandHeld)
+            {
+                pszEffect = "ExplosionHandHeld";
+            }
+            else if (bIsWater)
             {
                 pszEffect = "ExplosionWaterEffect";
             }
@@ -98,4 +110,5 @@ IMPLEMENT_CLIENTCLASS_EVENT_DT(C_TETFExplosion, DT_TETFExplosion, CTETFExplosion
     RecvPropVector(RECVINFO(m_vecOrigin)),
     RecvPropVector(RECVINFO(m_vecNormal)),
     RecvPropInt(RECVINFO(m_iWeaponID)),
+    RecvPropBool(RECVINFO(m_bHandHeld)),
 END_RECV_TABLE();
