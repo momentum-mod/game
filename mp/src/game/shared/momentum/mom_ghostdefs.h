@@ -192,9 +192,10 @@ enum DecalType
     DECAL_ROCKET,
     DECAL_STICKY_SHOOT,
     DECAL_STICKY_DETONATE,
+    DECAL_CONC,
 
     DECAL_FIRST = DECAL_BULLET,
-    DECAL_LAST = DECAL_STICKY_DETONATE,
+    DECAL_LAST = DECAL_CONC,
     DECAL_INVALID = -1
 };
 
@@ -222,10 +223,15 @@ struct StickyShootDecalData
     Vector velocity;
 };
 
+struct ConcThrowDecalData
+{
+    float fTimer;
+};
+
 class DecalPacket : public MomentumPacket
 {
   private:
-    DecalPacket(DecalType decalType, Vector origin, QAngle angle)
+    DecalPacket(DecalType decalType, const Vector &origin, const QAngle &angle)
     {
         decal_type = decalType;
         vOrigin = origin;
@@ -246,12 +252,13 @@ class DecalPacket : public MomentumPacket
         PaintDecalData paint;
         KnifeDecalData knife;
         StickyShootDecalData stickyShoot;
+        ConcThrowDecalData concThrow;
     };
     DecalData data;
 
     DecalPacket() : decal_type(DECAL_INVALID) {}
 
-    static DecalPacket Bullet(Vector origin, QAngle angle, int iAmmoType, int iMode, int iSeed, float fSpread)
+    static DecalPacket Bullet(const Vector &origin, const QAngle &angle, int iAmmoType, int iMode, int iSeed, float fSpread)
     {
         DecalPacket packet(DECAL_BULLET, origin, angle);
         packet.data.bullet.iAmmoType = iAmmoType;
@@ -261,7 +268,7 @@ class DecalPacket : public MomentumPacket
         return packet;
     }
 
-    static DecalPacket Paint(Vector origin, QAngle angle, Color color, float fDecalRadius)
+    static DecalPacket Paint(const Vector &origin, const QAngle &angle, Color color, float fDecalRadius)
     {
         DecalPacket packet(DECAL_PAINT, origin, angle);
         packet.data.paint.color = color;
@@ -269,14 +276,14 @@ class DecalPacket : public MomentumPacket
         return packet;
     }
 
-    static DecalPacket Knife(Vector origin, QAngle angle, bool bStab)
+    static DecalPacket Knife(const Vector &origin, const QAngle &angle, bool bStab)
     {
         DecalPacket packet(DECAL_KNIFE, origin, angle);
         packet.data.knife.bStab = bStab;
         return packet;
     }
 
-    static DecalPacket Rocket(Vector origin, QAngle angle)
+    static DecalPacket Rocket(const Vector &origin, const QAngle &angle)
     {
         DecalPacket pack(DECAL_ROCKET, origin, angle);
         return pack;
@@ -292,6 +299,13 @@ class DecalPacket : public MomentumPacket
     static DecalPacket StickyDet()
     {
         DecalPacket pack(DECAL_STICKY_DETONATE, vec3_origin, vec3_angle);
+        return pack;
+    }
+
+    static DecalPacket ConcThrow(const Vector &origin, const QAngle &velocity, float fTimer)
+    {
+        DecalPacket pack(DECAL_CONC, origin, velocity);
+        pack.data.concThrow.fTimer = fTimer;
         return pack;
     }
 
