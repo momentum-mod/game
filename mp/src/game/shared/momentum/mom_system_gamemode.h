@@ -227,6 +227,7 @@ public:
     const char *GetGameModeCfg() override { return "conc.cfg"; }
     float GetViewScale() override { return 1.0f; }
     bool CanBhop() override { return true; }
+    float GetIntervalPerTick() override { return 0.01f; }
 
     float GetJumpFactor() override { return 268.6261f; } // sqrt(2 * 800.0f * 45.1f)
 

@@ -70,7 +70,7 @@ class CMomConcProjectile : public CBaseGrenade
     float GetShakeAmplitude() override { return 0.0f; }
     float GetGrenadeGravity() { return 0.8f; }
     float GetGrenadeFriction() { return 0.3f; }
-    float GetGrenadeElasticity() { return 0.7f; }
+    float GetGrenadeElasticity() { return 0.6f; }
     float GetGrenadeRadius() { return 280.0f; }
     float GetGrenadeDamage() { return 0.0f; }
 
