@@ -246,6 +246,8 @@ void CGameMode_Conc::SetGameModeVars()
     CGameModeBase::SetGameModeVars();
 
     // Conc-specific
+    sv_maxvelocity.SetValue(2000);
+    sv_friction.SetValue(5);
     sv_airaccelerate.SetValue(10);
     sv_accelerate.SetValue(14);
     sv_maxspeed.SetValue(320);
