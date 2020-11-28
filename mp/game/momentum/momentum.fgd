@@ -141,6 +141,8 @@
     look_angles(angle) : "Look angles" : "0 0 0" : "Where player will look when teleported to start."
     start_on_jump(integer) : "Start timer on jump" : 1 : "Start the timer when the player jump in the start zone/trigger zone."
     speed_limit_type(integer) : "Limit speed type" : 0 : "0) Limit the speed of the player no matter what. 1) Limit the speed only in air. 2) Limit the speed only on ground. 3) Limit the speed only on landing."
+    teleport_destination(target_destination) : "Remote Destination" : : "The entity specifying the point to which the player should be teleported when restarting a run."
+
     spawnflags(flags) =
     [
         8192: "Limit leave speed" : 1
