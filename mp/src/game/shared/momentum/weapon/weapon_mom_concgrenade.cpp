@@ -4,9 +4,10 @@
 #include "mom_player_shared.h"
 #include "in_buttons.h"
 
+#include "momentum/mom_concgrenade.h"
+
 #ifdef GAME_DLL
 #include "momentum/ghost_client.h"
-#include "momentum/mom_concgrenade.h"
 #endif
 
 #include "tier0/memdbgon.h"
@@ -15,6 +16,10 @@
 #define CONC_THROW_DELAY 0.5f
 #define CONC_THROWSPEED 660.0f
 #define CONC_SPAWN_ANG_X 18.5f
+
+#define CONC_SOUND_TIMER "timer"
+
+static MAKE_TOGGLE_CONVAR(mom_conc_sound_timer_enable, "1", FCVAR_ARCHIVE, "Toggles the conc timer sound. 0 = OFF, 1 = ON\n");
 
 IMPLEMENT_NETWORKCLASS_ALIASED(MomentumConcGrenade, DT_MomentumConcGrenade);
 
@@ -80,7 +85,9 @@ void CMomentumConcGrenade::PrimaryAttack()
     if (!pPlayer)
         return;
 
-    WeaponSound(GetWeaponSound("timer"));
+    if (mom_conc_sound_timer_enable.GetBool())
+        WeaponSound(GetWeaponSound(CONC_SOUND_TIMER));
+
     SendWeaponAnim(ACT_VM_PULLBACK);
     m_bPrimed = true;
     m_bNeedsRepress = true;
