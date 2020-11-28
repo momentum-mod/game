@@ -1927,8 +1927,12 @@ void CMomentumPlayer::TimerCommand_RestartStage(int stage, int track)
             if (m_Data.m_bIsInZone)
                 return;
 
-            DestroyExplosives();
-            Teleport(&pCurrentZone->GetRestartPosition(), nullptr, &vec3_origin);
+            const auto pZoneTeleDest = pCurrentZone->GetTeleDest();
+
+            const Vector *pTargetDest = pZoneTeleDest ? &pZoneTeleDest->GetAbsOrigin() : &pCurrentZone->GetRestartPosition();
+            const QAngle *pTargetAng = pZoneTeleDest ? &pZoneTeleDest->GetAbsAngles() : nullptr;
+
+            ManualTeleport(pTargetDest, pTargetAng, &vec3_origin, false);
         }
         return;
     }

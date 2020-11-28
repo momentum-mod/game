@@ -272,9 +272,10 @@ public:
 // Another important NOTE: do not mix Checkpoint and Stage triggers for the same Track!
 class CTriggerStage : public CTriggerZone
 {
-public:
+  public:
     DECLARE_CLASS(CTriggerStage, CTriggerZone);
     DECLARE_NETWORKCLASS();
+    DECLARE_DATADESC();
 
     // always send to all clients
     int UpdateTransmitState() override { return SetTransmitState(FL_EDICT_ALWAYS); }
