@@ -1879,9 +1879,12 @@ void CMomentumPlayer::TimerCommand_Restart(int track)
     {
         if (!g_pSavelocSystem->TeleportToStartMark(START_MARK, track))
         {
-            // Don't set angles if still in start zone.
-            QAngle ang = pStart->GetLookAngles();
-            ManualTeleport(&pStart->GetRestartPosition(), (pStart->HasLookAngles() ? &ang : nullptr), &vec3_origin);
+            const auto pZoneTeleDest = pStart->GetTeleDest();
+
+            const Vector *pTargetDest = pZoneTeleDest ? &pZoneTeleDest->GetAbsOrigin() : &pStart->GetRestartPosition();
+            const QAngle *pTargetAng = pZoneTeleDest ? &pZoneTeleDest->GetAbsAngles() : pStart->HasLookAngles() ? &pStart->GetLookAngles() : nullptr;
+
+            ManualTeleport(pTargetDest, pTargetAng, &vec3_origin);
         }
 
         m_Data.m_iCurrentTrack = track;

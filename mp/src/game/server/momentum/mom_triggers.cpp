@@ -346,7 +346,7 @@ bool CBaseMomZoneTrigger::LoadFromKeyValues(KeyValues *pKvFrom)
     return true;
 }
 
-int CBaseMomZoneTrigger::GetZoneType()
+int CBaseMomZoneTrigger::GetZoneType() const
 {
     return ZONE_TYPE_INVALID;
 }
@@ -428,7 +428,18 @@ CTriggerZone::CTriggerZone()
     m_iZoneNumber = 0; // 0 by default ("end trigger")
 }
 
-void CTriggerZone::OnStartTouch(CBaseEntity* pOther)
+bool CTriggerZone::IsTeleportableTo() const
+{
+    return GetZoneType() == ZONE_TYPE_START || GetZoneType() == ZONE_TYPE_STAGE;
+}
+
+void CTriggerZone::Spawn()
+{
+    BaseClass::Spawn();
+    m_hTeleDest.Set(gEntList.FindEntityByName(nullptr, m_strTeleDestName, this, this));
+}
+
+void CTriggerZone::OnStartTouch(CBaseEntity *pOther)
 {
     CMomRunEntity *pEnt = dynamic_cast<CMomRunEntity*>(pOther);
     if (pEnt)
@@ -449,11 +460,22 @@ void CTriggerZone::OnEndTouch(CBaseEntity* pOther)
 bool CTriggerZone::ToKeyValues(KeyValues* pKvInto)
 {
     pKvInto->SetInt("zoneNum", m_iZoneNumber);
+
+    if (IsTeleportableTo())
+    {
+        pKvInto->SetString("teleport_destination", m_strTeleDestName.ToCStr());
+    }
+
     return BaseClass::ToKeyValues(pKvInto);
 }
 
 bool CTriggerZone::LoadFromKeyValues(KeyValues* kv)
 {
+    if (IsTeleportableTo())
+    {
+        m_strTeleDestName = AllocPooledString(kv->GetString("teleport_destination", ""));
+    }
+
     m_iZoneNumber = kv->GetInt("zoneNum", -1);
     if (m_iZoneNumber >= 0 && m_iZoneNumber < MAX_ZONES)
         return BaseClass::LoadFromKeyValues(kv);
@@ -479,7 +501,7 @@ LINK_ENTITY_TO_CLASS(trigger_momentum_timer_checkpoint, CTriggerCheckpoint);
 IMPLEMENT_SERVERCLASS_ST(CTriggerCheckpoint, DT_TriggerCheckpoint)
 END_SEND_TABLE()
 
-int CTriggerCheckpoint::GetZoneType()
+int CTriggerCheckpoint::GetZoneType() const
 {
     return ZONE_TYPE_CHECKPOINT;
 }
@@ -490,7 +512,7 @@ LINK_ENTITY_TO_CLASS(trigger_momentum_timer_stage, CTriggerStage);
 IMPLEMENT_SERVERCLASS_ST(CTriggerStage, DT_TriggerStage)
 END_SEND_TABLE()
 
-int CTriggerStage::GetZoneType()
+int CTriggerStage::GetZoneType() const
 {
     return ZONE_TYPE_STAGE;
 }
@@ -504,7 +526,8 @@ BEGIN_DATADESC(CTriggerTimerStart)
     DEFINE_KEYFIELD(m_fSpeedLimit, FIELD_FLOAT, "speed_limit"),
     DEFINE_KEYFIELD(m_angLook, FIELD_VECTOR, "look_angles"),
     DEFINE_KEYFIELD(m_bTimerStartOnJump, FIELD_BOOLEAN, "start_on_jump"),
-    DEFINE_KEYFIELD(m_iLimitSpeedType, FIELD_INTEGER, "speed_limit_type")
+    DEFINE_KEYFIELD(m_iLimitSpeedType, FIELD_INTEGER, "speed_limit_type"),
+    DEFINE_KEYFIELD(m_strTeleDestName, FIELD_STRING, "teleport_destination")
 END_DATADESC()
 
 IMPLEMENT_SERVERCLASS_ST(CTriggerTimerStart, DT_TriggerTimerStart)
@@ -571,7 +594,7 @@ bool CTriggerTimerStart::LoadFromKeyValues(KeyValues *zoneKV)
     return true;
 }
 
-int CTriggerTimerStart::GetZoneType()
+int CTriggerTimerStart::GetZoneType() const
 {
     return ZONE_TYPE_START;
 }
@@ -647,7 +670,7 @@ void CTriggerTimerStop::Spawn()
     BaseClass::Spawn();
 }
 
-int CTriggerTimerStop::GetZoneType()
+int CTriggerTimerStop::GetZoneType() const
 {
     return ZONE_TYPE_STOP;
 }
@@ -678,7 +701,7 @@ void CTriggerTrickZone::Spawn()
     g_pTrickSystem->AddZone(this);
 }
 
-int CTriggerTrickZone::GetZoneType()
+int CTriggerTrickZone::GetZoneType() const
 {
     return ZONE_TYPE_TRICK;
 }

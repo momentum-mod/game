@@ -188,7 +188,7 @@ public:
     // Return true to signify success
     virtual bool LoadFromKeyValues(KeyValues *pKvFrom);
 
-    virtual int GetZoneType();
+    virtual int GetZoneType() const;
 
     const Vector& GetRestartPosition();
 
@@ -214,7 +214,7 @@ private:
 // to have different zone triggers with either similar or different zone numbers.
 class CTriggerZone : public CBaseMomZoneTrigger
 {
-public:
+  public:
     DECLARE_CLASS(CTriggerZone, CBaseMomZoneTrigger);
     DECLARE_DATADESC();
 
@@ -222,6 +222,11 @@ public:
 
     void SetZoneNumber(int newZone) { m_iZoneNumber = newZone; }
     int GetZoneNumber() const { return m_iZoneNumber; }
+
+    bool IsTeleportableTo() const;
+    const CBaseEntity *GetTeleDest() const { return m_hTeleDest.Get(); }
+
+    void Spawn() override;
 
     virtual void OnStartTouch(CBaseEntity* pOther) override;
     virtual void OnEndTouch(CBaseEntity* pOther) override;
@@ -231,11 +236,15 @@ public:
 
     int DrawDebugTextOverlays() override;
 
-protected:
+  protected:
     // The zone number of this zone. Keep in mind start timer triggers are always zone number 1,
     // while end triggers are typically zone 0. Everything else is meant to be a checkpoint/stage number.
     // See the start trigger for more info. Zone numbers are otherwise 0 by default.
     int m_iZoneNumber;
+    string_t m_strTeleDestName;
+
+  private:
+    EHANDLE m_hTeleDest;
 };
 
 // Checkpoint triggers are the triggers to use for linear maps -- ones that can denote progress on a linear map,
@@ -251,7 +260,7 @@ public:
     // always send to all clients
     int UpdateTransmitState() override { return SetTransmitState(FL_EDICT_ALWAYS); }
 
-    virtual int GetZoneType() override;
+    virtual int GetZoneType() const override;
 };
 
 // Stage triggers are used to denote large, strung-together "chunks" of the map, usually 
@@ -270,7 +279,7 @@ public:
     // always send to all clients
     int UpdateTransmitState() override { return SetTransmitState(FL_EDICT_ALWAYS); }
 
-    virtual int GetZoneType() override;
+    virtual int GetZoneType() const override;
 };
 
 // The start trigger is the first zone trigger for a track.
@@ -309,7 +318,7 @@ class CTriggerTimerStart : public CTriggerZone
     virtual bool ToKeyValues(KeyValues *pKvInto) override;
     virtual bool LoadFromKeyValues(KeyValues *zoneKV) override;
 
-    int GetZoneType() override;
+    int GetZoneType() const override;
   private:
     QAngle m_angLook;
 
@@ -338,7 +347,7 @@ public:
     // always send to all clients
     virtual int UpdateTransmitState() override { return SetTransmitState(FL_EDICT_ALWAYS); }
 
-    int GetZoneType() override;
+    int GetZoneType() const override;
 
     bool GetCancelBool() const { return m_bCancel; }
 
@@ -358,7 +367,7 @@ public:
 
     int UpdateTransmitState() override { return SetTransmitState(FL_EDICT_ALWAYS); }
 
-    int GetZoneType() override;
+    int GetZoneType() const override;
 
     bool LoadFromKeyValues(KeyValues* pKvFrom) override;
     bool ToKeyValues(KeyValues* pKvInto) override;
