@@ -75,16 +75,15 @@ void CHudConcTimer::OnThink()
     }
 
     m_pTimer->SetFgColor(Color(235, 235, 235, 255));
-    float flMaxTimer = m_pGrenade->GetMaxTimer();
 
-    if (!CloseEnough(flMaxTimer, 0.0f, FLT_EPSILON))
+    if (!CloseEnough(CONC_MAX_TIME, 0.0f, FLT_EPSILON))
     {
         float flGrenadeTimer = m_pGrenade->GetGrenadeTimer();
 
         if (flGrenadeTimer > 0)
         {
             float flPrimedTime = max(0, gpGlobals->curtime - flGrenadeTimer);
-            float flPrimedPercent = min(1.0f, flPrimedTime / flMaxTimer);
+            float flPrimedPercent = min(1.0f, flPrimedTime / CONC_MAX_TIME);
 
             m_pTimer->SetProgress(flPrimedPercent);
 
@@ -154,16 +153,15 @@ void CHudConcEntPanel::OnThink()
     if (m_pGrenade)
     {
         m_pHudTimer->SetFgColor(Color(235, 235, 235, 255));
-        float flMaxTimer = m_pGrenade->GetMaxTimer();
 
-        if (!CloseEnough(flMaxTimer, 0.0f, FLT_EPSILON))
+        if (!CloseEnough(CONC_MAX_TIME, 0.0f, FLT_EPSILON))
         {
             float flGrenadeTimer = m_pGrenade->m_flDetonateTime.Get();
 
             if (flGrenadeTimer > 0)
             {
                 float flPrimedTime = max(0, flGrenadeTimer - gpGlobals->curtime);
-                float flPrimedPercent = min(1.0, flPrimedTime / flMaxTimer);
+                float flPrimedPercent = min(1.0, flPrimedTime / CONC_MAX_TIME);
 
                 m_pHudTimer->SetProgress(flPrimedPercent);
 
