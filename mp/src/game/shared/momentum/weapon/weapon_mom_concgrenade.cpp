@@ -100,7 +100,17 @@ void CMomentumConcGrenade::PrimaryAttack()
     m_flNextPrimaryAttack = gpGlobals->curtime + 0.5f;
 }
 
-void CMomentumConcGrenade::SecondaryAttack() {}
+void CMomentumConcGrenade::SecondaryAttack()
+{
+#ifdef GAME_DLL
+    const auto pOwner = GetPlayerOwner();
+    if (pOwner && pOwner->IsAlive())
+    {
+        pOwner->DestroyExplosives();
+        StopWeaponSound(GetWeaponSound(CONC_SOUND_TIMER));
+    }
+#endif
+}
 
 void CMomentumConcGrenade::ItemPostFrame()
 {
