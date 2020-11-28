@@ -27,9 +27,20 @@ WeaponData
     // Sounds for the weapon.
     SoundData
     {
-        "bounce" "ConcussionGrenade.Bounce"
-        "explode" "Weapon_RL.Explosion"
-        "timer" "ConcussionGrenade.Timer"
+        "bounce"        "ConcussionGrenade.Bounce"
+        "explosion"     "ConcussionGrenade.Explode"
+        "timer"         "ConcussionGrenade.Timer"
+        "fizzle"        "ConcussionGrenade.Fizzle"
+    }
+
+    ParticleData
+    {
+        "ExplosionHandHeld"        "mom_rocket_explosion_midair"
+        "ExplosionEffect"          "mom_rocket_explosion_regular"
+        "ExplosionMidAirEffect"    "mom_rocket_explosion_midair"
+        "ExplosionWaterEffect"     "mom_rocket_explosion_underwater"
+
+        "Trail" "mom_sticky_regular"
     }
 
     // Weapon Sprite data is loaded by the Client DLL.
