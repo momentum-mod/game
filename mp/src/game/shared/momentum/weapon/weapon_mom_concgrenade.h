@@ -28,10 +28,9 @@ class CMomentumConcGrenade : public CWeaponBase
     void DrawRadius();
 
     void StartGrenadeThrow();
-    void ThrowGrenade(float flTimer, float flSpeed = 630.0f);
+    void ThrowGrenade(float flTimer);
 
     float GetGrenadeTimer() { return m_flTimer; }
-    float GetMaxTimer() { return 3.81f; }
 
 #ifdef GAME_DLL
     bool AllowsAutoSwitchFrom() const override { return !m_bPrimed; }
