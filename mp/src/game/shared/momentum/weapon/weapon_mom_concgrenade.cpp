@@ -96,8 +96,6 @@ void CMomentumConcGrenade::PrimaryAttack()
     {
         m_flTimer = gpGlobals->curtime;
     }
-
-    m_flNextPrimaryAttack = gpGlobals->curtime + 0.5f;
 }
 
 void CMomentumConcGrenade::SecondaryAttack()
@@ -119,38 +117,35 @@ void CMomentumConcGrenade::ItemPostFrame()
     if (!pPlayer)
         return;
 
-    CBaseViewModel *vm = pPlayer->GetViewModel(m_nViewModelIndex);
-
-    if (!vm)
-        return;
-
     // If they let go of the fire button, they want to throw the grenade.
-    if (m_bPrimed && !(pPlayer->m_nButtons & IN_ATTACK))
+    if (m_bPrimed && !(pPlayer->m_nButtons & IN_ATTACK) && m_flNextPrimaryAttack <= gpGlobals->curtime)
     {
         StartGrenadeThrow();
         m_bPrimed = false;
         m_bNeedsRepress = false;
 
-        if (m_flTimer > 0.0f && gpGlobals->curtime - m_flTimer > 0.5f) // throw conc with remaining fuse timer
+        if (m_flTimer > 0.0f && gpGlobals->curtime - m_flTimer > CONC_THROW_DELAY) // throw conc with remaining fuse timer
         {
             ThrowGrenade(gpGlobals->curtime - m_flTimer);
         }
     }
+
     if (m_flThrowTime > 0.0f && m_flThrowTime < gpGlobals->curtime) // throw delay of 0.5s if player released attack right after priming conc
     {
-        ThrowGrenade(0.5f);
+        ThrowGrenade(CONC_THROW_DELAY);
     }
-    else if (m_flTimer > 0.0f && gpGlobals->curtime - m_flTimer >= GetMaxTimer()) // explode in hand if grenade is still held when reaching max timer
+    else if (m_flTimer > 0.0f && gpGlobals->curtime - m_flTimer >= CONC_MAX_TIME) // explode in hand if grenade is still held when reaching max timer
     {
-        ThrowGrenade(GetMaxTimer());
+        ThrowGrenade(CONC_MAX_TIME);
         m_bPrimed = false;
-    }
-    else if (!(pPlayer->m_nButtons & IN_ATTACK)) // Require player to release and repress +attack before another grenade can be thrown
-    {
-        m_bNeedsRepress = false;
     }
     else
     {
+        if (!(pPlayer->m_nButtons & IN_ATTACK)) // Require player to release and repress +attack before another grenade can be thrown
+        {
+            m_bNeedsRepress = false;
+        }
+
         BaseClass::ItemPostFrame();
     }
 }
@@ -160,75 +155,42 @@ void CMomentumConcGrenade::StartGrenadeThrow()
     m_flThrowTime = gpGlobals->curtime + (0.5f - (gpGlobals->curtime - m_flTimer));
 }
 
-void CMomentumConcGrenade::ThrowGrenade(float flTimer, float flSpeed)
+void CMomentumConcGrenade::ThrowGrenade(float flTimer)
 {
 #ifdef GAME_DLL
     CMomentumPlayer *pOwner = GetPlayerOwner();
+    if (!pOwner)
+        return;
 
-    Vector vecForward, vecSrc, vecVelocity;
-    QAngle angAngles;
-    float playerPitch;
-
-    pOwner->EyeVectors(&vecForward);
-    vecSrc = pOwner->GetAbsOrigin() + Vector(0, 0, 36); // Thrown from the waist
-    playerPitch = pOwner->GetLocalAngles().x;
-
-    // Online uses angles, but we're packing 3 floats so whatever
-    //QAngle vecThrowOnline(vecVelocity.x, vecVelocity.y, vecVelocity.z);
-    //DecalPacket packet = DecalPacket::Bullet(vecSrc, vecThrowOnline, AMMO_TYPE_GRENADE, angImpulse.y, 0, 0.0f);
-    //g_pMomentumGhostClient->SendDecalPacket(&packet);
-
-    const auto pGrenade = dynamic_cast<CMomConcProjectile*>(CreateEntityByName("momentum_concgrenade"));
-
-    VectorAngles(vecForward, angAngles);
-
-    angAngles.x -= CONC_SPAWN_ANG_X;
-
-    UTIL_SetOrigin(pGrenade, vecSrc);
-
-    if (flTimer != 0)
+    Vector vecVelocity;
+    if (flTimer > 0.0f)
     {
+        Vector vecForward;
+        QAngle angAngles;
+
+        pOwner->EyeVectors(&vecForward);
+        VectorAngles(vecForward, angAngles);
+        angAngles.x -= CONC_SPAWN_ANG_X;
+
         AngleVectors(angAngles, &vecVelocity);
         VectorNormalize(vecVelocity);
-        if (flSpeed > 0)
-        {
-            vecVelocity *= CONC_THROWSPEED;
-        }
-        else
-        {
-            vecVelocity *= flSpeed;
-        }
+
+        vecVelocity *= CONC_THROWSPEED;
     }
     else
     {
-        vecVelocity = Vector(0, 0, 0);
+        vecVelocity.Init();
     }
 
-    if (flTimer >= GetMaxTimer())
-    {
-        pGrenade->SetHandheld(true);
-        pGrenade->SetDetonateTimerLength(0);
-    }
-    else
-    {
-        pGrenade->SetDetonateTimerLength(GetMaxTimer() - flTimer);
-    }
+    const auto &vecSrc = pOwner->WorldSpaceCenter(); // Thrown from the waist
 
-    DispatchSpawn(pGrenade);
-    pGrenade->SetAbsVelocity(vecVelocity);
-    pGrenade->SetupInitialTransmittedVelocity(vecVelocity);
-    pGrenade->SetThrower(pOwner);
-    pGrenade->SetGravity(pGrenade->GetGrenadeGravity());
-    pGrenade->SetFriction(pGrenade->GetGrenadeFriction());
-    pGrenade->SetElasticity(pGrenade->GetGrenadeElasticity());
-    pGrenade->SetDamage(0.0f);
-    //pGrenade->m_flSpawnTime = gpGlobals->curtime - (3.0f - flTimer); // This shold be done in a neater way!!
-
-    pGrenade->SetThink(&CMomConcProjectile::GrenadeThink);
-    pGrenade->SetNextThink(gpGlobals->curtime);
+    CMomConcProjectile::Create(flTimer, vecSrc, vecVelocity, pOwner);
 #endif
 
     m_flThrowTime = 0.0f;
     m_flTimer = 0.0f;
+
     SendWeaponAnim(ACT_VM_THROW);
+
+    m_flNextPrimaryAttack = gpGlobals->curtime + 0.5f;
 }
