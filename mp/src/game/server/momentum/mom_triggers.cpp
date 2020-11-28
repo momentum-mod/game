@@ -509,6 +509,10 @@ int CTriggerCheckpoint::GetZoneType() const
 //---------- CTriggerStage -----------------------------------------------------------------
 LINK_ENTITY_TO_CLASS(trigger_momentum_timer_stage, CTriggerStage);
 
+BEGIN_DATADESC(CTriggerStage)
+    DEFINE_KEYFIELD(m_strTeleDestName, FIELD_STRING, "teleport_destination")
+END_DATADESC()
+
 IMPLEMENT_SERVERCLASS_ST(CTriggerStage, DT_TriggerStage)
 END_SEND_TABLE()
 
