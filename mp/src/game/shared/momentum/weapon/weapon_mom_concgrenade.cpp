@@ -184,6 +184,11 @@ void CMomentumConcGrenade::ThrowGrenade(float flTimer)
 
     const auto &vecSrc = pOwner->WorldSpaceCenter(); // Thrown from the waist
 
+    // Online uses angles, but we're packing 3 floats so whatever
+    QAngle vecThrowOnline(vecVelocity.x, vecVelocity.y, vecVelocity.z);
+    DecalPacket packet = DecalPacket::ConcThrow(vecSrc, vecThrowOnline, flTimer);
+    g_pMomentumGhostClient->SendDecalPacket(&packet);
+
     CMomConcProjectile::Create(flTimer, vecSrc, vecVelocity, pOwner);
 #endif
 

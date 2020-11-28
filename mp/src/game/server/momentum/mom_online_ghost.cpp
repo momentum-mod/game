@@ -11,6 +11,7 @@
 #include "weapon/weapon_knife.h"
 #include "ghost_client.h"
 #include "mom_stickybomb.h"
+#include "mom_concgrenade.h"
 
 #include "tier0/memdbgon.h"
 
@@ -53,6 +54,7 @@ static MAKE_TOGGLE_CONVAR_C(mom_ghost_online_trail_enable, "1", FCVAR_REPLICATED
 static MAKE_TOGGLE_CONVAR_C(mom_ghost_online_flashlights_enable, "1", FCVAR_ARCHIVE | FCVAR_REPLICATED, "Toggles drawing other ghosts' flashlights. 0 = OFF, 1 = ON\n", RefreshGhostData);
 
 static MAKE_CONVAR(mom_ghost_online_sticky_alpha, "50", FCVAR_ARCHIVE | FCVAR_REPLICATED, "Sets the ghost stickybomb alpha value. 10 = more transparent, 255 = opaque.", 10.0f, 255.0f);
+static MAKE_CONVAR(mom_ghost_online_conc_alpha, "50", FCVAR_ARCHIVE | FCVAR_REPLICATED, "Sets the ghost conc grenade alpha value. 10 = more transparent, 255 = opaque.", 10.0f, 255.0f);
 
 CMomentumOnlineGhostEntity::CMomentumOnlineGhostEntity() : m_pCurrentFrame(nullptr), m_pNextFrame(nullptr), m_cvarPaintSound("mom_paint_apply_sound")
 {
@@ -114,6 +116,9 @@ void CMomentumOnlineGhostEntity::FireDecal(const DecalPacket &decal)
         break;
     case DECAL_STICKY_DETONATE:
         DetonateStickies();
+        break;
+    case DECAL_CONC:
+        ThrowConc(decal);
         break;
     default:
         break;
@@ -240,6 +245,18 @@ void CMomentumOnlineGhostEntity::DetonateStickies()
 
             pTemp->Detonate();
         }
+    }
+}
+
+void CMomentumOnlineGhostEntity::ThrowConc(const DecalPacket &packet)
+{
+    // Vector values stored in a QAngle, shhh~
+    Vector vecThrow(packet.vAngle.x, packet.vAngle.y, packet.vAngle.z);
+    const auto pConc = CMomConcProjectile::Create(packet.data.concThrow.fTimer, packet.vOrigin, vecThrow, this);
+
+    if (pConc)
+    {
+        pConc->SetRenderColorA(mom_ghost_online_conc_alpha.GetInt());
     }
 }
 
