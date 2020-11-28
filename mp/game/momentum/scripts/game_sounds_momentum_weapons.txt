@@ -281,3 +281,13 @@
 
     "wave"          ")weapons/grenade/conc/conctimer.wav"
 }
+
+"ConcussionGrenade.Fizzle"
+{
+    "channel"    "CHAN_STATIC"
+    "volume"     "0.42"
+    "soundlevel" "SNDLVL_NORM"
+    "pitch"      "70,80"
+
+    "wave" "^weapons/physcannon/physcannon_dryfire.wav"
+}
