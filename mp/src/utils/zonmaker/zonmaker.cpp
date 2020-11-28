@@ -242,6 +242,15 @@ static KeyValues *ParseZones(CChunk *pRootChunk)
 
         triggerKV->SetInt("type", type);
         triggerKV->SetString("zoneNum", zoneN);
+
+        if (type == ZONE_TYPE_START || type == ZONE_TYPE_STAGE)
+        {
+            if (const auto &key = pChunk->FindKey("teleport_destination"))
+                triggerKV->SetString("teleport_destination", key);
+            else
+                triggerKV->SetString("teleport_destination", "");
+        }
+
         if (type == ZONE_TYPE_START)
         {
             auto propsKV = triggerKV->FindKey("zoneProps", true)->FindKey("properties", true);
@@ -258,7 +267,7 @@ static KeyValues *ParseZones(CChunk *pRootChunk)
             else
                 propsKV->SetBool("start_on_jump", true);
 
-            if ( const auto &key = pChunk->FindKey("speed_limit_type"))
+            if (const auto &key = pChunk->FindKey("speed_limit_type"))
                 propsKV->SetString("speed_limit_type", key);
             else
                 propsKV->SetInt("speed_limit_type", 0);
