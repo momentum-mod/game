@@ -8,8 +8,6 @@
 
 class CMomentumPlayer;
 
-// #define USE_NEW_RNGFIX
-
 class CMomentumGameMovement : public CGameMovement
 {
     typedef CGameMovement BaseClass;
@@ -25,9 +23,7 @@ public:
     void AirMove() override;
     void WalkMove() override;
 
-#ifndef USE_NEW_RNGFIX
     int ClipVelocity(Vector in, Vector &normal, Vector &out, float overbounce) override;
-#endif
 
     // Ladder
     float LadderDistance() const override;
