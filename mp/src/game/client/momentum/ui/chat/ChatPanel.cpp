@@ -363,7 +363,7 @@ void ChatPanel::OnLobbyDataUpdate(LobbyDataUpdate_t *pParam)
         const bool isTyping = typingText != nullptr && Q_strlen(typingText) == 1;
         const int typingIndex = m_vTypingMembers.Find(pParam->m_ulSteamIDMember);
         const bool isValidIndex = m_vTypingMembers.IsValidIndex(typingIndex);
-        if (isTyping)
+        if (isTyping && !MomUtil::IsSteamUserBlocked(pParam->m_ulSteamIDMember))
         {
             if (!isValidIndex)
             {
