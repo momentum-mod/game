@@ -1,0 +1,49 @@
+PBR
+{
+	$basetexture        models/weapons/mom_concgrenade/mom_conc_round_C
+    $emissionTexture    models/weapons/mom_concgrenade/mom_conc_round_E
+	$bumpmap            models/weapons/mom_concgrenade/mom_conc_round_N
+	$mraoTexture        models/weapons/mom_concgrenade/mom_conc_round_MRAO
+    $emissionScale      "[0 0 0]"
+    
+	$envmap             env_cubemap
+	$surfaceprop        weapon
+    $model              1
+    
+    $concTimer          .0
+    $concTimerPost      .0
+    $fuseUp             .72
+    $lessEqual          1.2
+    $greater            .25
+    
+    Proxies
+    {
+        ConcDetProg
+        {
+            resultVar   $concTimer
+        }
+        
+       LessOrEqual
+       {
+            srcVar1         $concTimer
+            srcVar2         $fuseUp
+            lessEqualVar    $lessEqual
+            greaterVar      $greater
+            resultVar       $concTimerPost
+       }
+        
+       Sine
+       {
+            sinemin         -1
+            sinemax         2
+            sineperiod      $concTimerPost
+            resultVar       $concTimerPost
+       }
+       
+       Int
+       {
+            srcVar1         $concTimerPost
+            resultVar       "$emissionScale"
+       }
+    }
+}

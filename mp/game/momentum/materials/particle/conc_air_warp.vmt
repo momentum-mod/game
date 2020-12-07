@@ -1,0 +1,12 @@
+Refract
+{
+ 	$normalMap          effects/conc_normal
+ 	$refractAmount      .1
+ 	$blurAmount         2
+	$noFog              1
+    $ignoreZ            1
+
+    $vertexAlpha        1
+	$vertexColor        1
+	$vertexColorModulate 1
+}
