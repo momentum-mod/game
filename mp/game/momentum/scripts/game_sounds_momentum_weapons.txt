@@ -232,7 +232,7 @@
 "Grenade.Bounce"
 {
 	"channel"	    "CHAN_AUTO"
-	"volume"	    "0.8"
+	"volume"	    "0.75"
 	"soundlevel"	"SNDLVL_NORM"
     
     rndwave
@@ -246,7 +246,7 @@
 "ConcussionGrenade.Bounce"
 {
     "channel"	    "CHAN_WEAPON"
-	"volume"	    "0.8"
+	"volume"	    "0.56"
 	"soundlevel"	"SNDLVL_NORM"
     
     rndwave
@@ -261,33 +261,29 @@
 "ConcussionGrenade.Explode"
 {
     "channel"       "CHAN_WEAPON"
-    "volume"        "0.2"
+    "volume"        "1.0"
     "pitch"         "PITCH_NORM"
-    "soundlevel"    "SNDLVL_90dB"
+    "soundlevel"    "SNDLVL_120dB"
 
-	"rndwave"
-    {
-        "wave" "weapons/grenade/conc/conc1.wav"
-        "wave" "weapons/grenade/conc/conc2.wav"
-    }
+	"wave"          "^weapons/mom_conc/mom_conc-det01.wav"
 }
 
 "ConcussionGrenade.Timer"
 {
     "channel"       "CHAN_AUTO"
-    "volume"        "VOL_NORM"
-    "pitch"         "PITCH_NORM"
-    "soundlevel"    "SNDLVL_90dB"
+    "volume"        "1.0"
+    "pitch"         "100,105"
+    "soundlevel"    "SNDLVL_STATIC"
 
-    "wave"          ")weapons/grenade/conc/conctimer.wav"
+    "wave"          ")weapons/mom_conc/mom_conc-timer.wav"
 }
 
 "ConcussionGrenade.Fizzle"
 {
-    "channel"    "CHAN_STATIC"
-    "volume"     "0.42"
-    "soundlevel" "SNDLVL_NORM"
-    "pitch"      "70,80"
+    "channel"       "CHAN_STATIC"
+    "volume"        "0.6"
+    "soundlevel"    "SNDLVL_NORM"
+    "pitch"         "70,80"
 
-    "wave" "^weapons/physcannon/physcannon_dryfire.wav"
+    "wave"          "^weapons/physcannon/physcannon_dryfire.wav"
 }

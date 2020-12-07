@@ -4,10 +4,8 @@ SpriteCard
 	$additive	    1
 	$vertexcolor	1
 	$vertexalpha	1
+    $vertexColorModulate    1
     $nofog          1
     $minSize        .02
-    $ignorez        1
-    $depthBlendScale 1
-    $depthBlend     0
-    
+    $ignorez        1  
 }

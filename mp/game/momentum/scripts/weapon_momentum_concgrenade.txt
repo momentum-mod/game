@@ -20,8 +20,7 @@ WeaponData
     "ModelData"
     {
         "view"  "models/weapons/mom_concgrenade/v_mom_concgrenade.mdl"
-        "world" "models/weapons/mom_stickylauncher/mom_stickybomb/mom_stickybomb.mdl"
-        "sprite" "models/weapons/conc/w_mom_conceffect.mdl"
+        "world" "models/weapons/mom_concgrenade/w_mom_concgrenade.mdl"
     }
 
     // Sounds for the weapon.
@@ -35,12 +34,12 @@ WeaponData
 
     ParticleData
     {
-        "ExplosionHandHeld"        "mom_rocket_explosion_midair"
-        "ExplosionEffect"          "mom_rocket_explosion_regular"
-        "ExplosionMidAirEffect"    "mom_rocket_explosion_midair"
-        "ExplosionWaterEffect"     "mom_rocket_explosion_underwater"
+        "ExplosionHandHeld"        "mom_conc_explosion_hh"
+        "ExplosionEffect"          "mom_conc_explosion"
+        "ExplosionMidAirEffect"    "mom_conc_explosion_midair"
+        "ExplosionWaterEffect"     "mom_conc_explosion_hh"
 
-        "Trail" "mom_sticky_regular"
+        "Trail"                     "mom_conc_regular"
     }
 
     // Weapon Sprite data is loaded by the Client DLL.
