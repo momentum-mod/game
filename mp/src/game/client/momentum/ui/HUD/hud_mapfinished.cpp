@@ -229,8 +229,8 @@ void CHudMapFinishedDialog::SetRunSaved(bool bState)
 
 void CHudMapFinishedDialog::SetRunUploaded(bool bState)
 {
-    m_pRunUploadStatus->SetText(bState ? "#MOM_MF_RunUploaded" : "#MOM_MF_RunNotUploaded");
-    m_pRunUploadStatus->SetFgColor(bState ? COLOR_GREEN : COLOR_RED);
+    m_pRunUploadStatus->SetText("Online run submissions are not available in this build!");
+    m_pRunUploadStatus->SetFgColor(COLOR_RED);
 
     // Visibility for these will be determined by the run_upload event
     m_pXPGainCosmetic->SetVisible(false);
@@ -243,8 +243,8 @@ void CHudMapFinishedDialog::SetRunSubmitted(RunSubmitState_t state)
     if (state <= RUN_SUBMIT_UNKNOWN || state >= RUN_SUBMIT_COUNT)
         return;
 
-    m_pRunUploadStatus->SetText(g_szSubmitStates[state]);
-    m_pRunUploadStatus->SetFgColor(state == RUN_SUBMIT_SUCCESS ? COLOR_ORANGE : COLOR_RED);
+    m_pRunUploadStatus->SetText("Online run submissions are not available in this build!");
+    m_pRunUploadStatus->SetFgColor(COLOR_RED);
 
     // Visibility for these will be determined by the run_upload event
     m_pXPGainCosmetic->SetVisible(false);
