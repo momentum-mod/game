@@ -2,10 +2,7 @@
 
 #include "mom_concgrenade.h"
 
-#include "IEffects.h"
 #include "weapon/weapon_def.h"
-
-#include "util/mom_util.h"
 
 #ifdef GAME_DLL
 #include "momentum/mom_player.h"
@@ -14,10 +11,9 @@
 #else
 #include "functionproxy.h"
 #include "c_te_effect_dispatch.h"
-#include "cmodel.h"
 #include "clienteffectprecachesystem.h"
-#include "model_types.h"
 #include "hud_concgrenade.h"
+#include "mom_shareddefs.h"
 #endif
 
 #include "tier0/memdbgon.h"
@@ -203,13 +199,11 @@ void CMomConcProjectile::Destroy()
 
 void CMomConcProjectile::Explode()
 {
-    const auto& vecOrigin = GetAbsOrigin();
-
-    g_pEffects->EnergySplash(vecOrigin, Vector(0, 0, 1.0f), true);
-
     // Prevent practice mode or ghost concs from affecting us
     if (GetDamage() > 0.0f)
         AffectEntitiesInRadius();
+
+    const auto& vecOrigin = GetAbsOrigin();
 
     const Vector vecSpot = vecOrigin + Vector(0, 0, 8);
     trace_t tr;
