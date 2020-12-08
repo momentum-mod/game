@@ -8,6 +8,8 @@
 #include "fmtstr.h"
 #include "mom_shareddefs.h"
 
+#include "filesystem.h"
+
 #include "tier0/memdbgon.h"
 
 using namespace vgui;
@@ -39,7 +41,7 @@ void DrawerPanel_Changelog::OnResetData()
 {
     LoadControlSettings("resource/ui/mainmenu/DrawerPanel_Changelog.res");
 
-    GetRemoteChangelog();
+    GetLocalChangelog();
 }
 
 void DrawerPanel_Changelog::OnReloadControls()
@@ -50,6 +52,16 @@ void DrawerPanel_Changelog::OnReloadControls()
     {
         m_pChangeLog->SetText(m_pwOnlineChangelog);
     }
+}
+
+void DrawerPanel_Changelog::GetLocalChangelog()
+{
+    CUtlBuffer changelog_buf;
+    if(filesystem->ReadFile("changelog.txt", "MOD", changelog_buf))
+    {
+        SetChangelogText(changelog_buf.String());
+    }
+    changelog_buf.Purge();
 }
 
 void DrawerPanel_Changelog::GetRemoteChangelog()
