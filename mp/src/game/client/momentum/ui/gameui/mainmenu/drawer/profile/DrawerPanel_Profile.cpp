@@ -8,6 +8,7 @@
 #include "ProfileStatsPage.h"
 
 #include "vgui_controls/PropertySheet.h"
+#include "vgui_controls/Tooltip.h"
 #include "controls/UserComponent.h"
 
 #include "tier0/memdbgon.h"
@@ -21,6 +22,7 @@ DrawerPanel_Profile::DrawerPanel_Profile(Panel *pParent) : BaseClass(pParent, "D
 
 void DrawerPanel_Profile::OnResetData()
 {
+    /*
     m_pUserComponent = new UserComponent(this);
 
     if (SteamUser())
@@ -36,5 +38,8 @@ void DrawerPanel_Profile::OnResetData()
     m_pStatsAndActivitySheet->AddPage(m_pProfileActivity, "#MOM_Drawer_Profile_Activity");
     m_pStatsAndActivitySheet->AddPage(m_pProfileStats, "#MOM_Drawer_Profile_Stats");
 
+
     LoadControlSettings("resource/ui/mainmenu/DrawerPanel_Profile.res");
+     */
+    GetTooltip()->SetText("Your profile is unavailable in this build!");
 }

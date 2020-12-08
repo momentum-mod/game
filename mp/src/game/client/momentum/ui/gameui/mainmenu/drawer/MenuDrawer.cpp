@@ -48,7 +48,11 @@ MenuDrawerPanel::MenuDrawerPanel(Panel *pParent) : BaseClass(pParent, "MenuDrawe
     m_pDrawerContent->AddPage(m_pProfileDrawerPanel, "#MOM_Drawer_Profile");
     m_pDrawerContent->AddPage(m_pLobbyDrawerPanel, "#MOM_Drawer_Lobby");
     m_pDrawerContent->AddPage(m_pChangelogDrawerPanel, "#MOM_Drawer_Changelog");
-    m_iActivePage = DRAWER_TAB_USER;
+    // we need the raw strings here
+    m_pDrawerContent->DisablePage("Profile");
+    m_pDrawerContent->DisablePage("Lobby");
+    m_pDrawerContent->SetActivePage(m_pChangelogDrawerPanel);
+    m_iActivePage = DRAWER_TAB_CHANGELOG;
 }
 
 void MenuDrawerPanel::PerformLayout()

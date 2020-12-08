@@ -32,7 +32,7 @@ public:
     virtual void SearchForLobbies() = 0;
     virtual void CancelSearch() { m_flLastRequestTime = 0.0f; }
 
-    bool ShouldSearchForLobbies() const { return gpGlobals->curtime - m_flLastRequestTime > LOBBY_REQUEST_DELAY; }
+    bool ShouldSearchForLobbies() const { return false;}
     bool IsTrackedLobby(const CSteamID &hLobby) const { return m_vecTrackedLobbies.HasElement(hLobby.ConvertToUint64()); }
 
     virtual void OnLobbyRemoved(const CSteamID &hLobbyID)
