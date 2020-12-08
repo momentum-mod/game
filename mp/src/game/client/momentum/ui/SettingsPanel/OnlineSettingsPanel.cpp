@@ -62,22 +62,23 @@ OnlineSettingsPanel::OnlineSettingsPanel(Panel *pParent, Button *pAssociate) : B
 
     // ========== Online ghost settings
     m_pEnableGhostRotations = new CvarToggleCheckButton(this, "ToggleRotations", "#GameUI_Enabled", "mom_ghost_online_rotations");
-    m_pEnableGhostRotations->AddActionSignalTarget(this);
     m_pEnableGhostSounds = new CvarToggleCheckButton(this, "ToggleSounds", "#GameUI_Enabled", "mom_ghost_online_sounds");
-    m_pEnableGhostSounds->AddActionSignalTarget(this);
     m_pEnableEntityPanels = new CvarToggleCheckButton(this, "ToggleEntityPanels", "#GameUI_Enabled", "mom_entpanels_enable");
-    m_pEnableEntityPanels->AddActionSignalTarget(this);
     m_pEnableGhostTrails = new CvarToggleCheckButton(this, "ToggleTrails", "#GameUI_Enabled", "mom_ghost_online_trail_enable");
-    m_pEnableGhostTrails->AddActionSignalTarget(this);
     m_pEnableColorAlphaOverride = new CvarToggleCheckButton(this, "EnableAlphaOverride", "#GameUI_Enabled", "mom_ghost_online_alpha_override_enable");
-    m_pEnableColorAlphaOverride->AddActionSignalTarget(this);
     m_pAlphaOverrideSlider = new CvarSlider(this, "AlphaOverrideSlider", "mom_ghost_online_alpha_override", 0, true);
-    m_pAlphaOverrideSlider->AddActionSignalTarget(this);
     m_pAlphaOverrideInput = new CvarTextEntry(this, "AlphaOverrideEntry", "mom_ghost_online_alpha_override", 0);
     m_pAlphaOverrideInput->SetAllowNumericInputOnly(true);
-    m_pAlphaOverrideInput->AddActionSignalTarget(this);
 
     LoadControlSettings("resource/ui/settings/Settings_Online.res");
+
+    m_pEnableGhostRotations->SetEnabled(false);
+    m_pEnableGhostSounds->SetEnabled(false);
+    m_pEnableGhostTrails->SetEnabled(false);
+    m_pEnableEntityPanels->SetEnabled(false);
+    m_pEnableColorAlphaOverride->SetEnabled(false);
+    m_pAlphaOverrideSlider->SetEnabled(false);
+    m_pAlphaOverrideInput->SetEnabled(false);
 }
 
 void OnlineSettingsPanel::OnPageShow()
@@ -90,16 +91,16 @@ void OnlineSettingsPanel::OnPageShow()
     LoadModelData();
 
     // Online ghost settings
-    m_pAlphaOverrideSlider->SetEnabled(m_pEnableColorAlphaOverride->IsSelected());
-    m_pAlphaOverrideInput->SetEnabled(m_pEnableColorAlphaOverride->IsSelected());
+    //m_pAlphaOverrideSlider->SetEnabled(m_pEnableColorAlphaOverride->IsSelected());
+    //m_pAlphaOverrideInput->SetEnabled(m_pEnableColorAlphaOverride->IsSelected());
 }
 
 void OnlineSettingsPanel::OnCheckboxChecked(Panel *panel)
 {
     if (panel == m_pEnableColorAlphaOverride)
     {
-        m_pAlphaOverrideSlider->SetEnabled(m_pEnableColorAlphaOverride->IsSelected());
-        m_pAlphaOverrideInput->SetEnabled(m_pEnableColorAlphaOverride->IsSelected());
+        //m_pAlphaOverrideSlider->SetEnabled(m_pEnableColorAlphaOverride->IsSelected());
+        //m_pAlphaOverrideInput->SetEnabled(m_pEnableColorAlphaOverride->IsSelected());
     }
 }
 
