@@ -66,7 +66,7 @@ void CLeaderboardsStats::LoadData(bool bFullUpdate)
     if (bFullUpdate && ((g_pMapCache->GetCurrentMapID() && flLastUp >= UPDATE_INTERVAL) || m_bNeedsUpdate))
     {
         wchar_t *waiting = g_pVGuiLocalize->Find("MOM_API_WaitingForResponse");
-        wchar_t *unavail = g_pVGuiLocalize->Find("MOM_API_Unavailable");
+        const wchar_t *unavail = L" - ";
 
         const bool bSuccess = g_pAPIRequests->GetUserStatsAndMapRank(0,
                                                                g_pMapCache->GetCurrentMapID(),
