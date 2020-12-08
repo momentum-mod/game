@@ -7,6 +7,7 @@
 #include <vgui_controls/Button.h>
 #include <vgui_controls/SectionedListPanel.h>
 #include "vgui_controls/ImageList.h"
+#include "vgui_controls/Tooltip.h"
 #include "vgui_avatarimage.h"
 #include "vgui/ISurface.h"
 
@@ -1142,15 +1143,19 @@ void CLeaderboardsTimes::OnLocalTimesReady(int nRequestIndex)
 void CLeaderboardsTimes::SwitchPanel(Panel *pToPanel)
 {
     // To avoid inconsistent state, we start from scratch
-    m_pLocalLeaderboards->SetVisible(false);
+    m_pLocalLeaderboards->SetVisible(true);
     m_pTop10Leaderboards->SetVisible(false);
     m_pFriendsLeaderboards->SetVisible(false);
     m_pAroundLeaderboards->SetVisible(false);
 
-    // We will have to disable exactly 1 of each group here
-    m_pLocalLeaderboardsButton->SetEnabled(true);
-    m_pGlobalLeaderboardsButton->SetEnabled(true);
+    // We will have to disable exactly 1 of each group here normally but we don't need global times here
+    m_pLocalLeaderboardsButton->SetEnabled(false);
+    m_pGlobalLeaderboardsButton->SetEnabled(false);
+    m_pGlobalLeaderboardsButton->GetTooltip()->SetText("Global leaderboards are not available in this build!");
 
+    m_pCurrentLeaderboards = m_pLocalLeaderboards;
+
+    /*
     m_pGlobalTop10Button->SetEnabled(true);
     m_pFriendsLeaderboardsButton->SetEnabled(true);
     m_pGlobalAroundButton->SetEnabled(true);
@@ -1206,6 +1211,7 @@ void CLeaderboardsTimes::SwitchPanel(Panel *pToPanel)
         Warning("Tried to switch to invalid panel on leaderboards!\n");
         return;
     }
+    */
     FillLeaderboards(false);
 }
 
