@@ -17,6 +17,7 @@ protected:
     void OnReloadControls() override;
 
 private:
+    void GetLocalChangelog();
     void GetRemoteChangelog();
     void SetChangelogText(const char *pChangelogText);
 
