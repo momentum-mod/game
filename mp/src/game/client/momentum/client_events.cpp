@@ -63,6 +63,7 @@ bool CMOMClientEvents::Init()
     // Mount CSS content even if it's on a different drive than this game
     MomUtil::MountGameFiles();
 
+    /* mapping mode is on by default in this build
     if (!CommandLine()->FindParm("-mapping"))
     {
         // Unregister FCVAR_MAPPING convars
@@ -76,7 +77,7 @@ bool CMOMClientEvents::Init()
 
             pCvar = pNext;
         }
-    }
+    }*/
 
     UnloadConVarOrCommand("retry");
 
@@ -112,9 +113,10 @@ void CMOMClientEvents::PostInit()
     // Version warning
     // MOM_TODO: Change this once we hit Beta
     // MOM_CURRENT_VERSION
-    g_pMessageBox->CreateMessageboxVarRef("#MOM_StartupMsg_Alpha_Title", "#MOM_StartupMsg_Alpha",
+    g_pMessageBox->CreateMessageboxVarRef("#MOM_StartupMsg_Alpha_Title", "PLEASE NOTE: You are playing the Momentum Mod PUBLIC ALPHA!\nThis build is missing all online functionality, including the map selector, leaderboards, profiles, lobbies and run uploading.\nMoreover, this does not reflect the current state of the game, especially due to different engine builds.\n\nMapping mode is enabled by default in this build.",
                                             "mom_toggle_versionwarn", "#MOM_IUnderstand");
-    
+
+    /* This doesn't really matter in this case
     if (!SteamAPI_IsSteamRunning() || !SteamHTTP())
     {
         vgui::Panel *pPanel = g_pMessageBox->CreateMessagebox("#MOM_StartupMsg_NoSteamApiContext_Title",
@@ -122,6 +124,7 @@ void CMOMClientEvents::PostInit()
         pPanel->MoveToFront();
         pPanel->RequestFocus();
     }
+    */
 }
 
 void CMOMClientEvents::LevelInitPreEntity()

@@ -27,7 +27,9 @@ bool CMomServerEvents::Init()
 
     MomUtil::MountGameFiles();
 
-    if (!CommandLine()->FindParm("-mapping"))
+    CommandLine()->AppendParm("-mapping", "");
+
+    /*if (!CommandLine()->FindParm("-mapping"))
     {
         // Check plugins
         FileFindHandle_t handle;
@@ -71,7 +73,7 @@ bool CMomServerEvents::Init()
 
             pCvar = pNext;
         }
-    }
+    }*/
 
     // Allow fps_max to be changed while playing, but only when the timer isn't running
     static ConVar* fps_max_original = g_pCVar->FindVar("fps_max");
