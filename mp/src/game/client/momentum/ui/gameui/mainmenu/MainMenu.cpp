@@ -18,6 +18,7 @@
 
 #include "vgui_controls/ImagePanel.h"
 #include "vgui_controls/AnimationController.h"
+#include "vgui_controls/Tooltip.h"
 
 #include "controls/ModelPanel.h"
 #include "controls/UserComponent.h"
@@ -103,7 +104,7 @@ MainMenu::MainMenu(CBaseMenuPanel *pParent) : BaseClass(pParent, "MainMenu")
     m_pMenuDrawer = new MenuDrawerPanel(this);
 
     m_pUserComponent = new UserComponent(this);
-    m_pUserComponent->SetClickable(true);
+    m_pUserComponent->SetClickable(false);
     m_pUserComponent->AddActionSignalTarget(this);
     if (SteamUser())
     {
@@ -242,9 +243,16 @@ void MainMenu::CreateMenu()
             button->SetPriority(dat->GetInt("priority", 1));
             button->SetText(dat->GetString("text", "no text"));
             button->SetBlank(dat->GetBool("blank"));
+            button->SetEnabled(dat->GetBool("enabled"));
 
             button->SetCommand(dat->GetString("command", nullptr));
             button->SetEngineCommand(dat->GetString("EngineCommand", nullptr));
+
+            // a bit hacky, show informational tooltip
+            if (!Q_strcasecmp("ShowMapSelectionPanel", dat->GetString("EngineCommand", "")))
+            {
+                button->GetTooltip()->SetText("The online map selector is not available in this build, use the map command from the console instead!");
+            }
 
             const char *specifics = dat->GetString("specifics", "shared");
             if (!Q_strcasecmp(specifics, "ingame"))
