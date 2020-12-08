@@ -1,0 +1,193 @@
+As of December 2020:
+
+0.8.7
+= Added
+  Added missing limit movement trigger texture
+  Gamemode overriding
+  Explosive fizzle sound
+  Free roam spectate
+  Saveloc importing from other maps
+  Noclip/practice mode duck speed multiplier
+  Add beam_spotlight from ASW
+  Zonemaker, a tool to create zones from VMFs
+  Temporary, per-run stage start marks
+  New steam game mounting system
+  Ability to draw info_teleport_destinations in game
+  $HSV to PBR shader
+  Chat commands
+  Mapbase entities
+    `skybox_swapper` for changing 2D skybox texture without requiring map reload
+    A lot more inputs/outputs to BaseEntity
+    Many many new filters
+    Many many new logic entities
+    Added game instructor system
+    Duration value to particle systems
+    Ability to directly start the particle system effects on player
+  New conc viewmodel
+
+= Fixed
+  Fixed saveloc & ruler menu binds in keybinds panel
+  Fixed sprint/walk being handled while spectating
+  Fixed conc grenades being usable in other gamemodes
+  Fixed friend’s times sometimes not loading
+  Fixed toggle_jump/toggle_duck commands not doing spectator commands for jump/duck
+  Fixed menu drawer lobby name corruption bug
+  Fixed doublepress run safeguard not being reset properly
+  Fixed certain commands going through map finished panel even when after map movement is disabled
+  Fixed HUD timer not properly updating when hidden
+  Allowed console to be opened from (almost) anywhere
+  Fix arrow keys resetting combobox selection 
+  Immediately remove ghosts of blocked players
+  Real-time updating of player names on user components
+  Fixed game crash when pressing enter on main menu
+  Fixed various chat exploits
+  Fixed seeing blocked player’s chats
+  Fixed seeing blocked player’s typing status
+  Fixed certain particles not being removed
+
+= Improved
+  Enabled spec hud mouse input when chat is opened
+  Improved scrollbar track clicking
+  Hardcoded ghost update rate
+  Improve top of frame grip sizing
+  Default RJ viewmodel to centered version
+  Stored time in savelocs
+  Improvements to rocket/stickybomb launchers
+  Trigger enhancements
+    Landmark teleports can now reorient player’s velocity & angles
+    New modes for dealing with player’s velocity in `trigger_teleport` 
+    A new entity that teleports a player when they touch a specified surface type
+    A new filter that checks whether the player is on the floor, surfing, or just bhopped
+    Collectible system; non-linear checkpoint system.
+    Replaced speed threshold trigger with a filter
+    Increasing/decreasing impulse every tick option for push and shootboost triggers
+    OnKeyHeld & OnKeyReleased outputs for `trigger_momentum_userinput`
+    All triggers now have a flag for ghosts
+    Fixed flags breaking between 2 limitmovement triggers
+    Fixed stickybombs having 0 velocity when shot through a teleport.
+  Mapbase enhancements
+    Multiple sky_camera support
+    Targeting entities now support true wildcards and regex
+    Improved entity debug commands
+    Entity I/O paramater conversion improvements
+    Minor changes to VBSP including `-defaultcubemap` and parallax corrected cubemaps
+    Projected texture improvements (new I/O and KVs, mapbase fixes to shader)
+    Converted most brush entities to use BSP instead of VPhysics collision (Solves func_brush compiling 0.5 units smaller)
+    Fixed particles with start active when the map loads
+    Default cubemap is now black
+  mom_restart_stage now does nothing on linear maps
+  Require repress of +attack to throw another conc
+  Make leaderboard static
+  Scale ghost entpanels with resolution & center them
+  Added divider in speedo settings to make more understandable
+  Prevent +moveup and +movedown from affecting ground movement
+  Warn player of mapping mode on run start
+  Allow dynamic updating of teleport destinations
+  Improved flashlight code & shadercompile
+  Mapping mode cvar for toggling RNG fix
+  Allow teleport destinations as restart points for start/stage zones
+  Made conc grenade follow rules of other explosives
+
+0.8.6
+= Added
+  Full Ahop gamemode support
+  Stubbed Tricksurf, Conc, Parkour, and Defrag implementations
+  Run safeguards
+  Added sprint binding to keybinds
+  Added ability to have subdivision markings for any progress bars through res file (originally suggested to be for sticky charge meter). Off by default.
+  Added checkbox in gameplay settings that toggles viewmodels
+  Added (back) menu background blur 
+  Tree sway, Lightmapped generic flashlight-based phong shader
+  Added the ability to turn off speedometer autolayout in the speedo VDF. Also added easy layout overriding functionality within the VDF.
+  Added NetBeans project for Linux building & made it possible to compile without sudo
+  System for recording a history surface interactions for the player
+  Added missing tooltips throughout the settings panel
+  Added a command for resetting to the last progress trigger
+  Catapults! (trigger_momentum_catapult entity)
+  Togglable inputs; toggle_jump, toggle_speed, toggle_walk, and toggle_duck for all gamemodes
+  Viewmodel offset commands
+  Main menu drawer panel
+  Depth of field effects
+  Momentum capture point assets 
+  More tool textures 
+  Added cvar for whether the settings remember last opened tab
+  Cvar for auto-untoggling toggle_* inputs when hitting a fail teleport
+  “Fail” bool property for momentum teleports
+  Added toggle inputs to saveloc state
+  System for adding your own HUD menus 1033 
+  Add flag for end zones to not submit run (just cancel timer) 
+
+= Fixed
+  Fixed broken TF2 fire particles.
+  Fix bug where player would get stuck when closing the settings panel
+  Fixed chat not accepting non-ascii characters
+  Fixed timer not resetting it’s color on map change
+  Fixed camera bug related to ducking while teleporting via saveloc
+  Inverted logic on the “allow overlapping keys” setting; checked means “on” now
+  Fixed settings panel having a deadzone on the vertical scrollbar
+  Fixed last weapon (lastinv) not being defaulted to the secondary weapon on map load
+  Prevented leaderboards panel from being togglable when spamming m2 on game load
+  Fixed trails stacking when changing your trail while spectating someone
+  Fixed a rare case where stickybombs weren’t firing (right at the end of the buffer)
+  Fixed autocomplete for long replay names
+  Properly loading the engine-default backup skybox for when a map’s skybox is missing
+  Put the player on ground on mom_restart, fixing players getting stuck on map restart on certain start zones
+  Fixes to some odd lobby bugs revolving around not properly checking whether a player was in your lobby
+  Prevented crashes when there are more than 4096 static props
+  Fixed incorrect noto sans regular font
+  Fixed missing shaders causing crashes (missing wireframe_dx8 fallback shader)
+  Stopped sticky charge sound on weapon switch
+  Fixed a rare crash on map change
+  Fixed in-game texture browser
+  Fixed shader issue on linux caused by the shader override
+  Fixed crash when jumping/interacting with func_train without a weapon
+  Fixed a crash when enabling viewport downscaling
+  Fixed a run submission failure; solved by removing sv_alternateticks
+  Fixed charge animation not being reset to idle when charging is disabled
+  Fixed the momentum icon on the taskbar being shown as the HL logo on linux
+  Fixed water fog problem on PBR shader
+  Fixed light calculation in PBR shader
+  Fixed “undefined base class Toggle” error in hammer
+  Fixed softlock on main menu
+  Disallowed muzzle flash when viewmodel is hidden
+  Fixed PBR not respecting render alpha
+  Fixed settings on different tab being in focus
+  Fix shotgun cock sound being played every 8 shots when viewmodels are off
+  Fix color for PBR materials on models
+  Fixed “Use Defaults” button for keybinds list causing softlock 
+  Fix speedmod’s disabled buttons not resetting when saveloc teleporting outside of it
+  Fixed hud menus overlapping chat
+  Fixed crash when opening & closing map info panel too quickly
+  Fix slide for RJ/SJ and non-autohop gamemodes 
+
+= Improved
+  Renamed mom_reset to mom_restart_stage & merged mom_stage_tele into mom_restart_stage
+  Consolidated all automatic weapons down to 1; removed rifle & lmg, renamed smg to machinegun. For mappers, it is now “weapon_momentum_machinegun”
+  Improved stickybomb and rocket effects, moving away from relying on TF2 particles 
+  Migrated credits to use a VGUI frame instead of a map (rip credits.bsp). Also updated credits
+  Removed paintgun & moved paint settings to gameplay settings tab
+  More intuitive start marking; create/clear on settings page, printouts alongside savelocs, start mark creation when savelocing in a start zone with a hud hint of the bind for it
+  WVT support for PBR, PBR using mrao/emission scale for 20b; fix for LightMappedGeneric when using lighting preview
+  Improved some error outputs in map compile tools
+  Spelling fixes in many source code files
+  Improved CSS and TF2 file mounting, fixing ambient sounds not loading properly on Linux
+  Moved main menu to client
+  Allowed fps_max to be changed in-game
+  Unmount many unneeded TF2 particles
+  Show start zone exit speedometer on linear maps
+  Improved loading of speedometer data
+  Increased autocomplete length for commands
+  Redirected the “retry” command to “reload”
+  Allow WVT PBR to have parallax
+  Improved stickybomb count hud element
+  Replace main menu map with model panel
+  Improved weapon models, animations, and sounds. Most retextured with PBR 
+  Improved glow effects
+  Replaced “airborne_only” field in func_nogrenades with a prevention type, allowing for sticky fizzle on land and rocket/sticky fizzle on trigger entrance
+  Let escape key & other leaderboard binds close leaderboards 
+  Update Steamworks to v150 for more secure / stable networking backend
+  Less machine gun recoil when strafing/on ground
+  Add [Development Build] to the version number when game is in debug mode
+  Save start marks to savelocs file
+  Prevent teleporting to a stage while in it - stops abuse of the command
+  Ability to draw zone faces, not just outlines
