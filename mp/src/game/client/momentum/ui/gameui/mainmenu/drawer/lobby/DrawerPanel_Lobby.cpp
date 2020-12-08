@@ -11,6 +11,7 @@
 
 #include "vgui_controls/ListPanel.h"
 #include "vgui_controls/PropertySheet.h"
+#include "vgui_controls/Tooltip.h"
 
 #include "tier0/memdbgon.h"
 
@@ -30,6 +31,7 @@ DrawerPanel_Lobby::DrawerPanel_Lobby(Panel* pParent) : BaseClass(pParent, "Drawe
 
 void DrawerPanel_Lobby::OnLobbyEnter(LobbyEnter_t *pParam)
 {
+    /*
     if (pParam->m_EChatRoomEnterResponse == k_EChatRoomEnterResponseSuccess)
     {
         m_bInLobby = true;
@@ -64,23 +66,27 @@ void DrawerPanel_Lobby::OnLobbyEnter(LobbyEnter_t *pParam)
 
         g_pMessageBox->CreateMessagebox("#MOM_Lobby_JoinFail", szJoinFails[pParam->m_EChatRoomEnterResponse - 2]);
     }
+     */
 }
 
 void DrawerPanel_Lobby::OnLobbyChatUpdate(LobbyChatUpdate_t* pParam)
 {
-    m_pLobbyMembers->OnLobbyChatUpdate(pParam);
+    //m_pLobbyMembers->OnLobbyChatUpdate(pParam);
 }
 
 void DrawerPanel_Lobby::OnLobbyDataUpdate(LobbyDataUpdate_t* pParam)
 {
+    /*
     m_pLobbyInfo->OnLobbyDataUpdate(pParam);
     m_pLobbyMembers->OnLobbyDataUpdate(pParam);
     m_pPublicLobbiesSearch->OnLobbyDataUpdate(pParam);
     m_pFriendsLobbiesSearch->OnLobbyDataUpdate(pParam);
+    */
 }
 
 void DrawerPanel_Lobby::OnLobbyLeave()
 {
+    /*
     m_bInLobby = false;
 
     m_pLobbyInfo->OnLobbyLeave();
@@ -89,11 +95,12 @@ void DrawerPanel_Lobby::OnLobbyLeave()
     m_pFriendsLobbiesSearch->OnLobbyLeave();
 
     OnLobbyStateChange();
+     */
 }
 
 void DrawerPanel_Lobby::OnResetData()
 {
-    m_pLobbyInfo = new LobbyInfoPanel(this);
+    /*m_pLobbyInfo = new LobbyInfoPanel(this);
     m_pLobbyMembers = new LobbyMembersPanel(this);
     m_pLobbyChat = new ChatContainer(this);
     m_pLobbyChat->SetAutomaticMessageMode(MESSAGE_MODE_MENU);
@@ -105,13 +112,15 @@ void DrawerPanel_Lobby::OnResetData()
     m_pPublicLobbies->AddPage(m_pPublicLobbiesSearch, "#MOM_Drawer_Lobby_Searching_Public");
     m_pPublicLobbies->AddPage(m_pFriendsLobbiesSearch, "#MOM_Drawer_Lobby_Searching_Friends");
 
-    LoadControlSettings("resource/ui/mainmenu/DrawerPanel_Lobby.res");
+    LoadControlSettings("resource/ui/mainmenu/DrawerPanel_Lobby.res");*/
+    GetTooltip()->SetText("Lobbies are unavailable in this build!");
 
     OnLobbyStateChange();
 }
 
 void DrawerPanel_Lobby::OnLobbyStateChange()
 {
+    /*
     if (m_bInLobby)
     {
         m_pLobbyMembers->SetVisible(true);
@@ -132,6 +141,7 @@ void DrawerPanel_Lobby::OnLobbyStateChange()
         m_pLobbyMembers->SetVisible(false);
         m_pLobbyChat->SetVisible(false);
     }
+     */
 }
 
 void DrawerPanel_Lobby::OnReloadControls()
@@ -140,15 +150,17 @@ void DrawerPanel_Lobby::OnReloadControls()
 
     BaseClass::OnReloadControls();
 
-    if (m_bInLobby && bVisible)
-        m_pLobbyChat->SetVisible(true);
+    //if (m_bInLobby && bVisible)
+    //    m_pLobbyChat->SetVisible(true);
 }
 
 void DrawerPanel_Lobby::OnPersonaStateChange(PersonaStateChange_t *pParams)
 {
+    /*
     if (pParams->m_nChangeFlags & k_EPersonaChangeName)
     {
         m_pLobbyInfo->UpdateLobbyName();
         m_pLobbyMembers->UpdateLobbyMemberName(pParams->m_ulSteamID);
     }
+     */
 }
