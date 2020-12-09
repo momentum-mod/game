@@ -5,7 +5,7 @@
 #endif
 
 // Milestone release (alpha, beta, gold)​ . Backwards incompatible or mini-milestone update . Small feature updates (non-breaking)​
-#define MOM_CURRENT_VERSION "0.8.6"
+#define MOM_CURRENT_VERSION "0.8.7"
 
 #define MAX_TRACKS 64
 #define MAX_ZONES 64

@@ -1,3 +1,91 @@
+0.8.7
+= Added
+  Added missing limit movement trigger texture
+  Gamemode overriding
+  Explosive fizzle sound
+  Free roam spectate
+  Saveloc importing from other maps
+  Noclip/practice mode duck speed multiplier
+  Add beam_spotlight from ASW
+  Zonemaker, a tool to create zones from VMFs
+  Temporary, per-run stage start marks
+  New steam game mounting system
+  Ability to draw info_teleport_destinations in game
+  $HSV to PBR shader
+  Chat commands
+  Mapbase entities
+    `skybox_swapper` for changing 2D skybox texture without requiring map reload
+    A lot more inputs/outputs to BaseEntity
+    Many many new filters
+    Many many new logic entities
+    Added game instructor system
+    Duration value to particle systems
+    Ability to directly start the particle system effects on player
+  New conc viewmodel
+
+= Fixed
+  Fixed saveloc & ruler menu binds in keybinds panel
+  Fixed sprint/walk being handled while spectating
+  Fixed conc grenades being usable in other gamemodes
+  Fixed friend’s times sometimes not loading
+  Fixed toggle_jump/toggle_duck commands not doing spectator commands for jump/duck
+  Fixed menu drawer lobby name corruption bug
+  Fixed doublepress run safeguard not being reset properly
+  Fixed certain commands going through map finished panel even when after map movement is disabled
+  Fixed HUD timer not properly updating when hidden
+  Allowed console to be opened from (almost) anywhere
+  Fix arrow keys resetting combobox selection 
+  Immediately remove ghosts of blocked players
+  Real-time updating of player names on user components
+  Fixed game crash when pressing enter on main menu
+  Fixed various chat exploits
+  Fixed seeing blocked player’s chats
+  Fixed seeing blocked player’s typing status
+  Fixed certain particles not being removed
+
+= Improved
+  Enabled spec hud mouse input when chat is opened
+  Improved scrollbar track clicking
+  Hardcoded ghost update rate
+  Improve top of frame grip sizing
+  Default RJ viewmodel to centered version
+  Stored time in savelocs
+  Improvements to rocket/stickybomb launchers
+  Trigger enhancements
+    Landmark teleports can now reorient player’s velocity & angles
+    New modes for dealing with player’s velocity in `trigger_teleport` 
+    A new entity that teleports a player when they touch a specified surface type
+    A new filter that checks whether the player is on the floor, surfing, or just bhopped
+    Collectible system; non-linear checkpoint system.
+    Replaced speed threshold trigger with a filter
+    Increasing/decreasing impulse every tick option for push and shootboost triggers
+    OnKeyHeld & OnKeyReleased outputs for `trigger_momentum_userinput`
+    All triggers now have a flag for ghosts
+    Fixed flags breaking between 2 limitmovement triggers
+    Fixed stickybombs having 0 velocity when shot through a teleport.
+  Mapbase enhancements
+    Multiple sky_camera support
+    Targeting entities now support true wildcards and regex
+    Improved entity debug commands
+    Entity I/O paramater conversion improvements
+    Minor changes to VBSP including `-defaultcubemap` and parallax corrected cubemaps
+    Projected texture improvements (new I/O and KVs, mapbase fixes to shader)
+    Converted most brush entities to use BSP instead of VPhysics collision (Solves func_brush compiling 0.5 units smaller)
+    Fixed particles with start active when the map loads
+    Default cubemap is now black
+  mom_restart_stage now does nothing on linear maps
+  Require repress of +attack to throw another conc
+  Make leaderboard static
+  Scale ghost entpanels with resolution & center them
+  Added divider in speedo settings to make more understandable
+  Prevent +moveup and +movedown from affecting ground movement
+  Warn player of mapping mode on run start
+  Allow dynamic updating of teleport destinations
+  Improved flashlight code & shadercompile
+  Mapping mode cvar for toggling RNG fix
+  Allow teleport destinations as restart points for start/stage zones
+  Made conc grenade follow rules of other explosives
+
 0.8.6
 = Added
   Full Ahop gamemode support
@@ -101,113 +189,3 @@
   Save start marks to savelocs file
   Prevent teleporting to a stage while in it - stops abuse of the command
   Ability to draw zone faces, not just outlines
-
-0.8.5
-= Added
-  Zones folder for holding zone files
-  Added mom_sj_particle_trail_enable in order to toggle stickybomb trail visibility
-  Added SJ settings to the game settings panel
-  Added mom_mapfinished_movement_enable to allow for movement during the map finish UI
-  Added a warning when running on non-standard tickrates
-  Added the ability to detonate stickies with the pistol out
-  Added mom_ghost_online_sticky_alpha to change the transparency of online player's sticky bombs
-  Added shooting sound effect when an online ghost shoots sticky bombs
-  Added mom_practice_warning_enable to warn players who enter practice mode while in a run that they will resume the run from their previous location
-  Added mom_hud_mapinfo_show_status for zone label and mom_hud_versioninfo_enable for version label
-  Made players emit rocket launcher firing sounds online
-  Added an appropriate whitelist for commands issued by point_clientcommand
-  Add ahop gamemode movement (official gamemode coming next update!)
-  Added sticky armtime proxy that changes the blue glow on the stickybomb to fade in when during arming
-  Added "feeling lucky" button to the map selector 
-  Added a time comparison on the map finished panel)
-  Added toggle timer sound convars
-  Added airborne_only flag to func_nogrenades
-  Added PBR parameters MRAO scale and Emission scale to PS30 version of PBR shader
-  Added new fonts - Bebas Neue, Noto Sans, Source Code Pro, and credited them in FontCredits.txt
-  Added necessary flags for buttons that can be +use'd and are also non-solid, as in some CSS maps
-  Can now hold +jump to prevent being teleported in practice mode
-  Console search features (enter a space to search cvars/ccommands)
-  Added vertical, ramp board/leave, and explosive speedometers
-  Entity glow effect
-  New consolidated Settings panel 
-  Backported Alien Swarm's postprocess_controller entity
-  Added a 1/10000 chance for a wild wild western rider on your rockets
-
-= Fixed
-  Fixed paint doing damage to buttons when using +paint with other weapons out
-  Fixed the map finished panel status messages not being reset when using mom_restart or mom_reset
-  Fixed keyboard bindings not displaying or updating properly in the options menu
-  Fixed hud and game text being activated by online ghosts
-  Fixed lobby menu sometimes not accepting mouse input
-  Prevented spectator mode and player changes when showing the map finished panel
-  Fixed the sticky launcher's charge rate only being reset in start zones if it was the active weapon
-  Fixed sticky bombs from firing before mouse release when charge is disabled
-  Fixed sticky launcher sounds cancelling each other out
-  Fixed sticky bomb using different physics models based on the model it's given, causing custom sticky models to behave differently
-  Allowed stickies shot in practice mode to do damage when the timer isn't running
-  Fixed stickies persisting even when a player goes into spectate in a lobby
-  Made r_drawviewmodel not require sv_cheats
-  Made leaderboard panel close properly when it is closed by another event such as watching a replay or viewing a profile
-  Fixed ducking and water in RJ/SJ to make it more familiar
-  Fixed the "Blank" color having 1 alpha which caused supposedly invisible hud elements to show slightly
-  Disabled trigger debug text and bbox by default with developer 1, it can be enabled with mom_triggers_overlay_bbox and text_enable in dev builds
-  Re-added vprof
-  Fixed run comparisons comparing against runs of differing track number
-  Fixed weapons spawning in the floor which prevented them from being picked up by the player
-  Fixed map info & leaderboards not showing author(s) if map info is not looked at
-  Fixed rockets not firing while attack2 is held
-  Fixed TF2 models having burn effects
-  Limited mom_map_download_queue_parallel to 3, since only 3 maps can be actively downloaded at a time
-  Fixed jump heights not being effected by sv_gravity
-  Fixed chat's filters button not properly showing
-  Fixed P2P connections being accepted from blocked players
-  Fixed weapons casting shadows while in spectator mode
-  Added missing PCF files for missing particles (some on rj_iT)
-  Fixed replays not playing on rj_iT (and other maps with capitals)
-  Resolution change crashes
-  Fixed leaderboards attempting to update while not in a map
-  Fixed PBR default values
-  Fixed softlock when chat is opened and cl_drawhud is 0
-  Fix PBR flashlight on brushes
-  Fixed black outline around paint decals
-  Revert lightmappedgeneric to a version where parallax cubemaps worked
-  Prevented giving of weapons in the main menu/credits
-  Fixed bloom being more intense than in CSS
-  Fixed escape key clearing comboboxes when toggling between main menu/settings and the game
-  Fixed sorting by favorites/library on the map selector defaulting to sort by name by removing them. There are already tabs for favorites/library.
-  Fixed map finished panel not being closable when replay file can't be written
-  Stopped stage enter/exit velocity on speedometer from showing on stage re-enter. Stops it from showing again when failing a jump on RJ/SJ gamemodes.
-  Removed weapon lowering functionality
-  Fixed sticky charge meter and crosshair not hiding when leaderboards were open
-
-= Improved
-  Made the leaderboards stay open when tab is released if the user has right clicked it
-  Removed all cvar_value fields from resource files since defaults are set in code
-  Various VGUI improvements not seen by the user
-  Discord rich presence improvements: show game mode on image hover & when not doing a run.
-  Steam rich presence improvements: allow users to toggle it through the cvar mom_steam_rich_presence, show current status (making it more discord-like), updates without needing to be in a lobby, & shows group.
-  Various improvements to the Speedometer
-  Message boxes now scale with resolution & are more readable
-  Auto-apply momentum settings & remove the OK/Apply/Cancel buttons
-  Improved entity IO for saving/restoring savelocs
-  Show spectate list for other spectators
-  Moved localization methods, allowing localization files to be changed without needing to restart the game
-  Updated the grenade animations to not be default HL2 ones
-  Auto-apply momentum options & remove OK/Apply/Cancel buttons. Added a "write to cfg" button
-  Disabled mouse accel by default
-  Replaced/updated shader compile
-  New console design
-  Removed PBR bloat
-  Improved image resizing
-  Made static menus (saveloc & ruler menu) configurable through files cfg/savelocmenu_default.vdf and cfg/rulermenu_default.vdf
-  Proportional color picker with new design
-  New speedometer
-  Loading Screen UI
-  Moved sticky charge meter/bomb count underneath speedometer
-  Fog shader now uses radial-based fog calculations for more consistent appearance
-  Main menu scheme to match new UI direction
-  Map selector scheme to match new UI direction
-  Main menu logo model touchup
-  HUD elements are now hiding parts that aren't relevant to specific game modes
-  RichText (chat, console) panels render more accurately, have shift + click selection, and scroll-by-selection
-  HUD based elements now match new UI direction
