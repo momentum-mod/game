@@ -855,6 +855,7 @@ bool MomTeleportEntity(CBaseEntity* pTeleportTo,
 
 //----------- CTriggerTeleport -----------------------------------------------------------------
 LINK_ENTITY_TO_CLASS(trigger_teleport, CTriggerMomentumTeleport);
+LINK_ENTITY_TO_CLASS(trigger_momentum_teleport, CTriggerMomentumTeleport);
 
 BEGIN_DATADESC(CTriggerMomentumTeleport)
     DEFINE_KEYFIELD(m_iMode, FIELD_INTEGER, "mode"),
