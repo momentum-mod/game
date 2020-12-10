@@ -408,7 +408,7 @@ int CBaseMomZoneTrigger::DrawDebugTextOverlays()
 {
     int text_offset = BaseClass::DrawDebugTextOverlays();
     
-    const char *szZoneType[ZONE_TYPE_COUNT] = {"start", "stop", "stage", "checkpoint"};
+    const char *szZoneType[ZONE_TYPE_COUNT] = {"stop", "start", "stage", "checkpoint", "trick"};
 
     char tempstr[255];
     Q_snprintf(tempstr, sizeof(tempstr), "Zone type: %s", szZoneType[GetZoneType()]);
