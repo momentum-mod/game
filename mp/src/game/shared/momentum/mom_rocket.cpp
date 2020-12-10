@@ -25,6 +25,7 @@ PRECACHE_WEAPON_REGISTER(momentum_rocket);
 
 #ifdef GAME_DLL
 static MAKE_TOGGLE_CONVAR(mom_rj_sound_trail_enable, "1", FCVAR_ARCHIVE, "Toggles the rocket trail sound. 0 = OFF, 1 = ON\n");
+static MAKE_TOGGLE_CONVAR(mom_rj_sound_fizzle_enable, "1", FCVAR_ARCHIVE | FCVAR_REPLICATED, "Toggles the rocket fizzle sound. 0 = OFF, 1 = ON\n");
 static MAKE_TOGGLE_CONVAR(mom_rj_decals_enable, "1", FCVAR_ARCHIVE, "Toggles creating decals on rocket explosion. 0 = OFF, 1 = ON\n");
 #else
 static MAKE_TOGGLE_CONVAR(mom_rj_particle_trail_enable, "1", FCVAR_ARCHIVE, "Toggles the rocket trail particle. 0 = OFF, 1 = ON\n");
@@ -94,18 +95,26 @@ float CMomRocket::GetDamageAmount()
     return g_pGameModeSystem->GameModeIs(GAMEMODE_RJ) ? 90.0f : 50.0f;
 }
 
-void CMomRocket::Destroy(bool bShowFizzleSprite)
+void CMomRocket::Destroy()
 {
     StopTrailSound();
 
-    BaseClass::Destroy(bShowFizzleSprite);
+    BaseClass::Destroy();
+}
+
+void CMomRocket::PlayFizzleSound()
+{
+    if (mom_rj_sound_fizzle_enable.GetBool())
+    {
+        EmitSound(g_pWeaponDef->GetWeaponSound(WEAPON_ROCKETLAUNCHER, "RocketFizzle"));
+    }
 }
 
 void CMomRocket::Explode(trace_t *pTrace, CBaseEntity *pOther)
 {
     if (CNoGrenadesZone::IsInsideNoGrenadesZone(this))
     {
-        Destroy(true);
+        Fizzle();
         return;
     }
 

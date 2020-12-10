@@ -846,6 +846,7 @@ Frame::Frame(Panel *parent, const char *panelName, bool showTaskbarIcon /*=true*
 	_closeButton = new FrameButton(this, "frame_close", "r");
 	_closeButton->AddActionSignalTarget(this);
 	_closeButton->SetCommand(new KeyValues("CloseFrameButtonPressed"));
+	_closeButton->SetZPos(1);
 	
 	if (!surface()->SupportsFeature(ISurface::FRAME_MINIMIZE_MAXIMIZE))
 	{
@@ -1228,8 +1229,10 @@ void Frame::PerformLayout()
 	_rightGrip->SetBounds(wide - DRAGGER_SIZE, CORNER_SIZE, DRAGGER_SIZE, tall - (CORNER_SIZE + BOTTOMRIGHTSIZE));
 
 	_bottomRightGrip->SetBounds(wide - BOTTOMRIGHTSIZE, tall - BOTTOMRIGHTSIZE, BOTTOMRIGHTSIZE, BOTTOMRIGHTSIZE);
-	
-	_captionGrip->SetSize(wide-10,GetCaptionHeight());
+
+	int clientX, clientY, clientWide, clientTall;
+	GetClientArea(clientX, clientY, clientWide, clientTall);
+	_captionGrip->SetSize(wide - 10, Max(clientY, GetCaptionHeight()));
 	
 	_menuButton->SetBounds(7, 8, GetCaptionHeight()-5, GetCaptionHeight()-5);
 
@@ -1377,6 +1380,7 @@ bool Frame::IsSizeable()
 void Frame::GetClientArea(int &x, int &y, int &wide, int &tall)
 {
 	x = m_iClientInsetX;
+	y = m_bSmallCaption ? 0 : m_iClientInsetY;
 
 	GetSize(wide, tall);
 

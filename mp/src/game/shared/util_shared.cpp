@@ -986,6 +986,55 @@ void UTIL_StringToColor32( color32 *color, const char *pString )
 	color->a = tmp[3];
 }
 
+void UTIL_StringToFloatArray_PreserveArray( float *pVector, int count, const char *pString )
+{
+	char *pstr, *pfront, tempString[128];
+	int	j;
+
+	Q_strncpy( tempString, pString, sizeof(tempString) );
+	pstr = pfront = tempString;
+
+	for ( j = 0; j < count; j++ )			// lifted from pr_edict.c
+	{
+		pVector[j] = atof( pfront );
+
+		// skip any leading whitespace
+		while ( *pstr && *pstr <= ' ' )
+			pstr++;
+
+		// skip to next whitespace
+		while ( *pstr && *pstr > ' ' )
+			pstr++;
+
+		if (!*pstr)
+			break;
+
+		pstr++;
+		pfront = pstr;
+	}
+}
+
+void UTIL_StringToIntArray_PreserveArray( int *pVector, int count, const char *pString )
+{
+	char *pstr, *pfront, tempString[128];
+	int	j;
+
+	Q_strncpy( tempString, pString, sizeof(tempString) );
+	pstr = pfront = tempString;
+
+	for ( j = 0; j < count; j++ )			// lifted from pr_edict.c
+	{
+		pVector[j] = atoi( pfront );
+
+		while ( *pstr && *pstr != ' ' )
+			pstr++;
+		if (!*pstr)
+			break;
+		pstr++;
+		pfront = pstr;
+	}
+}
+
 void UTIL_DecodeICE( unsigned char * buffer, int size, const unsigned char *key)
 {
 	if ( !key )
@@ -1072,7 +1121,8 @@ char* ReadAndAllocStringValue( KeyValues *pSub, const char *pName, const char *p
 		{
 			DevWarning( "Can't get key value	'%s' from file '%s'.\n", pName, pFilename );
 		}
-		return "";
+        static char empty[] = "";
+		return empty;
 	}
 
 	int len = Q_strlen( pValue ) + 1;
@@ -1095,6 +1145,58 @@ int UTIL_StringFieldToInt( const char *szValue, const char **pValueStrings, int 
 
 	Assert(0);
 	return -1;
+}
+
+static char s_NumBitsInNibble[ 16 ] = 
+{
+	0, // 0000 = 0
+	1, // 0001 = 1
+	1, // 0010 = 2
+	2, // 0011 = 3
+	1, // 0100 = 4
+	2, // 0101 = 5
+	2, // 0110 = 6
+	3, // 0111 = 7
+	1, // 1000 = 8
+	2, // 1001 = 9
+	2, // 1010 = 10
+	3, // 1011 = 11
+	2, // 1100 = 12
+	3, // 1101 = 13
+	3, // 1110 = 14
+	4, // 1111 = 15
+};
+
+int UTIL_CountNumBitsSet( unsigned int nVar )
+{
+	int nNumBits = 0;
+
+	while ( nVar > 0 )
+	{
+		// Look up and add in bits in the bottom nibble
+		nNumBits += s_NumBitsInNibble[ nVar & 0x0f ];
+
+		// Shift one nibble to the right
+		nVar >>= 4;
+	}
+
+	return nNumBits;
+}
+
+int UTIL_CountNumBitsSet( uint64 nVar )
+{
+	int nNumBits = 0;
+
+	while ( nVar > 0 )
+	{
+		// Look up and add in bits in the bottom nibble
+		nNumBits += s_NumBitsInNibble[ nVar & 0x0f ];
+
+		// Shift one nibble to the right
+		nVar >>= 4;
+	}
+
+	return nNumBits;
 }
 
 

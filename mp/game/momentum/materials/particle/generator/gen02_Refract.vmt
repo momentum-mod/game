@@ -1,0 +1,13 @@
+Refract
+{
+	$normalmap              particle/generator/gen02_N
+	$refractTint            "[1 1 1]"
+    $refractAmount          .92
+    $bluramount             2
+    $noFog                  1
+    $ignoreZ                1
+    
+    $vertexalpha            1
+    $vertexcolormodulate    1
+    $vertexcolor            1
+}

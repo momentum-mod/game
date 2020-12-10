@@ -51,7 +51,7 @@
 
 @BaseClass base(Trigger, TrackNum) = MomentumTrigger []
 
-@FilterClass base(Targetname, TrackNum) = filter_momentum_track_number : "Filter a player based on if their track number is the one defined here. -1 defaults to true." []
+@FilterClass base(BaseFilter, TrackNum) = filter_momentum_track_number : "Filter a player based on if their track number is the one defined here. -1 defaults to true." []
 
 @BaseClass base(MomentumTrigger) = ZoneTrigger
 [
@@ -61,44 +61,78 @@
 @BaseClass base(MomentumTrigger) = TeleTrigger
 [
     target(target_destination) : "Remote Destination" : : "The entity specifying the point to which the player should be teleported."
+	
+    landmark(target_destination) : "Local Destination Landmark" : : "In landmark mode, teleported entities are offset from the target by their initial offset from the landmark, angles and velocity are also reoriented to the destination if enabled."
     
-    stop(choices) : "Stop player on teleport" : 1 = 
+    velocityscale(vector) : "Velocity Scale Factor (X Y Z)" : "1 1 1" : "Scale the player's velocity per-axis"
+    
+    mode(choices) : "Teleport mode" : 1 = 
     [
-        0 : "False"
-        1 : "True"
+        0 : "Default (do nothing)"
+        1 : "Reset velocity"
+        2 : "Keep negative Z (downwards) velocity only"
+        3 : "Redirect velocity to destination angles"
+        4 : "Landmark teleport"
+    ]
+	
+	reorient_landmark(choices) : "Reorient Landmark" : 0 : "(Landmark mode only) Reorient origin, angles and velocity from the landmark's local space to the destination's. This means the destination room does not have to face the same way." =
+    [
+        0 : "No"
+        1 : "Yes"
     ]
     
     resetang(choices) : "Reset the player angles on teleport" : 1 =
     [
-        0 : "False"
-        1 : "True"
+        0 : "No"
+        1 : "Yes"
     ]
     
     fail(choices) : "Indicates whether this teleport is for failing a level" : 0 =
     [
-        0 : "False"
-        1 : "True"
+        0 : "No"
+        1 : "Yes"
+    ]
+	
+	spawnflags(flags) =
+    [
+        8388608: "Teleport the player on EndTouch() instead of StartTouch()" : 0
     ]
 ]
 
-@SolidClass base(TeleTrigger) = trigger_momentum_teleport : "A trigger volume that teleports entities that touch it. Entities are teleported to the Remote Destination. "+
-    "The entity can have its Angles and Velocity reset by boolean settings." 
+@SolidClass base(TeleTrigger) = trigger_teleport : "A trigger volume that teleports entities that touch it. Entities are teleported to the Remote Destination." 
 [
-    // In other places default values for the spawnflags get carried over. But for some reason, I couldn't make it happen here
-    spawnflags(flags) =
+]
+
+@PointClass base(Targetname) = env_momentum_surface_teleport : "An entity that teleports the player when they stand on a specified material surface"
+[
+    target(target_destination) : "Remote Destination" : : "The entity specifying the point to which the player should be teleported."
+
+    gamematerial(choices) : "Game Material to Watch" : "0" : "The material to watch. When the player stands on this material, they will get teleported" =
     [
-        8388608: "Teleport the player on EndTouch() instead of StartTouch()" : 0
-        1: "Clients" : 1
-        2: "NPCs" : 0
-        4: "Pushables": 0
-        8: "Physics Objects" : 0
-        16: "Only player ally NPCs" : 0
-        32: "Only clients in vehicles" : 0
-        64: "Everything (not including physics debris)" : 0
-        512: "Only clients *not* in vehicles" : 0
-        1024: "Physics debris" : 0
-        2048: "Only NPCs in vehicles (respects player ally flag)" : 0
+        0 : "None (player's in the air)"
+        67 : "Concrete"
+        77 : "Metal"
+        68 : "Dirt"
+        86 : "Vent"
+        71 : "Grate"
+        84 : "Tile"
+        83 : "Slosh"
+        87 : "Wood"
+        80 : "Computer"
+        89 : "Glass"
+        70 : "Flesh"
+        73 : "Clip"
+        79 : "Foliage"
+        78 : "Sand"
     ]
+    
+    // Outputs
+    output OnSurfaceChangedToTarget(void) : "Fired when the player moves onto the specified game material."
+    output OnSurfaceChangedFromTarget(void) : "Fired when the player moves off the specified game material."
+    
+    // Inputs
+    input Enable(void) : "Start watching the player's surface."
+    input Disable(void) : "Stop watching the player's surface."
 ]
 
 @SolidClass base(ZoneTrigger) = trigger_momentum_timer_start : "Trigger that starts the timer." 
@@ -107,6 +141,8 @@
     look_angles(angle) : "Look angles" : "0 0 0" : "Where player will look when teleported to start."
     start_on_jump(integer) : "Start timer on jump" : 1 : "Start the timer when the player jump in the start zone/trigger zone."
     speed_limit_type(integer) : "Limit speed type" : 0 : "0) Limit the speed of the player no matter what. 1) Limit the speed only in air. 2) Limit the speed only on ground. 3) Limit the speed only on landing."
+    teleport_destination(target_destination) : "Remote Destination" : : "The entity specifying the point to which the player should be teleported when restarting a run."
+
     spawnflags(flags) =
     [
         8192: "Limit leave speed" : 1
@@ -123,7 +159,10 @@
     ]
 ]
 
-@SolidClass base(ZoneTrigger) = trigger_momentum_timer_stage : "Starting trigger for each stage of a map. trigger_momentum_timer_start is automatically stage 1!" []
+@SolidClass base(ZoneTrigger) = trigger_momentum_timer_stage : "Starting trigger for each stage of a map. trigger_momentum_timer_start is automatically stage 1!" 
+[
+    teleport_destination(target_destination) : "Remote Destination" : : "The entity specifying the point to which the player should be teleported when restarting a stage."
+]
 
 @SolidClass base(ZoneTrigger) = trigger_momentum_timer_checkpoint : "Trigger used to denote progress in a linear map. trigger_momentum_timer_start is automatically checkpoint (zone number) 1!" []
 
@@ -133,9 +172,57 @@
     output OnResetOnehops(void) : "Fired when the player touches this trigger."
 ]
 
-@FilterClass base(Targetname) = filter_momentum_progress : "Filter that checks to see if the player is at or above the given progress number."
+@FilterClass base(BaseFilter) = filter_momentum_progress : "Filter that checks to see if the player is at or above the given progress number."
 [
     progress_check(integer) : "Minimum req. prog. num" : -1 : "The minimum progress number that the player needs to be at in order for the filter to accept them."
+]
+
+@FilterClass base(BaseFilter) = filter_momentum_player_state : "Filter that checks the player's movement state"
+[
+    player_state(choices) : "Player State" : "Ground" =
+    [
+        0 : "Ground"
+        1 : "Surfing" 
+        2 : "Bunnyhopping" 
+    ]
+]
+
+@FilterClass base(BaseFilter) = filter_momentum_collectibles : "Filter that checks to see if the player is at or above the given collectible count"
+[
+    player_collectibles(integer) : "Minimum req. collectible count" : 0 : "The minimum collectible count that the player needs to be at in order for the filter to accept them."
+]
+
+@FilterClass base(BaseFilter) = filter_momentum_velocity : "Filter that checks the player's velocity"
+[
+    Mode(choices) : "Mode" : 0 : "Set which mode to use for velocity comparisons" =
+    [
+        0 : "Total Velocity"
+        1 : "Per-axis"
+    ]
+    Above(choices) : "Above/Below" : 1 : "Sets whether to check if the player goes above or below the given velocity." =
+    [
+        0 : "Below"
+        1 : "Above"
+    ]
+    EnableVertical(choices) : "Enable Vertical" : 0 : "Check vertical velocity (total velocity mode only)" =
+    [
+        0 : "No"
+        1 : "Yes"
+    ]
+    EnableHorizontal(choices) : "Enable Horizontal" : 0 : "Check horizontal velocity (total velocity mode only)" =
+    [
+        0 : "No"
+        1 : "Yes"
+    ]
+    VerticalVelocity(float) : "Vertical velocity" : 500 : "The amount of units per second for vertical (Z axis) speed."
+    HorizontalVelocity(float) : "Horizontal velocity" : 1000 : "The amount of units per second for horizontal (XY axis) speed."
+    IgnoreSign(choices) : "Use Absolute Value" : 0 : "Whether to check the absolute value of the velocity components (per-axis mode only)" =
+    [
+        0 : "No"
+        1 : "Yes"
+    ]
+    VelocityVector(vector) : "Per-axis Velocity" : "0 0 0" : "The velocity vector for per-axis mode"
+    VelocityAxes(vector) : "Per-axis Enable" : "0 0 0" : "Which axes to use when checking velocity, zero means the corresponding axis is ignored (per-axis mode only)"
 ]
 
 @SolidClass base(TeleTrigger) = trigger_momentum_teleport_progress : "Trigger that teleports the player to their last touched trigger_momentum_progress." []
@@ -165,9 +252,11 @@
     //output OnResetOnehop(void) : "Fires when the hop is being reset."
 ]
 
-@SolidClass base(Trigger) = trigger_momentum_userinput : "Trigger that fires on user KeyPress if inside trigger."
+@SolidClass base(MomentumTrigger) = trigger_momentum_userinput : "Trigger that fires on user KeyPress if inside trigger."
 [
     output OnKeyPressed(void) : "Fires when the desired key is pressed"
+    output OnKeyHeld(void) : "Fires every tick while the desired key is held"
+    output OnKeyReleased(void) : "Fires when the desired key is released"
     lookedkey(choices) : "Key that fires" : "Forward" =
     [
         0 : "Forward"
@@ -205,47 +294,47 @@
 [
 ]
 
-@SolidClass base(func_breakable) = func_shootboost : "Entity that pushes the player when hit by the momentum_gun."
-[
-    target(target_destination) : "Inside trigger" : : "If specified, the player must be inside this trigger for the func to work."
-    pushdir(angle) : "Push Direction (Pitch Yaw Roll)" : "0 0 0" : "Where player will be pushed."
-    force(integer) : "Force of the push" : 300 : "General force of the push (Player final velocity in Units per seconds) " +
-    "Ignored if -Use the direction vector as final force instead of calculating it by force amount- flag is set."
-    increase(choices) : "Handling of player's velocity" : 4 =
-    [
-        0 : "Set player's velocity to push final force"
-        1 : "Increase player's velocity by push final force"
-        2 : "Only if the player's velocity is lower than the push velocity, set player's velocity to final push velocity"
-        3 : "Only if the player's velocity is lower than the push velocity, increase player's velocity by final push velocity"
-        4 : "Act as basevelocity"
-    ]
-    spawnflags(flags) = 
-    [ 
-        524288: "Use the direction vector as final force instead of calculating it by force amount" : 0
-    ]
-
-    // THIS THROWS AN ERROR, BUT AS IT HIDES IT-> WE STAY WITH IT FOR NOW
-    health(float) : "Strength" : 1 : "Number of points of damage to take before breaking. IT HAS TO BE ABOVE 0."
-]
-
-@SolidClass base(MomentumTrigger) = trigger_momentum_push : "A trigger volume that modifies velocity of players that touch it."
+@BaseClass = MomentumPush
 [
     pushdir(angle) : "Push Direction (Pitch Yaw Roll)" : "0 0 0" : "Where player will be pushed. (Check flags for controlling its behaviour)."
     force(integer) : "Force of the push" : 300 : "General force of the push (Player final velocity in units per second) " +
     "Ignored if -Use the direction vector as final force instead of calculating it by force amount- flag is set."
-    increase(choices) : "Handling of player's velocity" : 3 =
+    increase(choices) : "Push mode" : 3 : "The method of pushing players. " =
     [
-        0 : "Set player velocity to final push force"
-        1 : "Increase player's current velocity by push final foce ammount"
-        2 : "Only set the player's velocity to the final push velocity if player's velocity is lower than final push velocity"
-        3 : "Act as basevelocity"
+        0 : "Set velocity"
+        1 : "Add velocity"
+        2 : "Set velocity if lower"
+        3 : "Add velocity if lower"
+        4 : "Basevelocity"
+        5 : "Variable push"
     ]
+    varpushduration(float) : "Variable push duration" : 1 : "Duration of a variable push in seconds"
+    varpushbias(float) : "Variable push bias" : "0.5" : "The curve bias of a variable push, higher values bias the curve towards the end, 0.5 is linear"
+    varpushincrease(choices) : "Variable push mode" : 0 : "Whether the variable push increases or decreases over its duration" =
+    [
+        0 : "Decreasing"
+        1 : "Increasing"
+    ]
+]
+
+@SolidClass base(func_brush, MomentumPush) = func_shootboost : "Entity that pushes the player when it is damaged"
+[
+    target(target_destination) : "Trigger" : : "If specified, the player must be inside this trigger for the boost to work."
+	
     spawnflags(flags) = 
     [ 
+        524288: "Use the direction vector as final force instead of calculating it by force amount" : 0
+    ]
+]
+
+@SolidClass base(MomentumTrigger, MomentumPush) = trigger_momentum_push : "A trigger volume that modifies velocity of players that touch it."
+[
+    spawnflags(flags) = 
+    [ 
+        524288: "Use the direction vector as final force instead of calculating it by force amount" : 0
         1048576: "Only allow for one touch before reseting" : 1
         2097152: "Modify player velocity on StartTouch" : 0
         4194304: "Modify player velocity on EndTouch" : 1
-        524288: "Use the direction vector as final force instead of calculating it by force amount" : 1
     ]
 ]
 
@@ -289,25 +378,6 @@
     WaterDist(float) : "Water distance" : 12 : "Vertical view fixup when eyes are near water plane."
     FootSteps(integer) : "Foot steps sound" : 1 : "Enable/Disable foot steps sounds."
     SwimSound(integer) : "Swim sound" : 1 : "Enable/Disable swimming sounds."
-]
-@SolidClass base(MomentumTrigger) = trigger_momentum_speedthreshold : "Trigger that fires an output when player speed is above/below a given threshold." 
-[    
-    AboveOrBelow(choices) : "Above/Below" : 0 : "Sets whether to fire if the player goes above or below the threshold." =
-    [
-        0 : "Above"
-        1 : "Below"
-    ]
-    Vertical(integer) : "Vertical" : 0 : "Activate the threshold for vertical speed."
-    Horizontal(integer) : "Horizontal" : 0 : "Activate the threshold for horizontal speed."
-    VerticalSpeed(float) : "Vertical speed threshold" : 500 : "The amount of units per second for vertical (Z axis) speed."
-    HorizontalSpeed(float) : "Horizontal speed threshold" : 1000 : "The amount of units per second for horizontal (XY axis) speed."
-    OnThink(choices) : "Check on set interval" : 0 : "If yes, this trigger will check at a given set interval while the player is in the trigger." =
-    [
-        0 : "No"
-        1 : "Yes"
-    ]
-    Interval(float) : "Interval" : "1.0" : "How many seconds between each check while the player is in the trigger."
-    output OnThreshold(void) : "Fires when the speed is above/below the given threshold."
 ]
 
 @BaseClass = Campaign

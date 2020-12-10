@@ -1,16 +1,33 @@
 #pragma once
 
 #include "mom_ghostdefs.h"
-#include "mom_shareddefs.h"
 #include "GameEventListener.h"
 #include "run/mom_run_entity.h"
 
-struct SavedLocation_t;
 class CBaseMomentumTrigger;
 class CTriggerOnehop;
 class CTriggerProgress;
 class CTriggerSlide;
 class CMomentumGhostBaseEntity;
+
+class CMomentumPlayerCollectibles
+{
+public:
+    CMomentumPlayerCollectibles() { ClearCollectibles(); }
+
+    void AddCollectible(CBaseEntity*, CBaseEntity*, int);
+    void ClearCollectibles();
+    void SaveToKeyValues(KeyValues *kv) const;
+    void LoadFromKeyValues(KeyValues *kv);
+
+    bool HasCollectible(const char *);
+
+    int GetCollectibleCount() { return m_iCollectibleCount; }
+    
+private:
+    CUtlVector<const char*> m_CollectibleList;
+    int m_iCollectibleCount;
+};
 
 struct SavedState_t
 {
@@ -22,6 +39,7 @@ struct SavedState_t
     Vector m_vecLastVelocity; // Saved velocity before the replay was played or practice mode.
     float m_fLastViewOffset;  // Saved viewoffset before the replay was played or practice mode.
     float m_fNextPrimaryAttack; // Saved next weapon shoot time
+    CMomentumPlayerCollectibles m_Collectibles; // Saved list of collected collectibles
     // Stats-related
     int m_nSavedPerfectSyncTicks;
     int m_nSavedStrafeTicks;
@@ -155,6 +173,8 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
     bool IsSpectatingGhost() const { return m_hObserverTarget.Get() && GetGhostEnt(); }
     CMomentumGhostBaseEntity *GetGhostEnt() const;
 
+    void TrySpectate(const char *pSpecString);
+
     bool StartObserverMode(int mode) OVERRIDE;
     void StopObserverMode() OVERRIDE;
     bool IsValidObserverTarget(CBaseEntity *target) OVERRIDE;
@@ -202,7 +222,7 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
     void SetAccelTicks(int ticks) { m_nAccelTicks = ticks; }
 
     bool CanTeleport();
-    void ManualTeleport(const Vector *newPosition, const QAngle *newAngles, const Vector *newVelocity);
+    void ManualTeleport(const Vector *newPosition, const QAngle *newAngles, const Vector *newVelocity, bool bStopTimer = true);
 
     // Trail Methods
     void Teleport(const Vector *newPosition, const QAngle *newAngles, const Vector *newVelocity) OVERRIDE;
@@ -225,11 +245,7 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
 
     void SetCurrentZoneTrigger(CTriggerZone *pZone) { return m_CurrentZoneTrigger.Set(pZone); }
     CTriggerZone *GetCurrentZoneTrigger() const { return m_CurrentZoneTrigger.Get(); }
-
-    bool CreateStartMark();
-    bool SetStartMark(int track, SavedLocation_t *saveloc);
-    SavedLocation_t *GetStartMark(int track) const { return (track >= 0 && track < MAX_TRACKS) ? m_pStartZoneMarks[track] : nullptr; }
-    bool ClearStartMark(int track, bool bPrintMsg = true);
+    bool IsInZone(MomZoneType_t eZoneType);
 
     void PreThink() override;
     void PostThink() OVERRIDE;
@@ -321,6 +337,12 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
     void ToggleInput(int nInput);
     void ResetToggledInput(int nInput);
 
+    // Collectible stuff
+    void InputAddCollectible(inputdata_t &inputdata);
+    void InputClearCollectibles(inputdata_t &inputdata);
+
+    CMomentumPlayerCollectibles m_Collectibles;
+
   private:
     // Replace wishdir to escape if we are stuck in a small corner 
     Vector m_vecCornerEscapeVel;
@@ -377,8 +399,6 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
     CUtlVector<CTriggerOnehop*> m_vecOnehops;
     CHandle<CBaseMomentumTrigger> m_CurrentProgress;
     CHandle<CTriggerZone> m_CurrentZoneTrigger;
-
-    SavedLocation_t *m_pStartZoneMarks[MAX_TRACKS];
 
     // for detecting bhop
     friend class CMomentumGameMovement;

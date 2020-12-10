@@ -377,6 +377,8 @@ BEGIN_DATADESC( CBasePlayer )
 
 	DEFINE_FIELD( m_autoKickDisabled, FIELD_BOOLEAN ),
 
+	DEFINE_FIELD( m_bDrawPlayerModelExternally, FIELD_BOOLEAN ),
+
 	// Function Pointers
 	DEFINE_FUNCTION( PlayerDeathThink ),
 
@@ -549,7 +551,6 @@ CBasePlayer::CBasePlayer( )
 	m_pSurfaceData = NULL;
 	m_surfaceFriction = 1.0f;
 	m_chTextureType = 0;
-	m_chPreviousTextureType = 0;
 
 	m_iSuicideCustomKillFlags = 0;
 	m_fDelay = 0.0f;
@@ -576,7 +577,9 @@ CBasePlayer::CBasePlayer( )
 
 	m_flLastObjectiveTime = -1.f;
 
-    m_hPostProcessCtrl.Set(NULL);
+	m_bDrawPlayerModelExternally = false;
+
+	m_hPostProcessCtrl.Set(NULL);
 }
 
 CBasePlayer::~CBasePlayer( )
@@ -5817,7 +5820,7 @@ bool CBasePlayer::ClientCommand( const CCommand &args )
 {
 	const char *cmd = args[0];
 #ifdef _DEBUG
-	if( stricmp( cmd, "test_SmokeGrenade" ) == 0 )
+	if( Q_stricmp( cmd, "test_SmokeGrenade" ) == 0 )
 	{
 		if ( sv_cheats && sv_cheats->GetBool() )
 		{
@@ -5845,7 +5848,7 @@ bool CBasePlayer::ClientCommand( const CCommand &args )
 	{
 		return true;
 	}
-	else if ( stricmp( cmd, "spectate" ) == 0 ) // join spectator team & start observer mode
+	else if ( Q_stricmp( cmd, "spectate" ) == 0 ) // join spectator team & start observer mode
 	{
 		if ( GetTeamNumber() == TEAM_SPECTATOR )
 			return true;
@@ -5868,7 +5871,7 @@ bool CBasePlayer::ClientCommand( const CCommand &args )
 		StartObserverMode( OBS_MODE_ROAMING );
 		return true;
 	}
-	else if ( stricmp( cmd, "spec_mode" ) == 0 ) // new observer mode
+	else if ( Q_stricmp( cmd, "spec_mode" ) == 0 ) // new observer mode
 	{
 		int mode;
 
@@ -5888,7 +5891,7 @@ bool CBasePlayer::ClientCommand( const CCommand &args )
 		// check for parameters.
 		if ( args.ArgC() >= 2 )
 		{
-			mode = atoi( args[1] );
+			mode = Q_atoi( args[1] );
 
 			if ( mode < OBS_MODE_IN_EYE || mode > LAST_PLAYER_OBSERVERMODE )
 				mode = OBS_MODE_IN_EYE;
@@ -5927,7 +5930,7 @@ bool CBasePlayer::ClientCommand( const CCommand &args )
 
 		return true;
 	}
-	else if ( stricmp( cmd, "spec_next" ) == 0 ) // chase next player
+	else if ( Q_stricmp( cmd, "spec_next" ) == 0 ) // chase next player
 	{
 		if ( GetObserverMode() > OBS_MODE_FIXED )
 		{
@@ -5945,7 +5948,7 @@ bool CBasePlayer::ClientCommand( const CCommand &args )
 		
 		return true;
 	}
-	else if ( stricmp( cmd, "spec_prev" ) == 0 ) // chase previous player
+	else if ( Q_stricmp( cmd, "spec_prev" ) == 0 ) // chase previous player
 	{
 		if ( GetObserverMode() > OBS_MODE_FIXED )
 		{
@@ -5964,11 +5967,11 @@ bool CBasePlayer::ClientCommand( const CCommand &args )
 		return true;
 	}
 	
-	else if ( stricmp( cmd, "spec_player" ) == 0 ) // chase next player
+	else if ( Q_stricmp( cmd, "spec_player" ) == 0 ) // chase next player
 	{
 		if ( GetObserverMode() > OBS_MODE_FIXED && args.ArgC() == 2 )
 		{
-			int index = atoi( args[1] );
+			int index = Q_atoi( args[1] );
 
 			CBasePlayer * target;
 
@@ -5990,20 +5993,20 @@ bool CBasePlayer::ClientCommand( const CCommand &args )
 		return true;
 	}
 
-	else if ( stricmp( cmd, "spec_goto" ) == 0 ) // chase next player
+	else if ( Q_stricmp( cmd, "spec_goto" ) == 0 ) // chase next player
 	{
 		if ( ( GetObserverMode() == OBS_MODE_FIXED ||
 			   GetObserverMode() == OBS_MODE_ROAMING ) &&
 			 args.ArgC() == 6 )
 		{
 			Vector origin;
-			origin.x = atof( args[1] );
-			origin.y = atof( args[2] );
-			origin.z = atof( args[3] );
+			origin.x = Q_atof( args[1] );
+			origin.y = Q_atof( args[2] );
+			origin.z = Q_atof( args[3] );
 
 			QAngle angle;
-			angle.x = atof( args[4] );
-			angle.y = atof( args[5] );
+			angle.x = Q_atof( args[4] );
+			angle.y = Q_atof( args[5] );
 			angle.z = 0.0f;
 
             #define SPECGOTO_MAX_VALUE 0xFFFF/2.0f
@@ -6022,7 +6025,7 @@ bool CBasePlayer::ClientCommand( const CCommand &args )
 
         return true;
 	}
-	else if ( stricmp( cmd, "playerperf" ) == 0 )
+	else if ( Q_stricmp( cmd, "playerperf" ) == 0 )
 	{
 		int nRecip = entindex();
 		if ( args.ArgC() >= 2 )
@@ -6690,10 +6693,6 @@ void CStripWeapons::StripWeapons(inputdata_t &data, bool stripSuit)
 	{
 		pPlayer = (CBasePlayer *)data.pActivator;
 	}
-	else if ( !g_pGameRules->IsDeathmatch() )
-	{
-		pPlayer = UTIL_GetLocalPlayer();
-	}
 
 	if ( pPlayer )
 	{
@@ -6860,6 +6859,9 @@ void CRevertSaved::LoadThink( void )
 #define SF_SPEED_MOD_SUPPRESS_SPEED		(1<<5)
 #define SF_SPEED_MOD_SUPPRESS_ATTACK	(1<<6)
 #define SF_SPEED_MOD_SUPPRESS_ZOOM		(1<<7)
+// Needs to be inverse because suppressing the flashlight is already default behavior
+// and we don't want to break compatibility for existing speedmods
+#define SF_SPEED_MOD_DONT_SUPPRESS_FLASHLIGHT	(1<<8)
 
 class CMovementSpeedMod : public CPointEntity
 {
@@ -6867,8 +6869,15 @@ class CMovementSpeedMod : public CPointEntity
 public:
 	void InputSpeedMod(inputdata_t &data);
 
+	void InputEnable(inputdata_t &data);
+	void InputDisable(inputdata_t &data);
+
+	void InputSetAdditionalButtons(inputdata_t &data);
+
 private:
 	int GetDisabledButtonMask( void );
+
+	int m_iAdditionalButtons;
 
 	DECLARE_DATADESC();
 };
@@ -6877,6 +6886,11 @@ LINK_ENTITY_TO_CLASS( player_speedmod, CMovementSpeedMod );
 
 BEGIN_DATADESC( CMovementSpeedMod )
 	DEFINE_INPUTFUNC( FIELD_FLOAT, "ModifySpeed", InputSpeedMod ),
+	DEFINE_INPUTFUNC( FIELD_VOID, "Enable", InputEnable ),
+	DEFINE_INPUTFUNC( FIELD_VOID, "Disable", InputDisable ),
+
+	DEFINE_KEYFIELD( m_iAdditionalButtons, FIELD_INTEGER, "AdditionalButtons" ),
+	DEFINE_INPUTFUNC( FIELD_INTEGER, "SetAdditionalButtons", InputSetAdditionalButtons ),
 END_DATADESC()
 	
 int CMovementSpeedMod::GetDisabledButtonMask( void )
@@ -6913,6 +6927,11 @@ int CMovementSpeedMod::GetDisabledButtonMask( void )
 		nMask |= IN_ZOOM;
 	}
 
+	if ( m_iAdditionalButtons != 0 )
+	{
+		nMask |= m_iAdditionalButtons;
+	}
+
 	return nMask;
 }
 
@@ -6942,14 +6961,18 @@ void CMovementSpeedMod::InputSpeedMod(inputdata_t &data)
 				pPlayer->HideViewModels();
 			}
 
-			// Turn off the flashlight
-			if ( pPlayer->FlashlightIsOn() )
+			if ( !HasSpawnFlags(SF_SPEED_MOD_DONT_SUPPRESS_FLASHLIGHT) )
 			{
-				pPlayer->FlashlightTurnOff();
+				// Turn off the flashlight
+				if (pPlayer->FlashlightIsOn())
+				{
+				    pPlayer->FlashlightTurnOff();
+				}
+				
+				// Disable the flashlight's further use
+				pPlayer->SetFlashlightEnabled(false);
 			}
-			
-			// Disable the flashlight's further use
-			pPlayer->SetFlashlightEnabled( false );
+
 			pPlayer->DisableButtons( GetDisabledButtonMask() );
 
 			// Hide the HUD
@@ -6970,8 +6993,12 @@ void CMovementSpeedMod::InputSpeedMod(inputdata_t &data)
 				}
 			}
 
-			// Allow the flashlight again
-			pPlayer->SetFlashlightEnabled( true );
+			if ( !HasSpawnFlags( SF_SPEED_MOD_DONT_SUPPRESS_FLASHLIGHT ) )
+			{
+				// Allow the flashlight again
+				pPlayer->SetFlashlightEnabled( true );
+			}
+
 			pPlayer->EnableButtons( GetDisabledButtonMask() );
 
 			// Restore the HUD
@@ -6982,6 +7009,106 @@ void CMovementSpeedMod::InputSpeedMod(inputdata_t &data)
 		}
 
 		pPlayer->SetLaggedMovementValue( data.value.Float() );
+	}
+}
+
+void CMovementSpeedMod::InputEnable(inputdata_t &data)
+{
+	CBasePlayer *pPlayer = NULL;
+
+	if ( data.pActivator && data.pActivator->IsPlayer() )
+	{
+		pPlayer = (CBasePlayer *)data.pActivator;
+	}
+
+	if ( pPlayer )
+	{
+		// Holster weapon immediately, to allow it to cleanup
+		if ( HasSpawnFlags( SF_SPEED_MOD_SUPPRESS_WEAPONS ) )
+		{
+			if ( pPlayer->GetActiveWeapon() )
+			{
+				pPlayer->Weapon_SetLast( pPlayer->GetActiveWeapon() );
+				pPlayer->GetActiveWeapon()->Holster();
+				pPlayer->ClearActiveWeapon();
+			}
+			
+			pPlayer->HideViewModels();
+		}
+
+		// Turn off the flashlight
+		if ( pPlayer->FlashlightIsOn() )
+		{
+			pPlayer->FlashlightTurnOff();
+		}
+		
+		// Disable the flashlight's further use
+		pPlayer->SetFlashlightEnabled( false );
+		pPlayer->DisableButtons( GetDisabledButtonMask() );
+
+		// Hide the HUD
+		if ( HasSpawnFlags( SF_SPEED_MOD_SUPPRESS_HUD ) )
+		{
+			pPlayer->m_Local.m_iHideHUD |= HIDEHUD_ALL;
+		}
+	}
+}
+
+void CMovementSpeedMod::InputDisable(inputdata_t &data)
+{
+	CBasePlayer *pPlayer = NULL;
+
+	if ( data.pActivator && data.pActivator->IsPlayer() )
+	{
+		pPlayer = (CBasePlayer *)data.pActivator;
+	}
+
+	if ( pPlayer )
+	{
+		// Bring the weapon back
+		if  ( HasSpawnFlags( SF_SPEED_MOD_SUPPRESS_WEAPONS ) && pPlayer->GetActiveWeapon() == NULL )
+		{
+			pPlayer->SetActiveWeapon( pPlayer->GetLastWeapon() );
+			if ( pPlayer->GetActiveWeapon() )
+			{
+				pPlayer->GetActiveWeapon()->Deploy();
+			}
+		}
+
+		// Allow the flashlight again
+		pPlayer->SetFlashlightEnabled( true );
+		pPlayer->EnableButtons( GetDisabledButtonMask() );
+
+		// Restore the HUD
+		if ( HasSpawnFlags( SF_SPEED_MOD_SUPPRESS_HUD ) )
+		{
+			pPlayer->m_Local.m_iHideHUD &= ~HIDEHUD_ALL;
+		}
+	}
+}
+
+void CMovementSpeedMod::InputSetAdditionalButtons(inputdata_t &data)
+{
+	CBasePlayer *pPlayer = NULL;
+
+	if ( data.pActivator && data.pActivator->IsPlayer() )
+	{
+		pPlayer = (CBasePlayer *)data.pActivator;
+	}
+
+	bool bAlreadyDisabled = false;
+	if ( pPlayer )
+	{
+		bAlreadyDisabled = (pPlayer->m_afButtonDisabled & GetDisabledButtonMask()) != 0;
+	}
+
+	m_iAdditionalButtons = data.value.Int();
+
+	// If we were already disabling buttons, re-disable them
+	if ( bAlreadyDisabled )
+	{
+		// We should probably do something better than this.
+		pPlayer->m_afButtonForced = GetDisabledButtonMask();
 	}
 }
 
@@ -7047,6 +7174,8 @@ void SendProxy_CropFlagsToPlayerFlagBitsLength( const SendProp *pProp, const voi
 
 		SendPropInt			( SENDINFO( m_nWaterLevel ), 2, SPROP_UNSIGNED ),
 		SendPropFloat		( SENDINFO( m_flLaggedMovementValue ), 0, SPROP_NOSCALE ),
+
+		SendPropBool		( SENDINFO( m_bDrawPlayerModelExternally ) ),
 
 	END_SEND_TABLE()
 
@@ -7981,7 +8110,7 @@ CON_COMMAND( mp_disable_autokick, "Prevents a userid from being auto-kicked" )
 		return;
 	}
 
-	int userID = atoi( args[1] );
+	int userID = Q_atoi( args[1] );
 	DisableAutokick disable( userID );
 	ForEachPlayer( disable );
 }

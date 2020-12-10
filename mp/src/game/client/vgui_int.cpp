@@ -33,6 +33,7 @@
 #include "MapSelectorDialog.h"
 #include "MomentumSettingsDialog.h"
 #include "chat/ChatPanel.h"
+#include "leaderboards/ClientTimesDisplay.h"
 
 #if defined( TF_CLIENT_DLL )
 #include "tf_gamerules.h"
@@ -189,6 +190,7 @@ static void VGui_OneTimeInit()
 	CBaseMenuPanel::Init();
 	CMomentumSettingsDialog::Init();
 	CMapSelectorDialog::Init();
+    CClientTimesDisplay::InitPanel();
 }
 
 bool VGui_Startup( CreateInterfaceFn appSystemFactory )

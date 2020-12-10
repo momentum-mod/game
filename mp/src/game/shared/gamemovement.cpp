@@ -974,8 +974,7 @@ void CGameMovement::CheckParameters( void )
 		float maxspeed;
 
 		spd = ( mv->m_flForwardMove * mv->m_flForwardMove ) +
-			  ( mv->m_flSideMove * mv->m_flSideMove ) +
-			  ( mv->m_flUpMove * mv->m_flUpMove );
+			  ( mv->m_flSideMove * mv->m_flSideMove );
 
 		maxspeed = mv->m_flClientMaxSpeed;
 		if ( maxspeed != 0.0 )
@@ -2199,10 +2198,14 @@ void CGameMovement::FullObserverMove( void )
 
 	float factor = sv_specspeed.GetFloat();
 
-	if ( mv->m_nButtons & IN_SPEED )
-	{
-		factor /= 2.0f;
-	}
+    if (mv->m_nButtons & IN_SPEED)
+    {
+        factor *= sv_noclipspeed_sprint_multiplier.GetFloat();
+    }
+    if (mv->m_nButtons & IN_DUCK)
+    {
+        factor *= sv_noclipspeed_duck_multiplier.GetFloat();
+    }
 
 	float fmove = mv->m_flForwardMove * factor;
 	float smove = mv->m_flSideMove * factor;
@@ -2275,10 +2278,14 @@ void CGameMovement::FullNoClipMove( float factor, float maxacceleration )
 
 	AngleVectors (mv->m_vecViewAngles, &forward, &right, &up);  // Determine movement angles
 
-	if ( mv->m_nButtons & IN_SPEED )
-	{
-		factor /= 2.0f;
-	}
+    if ( mv->m_nButtons & IN_SPEED )
+    {
+        factor *= sv_noclipspeed_sprint_multiplier.GetFloat();
+    }
+    if (mv->m_nButtons & IN_DUCK)
+    {
+        factor *= sv_noclipspeed_duck_multiplier.GetFloat();
+    }
 	
 	// Copy movement amounts
 	float fmove = mv->m_flForwardMove * factor;
@@ -3872,22 +3879,7 @@ void CGameMovement::CategorizePosition( void )
 		}
 
 #ifndef CLIENT_DLL
-		// If our gamematerial has changed, tell any player surface triggers that are watching
-		IPhysicsSurfaceProps *pPhysprops = MoveHelper()->GetSurfaceProps();
-		surfacedata_t *pSurfaceProp = pPhysprops->GetSurfaceData( pm.surface.surfaceProps );
-		char cCurrGameMaterial = pSurfaceProp->game.material;
-		if ( !player->GetGroundEntity() )
-		{
-			cCurrGameMaterial = 0;
-		}
-
-		// Changed?
-		if ( player->m_chPreviousTextureType != cCurrGameMaterial )
-		{
-			CEnvPlayerSurfaceTrigger::SetPlayerSurface( player, cCurrGameMaterial );
-		}
-
-		player->m_chPreviousTextureType = cCurrGameMaterial;
+		CEnvPlayerSurfaceTrigger::SetPlayerSurface( player, pm );
 #endif
 	}
 }

@@ -3,7 +3,7 @@ version: 2.1
 jobs:
   build_linux:
     docker:
-      - image: gocnak/steam-runtime-i386:momentum
+      - image: scell555/steam-runtime-gcc-9:momentum
     environment:
       USING_DOCKER: true
     steps:
@@ -15,7 +15,7 @@ jobs:
       - run:
           name: Building the game
           working_directory: mp/src
-          command: make -f games.mak
+          command: make -j8 -f games.mak all-targets
       - run:
           name: Zipping up artifacts
           command: tar --exclude=*.{dbg,dll} -C mp/game -czvf binaries_linux.tar.gz bin momentum/bin

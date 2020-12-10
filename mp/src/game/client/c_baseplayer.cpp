@@ -41,6 +41,7 @@
 #include "dt_utlvector_recv.h"
 #include "cam_thirdperson.h"
 #include "steam/steam_api.h"
+#include "viewrender.h"
 
 #if defined USES_ECON_ITEMS
 #include "econ_wearable.h"
@@ -166,8 +167,11 @@ BEGIN_RECV_TABLE_NOBASE( CPlayerLocalData, DT_Local )
 	RecvPropInt		(RECVINFO(m_bAllowAutoMovement)),
 
 	// 3d skybox data
-	RecvPropInt(RECVINFO(m_skybox3d.scale)),
+	RecvPropFloat(RECVINFO(m_skybox3d.scale)),
 	RecvPropVector(RECVINFO(m_skybox3d.origin)),
+	RecvPropVector(RECVINFO(m_skybox3d.angles)),
+	RecvPropEHandle(RECVINFO(m_skybox3d.skycamera)),
+	RecvPropInt( RECVINFO( m_skybox3d.skycolor ), 0, RecvProxy_IntToColor32 ),
 	RecvPropInt(RECVINFO(m_skybox3d.area)),
 
 	// 3d skybox fog data
@@ -179,6 +183,7 @@ BEGIN_RECV_TABLE_NOBASE( CPlayerLocalData, DT_Local )
 	RecvPropFloat( RECVINFO( m_skybox3d.fog.start ) ),
 	RecvPropFloat( RECVINFO( m_skybox3d.fog.end ) ),
 	RecvPropFloat( RECVINFO( m_skybox3d.fog.maxdensity ) ),
+	RecvPropFloat( RECVINFO( m_skybox3d.fog.farz ) ),
 
 	// fog data
 	RecvPropEHandle( RECVINFO( m_PlayerFog.m_hCtrl ) ),
@@ -234,6 +239,8 @@ END_RECV_TABLE()
 
 		RecvPropInt			( RECVINFO( m_nWaterLevel ) ),
 		RecvPropFloat		( RECVINFO( m_flLaggedMovementValue )),
+
+		RecvPropBool		( RECVINFO( m_bDrawPlayerModelExternally ) ),
 
 	END_RECV_TABLE()
 
@@ -429,6 +436,8 @@ C_BasePlayer::C_BasePlayer() : m_iv_vecViewOffset("C_BasePlayer::m_iv_vecViewOff
 
 	m_nForceVisionFilterFlags = 0;
 	m_nLocalPlayerVisionFlags = 0;
+
+	m_bDrawPlayerModelExternally = false;
 }
 
 //-----------------------------------------------------------------------------
@@ -1230,11 +1239,28 @@ bool C_BasePlayer::ShouldInterpolate()
 
 bool C_BasePlayer::ShouldDraw()
 {
-	return ShouldDrawThisPlayer() && BaseClass::ShouldDraw();
+	// We have to "always draw" a player with m_bDrawPlayerModelExternally in order to show up in whatever rendering list all of the views use, 
+	// but we can't put this in ShouldDrawThisPlayer() because we would have no way of knowing if it stomps the other checks that draw the player model anyway.
+	// As a result, we have to put it here in the central ShouldDraw() function. DrawModel() makes sure we only draw in non-main views and nothing's drawing the model anyway.
+	return (ShouldDrawThisPlayer() || m_bDrawPlayerModelExternally) && BaseClass::ShouldDraw();
 }
 
 int C_BasePlayer::DrawModel( int flags )
 {
+	if (m_bDrawPlayerModelExternally)
+	{
+		// Draw the player in any view except the main or "intro" view, both of which are default first-person views.
+		view_id_t viewID = CurrentViewID();
+		if (viewID == VIEW_MAIN || viewID == VIEW_INTRO_CAMERA)
+		{
+			// Make sure the player model wouldn't draw anyway...
+			if (!ShouldDrawThisPlayer())
+				return 0;
+		}
+
+		return BaseClass::DrawModel( flags );
+	}
+
 #ifndef PORTAL
 	// In Portal this check is already performed as part of
 	// C_Portal_Player::DrawModel()

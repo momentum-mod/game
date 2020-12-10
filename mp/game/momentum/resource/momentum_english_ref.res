@@ -118,7 +118,9 @@
         "MOM_SavedLocation" "Saveloc %s1/%s2"
         "MOM_Cheater_Message" "For your times to be able to submit,\nyou must turn sv_cheats off!"
         "MOM_Tickrate_Warning" "For your times to be able to submit, you must\nuse the default tickrate for this gamemode!"
+        "MOM_GameMode_Overridden" "For your times to able to submit,\nyou must restart the map in its correct gamemode!"
         "MOM_Practice_Warning" "Upon disabling practice mode, you will\nreturn to your current spot in the run!\nTo cancel this, stop your timer with\n\"mom_timer_stop\"!"
+        "MOM_Mapping_Warning" "For your times to be able to submit,\nyou must disable mapping mode!"
         "MOM_NoTimer" "No Timer"
         "MOM_PracticeMode" "Practice Mode"
 
@@ -139,6 +141,11 @@
         "MOM_Menu_MapCommands_Toggle_Entities"    "Toggle drawing entities"
         "MOM_Menu_MapCommands_Reload_Materials"   "Reload all materials"
         "MOM_Menu_MapCommands_Toggle_Cheats"      "Toggle cheats"
+
+    // Chat panel
+        "MOM_Chat_Specific_Typing" "%s1 typing..."
+        "MOM_Chat_Many_Typing" "%s1 people are typing..."
+        "filter_specspawn" "Spectates and Respawns"
 
     //Comparison Panel
         "MOM_Compare_Against" "Comparing against: "
@@ -184,6 +191,7 @@
         "MOM_MapSelector_Maps" "Maps"
         "MOM_MapSelector_Difficulty" "Tier"
         "MOM_MapSelector_StartMap" "Start Map"
+        "MOM_MapSelector_StartMapOverride" "Start Map In Specific Gamemode"
         "MOM_MapSelector_RefreshMapInfo" "Refresh Map Info"
         "MOM_MapSelector_ShowMapInfo" "Show Map Info"
         "MOM_MapSelector_Map" "Map Name"
@@ -521,6 +529,12 @@
         "MOM_Settings_Compare_Show_Jumps" "Zone jumps"
         "MOM_Settings_Compare_Show_Strafes" "Zone strafe"
 
+        // "MapInfo"
+        "MOM_MapInfo_Label" "Map info"
+        "MOM_Settings_Show_MapName" "Display map name"
+        "MOM_Settings_Show_MapAuthor" "Display map author"
+        "MOM_Settings_Show_MapDifficulty" "Display map difficulty"
+        "MOM_Settings_Show_MapStatus" "Show map status"
 
         // Replay Info
         // Spec GUI

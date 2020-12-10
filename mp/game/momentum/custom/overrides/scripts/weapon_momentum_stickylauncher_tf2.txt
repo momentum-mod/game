@@ -26,11 +26,14 @@ WeaponData
     // Sounds for the weapon.
     SoundData
     {
-        "single_shot"       "StickybombLauncher.Single"
+        "single_shot"       "Weapon_StickyBombLauncher.Single"
+        "charged_shot"      "Weapon_StickyBombLauncher.Single"
         "explosion"         "BaseExplosionEffect.SoundTF2"
-        "detonate"          "StickybombLauncher.Detonate"
-        "deny"              "StickybombLauncher.Deny"
-        "charge"            "StickybombLauncher.Charge"
+        "detonate"          "Weapon_StickyBombLauncher.ModeSwitch"
+        "deny"              "HL2Player.UseDeny"
+        "charge"            "Weapon_StickyBombLauncher.ChargeUp"
+        // "chargestop"        "StickybombLauncher.ChargeStop"
+        // "StickyFizzle"      "Stickybomb.Fizzle"
     }
     
     // Weapon particles

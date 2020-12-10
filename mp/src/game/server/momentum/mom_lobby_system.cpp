@@ -12,6 +12,7 @@
 #include "mom_modulecomms.h"
 #include "mom_timer.h"
 #include "mom_system_steam_richpresence.h"
+#include "util/mom_util.h"
 #include "steam/isteamnetworkingmessages.h"
 
 #include "tier0/memdbgon.h"
@@ -46,7 +47,7 @@ CON_COMMAND(mom_lobby_invite, "Invite friends to your lobby\n")
         SteamFriends()->ActivateGameOverlayInviteDialog(g_pMomentumLobbySystem->GetLobbyId());
 }
 
-CON_COMMAND(mom_lobby_teleport, "Teleport to a given lobby member's SteamID on your map.")
+CON_COMMAND(mom_lobby_teleport, "Teleport to a given lobby member's SteamID (exact) or name (partial) on your map.\n")
 {
     if (args.ArgC() >= 2)
         g_pMomentumLobbySystem->TeleportToLobbyMember(args.Arg(1));
@@ -73,12 +74,10 @@ void CMomentumLobbySystem::HandleNewP2PRequest(SteamNetworkingMessagesSessionReq
     if (!IsInLobby(hUserID))
         return;
 
-    if (IsUserBlocked(hUserID) && !m_vecBlocked.HasElement(hUserID))
+    if (MomUtil::IsSteamUserBlocked(hUserID.ConvertToUint64()) && !m_vecBlocked.HasElement(hUserID))
     {
         m_vecBlocked.AddToTail(hUserID);
     }
-
-    // MOM_TODO: Make a (temp) block list that only refreshes on game restart?
 
     if (m_vecBlocked.HasElement(hUserID))
     {
@@ -139,36 +138,43 @@ bool CMomentumLobbySystem::SendSavelocReqPacket(CSteamID& target, SavelocReqPack
 
 void CMomentumLobbySystem::TeleportToLobbyMember(const char *pIDStr)
 {
-    // Check a few things first
     CHECK_STEAM_API(SteamMatchmaking());
 
-    const auto lobbyMemID = CSteamID(Q_atoui64(pIDStr));
+    if (!LobbyValid())
+        return;
 
-    // Are they valid, and even in the lobby?
-    if (lobbyMemID.IsValid() && LobbyValid())
+    const auto pPlayer = CMomentumPlayer::GetLocalPlayer();
+    if (!pPlayer)
+        return;
+
+    if (g_pMomentumTimer->IsRunning())
     {
-        const auto pEnt = GetLobbyMemberEntity(lobbyMemID);
-        if (pEnt)
-        {
-            // Ok cool, but...
-            // Are we spectating or in a run?
-            const auto pPlayer = CMomentumPlayer::GetLocalPlayer();
-            if (pPlayer && pPlayer->GetObserverMode() == OBS_MODE_NONE && !g_pMomentumTimer->IsRunning())
-            {
-                // Teleport em
-                PositionPacket p;
-                if (pEnt->GetCurrentPositionPacketData(&p))
-                {
-                    g_pMomentumTimer->SetCanStart(false);
+        ClientPrint(pPlayer, HUD_PRINTTALK, "You can only teleport to targets when your timer is not running!");
+        return;
+    }
 
-                    pPlayer->Teleport(&p.Position, &p.EyeAngle, nullptr);
-                }
-            }
-            else
-            {
-                Warning("Cannot teleport to player while spectating or in a run!\n");
-            }
+    auto *pOtherEntity = GetLobbyMemberEntity(Q_atoui64(pIDStr));
+
+    if (!pOtherEntity)
+        pOtherEntity = GetLobbyMemberEntity(pIDStr);
+
+    if (!pOtherEntity)
+    {
+        ClientPrint(pPlayer, HUD_PRINTTALK, "Failed to find valid teleport target!");
+        return;
+    }
+
+    if (pPlayer->GetObserverMode() == OBS_MODE_NONE)
+    {
+        PositionPacket p;
+        if (pOtherEntity->GetCurrentPositionPacketData(&p))
+        {
+            pPlayer->ManualTeleport(&p.Position, &p.EyeAngle, nullptr);
         }
+    }
+    else
+    {
+        pPlayer->TrySpectate(pIDStr);
     }
 }
 
@@ -347,6 +353,19 @@ CMomentumOnlineGhostEntity* CMomentumLobbySystem::GetLobbyMemberEntity(const uin
     return nullptr;
 }
 
+CMomentumOnlineGhostEntity* CMomentumLobbySystem::GetLobbyMemberEntity(const char *pNamePartial)
+{
+    FOR_EACH_MAP_FAST(m_mapLobbyGhosts, i)
+    {
+        const auto pMemberName = SteamFriends()->GetFriendPersonaName(CSteamID(m_mapLobbyGhosts.Key(i)));
+
+        if (Q_stristr(pMemberName, pNamePartial))
+            return m_mapLobbyGhosts[i];
+    }
+
+    return nullptr;
+}
+
 void CMomentumLobbySystem::ClearCurrentGhosts(bool bLeavingLobby)
 {
     if (m_mapLobbyGhosts.Count() == 0)
@@ -467,15 +486,6 @@ bool CMomentumLobbySystem::IsInLobby(const CSteamID &other)
     }
 
     return false;
-}
-
-bool CMomentumLobbySystem::IsUserBlocked(const CSteamID &other)
-{
-    CHECK_STEAM_API_B(SteamFriends());
-
-    // Check if this person was block communication'd
-    EFriendRelationship relationship = SteamFriends()->GetFriendRelationship(other);
-    return relationship == k_EFriendRelationshipIgnored || relationship == k_EFriendRelationshipIgnoredFriend;
 }
 
 void CMomentumLobbySystem::UpdateCurrentLobbyMap(const char *pMapName)
@@ -645,6 +655,8 @@ void CMomentumLobbySystem::HandlePersonaCallback(PersonaStateChange_t* pParam)
         return;
 
     const auto person = CSteamID(pParam->m_ulSteamID);
+    const char *pName = SteamFriends()->GetFriendPersonaName(person);
+
     if (pParam->m_nChangeFlags & k_EPersonaChangeName)
     {
         if (IsInLobby(person))
@@ -652,9 +664,44 @@ void CMomentumLobbySystem::HandlePersonaCallback(PersonaStateChange_t* pParam)
             const auto pGhost = GetLobbyMemberEntity(pParam->m_ulSteamID);
             if (pGhost)
             {
-                const char *pName = SteamFriends()->GetFriendPersonaName(person);
                 pGhost->SetGhostName(pName);
             }
+        }
+    }
+
+    if (pParam->m_nChangeFlags & k_EPersonaChangeRelationshipChanged)
+    {
+        if (MomUtil::IsSteamUserBlocked(person.ConvertToUint64()))
+        {
+            Warning("%s was just blocked!\n", pName);
+
+            if (!m_vecBlocked.HasElement(person))
+            {
+                m_vecBlocked.AddToTail(person);
+            }
+
+            const auto findIndex = m_mapLobbyGhosts.Find(person.ConvertToUint64());
+
+            if (m_mapLobbyGhosts.IsValidIndex(findIndex))
+            {
+                // This player was just blocked by us and their ghost currently exists, remove it
+                const auto pEntity = m_mapLobbyGhosts[findIndex];
+
+                if (pEntity)
+                {
+                    pEntity->Remove();
+                }
+
+                m_mapLobbyGhosts.RemoveAt(findIndex);
+            }
+        }
+        else if (m_vecBlocked.HasElement(person))
+        {
+            Warning("%s was just unblocked!\n", pName);
+            m_vecBlocked.FindAndRemove(person);
+
+            // This player was just unblocked, attempt to spawn their ghost
+            CreateLobbyGhostEntity(person);
         }
     }
 }
@@ -684,7 +731,7 @@ void CMomentumLobbySystem::CreateLobbyGhostEntity(const CSteamID &lobbyMember)
 
     const char *pName = SteamFriends()->GetFriendPersonaName(lobbyMember);
 
-    if (IsUserBlocked(lobbyMember) || m_vecBlocked.HasElement(lobbyMember))
+    if (m_vecBlocked.HasElement(lobbyMember))
     {
         Warning("Not allowing %s to talk with us, we have them ignored!\n", pName);
         return;
@@ -707,7 +754,7 @@ void CMomentumLobbySystem::CreateLobbyGhostEntity(const CSteamID &lobbyMember)
         m_mapLobbyGhosts.Insert(lobbyMemberID, pNewPlayer);
 
         if (m_flNextUpdateTime < 0)
-            m_flNextUpdateTime = gpGlobals->curtime + (1.0f / mm_updaterate.GetFloat());
+            m_flNextUpdateTime = gpGlobals->curtime + (1.0f / MOM_ONLINE_GHOST_UPDATERATE);
 
         // "_____ just joined your map."
         WriteLobbyMessage(LOBBY_UPDATE_MEMBER_JOIN_MAP, lobbyMemberID);
@@ -808,6 +855,12 @@ void CMomentumLobbySystem::ReceiveP2PPackets()
             auto pMessage = messages[i];
 
             CSteamID fromWho = pMessage->m_identityPeer.GetSteamID();
+
+            if (m_vecBlocked.HasElement(fromWho))
+            {
+                pMessage->Release();
+                continue;
+            }
 
             CUtlBuffer buf(pMessage->m_pData, pMessage->m_cbSize, CUtlBuffer::READ_ONLY);
             buf.SetBigEndian(false);
@@ -934,7 +987,7 @@ void CMomentumLobbySystem::SendP2PPackets()
         PositionPacket frame;
         if (g_pMomentumGhostClient->CreateNewNetFrame(frame) && SendPacketToEveryone(&frame))
         {
-            m_flNextUpdateTime = gpGlobals->curtime + (1.0f / mm_updaterate.GetFloat());
+            m_flNextUpdateTime = gpGlobals->curtime + (1.0f / MOM_ONLINE_GHOST_UPDATERATE);
         }
     }
 }

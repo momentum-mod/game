@@ -100,6 +100,8 @@ $Project "Client (Momentum)"
                     $File "momentum\ui\chat\ChatHistory.h"
                     $File "momentum\ui\chat\ChatLine.cpp"
                     $File "momentum\ui\chat\ChatLine.h"
+                    $File "momentum\ui\chat\ChatCommands.h"
+                    $File "momentum\ui\chat\ChatCommands.cpp"
                 }
 
                 $Folder "Zone Menu"
@@ -342,6 +344,19 @@ $Project "Client (Momentum)"
                 $File "$SRCDIR\game\shared\momentum\run\mom_run_safeguards.cpp"
                 $File "$SRCDIR\game\shared\momentum\util\jsontokv.h"
                 $File "$SRCDIR\game\shared\momentum\util\jsontokv.cpp"
+                $File "$SRCDIR\game\shared\momentum\matchers.cpp"
+                $File "$SRCDIR\game\shared\momentum\matchers.h"
+                $File "$SRCDIR\game\shared\momentum\util\engine_patch.h"
+                $File "$SRCDIR\game\shared\momentum\util\engine_patch.cpp"
+                {
+                    $Configuration
+                    {
+                        $Compiler
+                        {
+                            $Create/UsePrecompiledHeader    "Not Using Precompiled Headers"
+                        }
+                    }
+                }
                 $File "$SRCDIR\game\shared\momentum\util\os_utils.h"
                 $File "$SRCDIR\game\shared\momentum\util\os_utils.cpp"
                 {
@@ -414,8 +429,6 @@ $Project "Client (Momentum)"
             $File   "momentum\fx_mom_impacts.cpp"
             $File   "momentum\fx_mom_explosions.cpp"
             $File   "momentum\fx_mom_particles.cpp"
-            $File   "momentum\fx_mom_conc_emitter.cpp"
-            $File   "momentum\fx_mom_conc_emitter.h"
             $File   "$SRCDIR\game\shared\momentum\fx_mom_shared.h"
             $File   "$SRCDIR\game\shared\momentum\fx_mom_shared.cpp"
             $File   "momentum\vgui_rootpanel_momentum.cpp"
@@ -443,6 +456,7 @@ $Project "Client (Momentum)"
         
         $File   "$SRCDIR\game\shared\predicted_viewmodel.cpp"
         $File   "$SRCDIR\game\shared\predicted_viewmodel.h"
+        $File   "c_beamspotlight.cpp"
     }
 
     $Folder "Link Libraries"

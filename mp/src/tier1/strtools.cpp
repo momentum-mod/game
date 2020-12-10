@@ -326,6 +326,65 @@ int V_strncmp( const char *s1, const char *s2, int count )
 	return 0; // count characters compared the same
 }
 
+static int compareAsNumbers(const char *s1, const char *s2)
+{
+	int o = 0;
+	for (;; ++s1, ++s2)
+	{
+		if (!V_isdigit(*s1) && !V_isdigit(*s2))
+			return o;
+		if (!V_isdigit(*s1))
+			return -1;
+		if (!V_isdigit(*s2))
+			return 1;
+		if (o)
+			return o;
+		if (*s1 < *s2)
+			o = -1;
+		else if (*s1 > *s2)
+			o = 1;
+	}
+	return 0;
+}
+
+int V_strinatcmp( const char *str1, const char *str2 )
+{
+	// It is not uncommon to compare a string to itself. See
+	// VPanelWrapper::GetPanel which does this a lot. Since stricmp
+	// is expensive and pointer comparison is cheap, this simple test
+	// can save a lot of cycles, and cache pollution.
+	if ( str1 == str2 )
+	{
+		return 0;
+	}
+	const unsigned char *s1 = (const unsigned char*)str1;
+	const unsigned char *s2 = (const unsigned char*)str2;
+	for ( ; *s1; ++s1, ++s2 )
+	{
+		if ( *s1 != *s2 )
+		{
+			if (V_isdigit(*s1) && V_isdigit(*s2))
+			{
+				if (int r = compareAsNumbers((const char*)s1, (const char*)s2))
+					return r;
+			}
+			// in ascii char set, lowercase = uppercase | 0x20
+			unsigned char c1 = *s1 | 0x20;
+			unsigned char c2 = *s2 | 0x20;
+			if ( c1 != c2 || (unsigned char)(c1 - 'a') > ('z' - 'a') )
+			{
+				// if non-ascii mismatch, fall back to CRT for locale
+				if ( (c1 | c2) >= 0x80 ) return stricmp( (const char*)s1, (const char*)s2 );
+				// ascii mismatch. only use the | 0x20 value if alphabetic.
+				if ((unsigned char)(c1 - 'a') > ('z' - 'a')) c1 = *s1;
+				if ((unsigned char)(c2 - 'a') > ('z' - 'a')) c2 = *s2;
+				return c1 > c2 ? 1 : -1;
+			}
+		}
+	}
+	return *s2 ? -1 : 0;
+}
+
 
 const char *StringAfterPrefix( const char *str, const char *prefix )
 {

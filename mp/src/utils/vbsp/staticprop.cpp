@@ -103,22 +103,6 @@ isstaticprop_ret IsStaticProp( studiohdr_t* pHdr )
 	if (!(pHdr->flags & STUDIOHDR_FLAGS_STATIC_PROP))
 		return RET_FAIL_NOT_MARKED_STATIC_PROP;
 
-	// If it's got a propdata section in the model's keyvalues, it's not allowed to be a prop_static
-	KeyValues *modelKeyValues = new KeyValues(pHdr->pszName());
-	if ( StudioKeyValues( pHdr, modelKeyValues ) )
-	{
-		KeyValues *sub = modelKeyValues->FindKey("prop_data");
-		if ( sub )
-		{
-			if ( !(sub->GetInt( "allowstatic", 0 )) )
-			{
-				modelKeyValues->deleteThis();
-				return RET_FAIL_DYNAMIC;
-			}
-		}
-	}
-	modelKeyValues->deleteThis();
-
 	return RET_VALID;
 }
 
@@ -580,7 +564,7 @@ void EmitStaticProps()
 	int i;
 	for ( i = 0; i < num_entities; ++i)
 	{
-		char* pEntity = ValueForKey(&entities[i], "classname");
+		const char* pEntity = ValueForKey(&entities[i], "classname");
 		if (!Q_strcmp(pEntity, "info_lighting"))
 		{
 			s_LightingInfo.AddToTail(i);
@@ -590,7 +574,7 @@ void EmitStaticProps()
 	// Emit specifically specified static props
 	for ( i = 0; i < num_entities; ++i)
 	{
-		char* pEntity = ValueForKey(&entities[i], "classname");
+		const char* pEntity = ValueForKey(&entities[i], "classname");
 		if (!strcmp(pEntity, "static_prop") || !strcmp(pEntity, "prop_static"))
 		{
 			StaticPropBuild_t build;

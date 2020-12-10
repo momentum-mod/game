@@ -71,6 +71,7 @@ $Project "Vrad_dll"
 			$File	"..\common\threads.cpp"
 			$File	"..\common\tools_minidump.cpp"
 			$File	"..\common\tools_minidump.h"
+			$File	"..\common\filesystem_tools.cpp"
 		}
 
 		$Folder	"Public Files"

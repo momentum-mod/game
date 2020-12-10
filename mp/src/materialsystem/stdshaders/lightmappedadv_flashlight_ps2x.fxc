@@ -12,16 +12,18 @@
 // STATIC: "SEAMLESS"               	"0..1"
 // STATIC: "DETAILTEXTURE"             	"0..1"
 // STATIC: "DETAIL_BLEND_MODE"			"0..1"
-// STATIC: "PHONG"						"0..1"	[ps20b] [ps30]
-// STATIC: "PHONGMASK"					"0..3"	[ps20b] [ps30]
+// STATIC: "PHONG"						"0..1"
+// STATIC: "PHONGMASK"					"0..3"
+// STATIC: "FLASHLIGHTDEPTHFILTERMODE"	"0..2"
 
 // DYNAMIC: "PIXELFOGTYPE"				"0..1"
-// DYNAMIC: "FLASHLIGHTSHADOWS"			"0..1"	[ps20b] [ps30]
+// DYNAMIC: "FLASHLIGHTSHADOWS"			"0..1"
 
 // SKIP: !$WORLDVERTEXTRANSITION && $NORMALMAP2
 // SKIP: !$NORMALMAP && $NORMALMAP2
 // SKIP: !$DETAILTEXTURE && ( $DETAIL_BLEND_MODE != 0 )
 // SKIP: !$PHONG && $PHONGMASK
+// SKIP: !$FLASHLIGHTSHADOWS && $FLASHLIGHTDEPTHFILTERMODE
 
 #include "shader_constant_register_map.h"
 #include "common_flashlight_fxc.h"
@@ -207,7 +209,7 @@ float4 main( PS_INPUT i ) : COLOR
 	float flAtten = saturate(endFalloffFactor * dot( g_FlashlightAttenuation.xyz, float3( 1.0f, 1.0f/dist, 1.0f/distSquared ) ) );
 
 #if FLASHLIGHTSHADOWS && ( defined( SHADER_MODEL_PS_2_B ) || defined( SHADER_MODEL_PS_3_0 ) )
-	float flShadow = DoFlashlightShadow( FlashlightDepthSampler, RandomRotationSampler, vProjCoords, i.projPos.xy / i.projPos.z, 0, g_vShadowTweaks, false );
+	float flShadow = DoFlashlightShadow( FlashlightDepthSampler, RandomRotationSampler, vProjCoords, i.projPos.xy / i.projPos.z, FLASHLIGHTDEPTHFILTERMODE, g_vShadowTweaks, false );
 	float flAttenuated = lerp( flShadow, 1.0f, g_vShadowTweaks.y );	// Blend between fully attenuated and not attenuated
 	flShadow = saturate(lerp( flAttenuated, flShadow, flAtten ));	// Blend between shadow and above, according to light attenuation
 	spotColor *= flShadow;

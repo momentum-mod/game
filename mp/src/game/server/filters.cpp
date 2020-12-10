@@ -9,6 +9,7 @@
 #include "entitylist.h"
 #include "ai_squad.h"
 #include "ai_basenpc.h"
+#include "momentum/matchers.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -21,9 +22,12 @@ LINK_ENTITY_TO_CLASS(filter_base, CBaseFilter);
 BEGIN_DATADESC( CBaseFilter )
 
 	DEFINE_KEYFIELD(m_bNegated, FIELD_BOOLEAN, "Negated"),
+	DEFINE_KEYFIELD(m_bPassCallerWhenTested, FIELD_BOOLEAN, "PassCallerWhenTested"),
 
 	// Inputs
 	DEFINE_INPUTFUNC( FIELD_INPUT, "TestActivator", InputTestActivator ),
+	DEFINE_INPUTFUNC( FIELD_EHANDLE, "TestEntity", InputTestEntity ),
+	DEFINE_INPUTFUNC( FIELD_INPUT, "SetField", InputSetField ),
 
 	// Outputs
 	DEFINE_OUTPUT( m_OnPass, "OnPass"),
@@ -66,12 +70,37 @@ void CBaseFilter::InputTestActivator( inputdata_t &inputdata )
 {
 	if ( PassesFilter( inputdata.pCaller, inputdata.pActivator ) )
 	{
-		m_OnPass.FireOutput( inputdata.pActivator, this );
+		m_OnPass.FireOutput( inputdata.pActivator, m_bPassCallerWhenTested ? inputdata.pCaller : this );
 	}
 	else
 	{
-		m_OnFail.FireOutput( inputdata.pActivator, this );
+		m_OnFail.FireOutput( inputdata.pActivator, m_bPassCallerWhenTested ? inputdata.pCaller : this );
 	}
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: Input handler for testing the activator. If the activator passes the
+//			filter test, the OnPass output is fired. If not, the OnFail output is fired.
+//-----------------------------------------------------------------------------
+void CBaseFilter::InputTestEntity( inputdata_t &inputdata )
+{
+	if ( PassesFilter( inputdata.pCaller, inputdata.value.Entity() ) )
+	{
+		m_OnPass.FireOutput( inputdata.value.Entity(), m_bPassCallerWhenTested ? inputdata.pCaller : this );
+	}
+	else
+	{
+		m_OnFail.FireOutput( inputdata.value.Entity(), m_bPassCallerWhenTested ? inputdata.pCaller : this );
+	}
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: Tries to set the filter's target since most filters use "filtername" anyway
+//-----------------------------------------------------------------------------
+void CBaseFilter::InputSetField( inputdata_t& inputdata )
+{
+	KeyValue("filtername", inputdata.value.String());
+	Activate();
 }
 
 
@@ -143,6 +172,11 @@ void CFilterMultiple::Activate( void )
 			if ( pFilter == NULL )
 			{
 				Warning("filter_multi: Tried to add entity (%s) which is not a filter entity!\n", STRING( m_iFilterName[i] ) );
+				continue;
+			}
+			else if ( pFilter == this )
+			{
+				Warning("filter_multi: Tried to add itself!\n");
 				continue;
 			}
 
@@ -257,6 +291,12 @@ public:
 			return pEntity->NameMatches( STRING(m_iFilterName) );
 		}
 	}
+
+	void InputSetField( inputdata_t& inputdata )
+	{
+		inputdata.value.Convert(FIELD_STRING);
+		m_iFilterName = inputdata.value.StringID();
+	}
 };
 
 LINK_ENTITY_TO_CLASS( filter_activator_name, CFilterName );
@@ -278,10 +318,24 @@ class CFilterModel : public CBaseFilter
 
 public:
     string_t m_iFilterModel;
+    string_t m_strFilterSkin;
 
-    bool PassesFilterImpl(CBaseEntity *pCaller, CBaseEntity *pEntity)
+    bool PassesFilterImpl( CBaseEntity *pCaller, CBaseEntity *pEntity )
     {
-        return (FStrEq(STRING(m_iFilterModel), STRING(pEntity->GetModelName())));
+        if (FStrEq(STRING(m_strFilterSkin), "-1") /*m_strFilterSkin == NULL_STRING|| FStrEq(STRING(m_strFilterSkin), "")*/)
+            return Matcher_NamesMatch(STRING(m_iFilterModel), STRING(pEntity->GetModelName()));
+        else if (pEntity->GetBaseAnimating())
+        {
+            //DevMsg("Skin isn't null\n");
+            return Matcher_NamesMatch(STRING(m_iFilterModel), STRING(pEntity->GetModelName())) && Matcher_Match(STRING(m_strFilterSkin), pEntity->GetBaseAnimating()->m_nSkin);
+        }
+        return false;
+    }
+
+    void InputSetField( inputdata_t& inputdata )
+    {
+        inputdata.value.Convert(FIELD_STRING);
+        m_iFilterModel = inputdata.value.StringID();
     }
 };
 
@@ -290,73 +344,105 @@ LINK_ENTITY_TO_CLASS(filter_activator_model, CFilterModel);
 BEGIN_DATADESC(CFilterModel)
 
 	// Keyfields
-	DEFINE_KEYFIELD(m_iFilterModel, FIELD_STRING, "model"),
+	DEFINE_KEYFIELD(m_iFilterModel,	FIELD_STRING, "filtermodel"),
+	DEFINE_KEYFIELD(m_strFilterSkin, FIELD_STRING, "skin"),
 
 END_DATADESC()
 
 // ###################################################################
 //	> FilterContext
 // ###################################################################
-enum filterCompare_t
-{
-	FILTER_LESS,
-	FILTER_EQUAL,
-	FILTER_GREATER,
-};
-
 class CFilterContext : public CBaseFilter
 {
     DECLARE_CLASS(CFilterContext, CBaseFilter);
     DECLARE_DATADESC();
 
 public:
-    filterCompare_t m_nFilterCompareType;
-    string_t m_sFilterContext;
-    int m_iFilterValue;
+	bool m_bAny;
 
-    bool PassesFilterImpl(CBaseEntity *pCaller, CBaseEntity *pEntity)
-    {
-        int i = pEntity->FindContextByName(STRING(m_sFilterContext));
+	bool PassesFilterImpl( CBaseEntity *pCaller, CBaseEntity *pEntity )
+	{
+		bool passes = false;
+		ResponseContext_t curcontext;
+		const char *contextvalue;
+		for (int i = 0; i < GetContextCount(); i++)
+		{
+			curcontext = m_ResponseContexts[i];
+			if (!pEntity->HasContext(STRING(curcontext.m_iszName), NULL))
+			{
+				if (m_bAny)
+					continue;
+				else
+					return false;
+			}
 
-        if (i == -1)
-            return false;
+			contextvalue = pEntity->GetContextValue(STRING(curcontext.m_iszName));
+			if (Matcher_NamesMatch(STRING(m_ResponseContexts[i].m_iszValue), contextvalue))
+			{
+				passes = true;
+				if (m_bAny)
+					break;
+			}
+			else if (!m_bAny)
+			{
+				return false;
+			}
+		}
 
-        const char *sValue = pEntity->GetContextValue(i);
-        long int iValue = strtol(sValue, nullptr, 10);
+		return passes;
+	}
 
-        if (errno == ERANGE)
-        {
-            Warning("filter_activator_context: The value of context \"%s\" is not a valid integer!\n",
-                    pEntity->GetContextName(i));
-            return false;
-        }
-
-        switch (m_nFilterCompareType)
-        {
-        case FILTER_GREATER:
-            return (iValue > m_iFilterValue);
-
-        case FILTER_LESS:
-            return (iValue < m_iFilterValue);
-
-        case FILTER_EQUAL:
-            return (iValue == m_iFilterValue);
-
-        default:
-            Warning("filter_activator_context: Invalid comparison type!\n");
-            return false;
-        }
-    }
+	void InputSetField( inputdata_t& inputdata )
+	{
+		m_ResponseContexts.RemoveAll();
+		AddContext(inputdata.value.String());
+	}
 };
 
-LINK_ENTITY_TO_CLASS(filter_activator_context, CFilterContext);
+LINK_ENTITY_TO_CLASS( filter_activator_context, CFilterContext );
 
-BEGIN_DATADESC(CFilterContext)
+BEGIN_DATADESC( CFilterContext )
 
 	// Keyfields
-	DEFINE_KEYFIELD(m_nFilterCompareType, FIELD_INTEGER, "CompareType"),
-    DEFINE_KEYFIELD(m_sFilterContext, FIELD_STRING, "FilterContext"),
-    DEFINE_KEYFIELD(m_iFilterValue, FIELD_INTEGER, "FilterValue"),
+	DEFINE_KEYFIELD( m_bAny,	FIELD_BOOLEAN,	"any" ),
+
+END_DATADESC()
+
+extern bool ReadUnregisteredKeyfields(CBaseEntity *pTarget, const char *szKeyName, variant_t *variant);
+
+// ###################################################################
+//	> CFilterKeyfield
+// ###################################################################
+class CFilterKeyfield : public CBaseFilter
+{
+	DECLARE_CLASS( CFilterKeyfield, CBaseFilter );
+	DECLARE_DATADESC();
+
+public:
+	string_t m_iFilterKey;
+	string_t m_iFilterValue;
+
+	bool PassesFilterImpl( CBaseEntity *pCaller, CBaseEntity *pEntity )
+	{
+		variant_t var;
+		bool found = (pEntity->ReadKeyField(STRING(m_iFilterKey), &var) || ReadUnregisteredKeyfields(pEntity, STRING(m_iFilterKey), &var));
+		return m_iFilterValue != NULL_STRING ? Matcher_Match(STRING(m_iFilterValue), var.String()) : found;
+	}
+
+	void InputSetField( inputdata_t& inputdata )
+	{
+		inputdata.value.Convert(FIELD_STRING);
+		m_iFilterKey = inputdata.value.StringID();
+	}
+};
+
+LINK_ENTITY_TO_CLASS( filter_activator_keyfield, CFilterKeyfield );
+
+BEGIN_DATADESC( CFilterKeyfield )
+
+	// Keyfields
+	DEFINE_KEYFIELD( m_iFilterKey,	FIELD_STRING,	"keyname" ),
+	DEFINE_KEYFIELD( m_iFilterValue,	FIELD_STRING,	"value" ),
 
 END_DATADESC()
 
@@ -374,6 +460,12 @@ public:
 	bool PassesFilterImpl( CBaseEntity *pCaller, CBaseEntity *pEntity )
 	{
 		return pEntity->ClassMatches( STRING(m_iFilterClass) );
+	}
+
+	void InputSetField( inputdata_t& inputdata )
+	{
+		inputdata.value.Convert(FIELD_STRING);
+		m_iFilterClass = inputdata.value.StringID();
 	}
 };
 
@@ -431,6 +523,12 @@ public:
 			return false;
 
 		return ( pEntity->VPhysicsGetObject()->GetMass() > m_fFilterMass );
+	}
+
+	void InputSetField( inputdata_t& inputdata )
+	{
+		inputdata.value.Convert(FIELD_FLOAT);
+		m_fFilterMass = inputdata.value.Float();
 	}
 };
 
@@ -717,5 +815,145 @@ BEGIN_DATADESC( CFilterEnemy )
 	DEFINE_KEYFIELD( m_flOuterRadius, FIELD_FLOAT, "filter_outer_radius" ),
 	DEFINE_KEYFIELD( m_nMaxSquadmatesPerEnemy, FIELD_INTEGER, "filter_max_per_enemy" ),
 	DEFINE_FIELD( m_iszPlayerName, FIELD_STRING ),
+
+END_DATADESC()
+
+extern bool TestEntityTriggerIntersection_Accurate( CBaseEntity *pTrigger, CBaseEntity *pEntity );
+
+// ###################################################################
+//	> CFilterInVolume
+// Passes when the entity is within the specified volume.
+// ###################################################################
+class CFilterInVolume : public CBaseFilter
+{
+	DECLARE_CLASS( CFilterInVolume, CBaseFilter );
+	DECLARE_DATADESC();
+
+public:
+	string_t m_iszVolumeTester;
+
+	void Spawn()
+	{
+		BaseClass::Spawn();
+
+		// Assume no string = use activator
+		if (m_iszVolumeTester == NULL_STRING)
+			m_iszVolumeTester = AllocPooledString("!activator");
+	}
+
+	bool PassesFilterImpl( CBaseEntity *pCaller, CBaseEntity *pEntity )
+	{
+		CBaseEntity *pVolume = gEntList.FindEntityByNameNearest(STRING(m_target), pEntity->GetLocalOrigin(), 0, this, pEntity, pCaller);
+		if (!pVolume)
+		{
+			Msg("%s cannot find volume %s\n", GetDebugName(), STRING(m_target));
+			return false;
+		}
+
+		CBaseEntity *pTarget = gEntList.FindEntityByName(NULL, STRING(m_iszVolumeTester), this, pEntity, pCaller);
+		if (pTarget)
+			return TestEntityTriggerIntersection_Accurate(pVolume, pTarget);
+		else
+		{
+			Msg("%s cannot find target entity %s, returning false\n", GetDebugName(), STRING(m_iszVolumeTester));
+			return false;
+		}
+	}
+
+	void InputSetField( inputdata_t& inputdata )
+	{
+		inputdata.value.Convert(FIELD_STRING);
+		m_iszVolumeTester = inputdata.value.StringID();
+	}
+};
+
+LINK_ENTITY_TO_CLASS( filter_activator_involume, CFilterInVolume );
+
+BEGIN_DATADESC( CFilterInVolume )
+
+	// Keyfields
+	DEFINE_KEYFIELD( m_iszVolumeTester,	FIELD_STRING,	"tester" ),
+
+END_DATADESC()
+
+// ###################################################################
+//	> CFilterSurfaceProp
+// ###################################################################
+class CFilterSurfaceData : public CBaseFilter
+{
+	DECLARE_CLASS( CFilterSurfaceData, CBaseFilter );
+	DECLARE_DATADESC();
+
+public:
+	string_t m_iFilterSurface;
+	int m_iSurfaceIndex;
+
+	enum
+	{
+		SURFACETYPE_SURFACEPROP,
+		SURFACETYPE_GAMEMATERIAL,
+	};
+
+	// Gets the surfaceprop's game material and filters by that.
+	int m_iSurfaceType;
+
+	void ParseSurfaceIndex()
+	{
+		m_iSurfaceIndex = physprops->GetSurfaceIndex(STRING(m_iFilterSurface));
+
+		switch (m_iSurfaceType)
+		{
+			case SURFACETYPE_GAMEMATERIAL:
+			{
+				const surfacedata_t *pSurfaceData = physprops->GetSurfaceData(m_iSurfaceIndex);
+				if (pSurfaceData)
+					m_iSurfaceIndex = pSurfaceData->game.material;
+				else
+					Warning("Can't get surface data for %s\n", STRING(m_iFilterSurface));
+			} break;
+		}
+	}
+
+	void Activate()
+	{
+		ParseSurfaceIndex();
+	}
+
+	bool PassesFilterImpl( CBaseEntity *pCaller, CBaseEntity *pEntity )
+	{
+		if (pEntity->VPhysicsGetObject())
+		{
+			int iMatIndex = pEntity->VPhysicsGetObject()->GetMaterialIndex();
+			switch (m_iSurfaceType)
+			{
+				case SURFACETYPE_GAMEMATERIAL:
+				{
+					const surfacedata_t *pSurfaceData = physprops->GetSurfaceData(iMatIndex);
+					if (pSurfaceData)
+						return m_iSurfaceIndex == pSurfaceData->game.material;
+				}
+				default:
+					return iMatIndex == m_iSurfaceIndex;
+			}
+		}
+
+		return false;
+	}
+
+	void InputSetField( inputdata_t& inputdata )
+	{
+		inputdata.value.Convert(FIELD_STRING);
+		m_iFilterSurface = inputdata.value.StringID();
+		ParseSurfaceIndex();
+	}
+};
+
+LINK_ENTITY_TO_CLASS( filter_activator_surfacedata, CFilterSurfaceData );
+
+BEGIN_DATADESC( CFilterSurfaceData )
+
+	// Keyfields
+	DEFINE_KEYFIELD( m_iFilterSurface,	FIELD_STRING,	"filterstring" ),
+	DEFINE_KEYFIELD( m_iSurfaceType, FIELD_INTEGER, "SurfaceType" ),
 
 END_DATADESC()

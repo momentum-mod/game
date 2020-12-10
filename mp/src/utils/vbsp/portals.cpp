@@ -745,7 +745,7 @@ qboolean FloodEntities (tree_t *tree)
 {
 	int		i;
 	Vector	origin;
-	char	*cl;
+	const char	*cl;
 	qboolean	inside;
 	node_t *headnode;
 
@@ -920,6 +920,7 @@ void FindAreas_r (node_t *node)
 	FloodAreas_r (node, NULL);
 }
 
+extern qboolean	noleaktest;
 
 void ReportAreaportalLeak( tree_t *tree, node_t *node )
 {
@@ -967,6 +968,12 @@ void ReportAreaportalLeak( tree_t *tree, node_t *node )
 			// write the linefile that goes from pBest to pStart
 			AreaportalLeakFile( tree, pStart, pBest, pBest->nodes[s] );
 		}
+	}
+
+	if (!noleaktest)
+	{
+		Warning( ("--- AREAPORTAL LEAK ---\n") );
+		exit(0);
 	}
 }
 

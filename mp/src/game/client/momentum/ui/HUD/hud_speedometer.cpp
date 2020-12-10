@@ -154,7 +154,7 @@ void CHudSpeedMeter::FireGameEvent(IGameEvent *pEvent)
     const auto bLinear = pLocal->m_iLinearTracks.Get(pLocal->m_Data.m_iCurrentTrack);
 
     // return on current or previous zone on a linear map
-    if (!m_pRunEntData->m_bTimerRunning || (iCurrentZone <= m_iLastZone && bLinear))
+    if (m_pRunEntData->m_iTimerState == TIMER_STATE_NOT_RUNNING || (iCurrentZone <= m_iLastZone && bLinear))
         return;
 
     const auto bLinearStartExit = bLinear && bExit && iCurrentZone == 1;

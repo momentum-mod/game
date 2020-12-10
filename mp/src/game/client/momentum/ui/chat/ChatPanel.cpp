@@ -6,14 +6,14 @@
 #include <ctime>
 #include <steam/isteamuser.h>
 
+#include "ChatCommands.h"
 #include "ChatEntry.h"
 #include "ChatLine.h"
 #include "ChatFilterPanel.h"
 #include "c_playerresource.h"
 #include "fmtstr.h"
-#include "vgui_controls/Label.h"
+#include "util/mom_util.h"
 
-#include "hud_element_helper.h"
 #include "hud_macros.h"
 #include "hud_spectatorinfo.h"
 #include "iclientmode.h"
@@ -27,12 +27,14 @@
 #include "vgui/IInput.h"
 #include "vgui/ISurface.h"
 #include "vgui/IVGui.h"
+#include "vgui_controls/Label.h"
 
 #include "tier0/memdbgon.h"
 
 using namespace vgui;
 
 #define TALK_INTERVAL 0.66f // min time between say commands from a client
+#define SPAWN_INTERVAL 0.5f // min time between respawns and spectate messages from others
 
 extern ConVar cl_chatfilters;
 
@@ -111,14 +113,17 @@ void ChatContainer::OnStopMessageMode()
 
 ChatPanel::ChatPanel() : BaseClass(nullptr, "ChatPanel")
 {
+    ChatCommands::InitCommands();
+
+    SetDefLessFunc(m_mapChatterSpammerBlocker);
+    SetDefLessFunc(m_mapPlayerSpawnerSpammerBlocker);
+
     m_fLastPlayerTalkTime = 0.0f;
 
     SetProportional(true);
     m_bIsVisible = m_bTyping = false;
     m_flHistoryFadeTime = gpGlobals->curtime;
     m_hChatFont = INVALID_FONT;
-
-    m_pSpectatorInfo = nullptr;
 
     HScheme chatScheme = scheme()->LoadSchemeFromFileEx(enginevgui->GetPanel(PANEL_CLIENTDLL), "resource/ChatScheme.res", "ChatScheme");
     SetScheme(chatScheme);
@@ -164,10 +169,7 @@ ChatPanel::ChatPanel() : BaseClass(nullptr, "ChatPanel")
     // https://partner.steamgames.com/doc/api/ISteamFriends#RequestClanOfficerList
 
     // MOM_TODO: query web API for officers / members/ other groups instead of this crap
-    m_vMomentumOfficers.AddToTail(76561198018587940ull); // tuxxi
     m_vMomentumOfficers.AddToTail(76561197979963054ull); // gocnak
-    m_vMomentumOfficers.AddToTail(76561198047369620ull); // rusty
-    m_vMomentumOfficers.AddToTail(76561197982874432ull); // juxtapo
 
     HOOK_MESSAGE(TextMsg);
 }
@@ -185,7 +187,6 @@ void ChatPanel::Init()
     g_pChatPanel = new ChatPanel;
 }
 
-
 void ChatPanel::ApplySchemeSettings(IScheme *pScheme)
 {
     BaseClass::ApplySchemeSettings(pScheme);
@@ -195,9 +196,9 @@ void ChatPanel::ApplySchemeSettings(IScheme *pScheme)
     m_cDefaultTextColor = pScheme->GetColor("OffWhite", COLOR_WHITE);
 }
 
-void ChatPanel::OnKeyCodeReleased(KeyCode code)
+void ChatPanel::OnKeyCodeTyped(KeyCode code)
 {
-    if (code == KEY_ENTER || code == KEY_PAD_ENTER || code == KEY_ESCAPE)
+    if (code == KEY_ENTER || code == KEY_PAD_ENTER || (code == KEY_ESCAPE && m_nMessageMode != MESSAGE_MODE_MENU))
     {
         if (code != KEY_ESCAPE)
         {
@@ -211,7 +212,7 @@ void ChatPanel::OnKeyCodeReleased(KeyCode code)
     }
     else
     {
-        BaseClass::OnKeyCodeReleased(code);
+        BaseClass::OnKeyCodeTyped(code);
     }
 }
 
@@ -270,34 +271,35 @@ void ChatPanel::OnThink()
             SteamMatchmaking()->SetLobbyMemberData(m_LobbyID, LOBBY_DATA_TYPING, m_bTyping ? "y" : nullptr);
         }
     }
+}
+
+void ChatPanel::UpdateTypingMembersLabel()
+{
+    static wchar_t wszTypingString[128];
 
     const int count = m_vTypingMembers.Count();
-    if (m_bIsVisible)
+    if (count <= 0)
     {
-        if (count > 0)
-        {
-            CUtlString typingText;
-            if (count <= 3)
-            {
-                FOR_EACH_VEC(m_vTypingMembers, i)
-                {
-                    typingText.Append(SteamFriends()->GetFriendPersonaName(CSteamID(m_vTypingMembers[i])));
-                    typingText.Append(i < count - 1 ? ", " : " ");
-                }
-                typingText.Append("typing...");
-            }
-            else
-            {
-                typingText.Format("%d people are typing...", count);
-            }
-
-            m_pTypingMembers->SetText(typingText.Get());
-        }
-        else
-        {
-            m_pTypingMembers->SetText("");
-        }
+        wszTypingString[0] = L'\0';
     }
+    else if (count <= 3)
+    {
+        CUtlString typingNames;
+        FOR_EACH_VEC(m_vTypingMembers, i)
+        {
+            typingNames.Append(SteamFriends()->GetFriendPersonaName(CSteamID(m_vTypingMembers[i])));
+            if (i < count - 1)
+                typingNames.Append(", ");
+        }
+
+        Q_wcsncpy(wszTypingString, CConstructLocalizedString(g_pVGuiLocalize->FindSafe("#MOM_Chat_Specific_Typing"), typingNames.Get()), sizeof(wszTypingString));
+    }
+    else
+    {
+        Q_wcsncpy(wszTypingString, CConstructLocalizedString(g_pVGuiLocalize->FindSafe("#MOM_Chat_Many_Typing"), count), sizeof(wszTypingString));
+    }
+
+    m_pTypingMembers->SetText(wszTypingString);
 }
 
 void ChatPanel::Clear()
@@ -309,7 +311,7 @@ void ChatPanel::GetTimestamp(char *pBuffer, int maxLen)
 {
     if (!mom_chat_timestamps_enable.GetBool())
     {
-        Q_snprintf(pBuffer, maxLen, "");
+        *pBuffer = '\0';
         return;
     }
 
@@ -328,16 +330,22 @@ void ChatPanel::OnLobbyMessage(LobbyChatMsg_t *pParam)
         return;
     }
 
-    char message[4096];
-    // MOM_TODO: This won't be just text in the future, if we capitalize on being able to send binary data. Wrap this is
-    // something and parse it
-    SteamMatchmaking()->GetLobbyChatEntry(CSteamID(pParam->m_ulSteamIDLobby), pParam->m_iChatID, nullptr, message, 4096, nullptr);
+    if (MomUtil::IsSteamUserBlocked(pParam->m_ulSteamIDUser))
+    {
+        DevLog("Ignoring message from SteamID %llu (%s) because they are blocked!\n", pParam->m_ulSteamIDUser, SteamFriends()->GetFriendPersonaName(msgSender));
+        return;
+    }
 
-    // MOM_TODO should we allow long messages still?
-    if (ValidateChatMessage(message, msgSender) != CHAT_STATE_OK)
+    CUtlString incomingMessage;
+    incomingMessage.SetLength(MAX_CHAT_LENGTH - 1);
+
+    // MOM_TODO: This won't be just text in the future, if we capitalize on being able to send binary data. Wrap this is something and parse it
+    SteamMatchmaking()->GetLobbyChatEntry(CSteamID(pParam->m_ulSteamIDLobby), pParam->m_iChatID, nullptr, incomingMessage.GetForModify(), MAX_CHAT_LENGTH - 1, nullptr);
+
+    if (ValidateChatMessage(incomingMessage, msgSender) != CHAT_STATE_OK)
         return;
 
-    FormatAndPrintMessage(message, msgSender);
+    FormatAndPrintMessage(incomingMessage, msgSender);
 }
 
 void ChatPanel::OnLobbyDataUpdate(LobbyDataUpdate_t *pParam)
@@ -355,14 +363,18 @@ void ChatPanel::OnLobbyDataUpdate(LobbyDataUpdate_t *pParam)
         const bool isTyping = typingText != nullptr && Q_strlen(typingText) == 1;
         const int typingIndex = m_vTypingMembers.Find(pParam->m_ulSteamIDMember);
         const bool isValidIndex = m_vTypingMembers.IsValidIndex(typingIndex);
-        if (isTyping)
+        if (isTyping && !MomUtil::IsSteamUserBlocked(pParam->m_ulSteamIDMember))
         {
             if (!isValidIndex)
+            {
                 m_vTypingMembers.AddToTail(pParam->m_ulSteamIDMember);
+                UpdateTypingMembersLabel();
+            }
         }
         else if (isValidIndex)
         {
             m_vTypingMembers.FastRemove(typingIndex);
+            UpdateTypingMembersLabel();
         }
     }
 }
@@ -371,15 +383,6 @@ void ChatPanel::OnLobbyEnter(LobbyEnter_t *pParam)
 {
     if (pParam->m_EChatRoomEnterResponse == k_EChatRoomEnterResponseSuccess)
         m_LobbyID = pParam->m_ulSteamIDLobby;
-}
-
-void ChatPanel::SpectatorUpdate(const CSteamID& personID, const CSteamID& target)
-{
-    if (!m_pSpectatorInfo)
-        m_pSpectatorInfo = GET_HUDELEMENT(CHudSpectatorInfo);
-
-    if (m_pSpectatorInfo)
-        m_pSpectatorInfo->SpectatorUpdate(personID, target);
 }
 
 void ChatPanel::Reset()
@@ -498,7 +501,7 @@ CON_COMMAND(say, "Display player message")
     {
         p++;
         length -= 2;
-        p[length] = 0;
+        p[length] = '\0';
     }
 
     g_pChatPanel->ValidateAndSendMessageLocal(p);
@@ -516,25 +519,42 @@ void ChatPanel::SetFilterFlag(int iFilter)
     cl_chatfilters.SetValue(m_iFilterFlags);
 }
 
+bool ChatPanel::PlayerIsSpamming(CUtlMap<uint64, float> &mapOfDelays, uint64 person, float delayAmt)
+{
+    const auto index = mapOfDelays.Find(person);
+    if (!mapOfDelays.IsValidIndex(index))
+    {
+        mapOfDelays.Insert(person, Plat_FloatTime() + delayAmt);
+
+        return false;
+    }
+
+    float &delay = mapOfDelays[index];
+
+    const bool bSpamming = delay > Plat_FloatTime();
+    if (!bSpamming)
+        delay = Plat_FloatTime() + delayAmt;
+
+    return bSpamming;
+}
+
 void ChatPanel::Send()
 {
     char ansi[MAX_CHAT_LENGTH];
     m_pChatInput->GetText(ansi, sizeof(ansi));
 
     int len = Q_strlen(ansi);
+    if (len <= 0)
+        return;
 
     // remove the \n
-    if (len > 0 && ansi[len - 1] == '\n')
+    if (ansi[len - 1] == '\n')
     {
         ansi[len - 1] = '\0';
     }
 
-    if (len > 0)
-    {
-        ValidateAndSendMessageLocal(ansi);
-    }
-
-    m_pChatInput->SetText(L"");
+    if (ValidateAndSendMessageLocal(ansi))
+        m_pChatInput->SetText(L"");
 }
 
 bool ChatPanel::SendMessageToLobby(const char *pText)
@@ -562,45 +582,45 @@ bool ChatPanel::SendMessageToLobby(const char *pText)
     return result;
 }
 
-void ChatPanel::ValidateAndSendMessageLocal(const char *pText)
+bool ChatPanel::ValidateAndSendMessageLocal(const char *pText)
 {
-    CHECK_STEAM_API(SteamUser());
+    CHECK_STEAM_API_B(SteamUser());
 
     const auto localID = SteamUser()->GetSteamID();
 
-    const auto validatorOutcome = ValidateChatMessage(pText, localID);
+    CUtlString text(pText);
+    const auto validatorOutcome = ValidateChatMessage(text, localID);
     if (validatorOutcome == CHAT_STATE_OK)
     {
-        SendMessageToLobby(pText);
+        SendMessageToLobby(text);
 
-        FormatAndPrintMessage(pText, localID);
+        FormatAndPrintMessage(text, localID);
+        return true;
     }
+
+    return validatorOutcome == CHAT_STATE_COMMAND; // Commands are okay too
 }
 
-ChatValidationState_t ChatPanel::ValidateChatMessage(const char *pText, const CSteamID &playerID)
+ChatValidationState_t ChatPanel::ValidateChatMessage(CUtlString &textStr, const CSteamID &playerID)
 {
-    // Check if player is spamming
-    if (m_fLastPlayerTalkTime + TALK_INTERVAL >= gpGlobals->curtime)
-        return CHAT_STATE_SPAMMING;
+    textStr.Trim();
 
-    if (!pText || !pText[0])
+    if (textStr.IsEmpty())
         return CHAT_STATE_EMPTY;
 
-    CUtlString str(pText);
-    str.Trim();
-
-    if (str.IsEmpty())
-        return CHAT_STATE_EMPTY;
-
-    const auto textLen = Q_strlen(pText);
-
-    if (textLen > MAX_CHAT_LENGTH - 1)
+    if (textStr.Length() > MAX_CHAT_LENGTH - 1)
         return CHAT_STATE_TOO_LONG;
+
+    if (playerID == SteamUser()->GetSteamID() && ChatCommands::HandleChatCommand(textStr))
+        return CHAT_STATE_COMMAND;
+
+    if (PlayerIsSpamming(m_mapChatterSpammerBlocker, playerID.ConvertToUint64(), TALK_INTERVAL))
+        return CHAT_STATE_SPAMMING;
 
     return CHAT_STATE_OK;
 }
 
-void ChatPanel::FormatAndPrintMessage(const char *pText, const CSteamID &playerID)
+void ChatPanel::FormatAndPrintMessage(const CUtlString &textStr, const CSteamID &playerID)
 {
     CHECK_STEAM_API(SteamFriends());
     CHECK_STEAM_API(SteamMatchmaking());
@@ -637,7 +657,7 @@ void ChatPanel::FormatAndPrintMessage(const char *pText, const CSteamID &playerI
         bIsSpectating ? pSpecTag : "",
         personName,
         COLOR_NORMAL,
-        pText);
+        textStr.Get());
 
     if (mom_chat_sound_enable.GetBool())
     {
@@ -825,40 +845,51 @@ void ChatPanel::FireGameEvent(IGameEvent *event)
     if (FStrEq(event->GetName(), "lobby_leave"))
     {
         m_LobbyID.Clear();
+
         m_vTypingMembers.RemoveAll();
+        UpdateTypingMembersLabel();
+
+        m_mapChatterSpammerBlocker.RemoveAll();
+        m_mapPlayerSpawnerSpammerBlocker.RemoveAll();
     }
     else if (FStrEq(event->GetName(), "lobby_spec_update_msg"))
     {
-        const auto type = event->GetInt("type");
-        const auto person = Q_atoui64(event->GetString("id"));
-        const auto target = Q_atoui64(event->GetString("target"));
+        const auto type = event->GetInt("type", SPEC_UPDATE_INVALID);
 
-        CSteamID personID = CSteamID(person);
-        CSteamID targetID = CSteamID(target);
+        if (type == SPEC_UPDATE_INVALID)
+            return;
+
+        const auto person = Q_atoui64(event->GetString("id"));
+        const auto personID = CSteamID(person);
+
+        if (personID != SteamUser()->GetSteamID() && PlayerIsSpamming(m_mapPlayerSpawnerSpammerBlocker, person, SPAWN_INTERVAL))
+            return;
+
+        if (!CBasePlayer::GetLocalPlayer())
+            return;
 
         const char *pName = SteamFriends()->GetFriendPersonaName(personID);
 
-        if (type == SPEC_UPDATE_STOP && CBasePlayer::GetLocalPlayer())
+        if (type == SPEC_UPDATE_STOP)
         {
-            Printf(CHAT_FILTER_JOINLEAVE | CHAT_FILTER_SERVERMSG, "%s has respawned.", pName);
+            Printf(CHAT_FILTER_SPEC_SPAWN | CHAT_FILTER_SERVERMSG, "%s has respawned.", pName);
         }
-        else if (type == SPEC_UPDATE_STARTED && CBasePlayer::GetLocalPlayer())
+        else if (type == SPEC_UPDATE_STARTED)
         {
+            const auto target = Q_atoui64(event->GetString("target"));
+
             const char *spectateText = target != 1 ? "%s is now spectating." : "%s is now watching a replay.";
-            Printf(CHAT_FILTER_JOINLEAVE | CHAT_FILTER_SERVERMSG, spectateText, pName);
+            Printf(CHAT_FILTER_SPEC_SPAWN | CHAT_FILTER_SERVERMSG, spectateText, pName);
         }
-        else if (type == SPEC_UPDATE_CHANGETARGET)
+        /*else if (type == SPEC_UPDATE_CHANGETARGET)
         {
             if (target > 1)
             {
+                const auto targetID = CSteamID(target);
                 const char *pTargetName = SteamFriends()->GetFriendPersonaName(targetID);
                 DevLog("%s is now spectating %s.\n", pName, pTargetName);
             }
-            // Printf(CHAT_FILTER_JOINLEAVE | CHAT_FILTER_SERVERMSG,
-            //    "%s is now spectating %s.", pName, pTargetName);
-        }
-
-        SpectatorUpdate(personID, target);
+        }*/
     }
     else if (FStrEq(event->GetName(), "lobby_update_msg"))
     {
@@ -873,14 +904,10 @@ void ChatPanel::FireGameEvent(IGameEvent *event)
         const char *pName = SteamFriends()->GetFriendPersonaName(personID);
         Printf(CHAT_FILTER_JOINLEAVE | CHAT_FILTER_SERVERMSG, "%s has %s the %s.", pName, isJoin ? "joined" : "left", isMap ? "map" : "lobby");
 
-        if (!isJoin)
+        if (!isJoin && !isMap)
         {
-            SpectatorUpdate(personID, k_steamIDNil);
-
-            if (!isMap)
-            {
-                m_vTypingMembers.FindAndRemove(personID.ConvertToUint64());
-            }
+            m_vTypingMembers.FindAndRemove(personID.ConvertToUint64());
+            UpdateTypingMembersLabel();
         }
     }
 }

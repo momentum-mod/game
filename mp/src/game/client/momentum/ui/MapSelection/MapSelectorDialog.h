@@ -126,6 +126,8 @@ class CMapSelectorDialog : public vgui::Frame
     MESSAGE_FUNC_INT(OnRejectOverwrite, "RejectOverwrite", id);
     // Called when map should be started
     MESSAGE_FUNC_INT(OnMapStart, "StartMap", id);
+    // Called when map should be started with a overridden gamemode
+    MESSAGE_FUNC_INT_INT(OnMapStartOverride, "StartMapOverride", id, gamemode);
     // Refresh this map's info
     MESSAGE_FUNC_INT(OnRefreshMapInfo, "RefreshMapInfo", id);
     // called to look at map info
@@ -140,6 +142,9 @@ protected:
     MESSAGE_FUNC(OnTabChanged, "PageChanged");
 
     virtual void ActivateBuildMode();
+
+    // Helper for OnMapStart and OnMapStartOverride
+    void LaunchMap(int id);
 
     // list of all open game info dialogs
     CUtlMap<uint32, vgui::DHANDLE<CDialogMapInfo>> m_mapMapInfoDialogs;

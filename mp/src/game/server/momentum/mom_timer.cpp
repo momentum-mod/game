@@ -2,6 +2,7 @@
 
 #include "mom_timer.h"
 
+#include "mom_gamerules.h"
 #include "mom_player_shared.h"
 #include "mom_replay_system.h"
 #include "mom_system_saveloc.h"
@@ -10,14 +11,23 @@
 #include "movevars_shared.h"
 #include "run/mom_run_safeguards.h"
 #include "trigger_trace_enums.h"
+#include "tier0/icommandline.h"
 
 #include "tier0/memdbgon.h"
 
+extern ConVar mom_gamemode_override;
 
 CMomentumTimer::CMomentumTimer() : CAutoGameSystemPerFrame("CMomentumTimer"),
       m_iStartTick(0), m_iEndTick(0), m_bIsRunning(false),
-      m_bCanStart(false), m_bWasCheatsMsgShown(false), m_iTrackNumber(0), m_bShouldUseStartZoneOffset(false)
+      m_bCanStart(false), m_bWasCheatsMsgShown(false),
+      m_iTrackNumber(0), m_bShouldUseStartZoneOffset(false)
 {
+}
+
+bool CMomentumTimer::Init()
+{
+    m_bMapping = CommandLine()->FindParm("-mapping") != 0;
+    return true;
 }
 
 void CMomentumTimer::LevelInitPostEntity() { m_bWasCheatsMsgShown = false; }
@@ -54,9 +64,19 @@ void CMomentumTimer::DispatchCheatsMessage(CMomentumPlayer *pPlayer)
     m_bWasCheatsMsgShown = true;
 }
 
+void CMomentumTimer::DispatchMappingMessage(CMomentumPlayer *pPlayer)
+{
+    UTIL_ShowMessage("MAPPING", pPlayer);
+}
+
 void CMomentumTimer::DispatchTickrateMessage(CMomentumPlayer *pPlayer)
 {
     UTIL_ShowMessage("NON_DEFAULT_TICKRATE", pPlayer);
+}
+
+void CMomentumTimer::DispatchOverrideMessage(CMomentumPlayer* pPlayer)
+{
+    UTIL_ShowMessage("GAMEMODE_OVERRIDDEN", pPlayer);
 }
 
 bool CMomentumTimer::Start(CMomentumPlayer *pPlayer)
@@ -99,11 +119,21 @@ bool CMomentumTimer::Start(CMomentumPlayer *pPlayer)
         // We allow cheats to be enabled but we should warn the player that times won't submit
         DispatchCheatsMessage(pPlayer);
     }
+    if (mom_gamemode_override.GetBool())
+    {
+        // We allow the gamemode to be overridden as well, but warn the player that times won't submit
+        DispatchOverrideMessage(pPlayer);
+    }
     if (!CloseEnough(gpGlobals->interval_per_tick, g_pGameModeSystem->GetGameMode()->GetIntervalPerTick(), FLT_EPSILON))
     {
         // We also allow different tickrates, but warn the player that times won't submit on anything other than the
         // default tickrate for the current game mode
         DispatchTickrateMessage(pPlayer);
+    }
+    if (m_bMapping && GameRulesMomentum()->OnOfficialMap())
+    {
+        // Warn the player that he has enabled mapping mode
+        DispatchMappingMessage(pPlayer);
     }
 
     m_iStartTick = gpGlobals->tickcount;
@@ -119,10 +149,12 @@ bool CMomentumTimer::Start(CMomentumPlayer *pPlayer)
 
 void CMomentumTimer::Stop(CMomentumPlayer *pPlayer, bool bFinished /* = false */, bool bStopRecording /* = true*/)
 {
-    if (!m_bIsRunning)
-        return;
+    bool bWasRunning = m_bIsRunning;
 
     SetRunning(pPlayer, false);
+
+    if (!bWasRunning)
+        return;
 
     if (pPlayer)
     {
@@ -155,7 +187,7 @@ void CMomentumTimer::Reset(CMomentumPlayer *pPlayer)
     g_pSavelocSystem->SetUsingSavelocMenu(false);
     pPlayer->ResetRunStats();
     pPlayer->m_Data.m_bMapFinished = false;
-    pPlayer->m_Data.m_bTimerRunning = false;
+    pPlayer->m_Data.m_iTimerState = TIMER_STATE_NOT_RUNNING;
 
     if (m_bIsRunning)
     {
@@ -268,7 +300,7 @@ void CMomentumTimer::SetRunning(CMomentumPlayer *pPlayer, bool isRunning)
     m_bIsRunning = isRunning;
 
     if (pPlayer)
-        pPlayer->m_Data.m_bTimerRunning = isRunning;
+        pPlayer->m_Data.m_iTimerState = isRunning ? TIMER_STATE_RUNNING : TIMER_STATE_NOT_RUNNING;
 }
 void CMomentumTimer::CalculateTickIntervalOffset(CMomentumPlayer *pPlayer, const int zoneType, const int zoneNumber)
 {
@@ -313,36 +345,10 @@ void CMomentumTimer::DisablePractice(CMomentumPlayer *pPlayer)
 
 //--------- Commands --------------------------------
 
-CON_COMMAND(mom_start_mark_create, "Marks a starting point inside the start trigger for a more customized starting location.\n")
+CON_COMMAND_F(mom_timer_stop, "Stops the timer if it is currently running.\n", FCVAR_CLIENTCMD_CAN_EXECUTE)
 {
     const auto pPlayer = CMomentumPlayer::GetLocalPlayer();
     if (pPlayer)
-    {
-        pPlayer->CreateStartMark();
-    }
-}
-
-CON_COMMAND(mom_start_mark_clear, "Clears the saved start location for your current track, if there is one.\n"
-                                  "You may also specify the track number to clear as the parameter; "
-                                  "\"mom_start_mark_clear 2\" clears track 2's start mark.")
-{
-    const auto pPlayer = CMomentumPlayer::GetLocalPlayer();
-    if (pPlayer)
-    {
-        int track = pPlayer->m_Data.m_iCurrentTrack;
-        if (args.ArgC() > 1)
-        {
-            track = Q_atoi(args[1]);
-        }
-
-        pPlayer->ClearStartMark(track);
-    }
-}
-
-CON_COMMAND_F(mom_timer_stop, "Stops the timer if it is currently running.", FCVAR_CLIENTCMD_CAN_EXECUTE)
-{
-    const auto pPlayer = CMomentumPlayer::GetLocalPlayer();
-    if (pPlayer && g_pMomentumTimer->IsRunning())
     {
         g_pMomentumTimer->Stop(pPlayer);
     }
@@ -381,9 +387,6 @@ CON_COMMAND_F(mom_restart_stage,
     if (!pPlayer)
         return;
 
-    if (g_pRunSafeguards->IsSafeguarded(RUN_SAFEGUARD_RESTART_STAGE))
-        return;
-
     int stage = 0, track = 0;
     if (args.ArgC() > 1)
     {
@@ -395,6 +398,15 @@ CON_COMMAND_F(mom_restart_stage,
         stage = pPlayer->m_Data.m_iCurrentZone;
         track = pPlayer->m_Data.m_iCurrentTrack;
     }
+
+    if (pPlayer->m_iLinearTracks.Get(track))
+    {
+        Warning("You are not currently on a staged track! Use mom_restart instead.\n");
+        return;
+    }
+
+    if (g_pRunSafeguards->IsSafeguarded(RUN_SAFEGUARD_RESTART_STAGE))
+        return;
 
     pPlayer->TimerCommand_RestartStage(stage, track);
 }

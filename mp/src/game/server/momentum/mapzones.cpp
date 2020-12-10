@@ -203,6 +203,9 @@ bool CMapZoneSystem::LoadZonesFromKeyValues(KeyValues *pKvTracks, bool bFromSite
         const auto trackNum = bFromSite ? trackKV->GetInt("trackNum") : Q_atoi(trackKV->GetName());
         if (trackNum >= -1 && trackNum < MAX_TRACKS)
         {
+            // Assume track is linear until a stage zone is found
+            m_iLinearTracks |= 1ULL << trackNum;
+
             KeyValues *toItr = bFromSite ? trackKV->FindKey("zones") : trackKV;
             if (!toItr)
                 return false;
@@ -234,8 +237,8 @@ bool CMapZoneSystem::LoadZonesFromKeyValues(KeyValues *pKvTracks, bool bFromSite
                                 if (zoneNum > m_iZoneCount[trackNum])
                                     m_iZoneCount[trackNum] = zoneNum;
 
-                                if (zoneType == ZONE_TYPE_CHECKPOINT)
-                                    m_iLinearTracks |= (1ULL << trackNum);
+                                if (zoneType == ZONE_TYPE_STAGE)
+                                    m_iLinearTracks &= ~(1ULL << trackNum);
                             }
                             else if (trackNum == -1)
                                 globalZones++;

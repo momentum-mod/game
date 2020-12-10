@@ -42,6 +42,10 @@ static ConVar mom_zone_checkpoint_draw_color("mom_zone_checkpoint_draw_color", "
 static MAKE_TOGGLE_CONVAR(mom_zone_draw_alpha_override_toggle, "1", FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE, "Toggles the alpha override for drawing zone faces.\n");
 static MAKE_CONVAR(mom_zone_draw_faces_alpha_override, "160", FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE, "Alpha override for drawing zone faces.\n", 0, 255);
 
+static MAKE_TOGGLE_CONVAR(mom_teledests_draw, "0", FCVAR_CLIENTCMD_CAN_EXECUTE, "Toggles drawing teleport destination markings\n");
+static MAKE_CONVAR(mom_teledests_dimensions, "32", FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE, "Changes the dimensions of drawn teleport destination markings\n", 1, 128);
+static ConVar mom_teledests_color("mom_teledests_color", "FFFFFFFF", FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE, "Color of the teleport destination markings.\n");
+
 CTriggerOutlineRenderer::CTriggerOutlineRenderer()
 {
     m_pVertices = nullptr;
@@ -526,3 +530,70 @@ RecvPropBool(RECVINFO(m_bStuckOnGround)),
 RecvPropBool(RECVINFO(m_bAllowingJump)),
 RecvPropBool(RECVINFO(m_bDisableGravity)),
 END_RECV_TABLE();
+
+// ======================================
+
+LINK_ENTITY_TO_CLASS(info_teleport_destination, C_TeleportDestination);
+
+IMPLEMENT_CLIENTCLASS_DT(C_TeleportDestination, DT_TeleportDestination, CTeleportDestination)
+END_RECV_TABLE();
+
+int C_TeleportDestination::DrawModel(int flags)
+{
+    if (!mom_teledests_draw.GetBool())
+        return 1;
+
+    Color color;
+    if (!MomUtil::GetColorFromHex(mom_teledests_color.GetString(), color))
+        return 1;
+
+    const auto origin = GetAbsOrigin();
+    float dim = mom_teledests_dimensions.GetFloat() / 2.0f;
+
+    CMatRenderContextPtr pRenderContext(materials);
+    const auto pMaterial = materials->FindMaterial(MOM_ZONE_DRAW_MATERIAL, TEXTURE_GROUP_OTHER);
+    IMesh *pMesh = pRenderContext->GetDynamicMesh(true, nullptr, nullptr, pMaterial);
+    CMeshBuilder builder;
+
+    builder.Begin(pMesh, MATERIAL_QUADS, 4);
+
+    builder.Position3f(origin.x + dim, origin.y + dim, origin.z);
+    builder.Color4ub(color.r(), color.g(), color.b(), color.a());
+    builder.AdvanceVertex();
+
+    builder.Position3f(origin.x + dim, origin.y - dim, origin.z);
+    builder.Color4ub(color.r(), color.g(), color.b(), color.a());
+    builder.AdvanceVertex();
+
+    builder.Position3f(origin.x - dim, origin.y - dim, origin.z);
+    builder.Color4ub(color.r(), color.g(), color.b(), color.a());
+    builder.AdvanceVertex();
+
+    builder.Position3f(origin.x - dim, origin.y + dim, origin.z);
+    builder.Color4ub(color.r(), color.g(), color.b(), color.a());
+    builder.AdvanceVertex();
+
+    builder.End(false, true);
+
+    return 1;
+}
+
+void C_TeleportDestination::Spawn()
+{
+    Precache();
+    BaseClass::Spawn();
+}
+
+void C_TeleportDestination::Precache()
+{
+    BaseClass::Precache();
+    PrecacheMaterial(MOM_ZONE_DRAW_MATERIAL);
+}
+
+void C_TeleportDestination::GetRenderBounds(Vector &mins, Vector &maxs) 
+{
+    // force render bounds as this was drawing only when the origin was in view
+    float dim = mom_teledests_dimensions.GetFloat() / 2.0f;
+    mins.Init(-dim, -dim, 0);
+    maxs.Init(dim, dim, 0);
+}

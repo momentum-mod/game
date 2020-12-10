@@ -20,10 +20,14 @@ C_MomentumReplayGhostEntity::C_MomentumReplayGhostEntity()
 float C_MomentumReplayGhostEntity::GetCurrentRunTime()
 {
     int iTotalTicks;
-    if (m_Data.m_bTimerRunning)
+    if (m_Data.m_iTimerState == TIMER_STATE_RUNNING)
+    {
         iTotalTicks = m_iCurrentTick - m_Data.m_iStartTick;
+    }
     else
+    {
         iTotalTicks = m_Data.m_iRunTime;
+    }
 
     return float(iTotalTicks) * m_Data.m_flTickRate;
 }

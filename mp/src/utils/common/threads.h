@@ -18,7 +18,7 @@
 
 // Arrays that are indexed by thread should always be MAX_TOOL_THREADS+1
 // large so THREADINDEX_MAIN can be used from the main thread.
-#define MAX_TOOL_THREADS	16
+#define MAX_TOOL_THREADS	32
 #define THREADINDEX_MAIN	(MAX_TOOL_THREADS)
 
 

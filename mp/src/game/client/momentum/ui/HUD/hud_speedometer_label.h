@@ -36,7 +36,7 @@ class SpeedometerLabel : public vgui::DoubleLabel
     void SetDrawComparison(bool bEnabled) { m_bDrawComparison = bEnabled; }
 
     // fadeout related functions
-    void SetFadeOutAnimation(char *animationName, float *animationAlpha);
+    void SetFadeOutAnimation(const char *animationName, float *animationAlpha);
     bool HasFadeOutAnimation() { return m_pszAnimationName[0] != '\0' && m_pflAlpha; }
 
     // getter/setters

@@ -1048,6 +1048,8 @@ public:
 	float					m_flSideMove;
 	int						m_nNumCrateHudHints;
 
+	CNetworkVar( bool, m_bDrawPlayerModelExternally );
+
 private:
 
 	// Used in test code to teleport the player to random locations in the map.
@@ -1096,6 +1098,7 @@ protected:
 	friend class CDODGameMovement;
 	friend class CPortalGameMovement;
     friend class CMomentumGameMovement;
+    friend class CEnvPlayerSurfaceTrigger;
 	
 	// Accessors for gamemovement
 	bool IsDucked( void ) const { return m_Local.m_bDucked; }
@@ -1121,7 +1124,6 @@ protected:
 	surfacedata_t*	m_pSurfaceData;
 	float			m_surfaceFriction;
 	char			m_chTextureType;
-	char			m_chPreviousTextureType;	// Separate from m_chTextureType. This is cleared if the player's not on the ground.
 
 	bool			m_bSinglePlayerGameEnding;
 

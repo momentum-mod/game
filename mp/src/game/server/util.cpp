@@ -35,6 +35,7 @@
 #include "datacache/imdlcache.h"
 #include "util.h"
 #include "cdll_int.h"
+#include "fmtstr.h"
 
 #ifdef PORTAL
 #include "PortalSimulation.h"
@@ -208,6 +209,43 @@ void CEntityFactoryDictionary::ReportEntitySizes()
 	}
 }
 
+int EntityFactory_AutoComplete( const char *cmdname, CUtlVector< CUtlString > &commands, CUtlRBTree< CUtlString > &symbols, char *substring, int checklen = 0 )
+{
+	CEntityFactoryDictionary *pFactoryDict = (CEntityFactoryDictionary*)EntityFactoryDictionary();
+	for ( int i = pFactoryDict->m_Factories.First(); i != pFactoryDict->m_Factories.InvalidIndex(); i = pFactoryDict->m_Factories.Next( i ) )
+	{
+		const char *name = pFactoryDict->m_Factories.GetElementName( i );
+		if (Q_strnicmp(name, substring, checklen))
+			continue;
+
+		CUtlString sym = name;
+		int idx = symbols.Find(sym);
+		if (idx == symbols.InvalidIndex())
+		{
+			symbols.Insert(sym);
+		}
+
+		// Too many
+		if (symbols.Count() >= COMMAND_COMPLETION_MAXITEMS)
+			break;
+	}
+
+	// Now fill in the results
+	for (int i = symbols.FirstInorder(); i != symbols.InvalidIndex(); i = symbols.NextInorder(i))
+	{
+		const char *name = symbols[i].String();
+
+		char buf[512];
+		Q_strncpy(buf, name, sizeof(buf));
+		Q_strlower(buf);
+
+		CUtlString command;
+		command = CFmtStr("%s %s", cmdname, buf);
+		commands.AddToTail(command);
+	}
+
+	return symbols.Count();
+}
 
 //-----------------------------------------------------------------------------
 // class CFlaggedEntitiesEnum
@@ -2381,6 +2419,9 @@ void UTIL_PredictedPosition( CBaseEntity *pTarget, float flTimeDelta, Vector *ve
 		if ( pAnimating != NULL )
 		{
 			vecPredictedVel = pAnimating->GetGroundSpeedVelocity();
+
+			if (vecPredictedVel.IsZero())
+				vecPredictedVel = pAnimating->GetSmoothedVelocity();
 		}
 		else
 		{
@@ -2391,6 +2432,60 @@ void UTIL_PredictedPosition( CBaseEntity *pTarget, float flTimeDelta, Vector *ve
 
 	//Get the result
 	(*vecPredictedPosition) = pTarget->GetAbsOrigin() + ( vecPredictedVel * flTimeDelta );
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: Same as above, except you don't have to use the absolute origin and can use your own position to predict from.
+//-----------------------------------------------------------------------------
+void UTIL_PredictedPosition( CBaseEntity *pTarget, const Vector &vecActualPosition, float flTimeDelta, Vector *vecPredictedPosition )
+{
+	if ( ( pTarget == NULL ) || ( vecPredictedPosition == NULL ) )
+		return;
+
+	Vector	vecPredictedVel;
+	CBasePlayer	*pPlayer = ToBasePlayer( pTarget );
+	if ( pPlayer != NULL )
+	{
+		vecPredictedVel = pPlayer->GetSmoothedVelocity();
+	}
+	else
+	{
+		CBaseAnimating *pAnimating = dynamic_cast<CBaseAnimating *>(pTarget);
+		if ( pAnimating != NULL )
+		{
+			vecPredictedVel = pAnimating->GetGroundSpeedVelocity();
+			if (vecPredictedVel.IsZero())
+				vecPredictedVel = pAnimating->GetSmoothedVelocity();
+		}
+		else
+			vecPredictedVel = pTarget->GetSmoothedVelocity();
+	}
+
+	// Get the result
+	(*vecPredictedPosition) = vecActualPosition + ( vecPredictedVel * flTimeDelta );
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: Predicts angles through angular velocity instead of predicting origin through regular velocity.
+//-----------------------------------------------------------------------------
+void UTIL_PredictedAngles( CBaseEntity *pTarget, const QAngle &angActualAngles, float flTimeDelta, QAngle *angPredictedAngles )
+{
+	if ( ( pTarget == NULL ) || ( angPredictedAngles == NULL ) )
+		return;
+
+	QAngle	angPredictedVel;
+	CBasePlayer	*pPlayer = ToBasePlayer( pTarget );
+	if ( pPlayer != NULL )
+	{
+		angPredictedVel = pPlayer->GetLocalAngularVelocity();
+	}
+	else
+	{
+		angPredictedVel = pTarget->GetLocalAngularVelocity();
+	}
+
+	// Get the result
+	(*angPredictedAngles) = angActualAngles + ( angPredictedVel * flTimeDelta );
 }
 
 //-----------------------------------------------------------------------------

@@ -37,6 +37,7 @@ class CHudTimer : public CHudElement, public EditablePanel
     void Init() OVERRIDE;
     void Reset() OVERRIDE;
     bool ShouldDraw() OVERRIDE;
+    void LevelInit() override;
     void LevelShutdown() OVERRIDE;
     void FireGameEvent(IGameEvent* event) OVERRIDE;
     void ApplySchemeSettings(IScheme* pScheme) OVERRIDE;
@@ -207,9 +208,10 @@ void CHudTimer::OnThink()
              * Timer running but spectating while using practice mode => "<Current replay/ghost timer>" and splits etc
              * Timer running => "<Current Time>", "<Last Stage>", "<Last Stage Split>"
              * MOM_TODO: Timer running but using practice mode and savelocs => "Practice Mode" and "Saveloc X/Y"
+             * Timer running and using savelocs (practice timer state)
              */
 
-            if (!m_pRunData->m_bTimerRunning)
+            if (m_pRunData->m_iTimerState == TIMER_STATE_NOT_RUNNING)
             {
                 if (pLocal->m_bHasPracticeMode && pEnt->GetEntType() == RUN_ENT_PLAYER)
                 {
@@ -226,15 +228,12 @@ void CHudTimer::OnThink()
                     m_pMainStatusLabel->SetText(curTime);
                 }
 
-                if (m_bWasUsingSavelocMenu)
-                    m_pInfoLabel->SetText(CConstructLocalizedString(m_wSavelocStatus, m_iSavelocCurrent, m_iSavelocCount));
-                else
-                    m_pInfoLabel->SetText("");
+                m_pInfoLabel->SetText(m_bWasUsingSavelocMenu ? CConstructLocalizedString(m_wSavelocStatus, m_iSavelocCurrent, m_iSavelocCount) : L"");
 
                 m_pComparisonLabel->SetText("");
                 m_pSplitLabel->SetText("");
             }
-            else
+            else if (m_pRunData->m_iTimerState == TIMER_STATE_RUNNING)
             {
                 if (pLocal->m_bHasPracticeMode && pEnt->GetEntType() == RUN_ENT_PLAYER)
                 {
@@ -270,8 +269,28 @@ void CHudTimer::OnThink()
                             m_pComparisonLabel->SetFgColor(compareColor);
                             m_pComparisonLabel->SetText(comparisonANSI);
                         }
+                        else
+                        {
+                            m_pComparisonLabel->SetText("");
+                        }
+                    }
+                    else
+                    {
+                        m_pSplitLabel->SetText("");
+                        m_pComparisonLabel->SetText("");
                     }
                 }
+            }
+            else if (m_pRunData->m_iTimerState == TIMER_STATE_PRACTICE)
+            {
+                char curTime[BUFSIZETIME];
+                MomUtil::FormatTime(pEnt->GetCurrentRunTime(), curTime, 2);
+                m_pMainStatusLabel->SetText(curTime);
+
+                m_pInfoLabel->SetText(m_bWasUsingSavelocMenu ? CConstructLocalizedString(m_wSavelocStatus, m_iSavelocCurrent, m_iSavelocCount) : L"");
+
+                m_pComparisonLabel->SetText("");
+                m_pSplitLabel->SetText("");
             }
         }
     }
@@ -282,8 +301,14 @@ bool CHudTimer::ShouldDraw()
     return mom_hud_timer.GetBool() && CHudElement::ShouldDraw();
 }
 
+void CHudTimer::LevelInit()
+{
+    SetToNoTimer();
+}
+
 void CHudTimer::LevelShutdown()
 {
     m_pRunStats = nullptr;
     m_pRunData = nullptr;
+    m_bWasUsingSavelocMenu = false;
 }

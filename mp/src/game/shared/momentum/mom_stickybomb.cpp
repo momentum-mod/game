@@ -49,6 +49,7 @@ static MAKE_TOGGLE_CONVAR(mom_sj_particle_trail_enable, "1", FCVAR_ARCHIVE,
                           "Toggles the sticky trail particle. 0 = OFF, 1 = ON\n");
 #else
 static MAKE_TOGGLE_CONVAR(mom_sj_decals_enable, "1", FCVAR_ARCHIVE, "Toggles creating decals on sticky explosion. 0 = OFF, 1 = ON\n");
+static MAKE_TOGGLE_CONVAR(mom_sj_sound_fizzle_enable, "1", FCVAR_ARCHIVE | FCVAR_REPLICATED, "Toggles the stickybomb fizzle sound. 0 = OFF, 1 = ON\n");
 #endif
 
 CMomStickybomb::CMomStickybomb()
@@ -57,7 +58,6 @@ CMomStickybomb::CMomStickybomb()
     m_bCanExplode = true;
 
 #ifdef GAME_DLL
-    m_bFizzle = false;
     m_flCreationTime = 0.0f;
     m_bDidHitWorld = false;
     m_vecImpactNormal.Init();
@@ -228,16 +228,17 @@ void CMomStickybomb::InitExplosive(CBaseEntity *pOwner, const Vector &velocity, 
     }
 }
 
-void CMomStickybomb::Destroy(bool bShowFizzleSprite)
+void CMomStickybomb::Fizzle()
 {
-    if (bShowFizzleSprite)
+    Dissolve(nullptr, gpGlobals->curtime, false, ENTITY_DISSOLVE_CORE);
+    PlayFizzleSound();
+}
+
+void CMomStickybomb::PlayFizzleSound()
+{
+    if (mom_sj_sound_fizzle_enable.GetBool())
     {
-        m_bFizzle = true;
-        Dissolve(nullptr, gpGlobals->curtime, false, ENTITY_DISSOLVE_CORE);
-    }
-    else
-    {
-        BaseClass::Destroy(bShowFizzleSprite);
+        EmitSound(g_pWeaponDef->GetWeaponSound(WEAPON_STICKYLAUNCHER, "StickyFizzle"));
     }
 }
 
@@ -256,13 +257,13 @@ void CMomStickybomb::Explode(trace_t *pTrace, CBaseEntity *pOther)
 {
     const auto *pGrenadesZone = CNoGrenadesZone::IsInsideNoGrenadesZone(this);
 
-    if (m_bFizzle || pGrenadesZone
+    if (pGrenadesZone
         &&
         (pGrenadesZone->m_iExplosivePreventionType == CNoGrenadesZone::FIZZLE_ON_DET
         ||
-        pGrenadesZone->m_iExplosivePreventionType == CNoGrenadesZone::FIZZLE_ON_DET_AIRBORNE_ONLY && !m_bDidHitWorld))
+        (pGrenadesZone->m_iExplosivePreventionType == CNoGrenadesZone::FIZZLE_ON_DET_AIRBORNE_ONLY && !m_bDidHitWorld)))
     {
-        Destroy(true);
+        Fizzle();
         return;
     }
 
@@ -302,8 +303,6 @@ void CMomStickybomb::Explode(trace_t *pTrace, CBaseEntity *pOther)
     UTIL_Remove(this);
 }
 
-void CMomStickybomb::Fizzle() { m_bFizzle = true; }
-
 void CMomStickybomb::VPhysicsCollision(int index, gamevcollisionevent_t *pEvent)
 {
     BaseClass::VPhysicsCollision(index, pEvent);
@@ -338,7 +337,7 @@ void CMomStickybomb::VPhysicsCollision(int index, gamevcollisionevent_t *pEvent)
             }
             else if (pGrenadesZone->m_iExplosivePreventionType == CNoGrenadesZone::FIZZLE_ON_LAND)
             {
-                Destroy(true);
+                Fizzle();
                 return;
             }
         }

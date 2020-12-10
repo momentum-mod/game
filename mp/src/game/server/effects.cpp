@@ -1612,12 +1612,27 @@ BEGIN_DATADESC( CEnvWind )
 	DEFINE_KEYFIELD( m_EnvWindShared.m_iGustDirChange, FIELD_INTEGER, "gustdirchange" ),
 	DEFINE_KEYFIELD( m_EnvWindShared.m_flGustDuration, FIELD_FLOAT, "gustduration" ),
 //	DEFINE_KEYFIELD( m_EnvWindShared.m_iszGustSound, FIELD_STRING, "gustsound" ),
+	DEFINE_KEYFIELD( m_EnvWindShared.m_windRadius, FIELD_FLOAT, "windradius" ),
+	DEFINE_KEYFIELD( m_EnvWindShared.m_windRadiusInner, FIELD_FLOAT, "windradiusinner" ),
+	DEFINE_KEYFIELD( m_EnvWindShared.m_flTreeSwayScale, FIELD_FLOAT, "treeswayscale" ),
 
 // Just here to quiet down classcheck
 	// DEFINE_FIELD( m_EnvWindShared, CEnvWindShared ),
 
 	DEFINE_FIELD( m_EnvWindShared.m_iWindDir, FIELD_INTEGER ),
 	DEFINE_FIELD( m_EnvWindShared.m_flWindSpeed, FIELD_FLOAT ),
+
+	DEFINE_INPUT( m_EnvWindShared.m_iMinWind, FIELD_INTEGER, "SetMinWind" ),
+	DEFINE_INPUT( m_EnvWindShared.m_iMaxWind, FIELD_INTEGER, "SetMaxWind" ),
+	DEFINE_INPUT( m_EnvWindShared.m_iMinGust, FIELD_INTEGER, "SetMinGust" ),
+	DEFINE_INPUT( m_EnvWindShared.m_iMaxGust, FIELD_INTEGER, "SetMaxGust" ),
+	DEFINE_INPUT( m_EnvWindShared.m_flMinGustDelay, FIELD_FLOAT, "SetMinGustDelay" ),
+	DEFINE_INPUT( m_EnvWindShared.m_flMaxGustDelay, FIELD_FLOAT, "SetMaxGustDelay" ),
+	DEFINE_INPUT( m_EnvWindShared.m_iGustDirChange, FIELD_INTEGER, "SetGustDirChange" ),
+	DEFINE_INPUT( m_EnvWindShared.m_flGustDuration, FIELD_FLOAT, "SetGustDuration" ),
+	DEFINE_INPUT( m_EnvWindShared.m_windRadius, FIELD_FLOAT, "SetWindRadius" ),
+	DEFINE_INPUT( m_EnvWindShared.m_windRadiusInner, FIELD_FLOAT, "SetWindRadiusInner" ),
+	DEFINE_INPUT( m_EnvWindShared.m_flTreeSwayScale, FIELD_FLOAT, "SetTreeSwayScale" ),
 
 	DEFINE_OUTPUT( m_EnvWindShared.m_OnGustStart, "OnGustStart" ),
 	DEFINE_OUTPUT( m_EnvWindShared.m_OnGustEnd,	"OnGustEnd" ),
@@ -1647,6 +1662,10 @@ BEGIN_SEND_TABLE_NOBASE(CEnvWindShared, DT_EnvWindShared)
 	SendPropFloat	(SENDINFO(m_flGustDuration), 0, SPROP_NOSCALE),
 	// Sound related
 //	SendPropInt		(SENDINFO(m_iszGustSound),	10, SPROP_UNSIGNED ),
+	SendPropFloat	(SENDINFO(m_windRadius), 0, SPROP_NOSCALE),
+	SendPropFloat	(SENDINFO(m_windRadiusInner), 0, SPROP_NOSCALE),
+	SendPropVector	(SENDINFO(m_location), -1, SPROP_COORD),
+	SendPropFloat	(SENDINFO(m_flTreeSwayScale), 0, SPROP_NOSCALE),
 END_SEND_TABLE()
 
 // This table encodes the CBaseEntity data.
@@ -1670,6 +1689,7 @@ void CEnvWind::Spawn( void )
 
     m_EnvWindShared.m_iInitialWindDir = (int)(anglemod(m_EnvWindShared.m_iInitialWindDir));
     m_EnvWindShared.Init(entindex(), 0, gpGlobals->curtime, GetLocalAngles().y, 0);
+	m_EnvWindShared.m_location = GetAbsOrigin();
 
 	SetThink( &CEnvWind::WindThink );
 	SetNextThink( gpGlobals->curtime );

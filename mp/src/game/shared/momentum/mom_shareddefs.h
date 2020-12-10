@@ -5,7 +5,7 @@
 #endif
 
 // Milestone release (alpha, beta, gold)​ . Backwards incompatible or mini-milestone update . Small feature updates (non-breaking)​
-#define MOM_CURRENT_VERSION "0.8.6"
+#define MOM_CURRENT_VERSION "0.8.7"
 
 #define MAX_TRACKS 64
 #define MAX_ZONES 64
@@ -233,10 +233,10 @@ enum LobbyMessageType_t
 
 enum SpectateMessageType_t
 {
-    SPEC_UPDATE_STARTED = 0,           // Started spectating
-    SPEC_UPDATE_CHANGETARGET,    // Is now spectating someone else
-    SPEC_UPDATE_STOP,           // Stopped spectating; respawned
-    SPEC_UPDATE_LEAVE,       // This player left the map/lobby
+    SPEC_UPDATE_STARTED = 0,        // Started spectating
+    SPEC_UPDATE_CHANGETARGET,       // Is now spectating someone else
+    SPEC_UPDATE_STOP,               // Stopped spectating; respawned
+    SPEC_UPDATE_LEAVE,              // This player left the map/lobby
 
     SPEC_UPDATE_FIRST = SPEC_UPDATE_STARTED,
     SPEC_UPDATE_LAST = SPEC_UPDATE_LEAVE,
@@ -261,7 +261,6 @@ enum WallRunState
     WALLRUN_SCRAMBLE // basically waterjumping - vertical velocity is allowed
 };
 
-#define PANEL_TIMES "times"
 #define PANEL_REPLAY "replaycontrols"
 #define PANEL_TRICK_LIST "tricks"
 

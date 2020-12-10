@@ -1,5 +1,6 @@
 #pragma once
 #include "vgui_controls/EditablePanel.h"
+#include <steam/isteamfriends.h>
 
 class CAvatarImagePanel;
 struct UserData;
@@ -25,10 +26,14 @@ protected:
     void ApplySchemeSettings(vgui::IScheme* pScheme) override;
     void OnMouseReleased(vgui::MouseCode code) override;
 
+    STEAM_CALLBACK(UserComponent, OnPersonaStateChange, PersonaStateChange_t);
+
 private:
     CAvatarImagePanel *m_pUserImage;
     vgui::Label *m_pUserName, *m_pUserRank;
     vgui::ProgressBar *m_pXPProgressBar;
 
     bool m_bClickable;
+
+    uint64 m_uSteamID;
 };

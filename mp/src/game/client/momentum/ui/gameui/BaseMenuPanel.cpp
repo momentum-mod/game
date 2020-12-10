@@ -11,6 +11,8 @@
 #include "tier0/icommandline.h"
 #include "ienginevgui.h"
 #include "vgui_controls/AnimationController.h"
+#include "vgui/IInput.h"
+#include "IGameUIFuncs.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -66,6 +68,8 @@ CBaseMenuPanel::CBaseMenuPanel() : BaseClass(nullptr, "BaseGameUIPanel")
     m_pMainMenu = new MainMenu(this);
 
     m_pLoadingScreen = new CLoadingScreen(this);
+
+    input()->RegisterKeyCodeUnhandledListener(GetVPanel());
 
     OnGameUIActivated(); // Done here because normally it was done earlier than construction of this panel
 }
@@ -450,4 +454,15 @@ void CBaseMenuPanel::SetBackgroundRenderState(EBackgroundState state)
     }
 
     m_eBackgroundState = state;
+}
+
+void CBaseMenuPanel::OnKeyCodeUnhandled(int code)
+{
+    const char *binding = gameuifuncs->GetBindingForButtonCode(static_cast<ButtonCode_t>(code));
+
+    if (binding && (FStrEq(binding, "toggleconsole") || FStrEq(binding, "showconsole")))
+    {
+        engine->ClientCmd_Unrestricted(binding);
+    }
+
 }

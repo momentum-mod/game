@@ -164,6 +164,8 @@ BEGIN_DATADESC(CMomentumPlayer)
     DEFINE_THINKFUNC(PlayerThink),
     DEFINE_THINKFUNC(CalculateAverageStats),
     /*DEFINE_THINKFUNC(LimitSpeedInStartZone),*/
+    DEFINE_INPUTFUNC(FIELD_STRING, "AddCollectible", InputAddCollectible),
+    DEFINE_INPUTFUNC(FIELD_VOID, "ClearCollectibles", InputClearCollectibles),
 END_DATADESC();
 
 LINK_ENTITY_TO_CLASS(player, CMomentumPlayer);
@@ -249,11 +251,6 @@ CMomentumPlayer::CMomentumPlayer()
 
     ListenForGameEvent("mapfinished_panel_closed");
     ListenForGameEvent("lobby_join");
-
-    for (int i = 0; i < MAX_TRACKS; i++)
-    {
-        m_pStartZoneMarks[i] = nullptr;
-    }
 
     m_bIsWalking = false;
     m_bIsSprinting = false;
@@ -485,17 +482,6 @@ void CMomentumPlayer::Spawn()
         m_iLandTick = 0;
         ResetRunStats();
 
-        for (int i = 0; i < MAX_TRACKS; i++)
-        {
-            ClearStartMark(i, false);
-        }
-
-        // Load startmarks after player spawn
-        if (g_pSavelocSystem->LoadStartMarks())
-            DevLog("Loaded startmarks from the savedlocs file!\n");
-        else
-            DevWarning("ERROR: Failed loading startmarks from the savedlocs file.\n");
-
         g_MapZoneSystem.DispatchMapInfo(this);
 
         // Reset current checkpoint trigger upon spawn
@@ -650,13 +636,16 @@ bool CMomentumPlayer::ClientCommand(const CCommand &args)
         else
         {
             // switch to next spec mode if no parameter given
-            mode = GetObserverMode() + 1;
-
-            if (mode > OBS_MODE_CHASE)
+            mode = GetObserverMode();
+            if (mode >= OBS_MODE_ROAMING)
             {
                 mode = OBS_MODE_IN_EYE;
             }
-            else if (mode < OBS_MODE_IN_EYE)
+            else if (mode >= OBS_MODE_CHASE)
+            {
+                mode = OBS_MODE_ROAMING;
+            }
+            else if (mode <= OBS_MODE_IN_EYE)
             {
                 mode = OBS_MODE_CHASE;
             }
@@ -767,61 +756,6 @@ void CMomentumPlayer::SetCurrentProgressTrigger(CBaseMomentumTrigger *pTrigger)
 CBaseMomentumTrigger* CMomentumPlayer::GetCurrentProgressTrigger() const
 {
     return m_CurrentProgress.Get();
-}
-
-bool CMomentumPlayer::CreateStartMark()
-{
-    const auto pCurrentZoneTrigger = GetCurrentZoneTrigger();
-
-    if (pCurrentZoneTrigger && pCurrentZoneTrigger->IsTouching(this) && pCurrentZoneTrigger->GetZoneType() == ZONE_TYPE_START)
-    {
-        ClearStartMark(m_Data.m_iCurrentTrack, false);
-
-        m_pStartZoneMarks[m_Data.m_iCurrentTrack] = g_pSavelocSystem->CreateSaveloc(SAVELOC_POS | SAVELOC_ANG);
-        if (m_pStartZoneMarks[m_Data.m_iCurrentTrack])
-        {
-            DevLog("Successfully created a starting mark!\n");
-            ClientPrint(this, HUD_PRINTTALK, "Start Mark Created!");
-            return true;
-        }
-        else
-        {
-            Warning("Could not create the start mark for some reason!\n");
-        }
-    }
-    return false;
-}
-
-bool CMomentumPlayer::SetStartMark(int track, SavedLocation_t *saveloc)
-{
-    if (!saveloc)
-        return false;
-
-    if (track < 0 || track >= MAX_TRACKS)
-        return false;
-
-    if (saveloc->m_savedComponents != (SAVELOC_POS | SAVELOC_ANG))
-        return false;
-
-    m_pStartZoneMarks[track] = saveloc;
-
-    return true;
-}
-
-bool CMomentumPlayer::ClearStartMark(int track, bool bPrintMsg)
-{
-    if (track >= 0 && track < MAX_TRACKS)
-    {
-        if (m_pStartZoneMarks[track])
-            delete m_pStartZoneMarks[track];
-        m_pStartZoneMarks[track] = nullptr;
-
-        if (bPrintMsg)
-            ClientPrint(this, HUD_PRINTTALK, "Start Mark Cleared!");
-
-        return true;
-    }
-    return false;
 }
 
 bool CMomentumPlayer::CanSprint() const
@@ -936,7 +870,7 @@ void CMomentumPlayer::HandleSprintAndWalkChanges()
 void CMomentumPlayer::PreThink()
 {
     // Handle Ahop related things
-    if (g_pGameModeSystem->GameModeIs(GAMEMODE_AHOP) || g_pGameModeSystem->GameModeIs(GAMEMODE_PARKOUR))
+    if (!IsObserver() && (g_pGameModeSystem->GameModeIs(GAMEMODE_AHOP) || g_pGameModeSystem->GameModeIs(GAMEMODE_PARKOUR)))
     {
         HandleSprintAndWalkChanges();
     }
@@ -968,7 +902,7 @@ bool CMomentumPlayer::CanTeleport()
     return true;
 }
 
-void CMomentumPlayer::ManualTeleport(const Vector *newPosition, const QAngle *newAngles, const Vector *newVelocity)
+void CMomentumPlayer::ManualTeleport(const Vector *newPosition, const QAngle *newAngles, const Vector *newVelocity, bool bStopTimer /*= true*/)
 {
     if (!CanTeleport())
         return;
@@ -977,8 +911,11 @@ void CMomentumPlayer::ManualTeleport(const Vector *newPosition, const QAngle *ne
 
     DestroyExplosives();
 
-    g_pMomentumTimer->Stop(this);
-    g_pMomentumTimer->SetCanStart(false);
+    if (bStopTimer)
+    {
+        g_pMomentumTimer->Stop(this);
+        g_pMomentumTimer->SetCanStart(false);
+    }
 
     g_pTrickSystem->ClearTrickAttempts();
 
@@ -1119,17 +1056,17 @@ void CMomentumPlayer::OnZoneEnter(CTriggerZone *pTrigger)
         {
             // We've reached end zone, stop here
             const auto pStopTrigger = static_cast<CTriggerTimerStop *>(pTrigger);
+            if (pStopTrigger->GetCancelBool())
+            {
+                g_pMomentumTimer->Stop(this);
+                return;
+            }
+
             m_iOldTrack = m_Data.m_iCurrentTrack;
             m_iOldZone = m_Data.m_iCurrentZone;
 
             if (g_pMomentumTimer->IsRunning())
             {
-                if (pStopTrigger->GetCancelBool())
-                {
-                    g_pMomentumTimer->Stop(this);
-                    return;
-                }
-
                 const int zoneNum = m_Data.m_iCurrentZone;
 
                 // This is needed so we have an ending velocity.
@@ -1169,6 +1106,23 @@ void CMomentumPlayer::OnZoneEnter(CTriggerZone *pTrigger)
                 m_Data.m_iRunTime = g_pMomentumTimer->GetLastRunTime();
                 // The map is now finished, show the mapfinished panel
                 m_Data.m_bMapFinished = true;
+            }
+            else if (m_Data.m_iTimerState == TIMER_STATE_PRACTICE)
+            {
+                m_Data.m_iTimerState = TIMER_STATE_NOT_RUNNING;
+                m_Data.m_bMapFinished = true;
+
+                m_Data.m_flTickRate = gpGlobals->interval_per_tick;
+                m_Data.m_iRunTime = gpGlobals->tickcount - m_Data.m_iStartTick;
+
+                g_pMomentumTimer->DispatchTimerEventMessage(this, entindex(), TIMER_EVENT_FINISHED);
+
+                const auto pReplaySavedEvent = gameeventmanager->CreateEvent("replay_save");
+                if (pReplaySavedEvent)
+                {
+                    pReplaySavedEvent->SetBool("save", false);
+                    gameeventmanager->FireEvent(pReplaySavedEvent);
+                }
             }
         }
         break;
@@ -1248,6 +1202,9 @@ void CMomentumPlayer::OnZoneExit(CTriggerZone *pTrigger)
             LimitSpeed(pStart->GetSpeedLimit(), true);
         }
         m_bShouldLimitPlayerSpeed = false;
+
+        g_pRunSafeguards->ResetAllSafeguards();
+        g_pSavelocSystem->ClearAllStartMarks(START_MARK_STAGE);
         // No break here, we want to fall through; this handles both the start and stage triggers
     case ZONE_TYPE_STAGE:
         {
@@ -1261,6 +1218,8 @@ void CMomentumPlayer::OnZoneExit(CTriggerZone *pTrigger)
                 if (zoneNum == 1)
                     m_RunStats.SetZoneEnterSpeed(0, enterVel3D, enterVel2D);
             }
+
+            g_pRunSafeguards->ResetSafeguard(RUN_SAFEGUARD_RESTART_STAGE);
         }
     default:
         break;
@@ -1815,6 +1774,40 @@ CMomentumGhostBaseEntity *CMomentumPlayer::GetGhostEnt() const
     return dynamic_cast<CMomentumGhostBaseEntity *>(m_hObserverTarget.Get());
 }
 
+void CMomentumPlayer::TrySpectate(const char *pSpecString)
+{
+    if (gpGlobals->eLoadType == MapLoad_Background)
+        return;
+
+    CBaseEntity *pTarget = nullptr;
+    // If they specified a target, let's go to them
+    if (pSpecString)
+    {
+        auto *pGhost = g_pMomentumGhostClient->GetOnlineGhostEntityFromID(Q_atoui64(pSpecString));
+
+        if (!pGhost)
+            pGhost = g_pMomentumGhostClient->GetOnlineGhostEntityFromName(pSpecString);
+
+        // They were specific here, we want to fail this command instead of trying to spectate
+        if (!pGhost || pGhost->IsSpectating())
+        {
+            ClientPrint(this, HUD_PRINTTALK, pGhost ? "Unable to spectate, target is spectating!" : "Invalid spectate target!");
+            return;
+        }
+
+        pTarget = pGhost;
+    }
+
+    if (!pTarget)
+        pTarget = FindNextObserverTarget(false);
+
+    if (pTarget)
+        SetObserverTarget(pTarget);
+
+    if (!IsObserver())
+        StartObserverMode(pTarget ? OBS_MODE_IN_EYE : OBS_MODE_ROAMING);
+}
+
 bool CMomentumPlayer::StartObserverMode(int mode)
 {
     if (m_iObserverMode == OBS_MODE_NONE)
@@ -1884,16 +1877,14 @@ void CMomentumPlayer::TimerCommand_Restart(int track)
     const auto pStart = g_pMomentumTimer->GetStartTrigger(track);
     if (pStart)
     {
-        const auto pStartMark = GetStartMark(track);
-        if (pStartMark)
+        if (!g_pSavelocSystem->TeleportToStartMark(START_MARK, track))
         {
-            pStartMark->Teleport(this);
-        }
-        else
-        {
-            // Don't set angles if still in start zone.
-            QAngle ang = pStart->GetLookAngles();
-            ManualTeleport(&pStart->GetRestartPosition(), (pStart->HasLookAngles() ? &ang : nullptr), &vec3_origin);
+            const auto pZoneTeleDest = pStart->GetTeleDest();
+
+            const Vector *pTargetDest = pZoneTeleDest ? &pZoneTeleDest->GetAbsOrigin() : &pStart->GetRestartPosition();
+            const QAngle *pTargetAng = pZoneTeleDest ? &pZoneTeleDest->GetAbsAngles() : pStart->HasLookAngles() ? &pStart->GetLookAngles() : nullptr;
+
+            ManualTeleport(pTargetDest, pTargetAng, &vec3_origin);
         }
 
         m_Data.m_iCurrentTrack = track;
@@ -1928,11 +1919,20 @@ void CMomentumPlayer::TimerCommand_RestartStage(int stage, int track)
         const auto pCurrentZone = GetCurrentZoneTrigger();
         if (pCurrentZone)
         {
+            // Can't abuse since player has to be there before teleporting to it.
+            if (g_pSavelocSystem->TeleportToStartMark(START_MARK_STAGE, stage))
+                return;
+
+            // Prevent abuse
             if (m_Data.m_bIsInZone)
                 return;
 
-            DestroyExplosives();
-            Teleport(&pCurrentZone->GetRestartPosition(), nullptr, &vec3_origin);
+            const auto pZoneTeleDest = pCurrentZone->GetTeleDest();
+
+            const Vector *pTargetDest = pZoneTeleDest ? &pZoneTeleDest->GetAbsOrigin() : &pCurrentZone->GetRestartPosition();
+            const QAngle *pTargetAng = pZoneTeleDest ? &pZoneTeleDest->GetAbsAngles() : nullptr;
+
+            ManualTeleport(pTargetDest, pTargetAng, &vec3_origin, false);
         }
         return;
     }
@@ -2069,6 +2069,7 @@ void CMomentumPlayer::SaveCurrentRunState(bool bFromPractice)
     {
         Q_strncpy(pState->m_pszTargetName, GetEntityName().ToCStr(), sizeof(pState->m_pszTargetName));
         Q_strncpy(pState->m_pszClassName, GetClassname(), sizeof(pState->m_pszClassName));
+        pState->m_Collectibles = m_Collectibles;
         m_iOldTrack = m_Data.m_iCurrentTrack;
         m_iOldZone = m_Data.m_iCurrentZone;
         pState->m_nSavedAccelTicks = m_nAccelTicks;
@@ -2105,12 +2106,19 @@ void CMomentumPlayer::RestoreRunState(bool bFromPractice)
     {
         SetName(MAKE_STRING(pState->m_pszTargetName));
         SetClassname(pState->m_pszClassName);
+        m_Collectibles = pState->m_Collectibles;
         m_Data.m_iCurrentTrack = m_iOldTrack;
         m_Data.m_iCurrentZone = m_iOldZone;
         m_nAccelTicks = pState->m_nSavedAccelTicks;
         m_nPerfectSyncTicks = pState->m_nSavedPerfectSyncTicks;
         m_nStrafeTicks = pState->m_nSavedStrafeTicks;
     }
+}
+
+bool CMomentumPlayer::IsInZone(MomZoneType_t eZoneType)
+{
+    const auto pCurrentZoneTrigger = GetCurrentZoneTrigger();
+    return pCurrentZoneTrigger && pCurrentZoneTrigger->GetZoneType() == eZoneType && pCurrentZoneTrigger->IsTouching(this);
 }
 
 void CMomentumPlayer::PostThink()
@@ -2274,4 +2282,142 @@ CON_COMMAND(toggle_walk, "Toggles walk state of the player. Toggle resets when u
         return;
 
     pPlayer->ToggleInput(IN_WALK);
+}
+
+// Add the caller entity as a collectible, optionally specifying a required collectible and/or weight
+void CMomentumPlayer::InputAddCollectible(inputdata_t& inputdata)
+{
+    if (!inputdata.pCaller)
+    {
+        DevWarning("Collectibles: Attempted to add a null collectible!\n");
+        return;
+    }
+
+    CBaseEntity *pRequiredEntity = nullptr;
+    int iWeight = 1;
+
+    char szInputValue[MAX_PATH];
+    Q_strncpy(szInputValue, inputdata.value.String(), sizeof(szInputValue));
+
+    if (Q_strlen(szInputValue))
+    {
+        pRequiredEntity = gEntList.FindEntityByName(nullptr, szInputValue, this, inputdata.pActivator, inputdata.pCaller);
+
+        // By default, treat the parameter as a targetname for the required collectible
+        if (!pRequiredEntity)
+        {
+            if (strchr(szInputValue, ':')) // <required>:<weight>
+            {
+                CUtlVector<char*> parameters;
+                V_SplitString(szInputValue, ":", parameters);
+
+                pRequiredEntity = gEntList.FindEntityByName(nullptr, parameters[0], this, inputdata.pActivator, inputdata.pCaller);
+                iWeight = V_isdigit(*parameters[1]) ? Q_atoi(parameters[1]) : 1;
+
+                parameters.PurgeAndDeleteElements();
+            }
+            else if (V_isdigit(*szInputValue)) // <weight>
+            {
+                iWeight = Q_atoi(szInputValue);
+            }
+            else
+            {
+                DevWarning("Collectibles: Invalid input parameter given, using default 1 weight and no required collectible.\n"
+                           "Format: \"<required>:<weight>\" OR \"<required>\" OR \"<weight>\" OR blank to use defaults.\n");
+            }
+        }
+    }
+
+    m_Collectibles.AddCollectible(inputdata.pCaller, pRequiredEntity, iWeight);
+}
+
+void CMomentumPlayer::InputClearCollectibles(inputdata_t& inputdata)
+{
+    m_Collectibles.ClearCollectibles();
+}
+
+void CMomentumPlayerCollectibles::AddCollectible(CBaseEntity *pCollectible, CBaseEntity *pRequiredEntity = nullptr, int iWeight = 1)
+{
+    const char *sCollectible = STRING(pCollectible->GetEntityName());
+
+    if (!Q_strlen(sCollectible))
+    {
+        DevWarning("Collectibles: Tried to add an unnamed entity as a collectible, rejecting.\n");
+    }
+    else if (HasCollectible(sCollectible))
+    {
+        DevMsg("Collectibles: %s is already collected\n", sCollectible);
+    }
+    else if (pRequiredEntity && !HasCollectible(STRING(pRequiredEntity->GetEntityName())))
+    {
+        DevMsg("Collectibles: %s is required to collect %s\n", STRING(pRequiredEntity->GetEntityName()), sCollectible);
+    }
+    else
+    {
+        m_CollectibleList.AddToTail(sCollectible);
+        m_iCollectibleCount += iWeight > 0 ? iWeight : 1;
+
+        DevMsg("Collectibles: %s with weight %d added, counter = %d\n", sCollectible, iWeight, m_iCollectibleCount);
+    }
+}
+
+void CMomentumPlayerCollectibles::ClearCollectibles()
+{
+    m_CollectibleList.RemoveAll();
+    m_iCollectibleCount = 0;
+}
+
+bool CMomentumPlayerCollectibles::HasCollectible(const char *pName)
+{
+    FOR_EACH_VEC(m_CollectibleList, i)
+    {
+        if (FStrEq(m_CollectibleList[i], pName))
+            return true;
+    }
+    
+    return false;
+}
+
+void CMomentumPlayerCollectibles::SaveToKeyValues(KeyValues *kv) const
+{
+    if (m_CollectibleList.IsEmpty())
+        return;
+
+    KeyValues *collectibles = new KeyValues("collectibles");
+
+    FOR_EACH_VEC(m_CollectibleList, i)
+    {
+        char name[8];
+        Q_snprintf(name, sizeof(name), "%i", i);
+
+        KeyValues *collectiblekv = new KeyValues(name);
+        collectiblekv->SetString("targetname", m_CollectibleList[i]);
+        collectibles->AddSubKey(collectiblekv);
+    }
+
+    kv->SetInt("collectibleCount", m_iCollectibleCount);
+    kv->AddSubKey(collectibles);
+}
+
+void CMomentumPlayerCollectibles::LoadFromKeyValues(KeyValues *kv)
+{
+    ClearCollectibles();
+
+    m_iCollectibleCount = kv->GetInt("collectibleCount");
+
+    KeyValues *pKvCollectibles = kv->FindKey("collectibles");
+    if (!pKvCollectibles)
+        return;
+
+    KeyValues *pKvSub = pKvCollectibles->GetFirstSubKey();
+    if (!pKvSub)
+        return;
+
+    while (pKvSub)
+    {
+        m_CollectibleList.AddToTail();
+        m_CollectibleList.Tail() = pKvSub->GetString("targetname");
+
+        pKvSub = pKvSub->GetNextKey();
+    }
 }

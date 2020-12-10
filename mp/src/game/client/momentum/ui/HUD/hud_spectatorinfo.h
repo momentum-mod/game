@@ -19,6 +19,8 @@ class CHudSpectatorInfo : public CHudElement, public vgui::Panel
     void Paint() OVERRIDE;
     void LevelShutdown() override;
 
+    void FireGameEvent(IGameEvent *event) override;
+
     void SpectatorUpdate(const CSteamID &person, const CSteamID &target);
 
 protected:

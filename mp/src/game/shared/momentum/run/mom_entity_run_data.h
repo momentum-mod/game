@@ -11,6 +11,13 @@ EXTERN_RECV_TABLE(DT_MomRunEntityData);
 EXTERN_SEND_TABLE(DT_MomRunEntityData);
 #endif
 
+enum TimerState_t
+{
+    TIMER_STATE_NOT_RUNNING = 0,
+    TIMER_STATE_RUNNING, // Officially running (replay, official run attempt)
+    TIMER_STATE_PRACTICE // Artificially running (loaded saveloc)
+};
+
 class CMomRunEntityData
 {
   public:
@@ -23,7 +30,7 @@ class CMomRunEntityData
 
     CNetworkVar(bool, m_bIsInZone);       // This is true if the player is in a CTriggerTimerStage zone
     CNetworkVar(bool, m_bMapFinished);    // Did the player finish the map?
-    CNetworkVar(bool, m_bTimerRunning);   // Is the timer currently running for this ent?
+    CNetworkVar(int, m_iTimerState);     // Is the timer currently running for this ent? See TimerState_t
     CNetworkVar(float, m_flStrafeSync);   // eyeangle based, perfect strafes / total strafes
     CNetworkVar(float, m_flStrafeSync2);  // acceleration based, strafes speed gained / total strafes
     CNetworkVar(uint32, m_iRunFlags);     // The run flags (W only/HSW/Scroll etc) of the player

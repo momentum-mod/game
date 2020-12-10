@@ -23,6 +23,7 @@ typedef unsigned short wchar_t;
 #define _WCHAR_T_DEFINED
 #endif
 
+class CLocalizedStringArg;
 
 // direct references to localized strings
 typedef unsigned long StringIndex_t;
@@ -136,6 +137,12 @@ public:
 	}
 
 	template < typename T >
+	static void ConstructStringArgs(OUT_Z_BYTECAP(unicodeBufferSizeInBytes) T *unicodeOuput, int unicodeBufferSizeInBytes, const T *formatString, int numFormatParameters, const CLocalizedStringArg* argList)
+	{
+		ConstructStringArgsInternal( unicodeOuput, unicodeBufferSizeInBytes, formatString, numFormatParameters, argList );
+	}
+
+	template < typename T >
 	static void ConstructString(OUT_Z_BYTECAP(unicodeBufferSizeInBytes) T *unicodeOutput, int unicodeBufferSizeInBytes, const T *formatString, KeyValues *localizationVariables)
 	{
 		ConstructStringKeyValuesInternal( unicodeOutput, unicodeBufferSizeInBytes, formatString, localizationVariables );
@@ -144,7 +151,9 @@ public:
 private:
 	// internal "interface"
 	static void ConstructStringVArgsInternal(OUT_Z_BYTECAP(unicodeBufferSizeInBytes) char *unicodeOutput, int unicodeBufferSizeInBytes, const char *formatString, int numFormatParameters, va_list argList);
+	static void ConstructStringArgsInternal(OUT_Z_BYTECAP(unicodeBufferSizeInBytes) char *unicodeOutput, int unicodeBufferSizeInBytes, const char *formatString, int numFormatParameters, const CLocalizedStringArg *argList);
 	static void ConstructStringVArgsInternal(OUT_Z_BYTECAP(unicodeBufferSizeInBytes) wchar_t *unicodeOutput, int unicodeBufferSizeInBytes, const wchar_t *formatString, int numFormatParameters, va_list argList);
+	static void ConstructStringArgsInternal(OUT_Z_BYTECAP(unicodeBufferSizeInBytes) wchar_t *unicodeOutput, int unicodeBufferSizeInBytes, const wchar_t *formatString, int numFormatParameters, const CLocalizedStringArg *argList);
 
 	static void ConstructStringKeyValuesInternal(OUT_Z_BYTECAP(unicodeBufferSizeInBytes) char *unicodeOutput, int unicodeBufferSizeInBytes, const char *formatString, KeyValues *localizationVariables);
 	static void ConstructStringKeyValuesInternal(OUT_Z_BYTECAP(unicodeBufferSizeInBytes) wchar_t *unicodeOutput, int unicodeBufferSizeInBytes, const wchar_t *formatString, KeyValues *localizationVariables);
@@ -226,97 +235,49 @@ public:
 //			handle weird combinations of const/volatile/whatever automatically.
 // --------------------------------------------------------------------------
 
-// The base implementation doesn't do anything except fail to compile if you
-// use it. Getting an "incomplete type" error here means that you tried to construct
-// a localized string with a type that doesn't have a specialization.
-template < typename T >
-class CLocalizedStringArg;
-
 // --------------------------------------------------------------------------
 
-template < typename T >
-class CLocalizedStringArgStringImpl
+#ifdef _WIN32
+#define ___WIDECHAR_PRINT_FORMAT_WIDECHAR LOCCHAR("%s")
+#define ___WIDECHAR_PRINT_FORMAT_ANSICHAR LOCCHAR("%S") // Thanks, microsoft
+#elif defined(POSIX)
+#define ___WIDECHAR_PRINT_FORMAT_WIDECHAR LOCCHAR("%ls")
+#define ___WIDECHAR_PRINT_FORMAT_ANSICHAR LOCCHAR("%s")
+#else
+#warning "ILocalize needs some string macros defined!"
+#endif
+
+class CLocalizedStringArg
 {
 public:
-	enum { kIsValid = true };
+	template <typename U, std::enable_if_t<std::conjunction_v<std::is_integral<U>, std::is_unsigned<U>, std::bool_constant<sizeof(U) <= 4>>, int> = 0>
+	CLocalizedStringArg(U value) : CLocalizedStringArg(value, LOCCHAR("%u")) {}
+	template <typename U, std::enable_if_t<std::conjunction_v<std::is_integral<U>, std::is_unsigned<U>, std::bool_constant<sizeof(U) == 8>>, int> = 1>
+	CLocalizedStringArg(U value) : CLocalizedStringArg(value, LOCCHAR("%llu")) {}
+	template <typename U, std::enable_if_t<std::conjunction_v<std::is_integral<U>, std::is_signed<U>, std::bool_constant<sizeof(U) <= 4>>, int> = 2>
+	CLocalizedStringArg(U value) : CLocalizedStringArg(value, LOCCHAR("%d")) {}
+	template <typename U, std::enable_if_t<std::conjunction_v<std::is_integral<U>, std::is_signed<U>, std::bool_constant<sizeof(U) == 8>>, int> = 3>
+	CLocalizedStringArg(U value) : CLocalizedStringArg(value, LOCCHAR("%lld")) {}
 
-	CLocalizedStringArgStringImpl( const locchar_t *pStr ) : m_pStr( pStr ) { }
+	template <typename U, std::enable_if_t<std::is_enum_v<U>, int> = 4>
+	CLocalizedStringArg(U value) : CLocalizedStringArg(static_cast<std::underlying_type_t<U>>(value)) {}
 
-	const locchar_t *GetLocArg() const { Assert( m_pStr ); return m_pStr; }
+	template <typename U, std::enable_if_t<std::is_floating_point_v<U>, int> = 5>
+	CLocalizedStringArg(U value) : CLocalizedStringArg(value, LOCCHAR("%.2f")) {}
 
-private:
-	const locchar_t *m_pStr;
-};
+	template <typename U, std::enable_if_t<std::disjunction_v<std::is_same<U, char*>, std::is_same<U, const char*>>, int> = 6>
+	CLocalizedStringArg(U pszValue) : CLocalizedStringArg(pszValue, ___WIDECHAR_PRINT_FORMAT_ANSICHAR) {}
+	template <typename U, std::enable_if_t<std::disjunction_v<std::is_same<U, wchar_t*>, std::is_same<U, const wchar_t*>>, int> = 7>
+	CLocalizedStringArg(U pszValue) : CLocalizedStringArg(pszValue, ___WIDECHAR_PRINT_FORMAT_WIDECHAR) {}
 
-// --------------------------------------------------------------------------
-
-template < typename T >
-class CLocalizedStringArg<T *> : public CLocalizedStringArgStringImpl<T>
-{
 public:
-	CLocalizedStringArg( const locchar_t *pStr ) : CLocalizedStringArgStringImpl<T>( pStr ) { }
-};
-
-// --------------------------------------------------------------------------
-
-template < typename T >
-class CLocalizedStringArgPrintfImpl
-{
-public:
-	enum { kIsValid = true };
-
-	CLocalizedStringArgPrintfImpl( T value, const locchar_t *loc_Format ) { loc_snprintf( m_cBuffer, kBufferSize, loc_Format, value ); }
-
 	const locchar_t *GetLocArg() const { return m_cBuffer; }
 
 private:
-	enum { kBufferSize = 128, };
-	locchar_t m_cBuffer[ kBufferSize ];
-};
+	template <typename T> CLocalizedStringArg(T value, const locchar_t *loc_Format) { loc_snprintf(m_cBuffer, kBufferSize, loc_Format, value); }
 
-// --------------------------------------------------------------------------
-
-template < >
-class CLocalizedStringArg<uint16> : public CLocalizedStringArgPrintfImpl<uint16>
-{
-public:
-	CLocalizedStringArg( uint16 unValue ) : CLocalizedStringArgPrintfImpl<uint16>( unValue, LOCCHAR("%u") ) { }
-};
-
-// --------------------------------------------------------------------------
-
-template < >
-class CLocalizedStringArg<uint32> : public CLocalizedStringArgPrintfImpl<uint32>
-{
-public:
-	CLocalizedStringArg( uint32 unValue ) : CLocalizedStringArgPrintfImpl<uint32>( unValue, LOCCHAR("%u") ) { }
-};
-
-// --------------------------------------------------------------------------
-
-template < >
-class CLocalizedStringArg<int> : public CLocalizedStringArgPrintfImpl<int>
-{
-public:
-    CLocalizedStringArg(int nValue) : CLocalizedStringArgPrintfImpl<int>(nValue, LOCCHAR("%d")) {}
-};
-
-// --------------------------------------------------------------------------
-
-template < >
-class CLocalizedStringArg<uint64> : public CLocalizedStringArgPrintfImpl<uint64>
-{
-public:
-	CLocalizedStringArg( uint64 unValue ) : CLocalizedStringArgPrintfImpl<uint64>( unValue, LOCCHAR("%llu") ) { }
-};
-
-// --------------------------------------------------------------------------
-
-template < >
-class CLocalizedStringArg<float> : public CLocalizedStringArgPrintfImpl<float>
-{
-public:
-    CLocalizedStringArg( float fValue ) : CLocalizedStringArgPrintfImpl<float>( fValue, LOCCHAR("%.2f") ) {}
+	static constexpr int kBufferSize = 128;
+	locchar_t m_cBuffer[kBufferSize];
 };
 
 // --------------------------------------------------------------------------
@@ -325,130 +286,15 @@ public:
 class CConstructLocalizedString
 {
 public:
-	template < typename T >
-	CConstructLocalizedString( const locchar_t *loc_Format, T arg0 )
+	template < typename... T, typename = std::enable_if_t<sizeof...(T) != 0> >
+	CConstructLocalizedString( const locchar_t *loc_Format, T... args )
 	{
-		COMPILE_TIME_ASSERT( CLocalizedStringArg<T>::kIsValid );
-
 		m_loc_Buffer[0] = '\0';
 
 		if ( loc_Format )
 		{
-			::ILocalize::ConstructString( m_loc_Buffer, sizeof( m_loc_Buffer ), loc_Format, 1, CLocalizedStringArg<T>( arg0 ).GetLocArg() );
-		}
-	}
-
-	template < typename T, typename U >
-	CConstructLocalizedString( const locchar_t *loc_Format, T arg0, U arg1 )
-	{
-		COMPILE_TIME_ASSERT( CLocalizedStringArg<T>::kIsValid );
-		COMPILE_TIME_ASSERT( CLocalizedStringArg<U>::kIsValid );
-
-		m_loc_Buffer[0] = '\0';
-
-		if ( loc_Format )
-		{
-			::ILocalize::ConstructString( m_loc_Buffer, sizeof( m_loc_Buffer ), loc_Format, 2, CLocalizedStringArg<T>( arg0 ).GetLocArg(), CLocalizedStringArg<U>( arg1 ).GetLocArg() );
-		}
-	}
-
-	template < typename T, typename U, typename V >
-	CConstructLocalizedString( const locchar_t *loc_Format, T arg0, U arg1, V arg2 )
-	{
-		COMPILE_TIME_ASSERT( CLocalizedStringArg<T>::kIsValid );
-		COMPILE_TIME_ASSERT( CLocalizedStringArg<U>::kIsValid );
-		COMPILE_TIME_ASSERT( CLocalizedStringArg<V>::kIsValid );
-
-		m_loc_Buffer[0] = '\0';
-
-		if ( loc_Format )
-		{
-			::ILocalize::ConstructString( m_loc_Buffer,
-										  sizeof( m_loc_Buffer ),
-										  loc_Format,
-										  3,
-										  CLocalizedStringArg<T>( arg0 ).GetLocArg(),
-										  CLocalizedStringArg<U>( arg1 ).GetLocArg(),
-										  CLocalizedStringArg<V>( arg2 ).GetLocArg() );
-		}
-	}
-
-	template < typename T, typename U, typename V, typename W >
-	CConstructLocalizedString( const locchar_t *loc_Format, T arg0, U arg1, V arg2, W arg3 )
-	{
-		COMPILE_TIME_ASSERT( CLocalizedStringArg<T>::kIsValid );
-		COMPILE_TIME_ASSERT( CLocalizedStringArg<U>::kIsValid );
-		COMPILE_TIME_ASSERT( CLocalizedStringArg<V>::kIsValid );
-		COMPILE_TIME_ASSERT( CLocalizedStringArg<W>::kIsValid );
-
-		m_loc_Buffer[0] = '\0';
-
-		if ( loc_Format )
-		{
-			::ILocalize::ConstructString( m_loc_Buffer,
-										  sizeof( m_loc_Buffer ),
-										  loc_Format,
-										  4,
-										  CLocalizedStringArg<T>( arg0 ).GetLocArg(),
-										  CLocalizedStringArg<U>( arg1 ).GetLocArg(),
-										  CLocalizedStringArg<V>( arg2 ).GetLocArg(),
-										  CLocalizedStringArg<W>( arg3 ).GetLocArg() );
-		}
-	}
-
-	template < typename T, typename U, typename V, typename W, typename X, typename Y >
-	CConstructLocalizedString( const locchar_t *loc_Format, T arg0, U arg1, V arg2, W arg3, X arg4, Y arg5 )
-	{
-		COMPILE_TIME_ASSERT( CLocalizedStringArg<T>::kIsValid );
-		COMPILE_TIME_ASSERT( CLocalizedStringArg<U>::kIsValid );
-		COMPILE_TIME_ASSERT( CLocalizedStringArg<V>::kIsValid );
-		COMPILE_TIME_ASSERT( CLocalizedStringArg<W>::kIsValid );
-		COMPILE_TIME_ASSERT( CLocalizedStringArg<X>::kIsValid );
-		COMPILE_TIME_ASSERT( CLocalizedStringArg<Y>::kIsValid );
-
-		m_loc_Buffer[0] = '\0';
-
-		if ( loc_Format )
-		{
-			::ILocalize::ConstructString( m_loc_Buffer,
-										  sizeof( m_loc_Buffer ),
-										  loc_Format,
-										  6,
-										  CLocalizedStringArg<T>( arg0 ).GetLocArg(),
-										  CLocalizedStringArg<U>( arg1 ).GetLocArg(),
-										  CLocalizedStringArg<V>( arg2 ).GetLocArg(),
-										  CLocalizedStringArg<W>( arg3 ).GetLocArg(),
-										  CLocalizedStringArg<X>( arg4 ).GetLocArg(),
-										  CLocalizedStringArg<Y>( arg5 ).GetLocArg() );
-		}
-	}
-
-	template < typename T, typename U, typename V, typename W, typename X, typename Y, typename Z >
-	CConstructLocalizedString( const locchar_t *loc_Format, T arg0, U arg1, V arg2, W arg3, X arg4, Y arg5, Z arg6)
-	{
-		COMPILE_TIME_ASSERT( CLocalizedStringArg<T>::kIsValid );
-		COMPILE_TIME_ASSERT( CLocalizedStringArg<U>::kIsValid );
-		COMPILE_TIME_ASSERT( CLocalizedStringArg<V>::kIsValid );
-		COMPILE_TIME_ASSERT( CLocalizedStringArg<W>::kIsValid );
-		COMPILE_TIME_ASSERT( CLocalizedStringArg<X>::kIsValid );
-		COMPILE_TIME_ASSERT( CLocalizedStringArg<Y>::kIsValid );
-		COMPILE_TIME_ASSERT( CLocalizedStringArg<Z>::kIsValid );
-
-		m_loc_Buffer[0] = '\0';
-
-		if ( loc_Format )
-		{
-			::ILocalize::ConstructString( m_loc_Buffer,
-				sizeof( m_loc_Buffer ),
-				loc_Format,
-				7,
-				CLocalizedStringArg<T>( arg0 ).GetLocArg(),
-				CLocalizedStringArg<U>( arg1 ).GetLocArg(),
-				CLocalizedStringArg<V>( arg2 ).GetLocArg(),
-				CLocalizedStringArg<W>( arg3 ).GetLocArg(),
-				CLocalizedStringArg<X>( arg4 ).GetLocArg(),
-				CLocalizedStringArg<Y>( arg5 ).GetLocArg(), 
-				CLocalizedStringArg<Z>( arg6 ).GetLocArg() );
+			const CLocalizedStringArg locArgs[] = { args... };
+			::ILocalize::ConstructStringArgs( m_loc_Buffer, sizeof( m_loc_Buffer ), loc_Format, ARRAYSIZE( locArgs ), locArgs );
 		}
 	}
 

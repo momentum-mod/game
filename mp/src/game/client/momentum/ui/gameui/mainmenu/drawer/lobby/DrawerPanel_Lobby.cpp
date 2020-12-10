@@ -143,3 +143,12 @@ void DrawerPanel_Lobby::OnReloadControls()
     if (m_bInLobby && bVisible)
         m_pLobbyChat->SetVisible(true);
 }
+
+void DrawerPanel_Lobby::OnPersonaStateChange(PersonaStateChange_t *pParams)
+{
+    if (pParams->m_nChangeFlags & k_EPersonaChangeName)
+    {
+        m_pLobbyInfo->UpdateLobbyName();
+        m_pLobbyMembers->UpdateLobbyMemberName(pParams->m_ulSteamID);
+    }
+}

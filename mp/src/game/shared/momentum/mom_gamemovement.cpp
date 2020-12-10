@@ -51,6 +51,8 @@ ConVar sv_ladder_angle("sv_ladder_angle", "-0.707", FCVAR_REPLICATED,
                        "Cos of angle of incidence to ladder perpendicular for applying ladder_dampen", true, -1.0f,
                        true, 1.0f);
 
+ConVar sv_rngfix_enable("sv_rngfix_enable", "0", FCVAR_MAPPING);
+
 #ifndef CLIENT_DLL
 #include "env_player_surface_trigger.h"
 static ConVar dispcoll_drawplane("dispcoll_drawplane", "0");
@@ -381,9 +383,7 @@ void CMomentumGameMovement::WalkMove()
 
 void CMomentumGameMovement::StepMove(Vector &vecDestination, trace_t &trace)
 {
-#ifdef USE_NEW_RNGFIX
-    if (g_pGameModeSystem->GameModeIs(GAMEMODE_AHOP))
-#endif
+    if (!sv_rngfix_enable.GetBool() || g_pGameModeSystem->GameModeIs(GAMEMODE_AHOP))
     {
         BaseClass::StepMove(vecDestination, trace);
         return;
@@ -819,6 +819,9 @@ void CMomentumGameMovement::CalculateWaterWishVelocityZ(Vector &wishVel, const V
 
 void CMomentumGameMovement::Duck()
 {
+    if (player->GetMoveType() == MOVETYPE_NOCLIP)
+        return;
+
     if (g_pGameModeSystem->GameModeIs(GAMEMODE_AHOP))
     {
         BaseClass::Duck();
@@ -1806,56 +1809,59 @@ void CMomentumGameMovement::CategorizePosition()
                     }
                 }
 
-#ifdef USE_NEW_RNGFIX
-                if (bGrounded)
+                if (sv_rngfix_enable.GetBool())
                 {
-                    if (sv_slope_fix.GetBool())
+                    if (bGrounded)
                     {
-                        ClipVelocity(vecNextVelocity, pm.plane.normal, vecNextVelocity, 1.0f);
-
-                        // What constitutes a favorable landing depends on if the player is allowed to bhop.
-
-                        // It also depends on if ground speed is capped *and* if the player actually bhops
-                        // on the next tick, but if we assume ground speed is capped only when bhopping isn't
-                        // allowed, all that matters is if bhopping is allowed.
-
-                        // On modes that can't bhop, colliding before landing is better if it means they start sliding.
-                        // If this check fails, we want to pretend they collided first and couldn't land,
-                        // so we don't set the ground entity.
-                        if (g_pGameModeSystem->GetGameMode()->CanBhop() || vecNextVelocity.z <= NON_JUMP_VELOCITY)
+                        if (sv_slope_fix.GetBool())
                         {
-                            // Only update velocity as if we collided if it results in horizontal speed gain.
-                            // Otherwise, we are probably going uphill and are actually trying to avoid this collision.
-                            if (vecNextVelocity.Length2DSqr() > mv->m_vecVelocity.Length2DSqr())
-                            {
-                                VectorCopy(vecNextVelocity, mv->m_vecVelocity);
-                            }
+                            ClipVelocity(vecNextVelocity, pm.plane.normal, vecNextVelocity, 1.0f);
 
+                            // What constitutes a favorable landing depends on if the player is allowed to bhop.
+
+                            // It also depends on if ground speed is capped *and* if the player actually bhops
+                            // on the next tick, but if we assume ground speed is capped only when bhopping isn't
+                            // allowed, all that matters is if bhopping is allowed.
+
+                            // On modes that can't bhop, colliding before landing is better if it means they start sliding.
+                            // If this check fails, we want to pretend they collided first and couldn't land,
+                            // so we don't set the ground entity.
+                            if (g_pGameModeSystem->GetGameMode()->CanBhop() || vecNextVelocity.z <= NON_JUMP_VELOCITY)
+                            {
+                                // Only update velocity as if we collided if it results in horizontal speed gain.
+                                // Otherwise, we are probably going uphill and are actually trying to avoid this collision.
+                                if (vecNextVelocity.Length2DSqr() > mv->m_vecVelocity.Length2DSqr())
+                                {
+                                    VectorCopy(vecNextVelocity, mv->m_vecVelocity);
+                                }
+
+                                SetGroundEntity(&pm);
+                            }
+                        }
+                        else
+                        {
                             SetGroundEntity(&pm);
                         }
                     }
-                    else
+                }
+                else
+                {
+                    ClipVelocity(vecNextVelocity, pm.plane.normal, vecNextVelocity, 1.0f);
+
+                    // Set ground entity if the player is not going to slide on a ramp next tick and if they will be
+                    // grounded (exception if the player wants to bhop)
+                    if (vecNextVelocity.z <= NON_JUMP_VELOCITY && bGrounded)
                     {
+                        // Make sure we check clip velocity on slopes/surfs before setting the ground entity and nulling out
+                        // velocity.z
+                        if (sv_slope_fix.GetBool() && vecNextVelocity.Length2DSqr() > mv->m_vecVelocity.Length2DSqr())
+                        {
+                            VectorCopy(vecNextVelocity, mv->m_vecVelocity);
+                        }
+
                         SetGroundEntity(&pm);
                     }
                 }
-#else
-                ClipVelocity(vecNextVelocity, pm.plane.normal, vecNextVelocity, 1.0f);
-
-                // Set ground entity if the player is not going to slide on a ramp next tick and if they will be
-                // grounded (exception if the player wants to bhop)
-                if (vecNextVelocity.z <= NON_JUMP_VELOCITY && bGrounded)
-                {
-                    // Make sure we check clip velocity on slopes/surfs before setting the ground entity and nulling out
-                    // velocity.z
-                    if (sv_slope_fix.GetBool() && vecNextVelocity.Length2DSqr() > mv->m_vecVelocity.Length2DSqr())
-                    {
-                        VectorCopy(vecNextVelocity, mv->m_vecVelocity);
-                    }
-
-                    SetGroundEntity(&pm);
-                }
-#endif
             }
             else
             {
@@ -1871,26 +1877,6 @@ void CMomentumGameMovement::CategorizePosition()
                 SetGroundEntity(&pm); // Otherwise, point to index of ent under us.
             }
         }
-
-#ifndef CLIENT_DLL
-
-        // If our gamematerial has changed, tell any player surface triggers that are watching
-        IPhysicsSurfaceProps *pPhysprops = MoveHelper()->GetSurfaceProps();
-        surfacedata_t *pSurfaceProp = pPhysprops->GetSurfaceData(pm.surface.surfaceProps);
-        char cCurrGameMaterial = pSurfaceProp->game.material;
-        if (!player->GetGroundEntity())
-        {
-            cCurrGameMaterial = 0;
-        }
-
-        // Changed?
-        if (player->m_chPreviousTextureType != cCurrGameMaterial)
-        {
-            CEnvPlayerSurfaceTrigger::SetPlayerSurface(player, cCurrGameMaterial);
-        }
-
-        player->m_chPreviousTextureType = cCurrGameMaterial;
-#endif
     }
 }
 
@@ -2589,8 +2575,7 @@ int CMomentumGameMovement::TryPlayerMove(Vector *pFirstDest, trace_t *pFirstTrac
             {
                 TracePlayerBBox(mv->GetAbsOrigin(), end, PlayerSolidMask(), COLLISION_GROUP_PLAYER_MOVEMENT, pm);
 
-#ifdef USE_NEW_RNGFIX
-                if (sv_slope_fix.GetBool() && player->GetMoveType() == MOVETYPE_WALK &&
+                if (sv_rngfix_enable.GetBool() && sv_slope_fix.GetBool() && player->GetMoveType() == MOVETYPE_WALK &&
                     player->GetGroundEntity() == nullptr && player->GetWaterLevel() < WL_Waist &&
                     g_pGameModeSystem->GetGameMode()->CanBhop() && !g_pGameModeSystem->GameModeIs(GAMEMODE_AHOP))
                 {
@@ -2623,7 +2608,6 @@ int CMomentumGameMovement::TryPlayerMove(Vector *pFirstDest, trace_t *pFirstTrac
                         }
                     }
                 }
-#endif
             }
         }
 
@@ -2707,9 +2691,19 @@ int CMomentumGameMovement::TryPlayerMove(Vector *pFirstDest, trace_t *pFirstTrac
         //  and can return.
         if (CloseEnough(pm.fraction, 1.0f, FLT_EPSILON))
         {
-            if (bumpcount == 0 && m_pPlayer->m_bSurfing)
+            if (bumpcount == 0)
             {
-                m_pPlayer->SetRampLeaveVelocity(mv->m_vecVelocity);
+                if (m_pPlayer->m_bSurfing)
+                {
+                    m_pPlayer->SetRampLeaveVelocity(mv->m_vecVelocity);
+                }
+
+                // This was needed so filters that check for floor sliding or surfing can function properly
+                if (m_pPlayer->m_bSurfing || m_pPlayer->GetInteractionIndex(SurfInt::TYPE_FLOOR) == 0)
+                {
+                    m_pPlayer->SetLastInteraction(pm, mv->m_vecVelocity, SurfInt::TYPE_LEAVE);
+                    m_pPlayer->UpdateLastAction(SurfInt::ACTION_RAMPLEAVE);
+                }
             }
 
             break; // moved the entire distance
@@ -3140,10 +3134,12 @@ void CMomentumGameMovement::ReduceTimers()
     BaseClass::ReduceTimers();
 }
 
-#ifndef USE_NEW_RNGFIX
 int CMomentumGameMovement::ClipVelocity(Vector in, Vector &normal, Vector &out, float overbounce)
 {
     const int blocked = BaseClass::ClipVelocity(in, normal, out, overbounce);
+
+    if (sv_rngfix_enable.GetBool())
+        return blocked;
 
     // Check if the jump button is held to predict if the player wants to jump up an incline. Not checking for jumping
     // could allow players that hit the slope almost perpendicularly and still surf up the slope because they would
@@ -3167,7 +3163,6 @@ int CMomentumGameMovement::ClipVelocity(Vector in, Vector &normal, Vector &out, 
     // Return blocking flags.
     return blocked;
 }
-#endif
 
 inline float VectorYaw(const Vector &v)
 {

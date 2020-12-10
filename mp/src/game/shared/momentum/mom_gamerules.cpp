@@ -24,6 +24,9 @@ REGISTER_GAMERULES_CLASS(CMomentumGameRules);
 
 CMomentumGameRules::CMomentumGameRules()
 {
+#ifdef GAME_DLL
+    m_bOnOfficialMap = false;
+#endif
 }
 
 CMomentumGameRules::~CMomentumGameRules() {}
@@ -255,6 +258,7 @@ void CMomentumGameRules::ClientCommandKeyValues(edict_t *pEntity, KeyValues *pKe
         {
             KeyValuesAD pData(static_cast<KeyValues *>(pTrackPtr));
             g_MapZoneSystem.LoadZonesFromSite(pData, CBaseEntity::Instance(pEntity));
+            m_bOnOfficialMap = true;
         }
     }
 }
@@ -313,7 +317,7 @@ void CMomentumGameRules::RunPointServerCommandWhitelisted(const char *pCmd)
     vec.PurgeAndDeleteElements();
 }
 
-static char* const g_szWhitelistedClientCmds[] = {
+static const char* const g_szWhitelistedClientCmds[] = {
     "r_screenoverlay",
     "play",
     "playgamesound"
@@ -379,8 +383,8 @@ bool CMomentumGameRules::AllowDamage(CBaseEntity *pVictim, const CTakeDamageInfo
     // Allow self damage from rockets, generic bombs and stickies
     if (pVictim == info.GetAttacker() && (FClassnameIs(info.GetInflictor(), "momentum_rocket") ||
                                           FClassnameIs(info.GetInflictor(), "momentum_generic_bomb") ||
-                                          FClassnameIs(info.GetInflictor(), "momentum_stickybomb")) ||
-                                          FClassnameIs(info.GetInflictor(), "momentum_concgrenade"))
+                                          FClassnameIs(info.GetInflictor(), "momentum_stickybomb") ||
+                                          FClassnameIs(info.GetInflictor(), "momentum_concgrenade")))
         return true;
 
     return !pVictim->IsPlayer();

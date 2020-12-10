@@ -40,7 +40,9 @@ class CBaseMenuPanel : public vgui::EditablePanel
 
     MESSAGE_FUNC_PARAMS(OnLevelLoadingStarted, "LevelLoadStarted", pKvData);
     MESSAGE_FUNC_PARAMS(OnLevelLoadingFinished, "LevelLoadFinished", pKvData);
-    
+
+    MESSAGE_FUNC_INT(OnKeyCodeUnhandled, "KeyCodeUnhandled", code);
+
     EBackgroundState GetMenuBackgroundState() const { return m_eBackgroundState; }
 
 protected:

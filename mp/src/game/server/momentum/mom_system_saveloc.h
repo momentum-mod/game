@@ -3,6 +3,7 @@
 #include "eventqueue.h"
 
 class CMomentumPlayer;
+class CMomentumPlayerCollectibles;
 class SavelocReqPacket;
 
 enum SavedLocationComponent_t
@@ -22,8 +23,16 @@ enum SavedLocationComponent_t
     SAVELOC_TRACK = 1 << 10,
     SAVELOC_ZONE = 1 << 11,
     SAVELOC_TOGGLED_BTNS = 1 << 12,
+    SAVELOC_TIME = 1 << 13,
+    SAVELOC_COLLECTIBLES = 1 << 14,
 
     SAVELOC_ALL = ~SAVELOC_NONE,
+};
+
+enum StartMarkType_t
+{
+    START_MARK = 0,
+    START_MARK_STAGE
 };
 
 // Saved Location used in the "Saveloc menu"
@@ -40,11 +49,14 @@ struct SavedLocation_t
     int m_iDisabledButtons;
     int m_iToggledButtons;
     int m_iTrack, m_iZone;
+    int m_iTimerTickOffset; // What to offset from gpGlobals->tickcount
     CEventQueueState entEventsState;
+    CMomentumPlayerCollectibles *m_Collectibles;
 
     int m_savedComponents;
 
     SavedLocation_t();
+    ~SavedLocation_t();
 
     // Called when the player creates a checkpoint
     SavedLocation_t(CMomentumPlayer* pPlayer, int components = SAVELOC_ALL);
@@ -55,7 +67,7 @@ struct SavedLocation_t
     void Load(KeyValues* kvCP);
 
     // Called when the player wants to teleport to this checkpoint 
-    void Teleport(CMomentumPlayer* pPlayer);
+    void Teleport(CMomentumPlayer* pPlayer, bool bStopTimer = true);
 
     bool Read(CUtlBuffer &mem);
     bool Write(CUtlBuffer &mem);
@@ -66,9 +78,9 @@ class CSaveLocSystem : public CAutoGameSystem
 public:
     CSaveLocSystem(const char* pName);
     ~CSaveLocSystem();
-    void PostInit() OVERRIDE;
-    void LevelInitPreEntity() OVERRIDE;
-    void LevelShutdownPreEntity() OVERRIDE;
+    void PostInit() override;
+    void LevelInitPreEntity() override;
+    void LevelShutdownPreEntity() override;
 
     // Online
     // Called when the UI wants to request savelocs
@@ -85,7 +97,10 @@ public:
     bool ReadReceivedSavelocs(SavelocReqPacket *input, const uint64 &sender);
 
     // Local
-    // Loads start marks from saveloc file
+    // Loads savelocs from file
+    bool LoadSavelocsIntoKV();
+    bool SaveSavelocsToKV();
+    // Loads start marks from savelocs keyvalues
     bool LoadStartMarks();
     // Gets the current menu Saveloc index
     uint32 GetCurrentSavelocMenuIndex() const { return m_iCurrentSavelocIndx; }
@@ -123,6 +138,17 @@ public:
     // WARNING! No verification is done. It is up to the caller to don't give false information
     void SetUsingSavelocMenu(bool bIsUsingSLMenu);
 
+    bool CreateStartMark();
+    void ClearStartMark(StartMarkType_t eMarktype, int iMarkIndex, bool bPrintMsg = true);
+    void ClearCurrentStartMark(StartMarkType_t eMarktype, bool bPrintMsg = true);
+    void ClearAllStartMarks(StartMarkType_t eMarktype);
+    bool TeleportToStartMark(StartMarkType_t eMarktype, int iMarkIndex);
+
+    KeyValues *GetSavelocKV() const { return m_pSavedLocsKV; }
+    void ImportMapSavelocs(const char *pImportMapName);
+
+    void AddSavelocsFromKV(KeyValues *pSavelocData);
+
 private:
     void CheckTimer(); // Check the timer to see if we should stop it
     void FireUpdateEvent() const; // Fire tan event to the UI when we change our saveloc vector in any way, or stop using the saveloc menu
@@ -135,6 +161,10 @@ private:
     CUtlVector<SavedLocation_t*> m_rcSavelocs;
     int m_iCurrentSavelocIndx;
     bool m_bUsingSavelocMenu;
+    bool m_bHintedStartMarkForLevel;
+
+    CUtlVector<SavedLocation_t*> m_vecStartMarks;
+    CUtlVector<SavedLocation_t*> m_vecStageMarks;
 };
 
 extern CSaveLocSystem *g_pSavelocSystem;

@@ -76,6 +76,7 @@ class CHudStickybombs : public CHudElement, public EditablePanel
     CUtlVector<Stickybox *> m_Stickyboxes;
 
     CPanelAnimationVar(int, m_iBoxDimension, "BoxDimension", "8");
+    CPanelAnimationVar(int, m_iGutter, "Gutter", "4");
     CPanelAnimationVar(Color, m_BgColor, "BgColor", "Blank");
     CPanelAnimationVar(Color, m_PreArmColor, "PreArmColor", "BlackHO");
     CPanelAnimationVar(Color, m_NoStickyColor, "NoStickyColor", "BlackHO");
@@ -170,17 +171,17 @@ void CHudStickybombs::PerformLayout()
 {
     BaseClass::PerformLayout();
 
-    int iSpacePerBox = GetWide() / MOM_WEAPON_STICKYBOMB_COUNT;
-    int iXPosAcc = 0;
+    int iTemp = GetScaledVal(m_iGutter);
+    SetWide((GetScaledVal(m_iBoxDimension) + iTemp) * MOM_WEAPON_STICKYBOMB_COUNT + iTemp);
+
     for (int i = 0; i < MOM_WEAPON_STICKYBOMB_COUNT; i++)
     {
         int iScaledBoxDimension = GetScaledVal(m_iBoxDimension);
 
         m_Stickyboxes[i]->SetWide(iScaledBoxDimension);
         m_Stickyboxes[i]->SetTall(iScaledBoxDimension);
-        m_Stickyboxes[i]->SetPos(iXPosAcc + (iSpacePerBox - iScaledBoxDimension) / 2,
-                                 GetTall() / 2 - iScaledBoxDimension / 2);
+        m_Stickyboxes[i]->SetPos(iTemp, GetTall() / 2 - iScaledBoxDimension / 2);
 
-        iXPosAcc += iSpacePerBox;
+        iTemp += iScaledBoxDimension + GetScaledVal(m_iGutter);
     }
 }

@@ -33,6 +33,8 @@ class CRunSafeguard
   public:
     CRunSafeguard(const char *szAction);
 
+    void Reset();
+
     bool IsSafeguarded(RunSafeguardMode_t mode);
 
     void SetRelevantCVar(ConVar *pVarRef) { m_pRelatedVar = pVarRef; }
@@ -40,14 +42,13 @@ class CRunSafeguard
     bool IsIgnoredInMenu() const { return m_bIgnoredInMenu; }
 
   private:
-    bool IsMovementKeysSafeguarded(int nButtons);
-    bool IsDoublePressSafeguarded();
+    bool IsMovementKeysSafeguarded(int nButtons, CBasePlayer *pPlayer);
+    bool IsDoublePressSafeguarded(CBasePlayer *pPlayer);
 
     char m_szAction[64];
 
     float m_flLastTimePressed;
-
-    bool m_bDoublePressSafeguard;
+    float m_flLastTimeWarned;
 
     bool m_bIgnoredInMenu;
 
@@ -58,6 +59,10 @@ class MomRunSafeguards
 {
   public:
     MomRunSafeguards();
+
+    void ResetAllSafeguards();
+    void ResetSafeguard(int type);
+    void ResetSafeguard(RunSafeguardType_t type);
 
     bool IsSafeguarded(RunSafeguardType_t type);
     bool IsSafeguarded(RunSafeguardType_t type, RunSafeguardMode_t mode);

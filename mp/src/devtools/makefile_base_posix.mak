@@ -61,7 +61,7 @@ CFLAGS = $(BASE_CFLAGS) $(ENV_CFLAGS)
 ifeq ($(CLANG_BUILD),1)
 	CXXFLAGS = $(BASE_CFLAGS) -std=gnu++0x -Wno-c++11-narrowing -Wno-dangling-else $(ENV_CXXFLAGS)
 else
-	CXXFLAGS = $(BASE_CFLAGS) -std=gnu++0x -fpermissive $(ENV_CXXFLAGS)
+	CXXFLAGS = $(BASE_CFLAGS) -std=gnu++17 -fpermissive $(ENV_CXXFLAGS)
 endif
 DEFINES += -DVPROF_LEVEL=1 -DGNUC -DNO_HOOK_MALLOC -DNO_MALLOC_OVERRIDE
 
@@ -88,13 +88,15 @@ CHROOT_NAME=steamrt_scout_i386
 # required chroot
 #
 export STEAM_RUNTIME_PATH := /usr
-ifndef USING_DOCKER
-    ifneq ("$(SCHROOT_CHROOT_NAME)", "$(CHROOT_NAME)")
-        $(info '$(SCHROOT_CHROOT_NAME)' is not '$(CHROOT_NAME)')
-        $(error This makefile should be run from within a chroot. 'schroot --chroot $(CHROOT_NAME) -- $(MAKE) $(MAKEFLAGS)')  
+ifeq ("$(wildcard /run/systemd/container)","")
+    ifndef USING_DOCKER
+        ifneq ("$(SCHROOT_CHROOT_NAME)", "$(CHROOT_NAME)")
+            $(info '$(SCHROOT_CHROOT_NAME)' is not '$(CHROOT_NAME)')
+            $(error This makefile should be run from within a chroot. 'schroot --chroot $(CHROOT_NAME) -- $(MAKE) $(MAKEFLAGS)')  
+        endif
     endif
 endif
-GCC_VER = -4.8
+GCC_VER = -9
 P4BIN = p4
 CRYPTOPPDIR=ubuntu12_32
 
@@ -146,7 +148,6 @@ ifeq ($(STEAM_BRANCH),1)
 	WARN_FLAGS = -Wall -Wextra -Wshadow -Wno-invalid-offsetof
 else
 	WARN_FLAGS = -Wall -Wno-invalid-offsetof -Wno-multichar -Wno-overloaded-virtual
-	WARN_FLAGS += -Wno-write-strings
 	WARN_FLAGS += -Wno-unused-variable
 	WARN_FLAGS += -Wno-unused-but-set-variable
 	WARN_FLAGS += -Wno-unused-function
@@ -154,16 +155,20 @@ endif
 
 ifeq ($(CLANG_BUILD),1)
 	# Clang specific flags
-else ifeq ($(GCC_VER),-4.8)
+else ifeq ($(GCC_VER),-9)
 	WARN_FLAGS += -Wno-unused-local-typedefs
 	WARN_FLAGS += -Wno-unused-result
 	WARN_FLAGS += -Wno-narrowing
+	WARN_FLAGS += -Wno-class-memaccess
 	# WARN_FLAGS += -Wno-unused-function
 endif
 
 WARN_FLAGS += -Wno-unknown-pragmas -Wno-unused-parameter -Wno-unused-value -Wno-missing-field-initializers
 WARN_FLAGS += -Wno-sign-compare -Wno-reorder -Wno-invalid-offsetof -Wno-float-equal -Werror=return-type
 WARN_FLAGS += -fdiagnostics-show-option -Wformat -Wformat-security
+
+# warnings that should be noticed
+WARN_FLAGS += -Werror=parentheses -Werror=write-strings
 
 ifeq ($(TARGET_PLATFORM),linux64)
 	# nocona = pentium4 + 64bit + MMX, SSE, SSE2, SSE3 - no SSSE3 (that's three s's - added in core2)
@@ -173,10 +178,10 @@ ifeq ($(TARGET_PLATFORM),linux64)
 	LIBSTDCXXPIC := $(shell $(CXX) -print-file-name=libstdc++-pic.a)
 else
 	# pentium4 = MMX, SSE, SSE2 - no SSE3 (added in prescott) # -msse3 -mfpmath=sse
-	ARCH_FLAGS += -m32 -march=$(MARCH_TARGET) -mtune=core2 $(SSE_GEN_FLAGS)
+	ARCH_FLAGS += -m32 -fabi-compat-version=2 -march=$(MARCH_TARGET) -mtune=core2 $(SSE_GEN_FLAGS)
 	LD_SO = ld-linux.so.2
-	LIBSTDCXX := $(shell $(CXX) $(ARCH_FLAGS) -print-file-name=libstdc++.so)
-	LIBSTDCXXPIC := $(shell $(CXX) $(ARCH_FLAGS) -print-file-name=libstdc++.so)
+	LIBSTDCXX := $(shell $(CXX) $(ARCH_FLAGS) -print-file-name=libstdc++.a)
+	LIBSTDCXXPIC := $(shell $(CXX) $(ARCH_FLAGS) -print-file-name=libstdc++.a)
 	LDFLAGS += -m32
 endif
 

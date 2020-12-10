@@ -14,15 +14,24 @@
 #include "tier0/memdbgon.h"
 
 #define SAVELOC_FILE_NAME "savedlocs.txt"
+#define SAVELOC_KV_KEY_SAVELOCS "cps"
+#define SAVELOC_KV_KEY_CURRENTINDEX "cur"
+#define SAVELOC_KV_KEY_STARTMARKS "startmarks"
 
 MAKE_TOGGLE_CONVAR(mom_saveloc_save_between_sessions, "1", FCVAR_ARCHIVE, "Defines if savelocs should be saved between sessions of the same map.\n");
 
 SavedLocation_t::SavedLocation_t() : m_bCrouched(false), m_vecPos(vec3_origin), m_vecVel(vec3_origin), m_qaAng(vec3_angle),
                                      m_fGravityScale(1.0f), m_fMovementLagScale(1.0f), m_iDisabledButtons(0), m_savedComponents(SAVELOC_NONE),
-                                     m_iZone(-1), m_iTrack(-1), m_iToggledButtons(0)
+                                     m_iZone(-1), m_iTrack(-1), m_iToggledButtons(0), m_iTimerTickOffset(-1)
 {
     m_szTargetName[0] = '\0';
     m_szTargetClassName[0] = '\0';
+    m_Collectibles = new CMomentumPlayerCollectibles;
+}
+
+SavedLocation_t::~SavedLocation_t()
+{
+    delete m_Collectibles;
 }
 
 SavedLocation_t::SavedLocation_t(CMomentumPlayer* pPlayer, int components /*= SAVELOC_ALL*/) : SavedLocation_t()
@@ -67,6 +76,25 @@ SavedLocation_t::SavedLocation_t(CMomentumPlayer* pPlayer, int components /*= SA
 
     if ( components & SAVELOC_EVENT_QUEUE )
         g_EventQueue.SaveForTarget(pPlayer, entEventsState);
+
+    if ( components & SAVELOC_TIME )
+    {
+        if (g_pMomentumTimer->IsRunning())
+        {
+            m_iTimerTickOffset = g_pMomentumTimer->GetCurrentTime();
+        }
+        else if (pPlayer->m_Data.m_iTimerState == TIMER_STATE_PRACTICE)
+        {
+            m_iTimerTickOffset = gpGlobals->tickcount - pPlayer->m_Data.m_iStartTick;
+        }
+        else
+        {
+            m_iTimerTickOffset = -1;
+        }
+    }
+
+    if ( components & SAVELOC_COLLECTIBLES )
+        *m_Collectibles = pPlayer->m_Collectibles;
 }
 
 void SavedLocation_t::Save(KeyValues* kvCP) const
@@ -111,6 +139,12 @@ void SavedLocation_t::Save(KeyValues* kvCP) const
 
     if ( m_savedComponents & SAVELOC_EVENT_QUEUE )
         entEventsState.SaveToKeyValues(kvCP);
+
+    if ( m_savedComponents & SAVELOC_TIME )
+        kvCP->SetInt("time", m_iTimerTickOffset);
+        
+    if ( m_savedComponents & SAVELOC_COLLECTIBLES )
+        m_Collectibles->SaveToKeyValues(kvCP);
 }
 
 void SavedLocation_t::Load(KeyValues* pKv)
@@ -129,9 +163,11 @@ void SavedLocation_t::Load(KeyValues* pKv)
     m_iZone = pKv->GetInt( "zone", -1 );
     m_iToggledButtons = pKv->GetInt("toggledButtons");
     entEventsState.LoadFromKeyValues(pKv);
+    m_iTimerTickOffset = pKv->GetInt("time", -1);
+    m_Collectibles->LoadFromKeyValues(pKv);
 }
 
-void SavedLocation_t::Teleport(CMomentumPlayer* pPlayer)
+void SavedLocation_t::Teleport(CMomentumPlayer* pPlayer, bool bStopTimer /*= true*/)
 {
     if ( m_savedComponents & SAVELOC_TARGETNAME )
         pPlayer->SetName(MAKE_STRING(m_szTargetName));
@@ -151,9 +187,8 @@ void SavedLocation_t::Teleport(CMomentumPlayer* pPlayer)
         }
     }
 
-    pPlayer->ManualTeleport(&m_vecPos,
-                            m_savedComponents & SAVELOC_ANG ? &m_qaAng : nullptr,
-                            m_savedComponents & SAVELOC_VEL ? &m_vecVel : &vec3_origin);
+    pPlayer->ManualTeleport(&m_vecPos, m_savedComponents & SAVELOC_ANG ? &m_qaAng : nullptr,
+                            m_savedComponents & SAVELOC_VEL ? &m_vecVel : &vec3_origin, bStopTimer);
 
     if ( m_savedComponents & SAVELOC_GRAVITY )
         pPlayer->SetGravity(m_fGravityScale);
@@ -175,6 +210,23 @@ void SavedLocation_t::Teleport(CMomentumPlayer* pPlayer)
 
     if ( m_savedComponents & SAVELOC_EVENT_QUEUE )
         g_EventQueue.RestoreForTarget(pPlayer, entEventsState);
+
+    if ( m_savedComponents & SAVELOC_TIME )
+    {
+        if (m_iTimerTickOffset != -1)
+        {
+            pPlayer->m_Data.m_iTimerState = TIMER_STATE_PRACTICE;
+            pPlayer->m_Data.m_iStartTick = gpGlobals->tickcount - m_iTimerTickOffset;
+        }
+        else
+        {
+            pPlayer->m_Data.m_iTimerState = TIMER_STATE_NOT_RUNNING;
+            pPlayer->m_Data.m_iStartTick = 0;
+        }
+    }
+
+    if ( m_savedComponents & SAVELOC_COLLECTIBLES )
+        pPlayer->m_Collectibles = *m_Collectibles;
 }
 
 bool SavedLocation_t::Read(CUtlBuffer &mem)
@@ -202,12 +254,22 @@ CSaveLocSystem::CSaveLocSystem(const char* pName): CAutoGameSystem(pName)
     m_iRequesting = 0;
     m_iCurrentSavelocIndx = -1;
     m_bUsingSavelocMenu = false;
+    m_bHintedStartMarkForLevel = false;
+
+    m_vecStartMarks.EnsureCount(MAX_TRACKS);
+    for (int i = 0; i < MAX_TRACKS; i++)
+        m_vecStartMarks[i] = nullptr;
+
+    // all stages within a track; 0 and 1 are ignored
+    // track doesn't matter as it wipes every run
+    m_vecStageMarks.EnsureCount(MAX_ZONES);
+    for (int i = 0; i < MAX_ZONES; i++)
+        m_vecStageMarks[i] = nullptr;
 }
 
 CSaveLocSystem::~CSaveLocSystem()
 {
-    if (m_pSavedLocsKV)
-        m_pSavedLocsKV->deleteThis();
+    m_pSavedLocsKV->deleteThis();
     m_pSavedLocsKV = nullptr;
 }
 
@@ -218,46 +280,26 @@ void CSaveLocSystem::PostInit()
 
 void CSaveLocSystem::LevelInitPreEntity()
 {
-    // We don't check mom_savelocs_save_between_sessions because we want to be able to load savelocs from friends
-    DevLog("Loading savelocs from %s ...\n", SAVELOC_FILE_NAME);
+    m_bHintedStartMarkForLevel = false;
+    ClearAllStartMarks(START_MARK);
 
-    if (m_pSavedLocsKV)
-    {
-        //Remove the past loaded stuff
-        m_pSavedLocsKV->Clear();
+    // Note: We are not only loading in PostInit because if players edit their savelocs file (add
+    // savelocs from a friend or something), then we want to reload on map load again,
+    // and not force the player to restart the mod every time.
+    if (!LoadSavelocsIntoKV())
+        return;
 
-        // Note: This loading is going to contain all of the other maps' savelocs as well!
-        // Note: We are not in PostInit because if players edit their savelocs file (add
-        // savelocs from a friend or something), then we want to reload on map load again,
-        // and not force the player to restart the mod every time.
-        if (m_pSavedLocsKV->LoadFromFile(filesystem, SAVELOC_FILE_NAME, "MOD"))
-        {
-            DevLog("Loaded savelocs from %s!\n", SAVELOC_FILE_NAME);
+    KeyValues *kvMapSavelocs = m_pSavedLocsKV->FindKey(gpGlobals->mapname.ToCStr());
+    if (!kvMapSavelocs || kvMapSavelocs->IsEmpty())
+        return;
 
-            if (!m_pSavedLocsKV->IsEmpty())
-            {
-                KeyValues *kvMapSavelocs = m_pSavedLocsKV->FindKey(gpGlobals->mapname.ToCStr());
-                if (kvMapSavelocs && !kvMapSavelocs->IsEmpty())
-                {
-                    m_iCurrentSavelocIndx = kvMapSavelocs->GetInt("cur");
+    m_iCurrentSavelocIndx = kvMapSavelocs->GetInt(SAVELOC_KV_KEY_CURRENTINDEX);
+    AddSavelocsFromKV(kvMapSavelocs->FindKey(SAVELOC_KV_KEY_SAVELOCS));
 
-                    KeyValues *kvCPs = kvMapSavelocs->FindKey("cps");
-                    if (!kvCPs)
-                        return;
-
-                    FOR_EACH_SUBKEY(kvCPs, kvCheckpoint)
-                    {
-                        auto c = new SavedLocation_t;
-                        c->Load(kvCheckpoint);
-                        m_rcSavelocs.AddToTail(c);
-                    }
-
-                    // Fire the initial event
-                    FireUpdateEvent();
-                }
-            }
-        }
-    }
+    if (LoadStartMarks())
+        DevLog("Loaded startmarks from the savedlocs KV!\n");
+    else
+        DevWarning("Failed loading startmarks from the savedlocs file.\n");
 }
 
 bool CSaveLocSystem::LoadStartMarks()
@@ -269,26 +311,24 @@ bool CSaveLocSystem::LoadStartMarks()
     if (!kvMapSavelocs || kvMapSavelocs->IsEmpty())
         return false;
 
-    KeyValues *kvStartMarks = kvMapSavelocs->FindKey("startmarks");
+    KeyValues *kvStartMarks = kvMapSavelocs->FindKey(SAVELOC_KV_KEY_STARTMARKS);
     if (!kvStartMarks)
-        return false;
-
-    CMomentumPlayer *pPlayer = CMomentumPlayer::GetLocalPlayer();
-    if (!pPlayer)
         return false;
 
     FOR_EACH_SUBKEY(kvStartMarks, kvStartMark)
     {
         int track = Q_atoi(kvStartMark->GetName());
 
-        SavedLocation_t * pStartmark = new SavedLocation_t;
+        const auto pStartmark = new SavedLocation_t;
         pStartmark->Load(kvStartMark);
 
-        if (!pPlayer->SetStartMark(track, pStartmark))
+        if (!pStartmark || track < 0 || track >= MAX_TRACKS || pStartmark->m_savedComponents != (SAVELOC_POS | SAVELOC_ANG))
         {
             delete pStartmark;
             return false;
         }
+
+        m_vecStartMarks[track] = pStartmark;
     }
 
     return true;
@@ -296,60 +336,9 @@ bool CSaveLocSystem::LoadStartMarks()
 
 void CSaveLocSystem::LevelShutdownPreEntity()
 {
-    CMomentumPlayer *pPlayer = CMomentumPlayer::GetLocalPlayer();
-    if (pPlayer && m_pSavedLocsKV && mom_saveloc_save_between_sessions.GetBool())
+    if (mom_saveloc_save_between_sessions.GetBool())
     {
-        DevLog("Saving map %s savelocs and startmarks to %s ...\n", gpGlobals->mapname.ToCStr(), SAVELOC_FILE_NAME);
-        // Make the KV to save into and save into it
-        KeyValues *pKvMapSavelocs = new KeyValues(gpGlobals->mapname.ToCStr());
-        // Set the current index
-        pKvMapSavelocs->SetInt("cur", m_iCurrentSavelocIndx);
-
-        // Add all your savelocs
-        KeyValues *kvCPs = new KeyValues("cps");
-        FOR_EACH_VEC(m_rcSavelocs, i)
-        {
-            char szCheckpointNum[10]; // 999 million savelocs is pretty generous
-            Q_snprintf(szCheckpointNum, sizeof(szCheckpointNum), "%09i", i); // %09 because '\0' is the last (10)
-            KeyValues *kvCP = new KeyValues(szCheckpointNum);
-            m_rcSavelocs[i]->Save(kvCP);
-            kvCPs->AddSubKey(kvCP);
-        }
-
-        // Add startmarks
-        KeyValues *kvStartMarks = new KeyValues("startmarks");
-        for (int track = 0; track < MAX_TRACKS; track++)
-        {
-            SavedLocation_t *startMark = pPlayer->GetStartMark(track);
-            if (!startMark) // Save location of valid startmarks only
-                continue;
-
-            char szTrackNum[4]; // 999 tracks should be enough
-            Q_snprintf(szTrackNum, sizeof(szTrackNum), "%03i", track); 
-            KeyValues *kvStartMark = new KeyValues(szTrackNum);
-
-            startMark->Save(kvStartMark);
-            kvStartMarks->AddSubKey(kvStartMark);
-        }
-
-        // Save them into the keyvalues
-        pKvMapSavelocs->AddSubKey(kvCPs);
-        pKvMapSavelocs->AddSubKey(kvStartMarks);
-       
-        // Remove the map if it already exists in there
-        KeyValues *pExisting = m_pSavedLocsKV->FindKey(gpGlobals->mapname.ToCStr());
-        if (pExisting)
-        {
-            m_pSavedLocsKV->RemoveSubKey(pExisting);
-            pExisting->deleteThis();
-        }
-
-        // Add the new one
-        m_pSavedLocsKV->AddSubKey(pKvMapSavelocs);
-
-        // Save everything to file
-        if (m_pSavedLocsKV->SaveToFile(filesystem, SAVELOC_FILE_NAME, "MOD", true))
-            DevLog("Saved map %s savelocs and startmarks to %s!\n", gpGlobals->mapname.ToCStr(), SAVELOC_FILE_NAME);
+        SaveSavelocsToKV();
     }
 
     // Remove all requesters if we had any
@@ -502,14 +491,18 @@ void CSaveLocSystem::CreateAndSaveLocation()
     if (!pPlayer)
         return;
 
-    if (pPlayer->CreateStartMark())
+    const auto bCreatedStartMark = CreateStartMark();
+    if (bCreatedStartMark && !m_bHintedStartMarkForLevel)
     {
         UTIL_HudHintText(pPlayer, "#MOM_Hint_CreateStartMark");
-        return;
+        m_bHintedStartMarkForLevel = true;
     }
 
-    AddSaveloc(CreateSaveloc());
-    ClientPrint(pPlayer, HUD_PRINTTALK, CFmtStr("Saveloc #%i created!", m_rcSavelocs.Count()));
+    AddSaveloc(CreateSaveloc(bCreatedStartMark ? (SAVELOC_POS | SAVELOC_ANG) : SAVELOC_ALL));
+
+    if (!bCreatedStartMark)
+        ClientPrint(pPlayer, HUD_PRINTTALK, CFmtStr("Saveloc #%i created!", m_rcSavelocs.Count()));
+
     UpdateRequesters();
 }
 
@@ -617,11 +610,156 @@ void CSaveLocSystem::SetUsingSavelocMenu(bool bIsUsingSLMenu)
     FireUpdateEvent();
 }
 
+bool CSaveLocSystem::CreateStartMark()
+{
+    const auto pPlayer = CMomentumPlayer::GetLocalPlayer();
+    if (!pPlayer)
+        return false;
+
+    if (!pPlayer->GetGroundEntity())
+    {
+        Warning("Must be on ground to create a start mark!\n");
+        return false;
+    }
+
+    StartMarkType_t type;
+    int iMarkIndex;
+    SavedLocation_t **pSaveLocAtIndex;
+    if (pPlayer->IsInZone(ZONE_TYPE_START))
+    {
+        int iCurrentTrack = pPlayer->m_Data.m_iCurrentTrack.Get();
+        if (iCurrentTrack < 0 || iCurrentTrack >= MAX_TRACKS)
+        {
+            Warning("Could not create start mark; invalid track (%i)!\n", iCurrentTrack);
+            return false;
+        }
+
+        type = START_MARK;
+        iMarkIndex = iCurrentTrack;
+        pSaveLocAtIndex = &m_vecStartMarks[iCurrentTrack];
+    }
+    else if (pPlayer->IsInZone(ZONE_TYPE_STAGE))
+    {
+        int iCurrentStage = pPlayer->m_Data.m_iCurrentZone.Get();
+        if (iCurrentStage < 2 || iCurrentStage >= MAX_ZONES)
+        {
+            Warning("Could not create stage mark; invalid stage (%i)!\n", iCurrentStage);
+            return false;
+        }
+
+        type = START_MARK_STAGE;
+        iMarkIndex = iCurrentStage;
+        pSaveLocAtIndex = &m_vecStageMarks[iCurrentStage];
+    }
+    else
+    {
+        Warning("Could not create start mark; you are not in a valid start or stage zone!\n");
+        return false;
+    }
+
+    const auto pSaveloc = CreateSaveloc(SAVELOC_POS | SAVELOC_ANG);
+    if (!pSaveloc)
+        return false;
+
+    ClearStartMark(type, iMarkIndex, false);
+    *pSaveLocAtIndex = pSaveloc;
+    ClientPrint(pPlayer, HUD_PRINTTALK, type == START_MARK ? "Start Mark Created!" : "Stage Start Mark Created!");
+
+    return true;
+}
+
+void CSaveLocSystem::ClearStartMark(StartMarkType_t eMarktype, int iMarkIndex, bool bPrintMsg /*= true*/)
+{
+    const auto pPlayer = CMomentumPlayer::GetLocalPlayer();
+    if (!pPlayer)
+        return;
+
+    if (eMarktype == START_MARK)
+    {
+        if (iMarkIndex < 0 || iMarkIndex >= MAX_TRACKS)
+            return;
+
+        delete m_vecStartMarks[iMarkIndex];
+        m_vecStartMarks[iMarkIndex] = nullptr;
+    }
+    else
+    {
+        if (iMarkIndex < 2 || iMarkIndex >= MAX_ZONES)
+            return;
+
+        delete m_vecStageMarks[iMarkIndex];
+        m_vecStageMarks[iMarkIndex] = nullptr;
+    }
+
+    if (!bPrintMsg)
+        return;
+
+    ClientPrint(pPlayer, HUD_PRINTTALK, eMarktype == START_MARK ? "Start Mark Cleared!" : "Stage Start Mark Cleared!");
+}
+
+void CSaveLocSystem::ClearCurrentStartMark(StartMarkType_t eMarktype, bool bPrintMsg /*= true*/)
+{
+    const auto pPlayer = CMomentumPlayer::GetLocalPlayer();
+    if (!pPlayer)
+        return;
+
+    ClearStartMark(eMarktype, eMarktype == START_MARK ? pPlayer->m_Data.m_iCurrentTrack.Get() : pPlayer->m_Data.m_iCurrentZone.Get(), bPrintMsg);
+}
+
+void CSaveLocSystem::ClearAllStartMarks(StartMarkType_t eMarktype)
+{
+    if (eMarktype == START_MARK)
+    {
+        for (int i = 0; i < MAX_TRACKS; i++)
+        {
+            delete m_vecStartMarks[i];
+            m_vecStartMarks[i] = nullptr;
+        }
+    }
+    else
+    {
+        for (int i = 0; i < MAX_ZONES; i++)
+        {
+            delete m_vecStageMarks[i];
+            m_vecStageMarks[i] = nullptr;
+        }
+    }
+}
+
+bool CSaveLocSystem::TeleportToStartMark(StartMarkType_t eMarktype, int iMarkIndex)
+{
+    const auto pPlayer = CMomentumPlayer::GetLocalPlayer();
+    if (!pPlayer)
+        return false;
+
+    if (eMarktype == START_MARK)
+    {
+        if (iMarkIndex < 0 || iMarkIndex >= MAX_TRACKS)
+            return false;
+
+        if (!m_vecStartMarks[iMarkIndex])
+            return false;
+
+        m_vecStartMarks[iMarkIndex]->Teleport(pPlayer);
+    }
+    else
+    {
+        if (iMarkIndex < 2 || iMarkIndex >= MAX_ZONES)
+            return false;
+
+        if (!m_vecStageMarks[iMarkIndex])
+            return false;
+
+        m_vecStageMarks[iMarkIndex]->Teleport(pPlayer, false);
+    }
+
+    return true;
+}
+
 void CSaveLocSystem::CheckTimer()
 {
     if (g_pMomentumTimer->IsRunning())
     {
-
         g_pMomentumTimer->Stop(CMomentumPlayer::GetLocalPlayer());
 
         // MOM_TODO: consider
@@ -661,6 +799,125 @@ void CSaveLocSystem::UpdateRequesters()
     }
 }
 
+bool CSaveLocSystem::LoadSavelocsIntoKV()
+{
+    // We don't check mom_savelocs_save_between_sessions because we want to be able to load savelocs from friends
+    DevLog("Loading savelocs from %s ...\n", SAVELOC_FILE_NAME);
+
+    // Remove the past loaded stuff
+    m_pSavedLocsKV->Clear();
+
+    // Note: This loading is going to contain all of the other maps' savelocs as well!
+    if (!m_pSavedLocsKV->LoadFromFile(filesystem, SAVELOC_FILE_NAME, "MOD"))
+    {
+        DevWarning("Failed to savelocs file! It probably doesn't exist yet...\n");
+        return false;
+    }
+
+    if (m_pSavedLocsKV->IsEmpty())
+        return false;
+
+    DevLog("Loaded savelocs from %s!\n", SAVELOC_FILE_NAME);
+
+    return true;
+}
+
+bool CSaveLocSystem::SaveSavelocsToKV()
+{
+    const auto pPlayer = CMomentumPlayer::GetLocalPlayer();
+    if (!pPlayer)
+        return false;
+
+    const auto pKvMapSavelocs = new KeyValues(gpGlobals->mapname.ToCStr());
+
+    // Set the current index
+    pKvMapSavelocs->SetInt(SAVELOC_KV_KEY_CURRENTINDEX, m_iCurrentSavelocIndx);
+
+    // Add all your savelocs
+    const auto kvCPs = new KeyValues(SAVELOC_KV_KEY_SAVELOCS);
+    FOR_EACH_VEC(m_rcSavelocs, i)
+    {
+        char szCheckpointNum[10]; // 999 million savelocs is pretty generous
+        Q_snprintf(szCheckpointNum, sizeof(szCheckpointNum), "%09i", i); // %09 because '\0' is the last (10)
+        KeyValues *kvCP = new KeyValues(szCheckpointNum);
+        m_rcSavelocs[i]->Save(kvCP);
+        kvCPs->AddSubKey(kvCP);
+    }
+
+    // Add startmarks
+    const auto kvStartMarks = new KeyValues(SAVELOC_KV_KEY_STARTMARKS);
+    for (int track = 0; track < MAX_TRACKS; track++)
+    {
+        SavedLocation_t *startMark = m_vecStartMarks[track];
+        if (!startMark) // Save location of valid startmarks only
+            continue;
+
+        char szTrackNum[4]; // 999 tracks should be enough
+        Q_snprintf(szTrackNum, sizeof(szTrackNum), "%03i", track);
+        const auto kvStartMark = new KeyValues(szTrackNum);
+
+        startMark->Save(kvStartMark);
+        kvStartMarks->AddSubKey(kvStartMark);
+    }
+
+    pKvMapSavelocs->AddSubKey(kvCPs);
+    pKvMapSavelocs->AddSubKey(kvStartMarks);
+
+    // Remove the map if it already exists in there
+    KeyValues *pExisting = m_pSavedLocsKV->FindKey(gpGlobals->mapname.ToCStr());
+    if (pExisting)
+    {
+        m_pSavedLocsKV->RemoveSubKey(pExisting);
+        pExisting->deleteThis();
+    }
+
+    m_pSavedLocsKV->AddSubKey(pKvMapSavelocs);
+
+    return m_pSavedLocsKV->SaveToFile(filesystem, SAVELOC_FILE_NAME, "MOD", true);
+}
+
+void CSaveLocSystem::AddSavelocsFromKV(KeyValues *pSavelocData)
+{
+    if (!pSavelocData || pSavelocData->IsEmpty())
+        return;
+
+    FOR_EACH_SUBKEY(pSavelocData, kvSaveloc)
+    {
+        auto pSaveloc = new SavedLocation_t;
+        pSaveloc->Load(kvSaveloc);
+        m_rcSavelocs.AddToTail(pSaveloc);
+    }
+
+    UpdateRequesters();
+    FireUpdateEvent();
+}
+
+void CSaveLocSystem::ImportMapSavelocs(const char *pImportMapName)
+{
+    if (!CMomentumPlayer::GetLocalPlayer())
+    {
+        Warning("This command can only be used while in-game!\n");
+        return;
+    }
+
+    if (!pImportMapName || !pImportMapName[0])
+        return;
+
+    const auto pImportKV = m_pSavedLocsKV->FindKey(pImportMapName);
+    if (!pImportKV)
+        return;
+
+    const auto pImportSavelocsKV = pImportKV->FindKey(SAVELOC_KV_KEY_SAVELOCS);
+    if (!pImportSavelocsKV)
+    {
+        Warning("Failed to import savelocs; map to import has no savelocs!\n");
+        return;
+    }
+
+    AddSavelocsFromKV(pImportSavelocsKV);
+    SaveSavelocsToKV();
+}
+
 CON_COMMAND_F(mom_saveloc_create, "Creates a saveloc that saves a player's state.\n", FCVAR_CLIENTCMD_CAN_EXECUTE)
 {
     g_pSavelocSystem->CreateAndSaveLocation();
@@ -696,6 +953,72 @@ CON_COMMAND_F(mom_saveloc_remove_all, "Removes all of the created savelocs for t
 CON_COMMAND_F(mom_saveloc_close, "Closes the saveloc menu.\n", FCVAR_CLIENTCMD_CAN_EXECUTE)
 {
     g_pSavelocSystem->SetUsingSavelocMenu(false);
+}
+
+static int SavelocImportCompletion(const char *pPartial, char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH])
+{
+    if (!CMomentumPlayer::GetLocalPlayer())
+        return 0;
+
+    const auto pCmdName = "mom_saveloc_import";
+    char *pSubstring = nullptr;
+    if (Q_strstr(pPartial, pCmdName) && strlen(pPartial) > strlen(pCmdName) + 1)
+    {
+        pSubstring = (char *)pPartial + strlen(pCmdName) + 1;
+    }
+
+    const bool bSubstringNullOrEmpty = !pSubstring || !pSubstring[0];
+
+    int current = 0;
+
+    const auto pSavelocsKV = g_pSavelocSystem->GetSavelocKV();
+    AssertMsg(pSavelocsKV, "Failed to complete saveloc autocomplete due to null KV!");
+    FOR_EACH_SUBKEY(pSavelocsKV, pSavelocMapKV)
+    {
+        const auto pMapName = pSavelocMapKV->GetName();
+        const auto bMatchedName = bSubstringNullOrEmpty || Q_stristr(pMapName, pSubstring);
+        if (bMatchedName && !pSavelocMapKV->IsEmpty(SAVELOC_KV_KEY_SAVELOCS))
+        {
+            char command[COMMAND_COMPLETION_ITEM_LENGTH];
+            Q_snprintf(command, COMMAND_COMPLETION_ITEM_LENGTH, "%s %s", pCmdName, pMapName);
+            Q_strncpy(commands[current], command, COMMAND_COMPLETION_ITEM_LENGTH);
+            current++;
+        }
+    }
+
+    return current;
+}
+
+CON_COMMAND_F_COMPLETION(mom_saveloc_import, "Imports savelocs from a previous map's block.\nUsage:\n"
+    "\"mom_saveloc_import map_1\" - imports map_1's savelocs into the current map's block.\n"
+    "This command can only be used when in a map!\n",
+    FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_SERVER_CAN_EXECUTE, SavelocImportCompletion)
+{
+    g_pSavelocSystem->ImportMapSavelocs(args.Arg(1));
+}
+
+CON_COMMAND(mom_start_mark_create, "Marks a starting point inside the start or stage trigger for a more customized starting location.\n"
+                                   "Stage start marks are wiped every run, while start marks are saved.\n")
+{
+    g_pSavelocSystem->CreateStartMark();
+}
+
+CON_COMMAND(mom_start_mark_clear, "Clears the saved start location for your current track, if there is one.\n"
+                                  "You may also specify the track number to clear as the parameter; "
+                                  "\"mom_start_mark_clear 2\" clears track 2's start mark.")
+{
+    if (args.ArgC() > 1)
+        g_pSavelocSystem->ClearStartMark(START_MARK, Q_atoi(args[1]));
+    else
+        g_pSavelocSystem->ClearCurrentStartMark(START_MARK);
+}
+
+CON_COMMAND(mom_stage_mark_clear, "Clears the current stage start location. Also accepts a stage number as parameter.\n")
+{
+    if (args.ArgC() > 1)
+        g_pSavelocSystem->ClearStartMark(START_MARK_STAGE, Q_atoi(args[1]));
+    else
+        g_pSavelocSystem->ClearCurrentStartMark(START_MARK_STAGE);
 }
 
 //Expose this to the DLL

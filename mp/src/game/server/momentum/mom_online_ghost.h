@@ -64,6 +64,7 @@ private:
     void FireRocket(const DecalPacket &packet);
     void FireSticky(const DecalPacket &packet);
     void DetonateStickies();
+    void ThrowConc(const DecalPacket &packet);
 
     void SetIsSpectating(bool bState);
 

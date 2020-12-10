@@ -5,10 +5,8 @@
 #include "view.h"
 #include "mom_shareddefs.h"
 #include "vgui/IVGui.h"
-#include "vgui/ILocalize.h"
 #include "vgui_controls/ImagePanel.h"
 #include <vgui_controls/Label.h>
-#include <vgui/ISurface.h>
 #include "vgui_avatarimage.h"
 #include "c_mom_online_ghost.h"
 
@@ -40,9 +38,7 @@ CGhostEntityPanel::CGhostEntityPanel() : BaseClass(g_pClientMode->GetViewport(),
     SetPaintBackgroundEnabled(false);
 
     m_pAvatarImage->SetDrawFriend(false);
-    m_pAvatarImage->SetAvatarSize(32, 32);
     m_pAvatarImagePanel->SetImage(m_pAvatarImage);
-    m_pAvatarImagePanel->SetSize(32, 32);
 }
 
 void CGhostEntityPanel::Init(C_MomentumOnlineGhostEntity* pEnt)
@@ -57,7 +53,7 @@ void CGhostEntityPanel::Init(C_MomentumOnlineGhostEntity* pEnt)
 
 void CGhostEntityPanel::OnThink()
 {
-    SetPos(static_cast<int>(m_iPosX + m_OffsetX + 0.5f), static_cast<int>(m_iPosY + m_OffsetY + 0.5f));
+    SetPos(static_cast<int>(m_iPosX - GetWide() / 2), static_cast<int>(m_iPosY + m_iOffsetY));
 
     if (m_pEntity)
     {
@@ -65,8 +61,6 @@ void CGhostEntityPanel::OnThink()
         {
             m_pAvatarImage->SetAvatarSteamID(CSteamID(m_pEntity->GetSteamID()), k_EAvatarSize64x64);
         }
-
-        // MOM_TODO: Blink the panel if they're typing? Maybe an icon or something? Idk
 
         if (m_bPaintName)
         {
@@ -132,11 +126,17 @@ void CGhostEntityPanel::OnTick()
     m_pAvatarImagePanel->SetVisible(mom_entpanels_enable_avatars.GetBool());
 }
 
+void CGhostEntityPanel::PerformLayout()
+{
+    BaseClass::PerformLayout();
+    SetTall(m_pAvatarImagePanel->GetTall() + m_pNameLabel->GetTall() + m_pAvatarImagePanel->GetYPos() + m_pNameLabel->GetYPos());
+    m_pAvatarImage->SetAvatarSize(m_pAvatarImagePanel->GetWide(), m_pAvatarImagePanel->GetTall());
+}
+
 bool CGhostEntityPanel::ShouldDraw()
 {
     return mom_entpanels_enable.GetBool() && (mom_entpanels_enable_avatars.GetBool() || mom_entpanels_enable_names.GetBool());
 }
-
 
 bool CGhostEntityPanel::GetEntityPosition(int& sx, int& sy)
 {

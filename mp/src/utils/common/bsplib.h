@@ -194,7 +194,7 @@ IZip				*GetPakFile( void );
 IZip				*GetSwapPakFile( void );
 void				ClearPakFile( IZip *pak );
 void				AddFileToPak( IZip *pak, const char *pRelativeName, const char *fullpath, IZip::eCompressionType compressionType = IZip::eCompressionType_None );
-void				AddBufferToPak( IZip *pak, const char *pRelativeName, void *data, int length, bool bTextMode, IZip::eCompressionType compressionType = IZip::eCompressionType_None );
+void				AddBufferToPak( IZip *pak, const char *pRelativeName, const void *data, int length, bool bTextMode, IZip::eCompressionType compressionType = IZip::eCompressionType_None );
 void				AddDirToPak( IZip *pak, const char *pDirPath, const char *pPakPrefix = NULL );
 bool				FileExistsInPak( IZip *pak, const char *pRelativeName );
 bool				ReadFileFromPak( IZip *pak, const char *pRelativeName, bool bTextMode, CUtlBuffer &buf );
@@ -310,15 +310,15 @@ void	UnparseEntities (void);
 void	PrintEntity (entity_t *ent);
 
 void 	SetKeyValue (entity_t *ent, const char *key, const char *value);
-char 	*ValueForKey (entity_t *ent, char *key);
+const char *ValueForKey (entity_t *ent, const char *key);
 // will return "" if not present
-int		IntForKey (entity_t *ent, char *key);
-int		IntForKeyWithDefault(entity_t *ent, char *key, int nDefault );
-vec_t	FloatForKey (entity_t *ent, char *key);
-vec_t	FloatForKeyWithDefault (entity_t *ent, char *key, float default_value);
-void 	GetVectorForKey (entity_t *ent, char *key, Vector& vec);
-void 	GetVector2DForKey (entity_t *ent, char *key, Vector2D& vec);
-void 	GetAnglesForKey (entity_t *ent, char *key, QAngle& vec);
+int		IntForKey (entity_t *ent, const char *key);
+int		IntForKeyWithDefault(entity_t *ent, const char *key, int nDefault );
+vec_t	FloatForKey (entity_t *ent, const char *key);
+vec_t	FloatForKeyWithDefault (entity_t *ent, const char *key, float default_value);
+void 	GetVectorForKey (entity_t *ent, const char *key, Vector& vec);
+void 	GetVector2DForKey (entity_t *ent, const char *key, Vector2D& vec);
+void 	GetAnglesForKey (entity_t *ent, const char *key, QAngle& vec);
 epair_t *ParseEpair (void);
 void StripTrailing (char *e);
 

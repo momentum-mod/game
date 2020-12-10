@@ -73,6 +73,8 @@ CLeaderboardsTimes::CLeaderboardsTimes(CClientTimesDisplay* pParent) : BaseClass
     m_pRunFilterButton->SetCommand("ShowFilter");
     m_pRunFilterButton->AddActionSignalTarget(this);
 
+    m_bUnauthorizedFriendlist = false;
+
     LoadControlSettings("resource/ui/leaderboards/times.res");
 
     // Get rid of the scrollbars for the panels
@@ -82,19 +84,18 @@ CLeaderboardsTimes::CLeaderboardsTimes(CClientTimesDisplay* pParent) : BaseClass
     m_pFriendsLeaderboards->SetVerticalScrollbar(false);
 
     m_flTimesLastUpdate[TIMES_TOP10] = m_flTimesLastUpdate[TIMES_AROUND] = m_flTimesLastUpdate[TIMES_FRIENDS] = 0.0f;
-    for (int i = 1; i < 4; i++)
+    for (int i = 1; i < TIMES_COUNT; i++) // Skip over local
         m_eTimesStatus[i] = STATUS_TIMES_LOADING;
 
     m_iFlaggedRuns = RUNFLAG_NONE;
-
-    m_pCurrentLeaderboards = m_pLocalLeaderboards;
 
     SetDefLessFunc(m_mapAvatarsToImageList);
     SetDefLessFunc(m_mapReplayDownloads);
 
     pPlayerBorder = nullptr;
     m_pImageList = nullptr;
-    LevelInit();
+
+    SwitchPanel(m_pLocalLeaderboards);
 }
 
 CLeaderboardsTimes::~CLeaderboardsTimes()
@@ -109,7 +110,7 @@ CLeaderboardsTimes::~CLeaderboardsTimes()
 void CLeaderboardsTimes::LevelInit()
 {
     m_bTimesLoading[TIMES_TOP10] = m_bTimesLoading[TIMES_AROUND] = m_bTimesLoading[TIMES_FRIENDS] = false;
-    m_bTimesNeedUpdate[TIMES_LOCAL] = m_bTimesNeedUpdate[TIMES_TOP10] = m_bTimesNeedUpdate[TIMES_AROUND] = m_bTimesNeedUpdate[TIMES_FRIENDS] = true;
+    m_bTimesNeedUpdate[TIMES_TOP10] = m_bTimesNeedUpdate[TIMES_AROUND] = m_bTimesNeedUpdate[TIMES_FRIENDS] = true;
 
     if (m_pImageList)
         delete m_pImageList;
@@ -126,11 +127,12 @@ void CLeaderboardsTimes::LevelInit()
     m_mapAvatarsToImageList.RemoveAll();
 
     SetupDefaultIcons();
-    Reset(false);
+    Reset(true);
     m_vLocalTimes.PurgeAndDeleteElements();
     m_vOnlineTimes.PurgeAndDeleteElements();
     m_vAroundTimes.PurgeAndDeleteElements();
     m_vFriendsTimes.PurgeAndDeleteElements();
+    LoadLocalTimes();
 }
 
 void CLeaderboardsTimes::Reset(bool bFullReset)
@@ -195,10 +197,16 @@ void CLeaderboardsTimes::OnRunPosted(bool bPosted)
     m_bTimesNeedUpdate[TIMES_TOP10] = m_bTimesNeedUpdate[TIMES_AROUND] = m_bTimesNeedUpdate[TIMES_FRIENDS] = bPosted;
 }
 
-void CLeaderboardsTimes::OnRunSaved()
+void CLeaderboardsTimes::OnRunSaved(const char *pFilePath)
 {
-    // this updates the local times file, needing a reload of it
-    m_bTimesNeedUpdate[TIMES_LOCAL] = true;
+    MomReplayAsyncHandle handle;
+    CUtlStringList tempName;
+    tempName.CopyAndAddToTail(pFilePath);
+
+    auto status = g_ReplayFactory.AsyncLoadReplaysByFilename(tempName, "MOD", UtlMakeDelegate(this, &CLeaderboardsTimes::LocalTimesCallback), handle);
+
+    if (status == ASYNC_REPLAYS_INPROGRESS)
+        m_llReplayLocalRequests.AddToTail(handle);
 }
 
 void CLeaderboardsTimes::OnPanelShow(bool bShow)
@@ -264,38 +272,16 @@ int CLeaderboardsTimes::TryAddAvatar(const uint64 &steamid, CUtlMap<uint64, int>
 void CLeaderboardsTimes::FillLeaderboards(bool bFullUpdate)
 {
     m_iSectionId = 0;
-
-    // Times
-    KeyValuesAD kvPlayerData("playdata");
-    GetPlayerTimes(kvPlayerData, bFullUpdate);
+    // Update times if needed
+    FillPlayerTimes(bFullUpdate);
 
     if (m_pCurrentLeaderboards && m_pTop10Leaderboards && m_pAroundLeaderboards
         && m_pLocalLeaderboards && m_pFriendsLeaderboards)
     {
-        SetVisible(false);
-
         if (m_pCurrentLeaderboards == m_pLocalLeaderboards)
         {
-            KeyValues *kvLeaderboards = kvPlayerData->FindKey("leaderboards");
-            if (kvLeaderboards)
-            {
-                KeyValues *kvLocalTimes = kvLeaderboards->FindKey("local");
-                if (kvLocalTimes && !kvLocalTimes->IsEmpty())
-                {
-                    FOR_EACH_SUBKEY(kvLocalTimes, kvLocalTime)
-                    {
-                        int itemID = FindItemIDForLocalTime(kvLocalTime);
-                        if (itemID == -1)
-                            m_pLocalLeaderboards->AddItem(m_iSectionId, kvLocalTime);
-                        else
-                            m_pLocalLeaderboards->ModifyItem(itemID, m_iSectionId, kvLocalTime);
-                    }
-
-                    SetPlaceColors(m_pLocalLeaderboards, TIMES_LOCAL);
-                }
-            }
+            LocalTimesVectorToLeaderboards();
         }
-        // Online works slightly different, we use the vector content, not the ones from m_kvPlayerData
         else if (m_pCurrentLeaderboards == m_pTop10Leaderboards)
         {
             OnlineTimesVectorToLeaderboards(TIMES_TOP10);
@@ -308,9 +294,26 @@ void CLeaderboardsTimes::FillLeaderboards(bool bFullUpdate)
         {
             OnlineTimesVectorToLeaderboards(TIMES_FRIENDS);
         }
-
-        SetVisible(true);
     }
+}
+
+void CLeaderboardsTimes::LocalTimesVectorToLeaderboards()
+{
+    KeyValuesAD kvLocalTimes("local");
+    ConvertLocalTimes(kvLocalTimes);
+
+    if (kvLocalTimes->IsEmpty())
+        return;
+
+    FOR_EACH_SUBKEY(kvLocalTimes, kvLocalTime)
+    {
+        int itemID = FindItemIDForLocalTime(kvLocalTime);
+        if (itemID == -1)
+            m_pLocalLeaderboards->AddItem(m_iSectionId, kvLocalTime);
+        else
+            m_pLocalLeaderboards->ModifyItem(itemID, m_iSectionId, kvLocalTime);
+    }
+    SetPlaceColors(m_pLocalLeaderboards, TIMES_LOCAL);
 }
 
 void CLeaderboardsTimes::SetPlaceColors(SectionedListPanel* panel, TimeType_t type) const
@@ -318,6 +321,9 @@ void CLeaderboardsTimes::SetPlaceColors(SectionedListPanel* panel, TimeType_t ty
     int itemCount = panel->GetItemCount();
     if (itemCount == 0)
         return;
+
+    // We need to force the panel to resort its items now
+    m_pCurrentLeaderboards->InvalidateLayout(true);
 
     if (type == TIMES_LOCAL || type == TIMES_TOP10)
     {
@@ -327,7 +333,14 @@ void CLeaderboardsTimes::SetPlaceColors(SectionedListPanel* panel, TimeType_t ty
             panel->SetItemBgColor(panel->GetItemIDFromRow(1), m_cSecondPlace);
 
             if (itemCount > 2)
+            {
                 panel->SetItemBgColor(panel->GetItemIDFromRow(2), m_cThirdPlace);
+
+                for(int i = 3; i < itemCount; ++i)
+                {
+                    panel->SetItemBgColor(panel->GetItemIDFromRow(i), m_cItemDefault);
+                }
+            }
         }
     }
     else
@@ -346,51 +359,30 @@ void CLeaderboardsTimes::SetPlaceColors(SectionedListPanel* panel, TimeType_t ty
     }
 }
 
-void CLeaderboardsTimes::LoadLocalTimes(KeyValues* kv)
+void CLeaderboardsTimes::LoadLocalTimes()
 {
-    if (m_bTimesNeedUpdate[TIMES_LOCAL])
-    {
-        // Clear the local times for a refresh
-        m_vLocalTimes.PurgeAndDeleteElements();
+    MomReplayAsyncHandle handle;
 
-        char path[MAX_PATH];
-        Q_snprintf(path, MAX_PATH, "%s/%s-*%s", RECORDING_PATH, g_pGameRules->MapName(), EXT_RECORDING_FILE);
-        V_FixSlashes(path);
+    auto status = g_ReplayFactory.AsyncLoadReplaysForMap(g_pGameRules->MapName(), UtlMakeDelegate(this, &CLeaderboardsTimes::LocalTimesCallback), handle);
 
-        FileFindHandle_t found;
-        const char *pFoundFile = filesystem->FindFirstEx(path, "MOD", &found);
-        while (pFoundFile)
-        {
-            // NOTE: THIS NEEDS TO BE MANUALLY CLEANED UP!
-            char pReplayPath[MAX_PATH];
-            V_ComposeFileName(RECORDING_PATH, pFoundFile, pReplayPath, MAX_PATH);
+    if (status == ASYNC_REPLAYS_INPROGRESS)
+        m_llReplayLocalRequests.AddToTail(handle);
 
-            CMomReplayBase *pBase = g_ReplayFactory.LoadReplayFile(pReplayPath, false);
-            Assert(pBase != nullptr);
+}
 
-            if (pBase)
-                m_vLocalTimes.InsertNoSort(pBase);
-
-            pFoundFile = filesystem->FindNext(found);
-        }
-
-        filesystem->FindClose(found);
-
-        if (!m_vLocalTimes.IsEmpty())
-        {
-            m_vLocalTimes.RedoSort();
-            m_bTimesNeedUpdate[TIMES_LOCAL] = false;
-        }
-    }
-
-    // Convert
-    if (!m_vLocalTimes.IsEmpty())
-        ConvertLocalTimes(kv);
+void CLeaderboardsTimes::LocalTimesCallback(MomReplayAsyncHandle handle)
+{
+    int idx = m_llReplayLocalRequests.Find(handle);
+    if (idx == -1)
+        return;
+    auto data = new KeyValues("LocalTimesReady");
+    data->SetInt("nRequestIndex", idx);
+    PostMessage(GetVPanel(), data);
 }
 
 void CLeaderboardsTimes::LoadOnlineTimes(TimeType_t type)
 {
-    if (type == TIMES_FRIENDS && !m_bUnauthorizedFriendlist)
+    if (type == TIMES_FRIENDS && m_bUnauthorizedFriendlist)
         return;
 
     if (!m_bTimesLoading[type] && m_bTimesNeedUpdate[type])
@@ -401,13 +393,16 @@ void CLeaderboardsTimes::LoadOnlineTimes(TimeType_t type)
             switch (type)
             {
             case TIMES_TOP10:
-                bCalled = g_pAPIRequests->GetTop10MapTimes(g_pMapCache->GetCurrentMapID(), UtlMakeDelegate(this, &CLeaderboardsTimes::GetTop10TimesCallback));
+                bCalled = g_pAPIRequests->GetTop10MapTimes(g_pMapCache->GetCurrentMapID(),
+                                                           UtlMakeDelegate(this, &CLeaderboardsTimes::GetTop10TimesCallback));
                 break;
             case TIMES_FRIENDS:
-                bCalled = g_pAPIRequests->GetFriendsTimes(g_pMapCache->GetCurrentMapID(), UtlMakeDelegate(this, &CLeaderboardsTimes::GetFriendsTimesCallback));
+                bCalled = g_pAPIRequests->GetFriendsTimes(g_pMapCache->GetCurrentMapID(),
+                                                          UtlMakeDelegate(this, &CLeaderboardsTimes::GetFriendsTimesCallback));
                 break;
             case TIMES_AROUND:
-                bCalled = g_pAPIRequests->GetAroundTimes(g_pMapCache->GetCurrentMapID(), UtlMakeDelegate(this, &CLeaderboardsTimes::GetAroundTimesCallback));
+                bCalled = g_pAPIRequests->GetAroundTimes(g_pMapCache->GetCurrentMapID(),
+                                                         UtlMakeDelegate(this, &CLeaderboardsTimes::GetAroundTimesCallback));
             default:
                 break;
                 
@@ -431,10 +426,8 @@ void CLeaderboardsTimes::ConvertLocalTimes(KeyValues* kvInto)
         CMomReplayBase *t = m_vLocalTimes[i];
 
         KeyValues *kvLocalTimeFormatted = new KeyValues("localtime");
-        char filename[MAX_PATH];
 
-        Q_snprintf(filename, MAX_PATH, "%s-%s%s", t->GetMapName(), t->GetRunHash(), EXT_RECORDING_FILE);
-        kvLocalTimeFormatted->SetString("fileName", filename);
+        kvLocalTimeFormatted->SetPtr("replayPtr", t);
 
         kvLocalTimeFormatted->SetFloat("time_f", t->GetRunTime()); // Used for static compare
         kvLocalTimeFormatted->SetInt("date_t", t->GetRunDate());   // Used for finding
@@ -529,17 +522,9 @@ void CLeaderboardsTimes::OnlineTimesVectorToLeaderboards(TimeType_t type)
     }
 }
 
-bool CLeaderboardsTimes::GetPlayerTimes(KeyValues* outPlayerInfo, bool fullUpdate)
+bool CLeaderboardsTimes::FillPlayerTimes(bool fullUpdate)
 {
-    if (!outPlayerInfo)
-        return false;
-
-    KeyValues *pLeaderboards = new KeyValues("leaderboards");
-
-    // Fill local times:
-    KeyValues *pLocal = new KeyValues("local");
-    LoadLocalTimes(pLocal);
-    pLeaderboards->AddSubKey(pLocal);
+    // Local times only get updated on map load or in-game events
 
     if (!g_pGameModeSystem->GameModeIs(GAMEMODE_UNKNOWN))
     {
@@ -558,8 +543,6 @@ bool CLeaderboardsTimes::GetPlayerTimes(KeyValues* outPlayerInfo, bool fullUpdat
         LoadOnlineTimes(TIMES_AROUND);
         LoadOnlineTimes(TIMES_FRIENDS);
     }
-
-    outPlayerInfo->AddSubKey(pLeaderboards);
     return true;
 }
 
@@ -842,18 +825,18 @@ void CLeaderboardsTimes::OnReplayDownloadEnd(KeyValues* pKvEnd)
     }
 }
 
-
 void CLeaderboardsTimes::OnCommand(const char* pCommand)
 {
     BaseClass::OnCommand(pCommand);
 
     // MOM_TODO: Implement run tags
-// Leaderboards type
+    // Leaderboards type
     bool isTop10 = FStrEq(pCommand, "GlobalTypeTop10");
     bool isAround = FStrEq(pCommand, "GlobalTypeAround");
     bool isLocal = FStrEq(pCommand, "ShowLocal");
     bool isFriends = FStrEq(pCommand, "ShowFriends");
     bool isGlobal = FStrEq(pCommand, "ShowGlobal");
+
     bool isFilter = FStrEq(pCommand, "ShowFilter");
     bool isReset = FStrEq(pCommand, "ResetFlags");
     bool isFlagScrollOnly = FStrEq(pCommand, "ToggleScrollOnly");
@@ -862,47 +845,22 @@ void CLeaderboardsTimes::OnCommand(const char* pCommand)
     bool isFlagSideways = FStrEq(pCommand, "ToggleSideways");
     bool isFlagBackwards = FStrEq(pCommand, "ToggleBackwards");
     bool isFlagBonus = FStrEq(pCommand, "ToggleBonus");
-    if (isTop10 || isAround)
+
+    if (isTop10 || isGlobal)
     {
-        m_pFriendsLeaderboardsButton->SetEnabled(true);
-
-        m_pGlobalTop10Button->SetEnabled(!isTop10);
-        m_pGlobalAroundButton->SetEnabled(isTop10);
-
-        // Show the right type of leaderboards
-        m_pCurrentLeaderboards->SetVisible(false);
-        m_pCurrentLeaderboards = isTop10 ? m_pTop10Leaderboards : m_pAroundLeaderboards;
-        m_pCurrentLeaderboards->SetVisible(true);
-
-        FillLeaderboards(false);
+        SwitchPanel(m_pTop10Leaderboards);
     }
-    else if (isLocal || isFriends || isGlobal)
+    else if (isAround)
     {
-        // Show the right type of leaderboards
-        m_pCurrentLeaderboards->SetVisible(false);
-        m_pCurrentLeaderboards =
-            isGlobal ? m_pTop10Leaderboards : (isLocal ? m_pLocalLeaderboards : m_pFriendsLeaderboards);
-        m_pCurrentLeaderboards->SetVisible(true);
-
-        m_pGlobalLeaderboardsButton->SetEnabled(!isGlobal && !isFriends);
-        m_pGlobalAroundButton->SetEnabled(true);
-        m_pGlobalTop10Button->SetEnabled(!isGlobal);
-        m_pFriendsLeaderboardsButton->SetEnabled(!isFriends);
-        m_pLocalLeaderboardsButton->SetEnabled(!isLocal);
-
-        m_pGlobalTop10Button->SetVisible(isGlobal || isFriends);
-        m_pGlobalAroundButton->SetVisible(isGlobal || isFriends);
-        m_pFriendsLeaderboardsButton->SetVisible(isGlobal || isFriends);
-
-        if (isLocal)
-            m_pOnlineTimesStatus->SetVisible(false);
-
-        else if (isFriends)
-        {
-            m_pGlobalAroundButton->SetEnabled(true);
-            m_pGlobalTop10Button->SetEnabled(true);
-        }
-        FillLeaderboards(false);
+        SwitchPanel(m_pAroundLeaderboards);
+    }
+    else if (isLocal)
+    {
+        SwitchPanel(m_pLocalLeaderboards);
+    }
+    else if (isFriends)
+    {
+        SwitchPanel(m_pFriendsLeaderboards);
     }
     else if (isFilter)
     {
@@ -958,6 +916,7 @@ void CLeaderboardsTimes::ApplySchemeSettings(IScheme* pScheme)
     m_cFirstPlace = pScheme->GetColor("FirstPlace", Color(240, 210, 147, 50));
     m_cSecondPlace = pScheme->GetColor("SecondPlace", Color(175, 175, 175, 50));
     m_cThirdPlace = pScheme->GetColor("ThirdPlace", Color(205, 127, 50, 50));
+    m_cItemDefault = pScheme->GetColor("ItemDefault", Color(0, 0, 0, 0));
 
     pPlayerBorder = pScheme->GetBorder("LeaderboardsPlayerBorder");
 
@@ -977,33 +936,34 @@ void CLeaderboardsTimes::ApplySchemeSettings(IScheme* pScheme)
     }
 }
 
-void CLeaderboardsTimes::OnConfirmDeleteReplay(int itemID, const char* file)
+void CLeaderboardsTimes::OnConfirmDeleteReplay(KeyValues *pData)
 {
-    if (file)
-    {
-        g_pFullFileSystem->RemoveFile(file, "MOD");
-        m_bTimesNeedUpdate[TIMES_LOCAL] = true;
-        if (m_pLocalLeaderboards->RemoveItem(itemID))
-        {
-            g_pMOMRunCompare->LoadComparisons();
-            FillLeaderboards(false);
-        }
-    }
+    if (!pData || !pData->GetPtr("replayPtr"))
+        return;
+
+    auto replay = static_cast<CMomReplayBase *>(pData->GetPtr("replayPtr"));
+
+    m_pLocalLeaderboards->RemoveItem(pData->GetInt("itemID"));
+    m_vLocalTimes.FindAndRemove(replay);
+    g_pFullFileSystem->RemoveFile(replay->GetFilePath(), "MOD");
+
+
+    // MOM_TODO this is still synchoronous so it will lag
+    g_pMOMRunCompare->LoadComparisons();
+    FillLeaderboards(false);
+
 }
 
-void CLeaderboardsTimes::OnContextDeleteReplay(int itemID, const char* runName)
+void CLeaderboardsTimes::OnContextDeleteReplay(KeyValues *pData)
 {
-    if (runName)
-    {
-        char file[MAX_PATH];
-        V_ComposeFileName(RECORDING_PATH, runName, file, MAX_PATH);
+    if (!pData || !pData->GetPtr("replayPtr"))
+        return;
 
-        KeyValues *pCommand = new KeyValues("ConfirmDeleteReplay", "file", file);
-        pCommand->SetInt("itemID", itemID);
-        g_pMessageBox->CreateConfirmationBox(this, "#MOM_Leaderboards_DeleteReplay",
-                                               "#MOM_MB_DeleteRunConfirmation", pCommand,
-                                               nullptr, "#MOM_Leaderboards_DeleteReplay");
-    }
+    KeyValues *pCommand = new KeyValues("ConfirmDeleteReplay", "itemID", pData->GetInt("itemID"));
+    pCommand->SetPtr("replayPtr", pData->GetPtr("replayPtr"));
+    g_pMessageBox->CreateConfirmationBox(this, "#MOM_Leaderboards_DeleteReplay",
+                                           "#MOM_MB_DeleteRunConfirmation", pCommand,
+                                           nullptr, "#MOM_Leaderboards_DeleteReplay");
 }
 
 void CLeaderboardsTimes::OnContextVisitProfile(uint64 profile)
@@ -1112,19 +1072,21 @@ void CLeaderboardsTimes::OnItemContextMenu(KeyValues* pData)
     {
         if (CheckParent(pPanel, m_pLocalLeaderboards, itemID))
         {
-            ResetLeaderboardContextMenu();
+                ResetLeaderboardContextMenu();
 
             KeyValues *selectedRun = m_pLocalLeaderboards->GetItemData(itemID);
 
-            const char *pFileName = selectedRun->GetString("fileName");
+            auto *replayPtr = static_cast<CMomReplayBase *>(selectedRun->GetPtr("replayPtr"));
 
-            m_pLeaderboardReplayCMenu->AddMenuItem("StartMap", "#MOM_Leaderboards_WatchReplay", 
-                                                   new KeyValues("ContextWatchReplay", "runName", pFileName), 
-                                                   this);
+            // Pointer arithmetic to remove leading 'replays/'
+            KeyValues *pWatchMessage = new KeyValues("ContextWatchReplay","runName", replayPtr->GetFilePath() + Q_strlen(RECORDING_PATH) + 1 /* / */);
+            m_pLeaderboardReplayCMenu->AddMenuItem("StartMap", "#MOM_Leaderboards_WatchReplay", pWatchMessage, this);
+
             m_pLeaderboardReplayCMenu->AddSeparator();
-            KeyValues *pMessage = new KeyValues("ContextDeleteReplay", "runName", pFileName);
-            pMessage->SetInt("itemID", itemID);
-            m_pLeaderboardReplayCMenu->AddMenuItem("DeleteRun", "#MOM_Leaderboards_DeleteReplay", pMessage, this);
+
+            KeyValues *pDeleteMessage = new KeyValues("ContextDeleteReplay", "itemID", itemID);
+            pDeleteMessage->SetPtr("replayPtr", replayPtr);
+            m_pLeaderboardReplayCMenu->AddMenuItem("DeleteRun", "#MOM_Leaderboards_DeleteReplay", pDeleteMessage, this);
             m_pLeaderboardReplayCMenu->ShowMenu();
         }
         else if (CheckParent(pPanel, m_pFriendsLeaderboards, itemID) || CheckParent(pPanel, m_pTop10Leaderboards, itemID) || CheckParent(pPanel, m_pAroundLeaderboards, itemID))
@@ -1145,4 +1107,109 @@ void CLeaderboardsTimes::OnItemContextMenu(KeyValues* pData)
             m_pLeaderboardReplayCMenu->ShowMenu();
         }
     }
+}
+
+void CLeaderboardsTimes::LevelShutdown()
+{
+    FOR_EACH_LL(m_llReplayLocalRequests, i)
+    {
+        g_ReplayFactory.AsyncCleanup(m_llReplayLocalRequests[i]);
+    }
+    m_vLocalTimes.PurgeAndDeleteElements();
+}
+
+void CLeaderboardsTimes::OnLocalTimesReady(int nRequestIndex)
+{
+    // This is not exactly optimal but requiring the return value of the replay
+    // factory to be sorted doesn't make sense either
+    CUtlVector<CMomReplayBase*> temp_vLocalTimes;
+
+    if (g_ReplayFactory.AsyncGetReplays(m_llReplayLocalRequests[nRequestIndex], temp_vLocalTimes) != ASYNC_REPLAYS_READY)
+        return;
+
+    // This should not cause multithreading headaches because testing showed VGUI will process messages sequentially
+    m_llReplayLocalRequests.Remove(nRequestIndex);
+
+    FOR_EACH_VEC(temp_vLocalTimes, i)
+    {
+        m_vLocalTimes.InsertNoSort(temp_vLocalTimes[i]);
+    }
+    m_vLocalTimes.RedoSort();
+
+    FillLeaderboards(false);
+}
+
+void CLeaderboardsTimes::SwitchPanel(Panel *pToPanel)
+{
+    // To avoid inconsistent state, we start from scratch
+    m_pLocalLeaderboards->SetVisible(false);
+    m_pTop10Leaderboards->SetVisible(false);
+    m_pFriendsLeaderboards->SetVisible(false);
+    m_pAroundLeaderboards->SetVisible(false);
+
+    // We will have to disable exactly 1 of each group here
+    m_pLocalLeaderboardsButton->SetEnabled(true);
+    m_pGlobalLeaderboardsButton->SetEnabled(true);
+
+    m_pGlobalTop10Button->SetEnabled(true);
+    m_pFriendsLeaderboardsButton->SetEnabled(true);
+    m_pGlobalAroundButton->SetEnabled(true);
+
+    // Local+global button will always be visible
+    m_pLocalLeaderboardsButton->SetVisible(true);
+    m_pGlobalLeaderboardsButton->SetVisible(true);
+
+    m_pGlobalTop10Button->SetVisible(false);
+    m_pFriendsLeaderboardsButton->SetVisible(false);
+    m_pGlobalAroundButton->SetVisible(false);
+
+
+    // Do we want to switch to a global panel? Then we show the global times buttons and disable the "global" button
+    if (pToPanel == m_pTop10Leaderboards || pToPanel == m_pFriendsLeaderboards || pToPanel == m_pAroundLeaderboards)
+    {
+        m_pGlobalLeaderboardsButton->SetEnabled(false);
+
+        m_pGlobalTop10Button->SetVisible(true);
+        m_pFriendsLeaderboardsButton->SetVisible(true);
+        m_pGlobalAroundButton->SetVisible(true);
+
+        if (pToPanel == m_pTop10Leaderboards)
+        {
+            m_pGlobalTop10Button->SetEnabled(false);
+            m_pTop10Leaderboards->SetVisible(true);
+            m_pCurrentLeaderboards = m_pTop10Leaderboards;
+        }
+        else if (pToPanel == m_pFriendsLeaderboards)
+        {
+            m_pFriendsLeaderboardsButton->SetEnabled(false);
+            m_pFriendsLeaderboards->SetVisible(true);
+            m_pCurrentLeaderboards = m_pFriendsLeaderboards;
+        }
+        else if (pToPanel == m_pAroundLeaderboards)
+        {
+            m_pGlobalAroundButton->SetEnabled(false);
+            m_pAroundLeaderboards->SetVisible(true);
+            m_pCurrentLeaderboards = m_pAroundLeaderboards;
+        }
+    }
+    else if (pToPanel == m_pLocalLeaderboards)
+    {
+        m_pOnlineTimesStatus->SetVisible(false);
+        m_pLocalLeaderboardsButton->SetEnabled(false);
+
+        m_pLocalLeaderboards->SetVisible(true);
+        m_pCurrentLeaderboards = m_pLocalLeaderboards;
+    }
+    else
+    {
+        // Obviously don't call this with any other panel!
+        Warning("Tried to switch to invalid panel on leaderboards!\n");
+        return;
+    }
+    FillLeaderboards(false);
+}
+
+void CLeaderboardsTimes::ReloadCurrentPanel()
+{
+    SwitchPanel(m_pCurrentLeaderboards);
 }

@@ -18,48 +18,48 @@ class CLeaderboardsHeader;
 //-----------------------------------------------------------------------------
 // Purpose: Game ScoreBoard
 //-----------------------------------------------------------------------------
-class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, public CGameEventListener, public CAutoGameSystem
+class CClientTimesDisplay : public vgui::EditablePanel, public CGameEventListener, public CAutoGameSystem
 {
     DECLARE_CLASS_SIMPLE(CClientTimesDisplay, vgui::EditablePanel);
 
   public:
-    CClientTimesDisplay(IViewPort *pViewPort);
+    CClientTimesDisplay();
     ~CClientTimesDisplay();
 
-    const char* GetName() OVERRIDE { return PANEL_TIMES; }
-    void SetData(KeyValues *data) OVERRIDE{};
-    void Reset() OVERRIDE;
-    bool NeedsUpdate() OVERRIDE;
-    void Update() OVERRIDE;
-    void Update(bool bFullUpdate);
-    void Reset(bool bFullReset);
-    
-    bool HasInputElements() OVERRIDE { return true; }
+    // CBaseGameSystem defines Init already
+    static void InitPanel();
 
-    void ShowPanel(bool bShow) OVERRIDE;
+    void OnThink() override;
 
-    void SetMouseInputEnabled(bool bState) OVERRIDE;
+    void Update(bool bFullUpdate = false);
+    void TryUpdate(bool bFullUpdate = false);
+    void Reset(bool bFullReset = false);
 
-    void SetVisible(bool bState) OVERRIDE;
+    void ShowPanel(bool bShow);
+
+    void SetMouseInputEnabled(bool bState) override;
+
+    void SetVisible(bool bState) override;
 
     void Close();
 
     // both vgui::Frame and IViewPortPanel define these, so explicitly define them here as passthroughs to vgui
-    vgui::VPANEL GetVPanel() OVERRIDE { return BaseClass::GetVPanel(); }
-    bool IsVisible() OVERRIDE { return BaseClass::IsVisible(); }
-    void SetParent(vgui::VPANEL parent) OVERRIDE { BaseClass::SetParent(parent); }
+    vgui::VPANEL GetVPanel() override { return BaseClass::GetVPanel(); }
+    bool IsVisible() override { return BaseClass::IsVisible(); }
+    void SetParent(vgui::VPANEL parent) override { BaseClass::SetParent(parent); }
 
   protected:
     // functions to override
     void OnKeyCodeReleased(vgui::KeyCode code) override;
 
-    void ApplySchemeSettings(vgui::IScheme *pScheme) OVERRIDE;
-    void PerformLayout() OVERRIDE;
+    void ApplySchemeSettings(vgui::IScheme *pScheme) override;
+    void PerformLayout() override;
 
     // IGameEventListener interface:
-    void FireGameEvent(IGameEvent *event) OVERRIDE;
+    void FireGameEvent(IGameEvent *event) override;
     // CAutoGameSystem:
-    void LevelInitPostEntity() OVERRIDE;
+    void LevelInitPostEntity() override;
+    void LevelShutdownPreEntity() override;
 
     void OnReloadControls() override;
 
@@ -77,11 +77,10 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
     CLeaderboardsStats *m_pStats;
     CLeaderboardsTimes *m_pTimes;
 
-    IViewPort *m_pViewPort;
-
     float m_flNextUpdateTime;
 
     bool m_bToggledOpen;
+    bool m_bNeedsControlUpdate;
 
     // methods
     void FillScoreBoard();
@@ -89,3 +88,5 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
 
     void SetLeaderboardsHideHud(bool bState);
 };
+
+extern CClientTimesDisplay *g_pClientTimes;

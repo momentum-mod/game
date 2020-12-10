@@ -54,6 +54,7 @@
         "unicode"   "1"
         "keyboardinputenabled" "1"
         "mouseinputenabled" "1"
+        "maxchars" "256"
     }
 
     "ChatFiltersButton"

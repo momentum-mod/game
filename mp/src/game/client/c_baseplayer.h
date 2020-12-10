@@ -432,6 +432,9 @@ public:
 	float			m_flConstraintWidth;
 	float			m_flConstraintSpeedFactor;
 
+	// Allows the player's model to draw on non-main views, like monitors or mirrors.
+	bool			m_bDrawPlayerModelExternally;
+
 protected:
 
 	void				CalcPlayerView( Vector& eyeOrigin, QAngle& eyeAngles, float& fov );

@@ -6,6 +6,7 @@ particles_manifest
     "file"      "!particles/weapons.pcf"
     "file"      "!particles/mom_rocket.pcf"
     "file"      "!particles/mom_stickybomb.pcf"
+    "file"      "!particles/mom_conc.pcf"
     "file"      "particles/TF2_fx.pcf"
     "file"      "particles/mom_fx.pcf"
 

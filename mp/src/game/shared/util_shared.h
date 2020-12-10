@@ -358,6 +358,12 @@ void		UTIL_StringToIntArray( int *pVector, int count, const char *pString );
 void		UTIL_StringToFloatArray( float *pVector, int count, const char *pString );
 void		UTIL_StringToColor32( color32 *color, const char *pString );
 
+// Version of UTIL_StringToIntArray that doesn't set all untouched array elements to 0.
+void		UTIL_StringToIntArray_PreserveArray( int *pVector, int count, const char *pString );
+
+// Version of UTIL_StringToFloatArray that doesn't set all untouched array elements to 0.
+void		UTIL_StringToFloatArray_PreserveArray( float *pVector, int count, const char *pString );
+
 CBasePlayer *UTIL_PlayerByIndex( int entindex );
 
 //=============================================================================
@@ -623,6 +629,10 @@ class RealTimeCountdownTimer : public CountdownTimer
 char* ReadAndAllocStringValue( KeyValues *pSub, const char *pName, const char *pFilename = NULL );
 
 int UTIL_StringFieldToInt( const char *szValue, const char **pValueStrings, int iNumStrings );
+
+int UTIL_CountNumBitsSet( unsigned int nVar );
+int UTIL_CountNumBitsSet( uint64 nVar );
+
 
 //-----------------------------------------------------------------------------
 // Holidays

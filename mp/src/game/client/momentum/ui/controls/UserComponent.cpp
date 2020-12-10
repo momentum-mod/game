@@ -32,6 +32,7 @@ UserComponent::UserComponent(Panel* pParent, const char *pName /*= "UserComponen
     m_pUserRank = new Label(this, "UserRank", "...");
     m_pXPProgressBar = new ContinuousProgressBar(this, "XPProgress");
     m_pXPProgressBar->SetProgress(0);
+    m_uSteamID = 0Ull;
 
     LoadControlSettings("resource/ui/UserComponent.res");
 }
@@ -77,6 +78,8 @@ void UserComponent::SetUser(uint64 uID)
     }
 
     InvalidateLayout();
+
+    m_uSteamID = uID;
 }
 
 void UserComponent::OnUserDataUpdate()
@@ -133,5 +136,13 @@ void UserComponent::OnMouseReleased(MouseCode code)
     if (code == MOUSE_LEFT && m_bClickable)
     {
         PostActionSignal(new KeyValues("UserComponentClicked"));
+    }
+}
+
+void UserComponent::OnPersonaStateChange(PersonaStateChange_t *pParams)
+{
+    if (pParams->m_nChangeFlags & k_EPersonaChangeName && m_uSteamID == pParams->m_ulSteamID)
+    {
+        m_pUserName->SetText(SteamFriends()->GetFriendPersonaName(m_uSteamID));
     }
 }

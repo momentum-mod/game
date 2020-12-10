@@ -84,9 +84,9 @@ inline bool SideHasCubemapAndWasntManuallyReferenced( int iSide )
 	return s_aCubemapSideData[iSide].bHasEnvMapInMaterial && !s_aCubemapSideData[iSide].bManuallyPickedByAnEnvCubemap;
 }
 
-char* g_pParallaxObbStrs[MAX_MAP_CUBEMAPSAMPLES];
+const char* g_pParallaxObbStrs[MAX_MAP_CUBEMAPSAMPLES];
 
-void Cubemap_InsertSample(const Vector& origin, int size, char* pParallaxObbStr = "")
+void Cubemap_InsertSample(const Vector& origin, int size, const char* pParallaxObbStr = "")
 {
     g_pParallaxObbStrs[g_nCubemapSamples] = pParallaxObbStr;
 	dcubemapsample_t *pSample = &g_CubemapSamples[g_nCubemapSamples];
@@ -101,7 +101,7 @@ static const char *FindSkyboxMaterialName( void )
 {
 	for( int i = 0; i < g_MainMap->num_entities; i++ )
 	{
-		char* pEntity = ValueForKey(&g_MainMap->entities[i], "classname");
+		const char* pEntity = ValueForKey(&g_MainMap->entities[i], "classname");
 		if (!strcmp(pEntity, "worldspawn"))
 		{
 			return ValueForKey( &g_MainMap->entities[i], "skyname" );
@@ -279,7 +279,9 @@ void VTFNameToHDRVTFName( const char *pSrcName, char *pDest, int maxLen, bool bH
 	Q_strncpy( pDot, ".hdr.vtf", maxLen - ( pDot - pDest ) );
 }
 
-#define DEFAULT_CUBEMAP_SIZE 32
+extern bool g_bSkyboxCubemaps;
+extern int g_iDefaultCubemapSize;
+#define DEFAULT_CUBEMAP_SIZE g_iDefaultCubemapSize
 
 void CreateDefaultCubemaps( bool bHDR )
 {
@@ -342,9 +344,11 @@ void CreateDefaultCubemaps( bool bHDR )
 				int iSize = pDstCubemap->ComputeMipSize( iMip );
 				int iSrcMipSize = pSrcVTFTextures[iFace]->ComputeMipSize( iMip + iMipLevelOffset );
 
-				// !!! FIXME: Set this to black until HDR cubemaps are built properly!
-				memset( pDstBits, 0, iSize );
-				continue;
+				if (!g_bSkyboxCubemaps)
+				{
+					memset( pDstBits, 0, iSize );
+					continue;
+				}
 
 				if ( ( pSrcVTFTextures[iFace]->Width() == 4 ) && ( pSrcVTFTextures[iFace]->Height() == 4 ) ) // If texture is 4x4 square
 				{
@@ -431,6 +435,12 @@ void CreateDefaultCubemaps( bool bHDR )
 		// Convert the cubemap to the final format
 		pDstCubemap->ConvertImageFormat( originalFormat, false );
 	}
+
+	// Apply a seam fix
+	pDstCubemap->ConvertImageFormat( IMAGE_FORMAT_RGBA8888, false );
+
+	pDstCubemap->MatchCubeMapBorders( 1, IMAGE_FORMAT_RGBA8888, false );
+	pDstCubemap->MatchCubeMapBorders( 2, originalFormat, false );
 
 	// Write the puppy out!
 	char dstVTFFileName[1024];

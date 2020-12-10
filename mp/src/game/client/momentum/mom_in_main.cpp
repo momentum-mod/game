@@ -7,6 +7,7 @@
 #include "mom_player_shared.h"
 #include "momentum/mom_shareddefs.h"
 #include "mom_system_gamemode.h"
+#include "ui/leaderboards/ClientTimesDisplay.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -158,20 +159,34 @@ void CMOMInput::ComputeSideMove(CUserCmd *cmd)
 void IN_TimesDown(const CCommand &args)
 {
     KeyDown(&in_times, args[1]);
-    if (gViewPortInterface)
+    const auto bIsTricksurf = g_pGameModeSystem->GameModeIs(GAMEMODE_TRICKSURF);
+    if (bIsTricksurf)
     {
-        const auto bIsTricksurf = g_pGameModeSystem->GameModeIs(GAMEMODE_TRICKSURF);
-        gViewPortInterface->ShowPanel(bIsTricksurf ? PANEL_TRICK_LIST : PANEL_TIMES, true);
+        if (!gViewPortInterface)
+            return;
+
+        gViewPortInterface->ShowPanel(PANEL_TRICK_LIST, true);
+    }
+    else
+    {
+        g_pClientTimes->ShowPanel(true);
     }
 }
 
 void IN_TimesUp(const CCommand &args)
 {
     KeyUp(&in_times, args[1]);
-    if (gViewPortInterface)
+    const auto bIsTricksurf = g_pGameModeSystem->GameModeIs(GAMEMODE_TRICKSURF);
+    if (bIsTricksurf)
     {
-        const auto bIsTricksurf = g_pGameModeSystem->GameModeIs(GAMEMODE_TRICKSURF);
-        gViewPortInterface->ShowPanel(bIsTricksurf ? PANEL_TRICK_LIST : PANEL_TIMES, false);
+        if (!gViewPortInterface)
+            return;
+
+        gViewPortInterface->ShowPanel(PANEL_TRICK_LIST, false);
+    }
+    else
+    {
+        g_pClientTimes->ShowPanel(false);
     }
 }
 

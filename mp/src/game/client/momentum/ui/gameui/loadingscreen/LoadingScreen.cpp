@@ -23,6 +23,7 @@
 using namespace vgui;
 
 static CLoadingScreen *g_pLoadingScreen = nullptr;
+extern ConVar mom_gamemode_override;
 
 CLoadingScreen::CLoadingScreen(CBaseMenuPanel *pParent) : BaseClass(pParent, "LoadingScreen")
 {
@@ -224,8 +225,11 @@ void CLoadingScreen::OnKeyCodeTyped(KeyCode code)
 
 void CLoadingScreen::SetTipPanelText(const char *pMapName)
 {
-    const auto pFound = g_pGameModeSystem->GetGameModeFromMapName(pMapName);
-    const auto eMode = pFound ? pFound->GetType() : GAMEMODE_UNKNOWN;
+    const auto eMode = mom_gamemode_override.GetBool() ?
+        g_pGameModeSystem->GetGameMode(mom_gamemode_override.GetInt())->GetType()
+        :
+        g_pGameModeSystem->GetGameModeFromMapName(pMapName)->GetType();
+    
     m_pTipLabel->SetText(m_TipManager.GetTipForGamemode(eMode));
 }
 

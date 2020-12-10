@@ -847,16 +847,20 @@ void C_HLTVCamera::SmoothCameraAngle( QAngle& targetAngle )
 	m_flLastAngleUpdateTime = gpGlobals->realtime;
 }
 
-void C_HLTVCamera::ToggleChaseAsFirstPerson()
+void C_HLTVCamera::ToggleChaseWhenLocked()
 {
-	if ( GetMode() == OBS_MODE_CHASE )
-	{
-		SetMode( OBS_MODE_IN_EYE );
-	}
-	else if ( GetMode() == OBS_MODE_IN_EYE )
-	{
-		SetMode( OBS_MODE_CHASE );
-	}
+    if (GetMode() >= OBS_MODE_ROAMING)
+    {
+        SetMode(OBS_MODE_IN_EYE);
+    }
+    else if (GetMode() >= OBS_MODE_CHASE)
+    {
+        SetMode(OBS_MODE_ROAMING);
+    }
+    else if (GetMode() <= OBS_MODE_IN_EYE)
+    {
+        SetMode(OBS_MODE_CHASE);
+    }
 }
 
 bool C_HLTVCamera::IsPVSLocked()

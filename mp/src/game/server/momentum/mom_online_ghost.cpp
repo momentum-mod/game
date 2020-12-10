@@ -11,6 +11,7 @@
 #include "weapon/weapon_knife.h"
 #include "ghost_client.h"
 #include "mom_stickybomb.h"
+#include "mom_concgrenade.h"
 
 #include "tier0/memdbgon.h"
 
@@ -53,6 +54,7 @@ static MAKE_TOGGLE_CONVAR_C(mom_ghost_online_trail_enable, "1", FCVAR_REPLICATED
 static MAKE_TOGGLE_CONVAR_C(mom_ghost_online_flashlights_enable, "1", FCVAR_ARCHIVE | FCVAR_REPLICATED, "Toggles drawing other ghosts' flashlights. 0 = OFF, 1 = ON\n", RefreshGhostData);
 
 static MAKE_CONVAR(mom_ghost_online_sticky_alpha, "50", FCVAR_ARCHIVE | FCVAR_REPLICATED, "Sets the ghost stickybomb alpha value. 10 = more transparent, 255 = opaque.", 10.0f, 255.0f);
+static MAKE_CONVAR(mom_ghost_online_conc_alpha, "50", FCVAR_ARCHIVE | FCVAR_REPLICATED, "Sets the ghost conc grenade alpha value. 10 = more transparent, 255 = opaque.", 10.0f, 255.0f);
 
 CMomentumOnlineGhostEntity::CMomentumOnlineGhostEntity() : m_pCurrentFrame(nullptr), m_pNextFrame(nullptr), m_cvarPaintSound("mom_paint_apply_sound")
 {
@@ -114,6 +116,9 @@ void CMomentumOnlineGhostEntity::FireDecal(const DecalPacket &decal)
         break;
     case DECAL_STICKY_DETONATE:
         DetonateStickies();
+        break;
+    case DECAL_CONC:
+        ThrowConc(decal);
         break;
     default:
         break;
@@ -217,7 +222,7 @@ void CMomentumOnlineGhostEntity::FireSticky(const DecalPacket &packet)
         const auto pTemp = m_vecExplosives[0];
         if (pTemp)
         {
-            pTemp->Destroy(true);
+            pTemp->Fizzle();
         }
     }
 }
@@ -240,6 +245,18 @@ void CMomentumOnlineGhostEntity::DetonateStickies()
 
             pTemp->Detonate();
         }
+    }
+}
+
+void CMomentumOnlineGhostEntity::ThrowConc(const DecalPacket &packet)
+{
+    // Vector values stored in a QAngle, shhh~
+    Vector vecThrow(packet.vAngle.x, packet.vAngle.y, packet.vAngle.z);
+    const auto pConc = CMomConcProjectile::Create(packet.data.concThrow.fTimer, packet.vOrigin, vecThrow, this);
+
+    if (pConc)
+    {
+        pConc->SetRenderColorA(mom_ghost_online_conc_alpha.GetInt());
     }
 }
 
@@ -289,7 +306,7 @@ void CMomentumOnlineGhostEntity::Think()
         HandleGhostFirstPerson();
 
     // Emulate at the update rate (or slightly slower) for the smoothest interpolation
-    SetNextThink(gpGlobals->curtime + 1.0f / mm_updaterate.GetFloat() + (gpGlobals->interval_per_tick * mom_ghost_online_interp_ticks.GetFloat()));
+    SetNextThink(gpGlobals->curtime + 1.0f / MOM_ONLINE_GHOST_UPDATERATE + (gpGlobals->interval_per_tick * mom_ghost_online_interp_ticks.GetFloat()));
 }
 void CMomentumOnlineGhostEntity::HandleGhost()
 {
@@ -299,7 +316,7 @@ void CMomentumOnlineGhostEntity::HandleGhost()
     {
         // Similar fast-forward code to the positions except we aren't jumping here,
         // we want to place these decals ASAP (sound spam incoming) and get them out of the queue.
-        int upperBound = static_cast<int>(ceil(mom_ghost_online_lerp.GetFloat() * mm_updaterate.GetFloat()));
+        int upperBound = static_cast<int>(ceil(mom_ghost_online_lerp.GetFloat() * MOM_ONLINE_GHOST_UPDATERATE));
         while (m_vecDecalPackets.Count() > upperBound)
         {
             ReceivedFrame_t<DecalPacket> *fireMeImmedately = m_vecDecalPackets.RemoveAtHead();
@@ -321,7 +338,7 @@ void CMomentumOnlineGhostEntity::HandleGhost()
         // Realistically, we're going to have a buffer of about MOM_GHOST_LERP * update rate. So for 25 updates
         // in a second, a lerp of 0.1 seconds would make there be about 2.5 packets in the queue at all times.
         // If there's ever any excess, we need to get rid of it, immediately.
-        int upperBound = static_cast<int>(ceil(mom_ghost_online_lerp.GetFloat() * mm_updaterate.GetFloat()));
+        int upperBound = static_cast<int>(ceil(mom_ghost_online_lerp.GetFloat() * MOM_ONLINE_GHOST_UPDATERATE));
         while (m_vecPositionPackets.Count() > upperBound)
         {
             ReceivedFrame_t<PositionPacket> *pTemp = m_vecPositionPackets.RemoveAtHead();

@@ -6,8 +6,6 @@
 #include "igameevents.h"
 #include "vgui_controls/EditablePanel.h"
 
-class CHudSpectatorInfo;
-
 enum
 {
     CHAT_INTERFACE_LINES = 6,
@@ -41,6 +39,7 @@ enum ChatValidationState_t
     CHAT_STATE_EMPTY,    // this message is empty
     CHAT_STATE_TOO_LONG, // this message is too long
     CHAT_STATE_MUTED,    // this user is temporarily muted by us
+    CHAT_STATE_COMMAND,  // This message is a command
 };
 
 #define MAX_CHAT_LENGTH 256
@@ -96,9 +95,9 @@ public:
 
     bool SendMessageToLobby(const char *pText);
 
-    void ValidateAndSendMessageLocal(const char *pText);
-    ChatValidationState_t ValidateChatMessage(const char *pText, const CSteamID &playerID);
-    void FormatAndPrintMessage(const char *pText, const CSteamID &playerID);
+    bool ValidateAndSendMessageLocal(const char *pText);
+    ChatValidationState_t ValidateChatMessage(CUtlString &textStr, const CSteamID &playerID);
+    void FormatAndPrintMessage(const CUtlString &textStr, const CSteamID &playerID);
 
     MESSAGE_FUNC(OnChatEntrySend, "ChatEntrySend");
     MESSAGE_FUNC(OnChatEntryStopMessageMode, "ChatEntryStopMessageMode");
@@ -140,7 +139,7 @@ protected:
     void FireGameEvent(IGameEvent *event) override;
 
     void ApplySchemeSettings(vgui::IScheme *pScheme) override;
-    void OnKeyCodeReleased(vgui::KeyCode code) override;
+    void OnKeyCodeTyped(vgui::KeyCode code) override;
     void OnTick() override;
     void OnThink() override;
     void OnCommand(const char *command) override;
@@ -164,7 +163,8 @@ private:
 
     void GetTimestamp(char *pBuffer, int maxLen);
     int ComputeBreakChar(int width, const char *text, int textlen);
-    void SpectatorUpdate(const CSteamID &person, const CSteamID &target);
+    void UpdateTypingMembersLabel();
+    bool PlayerIsSpamming(CUtlMap<uint64, float> &mapOfDelays, uint64 person, float delayAmount);
 
     int m_nMessageMode;
 
@@ -173,6 +173,8 @@ private:
     int m_iFilterFlags;
     bool m_bEnteringVoice;
 
+    CUtlMap<uint64, float> m_mapChatterSpammerBlocker;
+    CUtlMap<uint64, float> m_mapPlayerSpawnerSpammerBlocker;
     CUtlVector<uint64> m_vTypingMembers;
     CUtlVector<uint64> m_vMomentumOfficers;
     CSteamID m_LobbyID;
@@ -184,7 +186,6 @@ private:
     float m_fLastPlayerTalkTime;
 
     vgui::Label *m_pTypingMembers;
-    CHudSpectatorInfo *m_pSpectatorInfo;
 };
 
 extern ChatPanel *g_pChatPanel;

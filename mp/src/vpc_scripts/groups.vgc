@@ -60,6 +60,7 @@ $Group "everything"
 	"vvis_launcher"
 	"GameUI"
 	"libcryptopp"
+	"zonmaker"
 }
 
 $Group "dedicated"

@@ -48,6 +48,8 @@ CON_COMMAND(hud_reloadcontrols, "Reloads the control res files for hud elements.
 extern ConVar cl_forwardspeed;
 extern ConVar cl_sidespeed;
 
+extern ConVar mom_mapfinished_movement_enable;
+
 HScheme g_hVGuiCombineScheme = 0;
 
 // Instance the singleton and expose the interface to it.
@@ -77,10 +79,6 @@ class CHudViewport : public CBaseViewport
 
     IViewPortPanel *CreatePanelByName(const char *pzName) OVERRIDE
     {
-        if (FStrEq(PANEL_TIMES, pzName))
-        {
-            return new CClientTimesDisplay(this);
-        }
         if (FStrEq(PANEL_TRICK_LIST, pzName))
         {
             return new TrickList(this);
@@ -100,7 +98,6 @@ class CHudViewport : public CBaseViewport
     void CreateDefaultPanels() OVERRIDE
     {
         AddNewPanel(CreatePanelByName(PANEL_REPLAY), "PANEL_REPLAY");
-        AddNewPanel(CreatePanelByName(PANEL_TIMES), "PANEL_TIMES");
         AddNewPanel(CreatePanelByName(PANEL_SPECGUI), "PANEL_SPECGUI");
         AddNewPanel(CreatePanelByName(PANEL_TRICK_LIST), "PANEL_TRICK_LIST");
         // BaseClass::CreateDefaultPanels(); // MOM_TODO: do we want the other panels?
@@ -165,11 +162,11 @@ int ClientModeMOMNormal::HudElementKeyInput(int down, ButtonCode_t keynum, const
     }
 
     // Detach the mouse if the user right-clicked while the leaderboards are open
-    if (m_pLeaderboards && m_pLeaderboards->IsVisible())
+    if (g_pClientTimes->IsVisible())
     {
         if (keynum == MOUSE_RIGHT)
         {
-            m_pLeaderboards->SetMouseInputEnabled(true);
+            g_pClientTimes->SetMouseInputEnabled(true);
             return 0;
         }
     }
@@ -193,6 +190,9 @@ int ClientModeMOMNormal::HudElementKeyInput(int down, ButtonCode_t keynum, const
                 m_pSpectatorGUI->SetMouseInputEnabled(true);
             return 0;
         }
+
+        if (!mom_mapfinished_movement_enable.GetBool())
+            return 0;
     }
 
     if (g_pZoneMenu && g_pZoneMenu->IsVisible())
@@ -208,37 +208,41 @@ int ClientModeMOMNormal::HudElementKeyInput(int down, ButtonCode_t keynum, const
 
 int ClientModeMOMNormal::HandleSpectatorKeyInput(int down, ButtonCode_t keynum, const char *pszCurrentBinding)
 {
-    if (m_pSpectatorGUI)
+    if (!m_pSpectatorGUI)
+        return 1;
+
+    if (!down || !pszCurrentBinding)
+        return 1;
+
+    // we are in spectator mode, open spectator menu
+    if (FStrEq(pszCurrentBinding, "+duck") || FStrEq(pszCurrentBinding, "toggle_duck"))
     {
-        // we are in spectator mode, open spectator menu
-        if (down && pszCurrentBinding && !Q_strcmp(pszCurrentBinding, "+duck"))
-        {
-            bool bMouseState = m_pSpectatorGUI->IsMouseInputEnabled();
-            m_pSpectatorGUI->SetMouseInputEnabled(!bMouseState);
-            if (m_pHudMapFinished && m_pHudMapFinished->IsVisible())
-                m_pHudMapFinished->SetMouseInputEnabled(!bMouseState);
-            // MOM_TODO: re-enable this in alpha+ when we add movie-style controls to the spectator menu!
-            // m_pViewport->ShowPanel(PANEL_SPECMENU, true);
+        bool bMouseState = m_pSpectatorGUI->IsMouseInputEnabled();
+        m_pSpectatorGUI->SetMouseInputEnabled(!bMouseState);
+        if (m_pHudMapFinished && m_pHudMapFinished->IsVisible())
+            m_pHudMapFinished->SetMouseInputEnabled(!bMouseState);
 
-            return 0; // we handled it, don't handle twice or send to server
-        }
+        return 0; // we handled it, don't handle twice or send to server
+    }
 
-        bool shouldEatSpecInput = (m_pHudMapFinished && m_pHudMapFinished->IsVisible()) || m_pSpectatorGUI->IsMouseInputEnabled();
-        if (down && pszCurrentBinding && FStrEq(pszCurrentBinding, "+attack") && !shouldEatSpecInput)
-        {
-            engine->ClientCmd("spec_next");
-            return 0;
-        }
-        else if (down && pszCurrentBinding && FStrEq(pszCurrentBinding, "+attack2") && !shouldEatSpecInput)
-        {
-            engine->ClientCmd("spec_prev");
-            return 0;
-        }
-        else if (down && pszCurrentBinding && FStrEq(pszCurrentBinding, "+jump") && !shouldEatSpecInput)
-        {
-            engine->ClientCmd("spec_mode");
-            return 0;
-        }
+    bool bShouldEatSpecInput = (m_pHudMapFinished && m_pHudMapFinished->IsVisible()) || m_pSpectatorGUI->IsMouseInputEnabled();
+    if (bShouldEatSpecInput)
+        return 1;
+
+    if (FStrEq(pszCurrentBinding, "+attack"))
+    {
+        engine->ClientCmd("spec_next");
+        return 0;
+    }
+    if (FStrEq(pszCurrentBinding, "+attack2"))
+    {
+        engine->ClientCmd("spec_prev");
+        return 0;
+    }
+    if (FStrEq(pszCurrentBinding, "+jump") || FStrEq(pszCurrentBinding, "toggle_jump"))
+    {
+        engine->ClientCmd("spec_mode");
+        return 0;
     }
 
     return 1;
@@ -248,7 +252,6 @@ void ClientModeMOMNormal::SetupPointers()
 {
     m_pHudMenuStatic = GET_HUDELEMENT(CHudMenuStatic);
     m_pHudMapFinished = GET_HUDELEMENT(CHudMapFinishedDialog);
-    m_pLeaderboards = dynamic_cast<CClientTimesDisplay *>(m_pViewport->FindPanelByName(PANEL_TIMES));
     m_pSpectatorGUI = dynamic_cast<CMOMSpectatorGUI *>(m_pViewport->FindPanelByName(PANEL_SPECGUI));
     m_pTrickList = dynamic_cast<TrickList*>(m_pViewport->FindPanelByName(PANEL_TRICK_LIST));
 }

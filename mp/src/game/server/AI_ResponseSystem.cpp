@@ -3046,6 +3046,18 @@ CON_COMMAND( rr_reloadresponsesystems, "Reload all response system scripts." )
 #endif
 }
 
+// Designed for extern magic, this gives the <, >, etc. of response system criteria to the outside world.
+// Mostly just used for Matcher_Match in matchers.h.
+bool ResponseSystemCompare(const char *criterion, const char *value)
+{
+	Criteria criteria;
+	criteria.value = CopyString( criterion );
+	defaultresponsesytem.ComputeMatcher(&criteria, criteria.matcher);
+	return defaultresponsesytem.CompareUsingMatcher(value, criteria.matcher, true);
+
+	return false;
+}
+
 static short RESPONSESYSTEM_SAVE_RESTORE_VERSION = 1;
 
 // note:  this won't save/restore settings from instanced response systems.  Could add that with a CDefSaveRestoreOps implementation if needed

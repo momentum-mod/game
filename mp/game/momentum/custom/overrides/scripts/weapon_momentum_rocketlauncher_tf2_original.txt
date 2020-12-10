@@ -30,7 +30,8 @@ WeaponData
     {
         "single_shot"       "Weapon_QuakeRPG.Single"
         "explosion"         "Weapon_QuakeRPG.Explode"
-        "RocketTrail"       "Rocket.Trail"
+        // "RocketTrail"       "Rocket.Trail"
+        // "RocketFizzle"      "Rocket.Fizzle"
     }
 
     // Weapon particles

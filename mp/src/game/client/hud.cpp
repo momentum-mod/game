@@ -431,6 +431,7 @@ void CHud::Init( void )
 	// check to see if we have sprites for this res; if not, step down
 	LoadHudTextures( textureList, "scripts/hud_textures" );
 	LoadHudTextures( textureList, "scripts/mod_textures" );
+	LoadHudTextures( textureList, "scripts/instructor_textures" );
 
 	int c = textureList.Count();
 	for ( int index = 0; index < c; index++ )
@@ -766,6 +767,7 @@ void CHud::RefreshHudTextures()
 	// check to see if we have sprites for this res; if not, step down
 	LoadHudTextures( textureList, "scripts/hud_textures" );
 	LoadHudTextures( textureList, "scripts/mod_textures" );
+	LoadHudTextures( textureList, "scripts/instructor_textures" );
 
 	// fix up all the texture icons first
 	int c = textureList.Count();
@@ -1145,4 +1147,3 @@ CON_COMMAND_F( testhudanim, "Test a hud element animation.\n\tArguments: <anim n
 
 	g_pClientMode->GetViewportAnimationController()->StartAnimationSequence( args[1] );
 }
-

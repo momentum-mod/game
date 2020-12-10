@@ -78,6 +78,50 @@
     input FireUser2(void) : "Causes this entity's OnUser2 output to be fired."
     input FireUser3(void) : "Causes this entity's OnUser3 output to be fired."
     input FireUser4(void) : "Causes this entity's OnUser4 output to be fired."
+    
+    // Mapbase -- New User I
+    input PassUser1(string) : "Causes this entity's OutUser1 output to be fired. Can pass any parameter."
+    input PassUser2(string) : "Causes this entity's OutUser2 output to be fired. Can pass any parameter."
+    input PassUser3(string) : "Causes this entity's OutUser3 output to be fired. Can pass any parameter."
+    input PassUser4(string) : "Causes this entity's OutUser4 output to be fired. Can pass any parameter."
+    
+    input FireRandomUser(void) : "Fires OnUser1, OnUser2, OnUser3, or OnUser4 with a 25% chance of each."
+    input PassRandomUser(string) : "Fires OutUser1, OutUser2, OutUser3, or OutUser4 with a 25% chance of each. Can pass any parameter."
+    
+    // Mapbase -- BaseEntity I/O
+    input FireOutput(string) : "Fires the named output on this entity. Format: '<output name>:<activator>:<caller>:<parameter>:<delay>' (OnDeath:hl3cardgame:gaben). Everything beyond the output name is optional."
+    input RemoveOutput(string) : "Removes all instances of the named output on this entity. Wildcards are supported, meaning you could just pass '*' to wipe all outputs from this entity."
+    input AcceptInput(string) : "Fires the named input on this entity. Format: '<input name>:<parameter>:<activator>:<caller>:<output ID>' (SetTarget:cheese). Everything beyond the input name is optional. Mind the fact this is arranged differently from FireOutput, having the parameter right after the input name."
+    input CancelPending(void) : "Cancels any events fired by this entity that are currently pending in the I/O event queue."
+    
+    input SetLocalOrigin(vector) : "Sets this entity's origin in local space, relative to its parent if one exists. Otherwise relative to the world."
+    input SetAbsOrigin(vector) : "Sets this entity's origin in the map, always relative to the world origin."
+    input SetLocalVelocity(vector) : "Sets this entity's current velocity."
+    input SetLocalAngularVelocity(vector) : "Sets this entity's current angular velocity."
+    
+    input AddSpawnFlags(integer) : "Adds spawnflag(s) to this entity."
+    input RemoveSpawnFlags(integer) : "Removes spawnflag(s) from this entity."
+    
+    input AddSolidFlags(integer) : "Adds solid flags to this entity."
+    input RemoveSolidFlags(integer) : "Removes solid flags from this entity."
+    
+    input SetSolidType(integer) : "Sets the solid type (0 = none, 1 = BSP, 2 = Bounding Box, 6 = VPhysics)"
+	
+    input SetHealth(integer) : "Sets this entity's health."
+    input AddHealth(integer) : "Adds to this entity's health."
+    input RemoveHealth(integer) : "Removes from this entity's health."
+    
+    input SetMaxHealth(integer) : "Sets this entity's max health."
+    
+    input SetEntityName(target_destination) : "Sets this entity's name that other entities should refer to it by."
+    
+    input SetTarget(target_destination) : "Sets this entity's target. This is specific to certain entities, particularly logic entities that involve a target."
+    input SetOwnerEntity(target_destination) : "Sets this entity's owner entity. This has nothing to do with parenting and has more to do with collision and kill credits."
+    
+    input SetThinkNull(void) : "Sets this entity's general think function to null. Behavior varies from entity to entity.."
+    
+    input Use(void) : "More or less replicates the player interacting with an entity. (+USE)"
+    input Touch(target_destination) : "Simulates this entity touching the specified entity."
 
     // Outputs    
     output OnUser1(void) : "Fired in response to FireUser1 input."
@@ -85,6 +129,12 @@
     output OnUser3(void) : "Fired in response to FireUser3 input."
     output OnUser4(void) : "Fired in response to FireUser4 input."
     output OnKilled(void) : "Fired in response to Kill or KillHierarchy input."
+    
+    // Mapbase -- New User O
+    output OutUser1(string) : "Fires in response to PassUser1 input. Can pass any parameter."
+    output OutUser2(string) : "Fires in response to PassUser2 input. Can pass any parameter."
+    output OutUser3(string) : "Fires in response to PassUser3 input. Can pass any parameter."
+    output OutUser4(string) : "Fires in response to PassUser4 input. Can pass any parameter."
 ]
 
 @BaseClass = Parentname
@@ -173,6 +223,17 @@
     ]
     renderamt(integer) : "FX Amount (0 - 255)" : 255 : "The FX amount is used by the selected Render Mode."
     rendercolor(color255) : "FX Color (R G B)" : "255 255 255" : "The FX color is used by the selected Render Mode."
+	
+    viewhideflags(choices) : "View ID nodraw" : 0 : "This keyvalue can control whether an entity should only draw on things like monitors or mirrors, or the opposite. The code for this is { m_iViewHideFlags & (1 << CurrentViewID()) } and supports any combination of view IDs." =
+    [
+        0 : "Draw normally"
+        193 : "Hide in main view (player's eyes)" // VIEW_MAIN + VIEW_INTRO_CAMERA + VIEW_SHADOW_DEPTH_TEXTURE
+        36 : "Hide in cameras" // VIEW_MONITOR + VIEW_INTRO_PLAYER
+        24 : "Hide in mirrors/water" // VIEW_REFLECTION + VIEW_REFRACTION
+        60 : "Hide in cameras and mirrors/water" // VIEW_MONITOR + VIEW_INTRO_PLAYER + VIEW_REFLECTION + VIEW_REFRACTION
+        2 : "Hide in 3D skybox" // VIEW_3DSKY
+        128 : "Hide projected texture shadows" // VIEW_SHADOW_DEPTH_TEXTURE
+    ]
 
     disablereceiveshadows(choices) : "Disable Receiving Shadows" : 0 =
     [
@@ -182,6 +243,19 @@
 
     input Alpha(integer) : "Set the sprite's alpha (0 - 255)."
     input Color(color255) : "Set the sprite's color (R G B)."
+	
+    input SetRenderMode(integer) : "Sets this entity's render mode."
+    input SetRenderFX(integer) : "Sets this entity's render FX."
+    input SetViewHideFlags(integer) : "Sets this entity's view ID nodraw flags (takes raw flag combination)."
+    input AddEffects(integer) : "Adds an entity effect."
+    input RemoveEffects(integer) : "Removes an entity effect."
+    input EnableDraw(void) : "Draws an entity if it is not drawn. Equivalent to RemoveEffects > 32."
+    input DisableDraw(void) : "Undraws an entity if it is drawn. Equivalent to AddEffects > 32."
+    input AddEFlags(integer) : "Adds an entity flag. NOTE: Entity flags are not the spawn flags you see in Hammer. Use AddSpawnFlags to add spawnflags."
+    input RemoveEFlags(integer) : "Removes an entity flag. NOTE: Entity flags are not the spawn flags you see in Hammer. Use RemoveSpawnFlags to remove spawnflags."
+    
+    // This is the closest I could get without putting this in Targetname, as most entities that use collision groups usually use render fields as well
+    input SetCollisionGroup(integer) : "Sets this entity's collision group."
 ]
 
 
@@ -797,11 +871,10 @@
 [
     spawnflags(flags) = 
     [
-        1: "Clients" : 1
-        2: "NPCs" : 0
+        1: "Local Player" : 1
+        2: "Ghosts" : 0
         4: "Pushables": 0
         8: "Physics Objects" : 0
-        16: "Only player ally NPCs" : 0
         64: "Everything (not including physics debris)" : 0
         1024: "Physics debris" : 0
         4096: "Disallow Bots" : 0
@@ -927,6 +1000,13 @@
         16:"Start Silent": 1
         32:"Is NOT Looped": 1
     ]
+    soundflags(choices) :"Sound Flags" : 0 : "Additional options for your sound." =
+    [
+        0: "None"
+        128: "Pause when game is paused"
+        256: "Ignore phonemes (no lip-syncing)"
+        1024: "Don't overwrite existing sound on channel (untested)"
+    ]
     SourceEntityName(target_destination) : "SourceEntityName" : : "If an entity is specified, sound will come from this named entity instead of the location of ambient_generic."
 
     // Inputs
@@ -937,6 +1017,9 @@
     input Volume(integer) : "Sets the sound volume, expressed as a range from 0 to 10, where 10 is the loudest."
     input FadeIn(integer) : "Fades the sound up to full volume over a specified number of seconds, with a range from 0 to 100 seconds."
     input FadeOut(integer) : "Fades the sound to silence over a specified number of seconds, with a range from 0 to 100 seconds."
+    input SetSound(string) : "Sets the sound this ambient_generic should play."
+    
+    output OnSoundFinished(void) : "Fires when the sound finishes playing. NOTE: This sound should be set to pause when the game is paused."
 ]
 
 @SolidClass base(Targetname) sphere(DisappearDist) = func_lod : 
@@ -1180,6 +1263,7 @@
         2: "Modulate" : 0
         4: "Triggering player only" : 0
         8: "Stay Out" : 0
+		16: "Don't purge other active fades" : 0
     ]
     duration(string) : "Duration (seconds)" : "2" : "The time that it will take to fade the screen in or out."
     ReverseFadeDuration(float) : "Reverse Fade Duration (seconds)" : "2" : "The duration of the reverse fade."
@@ -1230,12 +1314,14 @@
     "An entity that controls the HDR tonemapping for the player. Think of it as a method of controlling the exposure of the player's eyes."
 [
     // Inputs
-    input SetTonemapScale(void) : "Set the player's tonemap scale. It should be a value between 0 and 2, where 0 is the eyes fully closed, 1 is use the unchanged autoexposure (default), and 2 is the eye fully wide open."
+    input SetTonemapScale(float) : "Set the player's tonemap scale. It should be a value between 0 and 2, where 0 is the eyes fully closed, 1 is use the unchanged autoexposure (default), and 2 is the eye fully wide open."
     input BlendTonemapScale(string) : "Blend from the player's current tonemap scale to a new one. The parameter syntax is as follows: <target tonemap scale> <blend duration>. For example: '0.5 10' would blend from the current tonemap scale to 0.5 over a period of 10 seconds. Tonemap scale is a value between 0 and 2, where 0 is the eyes fully closed, 1 is use the unchanged autoexposure (default), and 2 is the eye fully wide open."
     input UseDefaultAutoExposure(void) : "Revert to using the default tonemap auto exposure."
+    input UseDefaultBloomScale(void) : "Reverts to using the default bloom scale."
     input SetAutoExposureMin(float) : "Set a custom tonemap auto exposure minimum."
     input SetAutoExposureMax(float) : "Set a custom tonemap auto exposure maximum."
     input SetBloomScale(float) : "Set a custom bloom scale."
+    input SetBloomScaleRange(string) : "Sets a range for the bloom scale. First number is the maximum, second number is the minimum."
     input SetTonemapRate(float) : "Set the rate for autoexposure adjustment."
 ]
 
@@ -1336,10 +1422,10 @@
         1 : "Yes"
     ]    
 
-    solidbsp(choices) : "Solid BSP" : 0 : "Set this if this brush is in heirarchy with a moving object of some kind, and the player can stand on this brush." =
+    solidbsp(choices) : "Solid Type" : 1 =
     [
-        0 : "No"
-        1 : "Yes"
+        0 : "VPhysics"
+        1 : "BSP"
     ]    
     vrad_brush_cast_shadows(choices) : "Shadows" : 0 : "Set this if this brush casts lightmap shadows." =
     [
@@ -2281,30 +2367,75 @@
     output OnGustEnd(void) : "Fired when a wind gust ends."
 ]
 
-@PointClass base(Angles) size(-16 -16 -16, 16 16 16) color(0 0 255) = sky_camera : 
-    "An entity used to control the 3D Skybox. Its origin is used to determine the 3D Skybox's position relative to the map. Place this entity, in the 3D Skybox, at the point where the origin of the map should be."
+// We can't add a new sprite because the "scale" keyvalue makes it huge
+@PointClass base(Targetname, Parentname, Angles) size(-16 -16 -16, 16 16 16) studio("models/editor/axis_helper.mdl") color(0 0 255) = sky_camera : 
+	"An entity used to control the 3D Skybox. Its origin is used to determine the 3D Skybox's position relative to the map. Place this entity, in the 3D Skybox, at the point where the origin of the map should be."
 [
-    scale(integer) : "3D Skybox scale" : 16 : "Scale of the skybox."
-    fogenable(choices) : "Fog Enable" : 0 =
-    [
-        0 : "No"
-        1 : "Yes"
-    ]
-    fogblend(choices) : "Fog Blend" : 0 =
-    [
-        0 : "No"
-        1 : "Yes"
-    ]
-    use_angles(choices) : "Use Angles for Fog Dir" : 0 =
-    [
-        0 : "No"
-        1 : "Yes"
-    ]
-    fogcolor(color255) : "Primary Fog Color" : "255 255 255"
-    fogcolor2(color255) : "Secondary Fog Color" : "255 255 255"
-    fogdir(string) : "Primary Fog Dir" : "1 0 0"
-    fogstart(string) : "Fog Start" : "500.0" : "Distance at which the skybox fog should start."
-    fogend(string) : "Fog End" : "2000.0" : "Distance at which the skybox fog should be fully opaque."
+	parentname(target_destination) : "Parent" : : "The name of the entity to move with. NOTE: sky_camera's position is normally only updated on spawn. Fire the ForceUpdate or StartUpdating inputs to update the sky_camera's position! You might also want to enable Use Angles for Sky."
+	
+	spawnflags(flags) =
+	[
+		1: "Master (takes priority if multiple sky_cameras exist)" : 0
+		2: "Continuously update position (for moving sky_cameras)" : 0
+	]
+	
+	skycolor(color255) : "Sky Color" : "255 255 255 0" : "Causes the skybox to use a solid color instead of the sky texture specified in worldspawn. Blended alpha is unfortunately not supported, but an alpha of '0' disables the effect and any alpha greater than that (e.g. 255) enables the effect."
+
+	scale(integer) : "3D Skybox scale" : 16 : "Scale of the skybox."
+	fogenable(choices) : "Fog Enable" : 0 =
+	[
+		0 : "No"
+		1 : "Yes"
+	]
+	fogblend(choices) : "Fog Blend" : 0 =
+	[
+		0 : "No"
+		1 : "Yes"
+	]
+	use_angles(choices) : "Use Angles for Fog Dir" : 0 =
+	[
+		0 : "No"
+		1 : "Yes"
+	]
+	use_angles_for_sky(choices) : "Use Angles for Sky" : 0 : "Uses angles for actual skybox rotation, as if the world were tilted on this entity's axis." =
+	[
+		0 : "No"
+		1 : "Yes"
+	]
+	fogcolor(color255) : "Primary Fog Color" : "255 255 255"
+	fogcolor2(color255) : "Secondary Fog Color" : "255 255 255"
+	fogdir(string) : "Primary Fog Dir" : "1 0 0"
+	fogstart(string) : "Fog Start" : "500.0" : "Distance at which the skybox fog should start."
+	fogend(string) : "Fog End" : "2000.0" : "Distance at which the skybox fog should be fully opaque."
+	fogmaxdensity(float) : "Fog Max Density [0..1]" : "1"
+	
+	farz(float) : "Far Z Clip Plane" : "0" : "Clips the sky."
+	
+	// Inputs
+	input ForceUpdate(void) : "Forces the 3D skybox to update with this sky_camera's position."
+	input StartUpdating(void) : "Begins per-tick skybox updating, which is needed if you want this sky_camera to move."
+	input StopUpdating(void) : "Ends per-tick skybox updating if it was enabled before."
+	
+	input ActivateSkybox(void) : "Makes this sky_camera the active skybox."
+	input DeactivateSkybox(void) : "Stops making this sky_camera the active skybox if it is currently the active skybox, which causes the sky to clear."
+	
+	input SetFogStartDist(float) : "Sets the fog start distance."
+	input SetFogEndDist(float) : "Sets the fog end distance."
+	input TurnOnFog(void) : "Turns the fog on."
+	input TurnOffFog(void) : "Turns the fog off."
+	input SetFogColor(color255) : "Sets the primary fog color."
+	input SetFogColorSecondary(color255) : "Sets the secondary fog color."
+	input SetFarZ(integer): "Sets the far clip plane distance."
+	
+	input SetSkyColor(color255) : "Sets the sky color."
+]
+
+@PointClass base(Targetname) size(-8 -8 -8, 8 8 8) = skybox_swapper : 
+	"An entity that swaps skybox textures." 
+[
+	SkyboxName(string) : "Sky Name" : "" : "The name of the sky texture to change to."
+	
+	input Trigger(void) : "Causes the current sky texture to change to the one specified in this entity."
 ]
 
 @BaseClass base(Targetname, ResponseContext) = BaseSpeaker
@@ -2511,14 +2642,14 @@
     input DoSpark(void) : "Force a single arc."
 ]
 
-@PointClass base(Targetname) size(-8 -8 -8, 8 8 8) = point_clientcommand : 
+@PointClass base(Targetname) iconsprite("editor/clientcommand.vmt") = point_clientcommand : 
     "An entity that issues commands to the client console, as if it was typed in by the player (if activator is a player, or the local player in single player)."
 [
     // Inputs
     input Command(string) : "Command to execute."
 ]
 
-@PointClass base(Targetname) size(-8 -8 -8, 8 8 8) = point_servercommand : 
+@PointClass base(Targetname) iconsprite("editor/servercommand.vmt") = point_servercommand : 
     "An entity that issues commands to the server console."
 [
     // Inputs
@@ -2686,7 +2817,7 @@
     target(target_destination) : "Entity to look at" : : "Name of entity that dead players will face while in intermission at this spot."
 ]
 
-@PointClass base(Targetname) iconsprite("editor/info_landmark") = info_landmark : 
+@PointClass base(Targetname, Parentname, Angles) studio("models/editor/playerstart.mdl") = info_landmark : 
     "An entity that acts as a landmark for transitions to another level. There should be a corresponding info_landmark entity in the next map. Entities will be transitioned to the next level relative to the info_landmark entities."
 [
 ]
@@ -2709,7 +2840,13 @@
     "An entity that spawns a particle system built using the particle editor."
 [
     effect_name(string) : "Particle System Name"
+    duration(float) : "Particle System Duration" : "0.0" : "The duration of this particle system, 0.0 is infinite"
     start_active(choices) : "Start Active?" : 0 =
+    [
+        0 : "No"
+        1 : "Yes"
+    ]
+    attach_to_player(choices) : "Attach to Player" : 0 : "If set, the particle effect starts on the player" =
     [
         0 : "No"
         1 : "Yes"
@@ -2795,6 +2932,7 @@
     // Inputs
     input Start(void) : "Tell the particle system to start emitting."
     input Stop(void) : "Tell the particle system to stop emitting."
+    input DestroyImmediately(void) : "Makes the particle system stop emitting and remove its existing particles immediately."
 ]
 
 
@@ -3069,6 +3207,40 @@
     input Toggle(void) : "Toggle the light on/off."
 ]
 
+// Beam spotlight ---------------------
+@PointClass base(Targetname, Parentname, RenderFields, Angles, DXLevelChoice) studio("models/editor/cone_helper.mdl") = beam_spotlight : 
+    "An entity to draw a spotlight. Will draw a beam when the player views it side on, and a halo when it's facing towards the player. "+
+    "Unless the 'No Dynamic Light' spawnflag is checked, it will also create a dynamic light wherever the end of the spotlight rests." +
+    "This spotlight is entirely client side, it is not sync'd across clients."
+[
+    spawnflags(Flags) = 
+    [
+        1 : "Start On" : 1
+        2 : "No Dynamic Light" : 0
+        4 : "Start rotation on" : 0
+        8 : "Reverse Direction" : 0
+        16 : "X Axis"  : 0
+        32 : "Y Axis"  : 0
+    ]
+
+    maxspeed(integer) : "Max Rotation Speed" : 100 : "The maximum rotation speed of the spotlight, in degrees per second."
+
+    spotlightlength(integer) : "Spotlight Length" : 500 : "Length of the spotlight beam."
+    spotlightwidth(integer) : "Spotlight Width" : 50 : "Width of the spotlight beam."
+    rendercolor(color255) : "Color (R G B)" : "255 255 255"
+    HDRColorScale(float) : "HDR color scale." : "0.7" : "float value to multiply sprite color by when running in HDR mode."
+    
+    // Inputs
+    input LightOn(void) : "Turn the spotlight on."
+    input LightOff(void) : "Turn the spotlight off"
+    input Start(void) : "Start the rotator rotating."
+    input Stop(void) : "Stop the rotator from rotating."
+    input Reverse(void) : "Reverse the direction of rotation of the rotator."
+    
+    // outputs
+    output OnLightOn(void) : "Fires when light turns on."
+    output OnLightOff(void) : "Fires when light turns off."
+]
 
 //-------------------------------------------------------------------------
 // Shadow control
@@ -3175,6 +3347,12 @@
     blockdamage(float) : "Block Damage" : 0 : "The amount of damage to do to any entity that blocks the brushes, per frame."
     startsound(sound) : "Sound played when the brush starts moving."
     stopsound(sound) : "Sound played when the brush stops moving."
+	
+	solidbsp(choices) : "Solid Type" : 1 =
+    [
+        0 : "VPhysics"    
+        1 : "BSP"
+    ]
 
     // Inputs
     input Open(void) : "Move the brush to the end position (starting position + (move direction * move distance))."
@@ -3231,7 +3409,7 @@
     _minlight(string) : "Minimum Light Level" : : "The minimum level of ambient light that hits this brush."
     dmg(integer) : "Blocking Damage" : 0 : "Damage done to any entity that blocks the rotation, per frame."
 
-    solidbsp(choices) : "Solid Type" : 0 =
+    solidbsp(choices) : "Solid Type" : 1 =
     [
         0 : "VPhysics"    
         1 : "BSP"
@@ -3586,10 +3764,10 @@
         -1 : "Forward"         // Reverses upon USE, so are
         1 : "Backward"     // reversed here.
     ]
-    solidbsp(choices) : "Solid BSP" : 0 =
+    solidbsp(choices) : "Solid Type" : 1 =
     [
-        0 : "No"
-        1 : "Yes"
+        0 : "VPhysics"
+        1 : "BSP"
     ]    
 
     // Inputs
@@ -3691,6 +3869,11 @@
         0: "No"
         1: "Yes"
     ]
+    solidbsp(choices) : "Solid Type" : 1 =
+    [
+        0 : "VPhysics"
+        1 : "BSP"
+    ]
 
     // Outputs
     output OnClose(void) : "Fired when the door starts closing."
@@ -3733,7 +3916,7 @@
     ]
     distance(integer) : "Distance" : 90 : "The amount, in degrees, that the button should rotate when it's pressed."
 
-    solidbsp(choices) : "Solid Type" : 0 =
+    solidbsp(choices) : "Solid Type" : 1 =
     [
         0 : "VPhysics"    
         1 : "BSP"
@@ -4083,20 +4266,28 @@
     "If the input value is greater than the compare value, the OnGreaterThan output is fired with the input value."
 [
     // Keys
-    InitialValue(integer) : "Initial value" : : "Initial value for the input value."
-    CompareValue(integer) : "Compare value" : : "The value to compare against."
+    InitialValue(string) : "Initial value" : : "Initial value for the input value."
+    CompareValue(string) : "Compare value" : : "The value to compare against."
+    StrLenAllowed(choices) : "String length allowed" : 0 : "Whether the input value (if it's numerical) can be compared against the Compare value's string length (if it is one)" =
+    [
+        0 : "No"
+        1 : "Yes"
+    ]
     
     // Inputs
-    input SetValue(float) : "Set the value that will be compared against the compare value."
-    input SetValueCompare(float) : "Set the value that will be compared against the compare value and performs the comparison."
-    input SetCompareValue(float) : "Set the compare value."
-    input Compare(void) : "Force a compare of the input value with the compare value."
+    input SetValue(string) : "Sets the value that will be compared against the compare value."
+    input SetValueCompare(string) : "Sets the value that will be compared against the compare value and performs the comparison."
+    input SetCompareValue(string) : "Sets the compare value."
+    input SetCompareValueCompare(string) : "Sets the compare value and performs the comparison."
+    input Compare(void) : "Forces a compare of the input value with the compare value."
     
     // Outputs
-    output OnLessThan(float) : "Fired when the input value is less than the compare value. Sends the input value as data." 
-    output OnEqualTo(float) : "Fired when the input value is equal to the compare value. Sends the input value as data." 
-    output OnNotEqualTo(float) : "Fired when the input value is different from the compare value. Sends the input value as data." 
-    output OnGreaterThan(float) : "Fired when the input value is greater than the compare value. Sends the input value as data."
+    output OnLessThan(string) : "Fired when the input value is less than the compare value. Sends the input value as data." 
+    output OnEqualTo(string) : "Fired when the input value is equal to the compare value. Sends the input value as data." 
+    output OnNotEqualTo(string) : "Fired when the input value is different from the compare value. Sends the input value as data." 
+    output OnGreaterThan(string) : "Fired when the input value is greater than the compare value. Sends the input value as data."
+    output OnGreaterThanOrEqualTo(string) : "Fired when the input value is greater than or equal to the compare value. Sends the input value as data."
+    output OnLessThanOrEqualTo(string) : "Fired when the input value is greater than or equal to the compare value. Sends the input value as data."
 ]
 
 @PointClass base(Targetname) iconsprite("editor/logic_branch.vmt") = logic_branch :
@@ -4114,8 +4305,8 @@
     input Test(void) : "Test the input value and fire OnTrue or OnFalse based on the value."
     
     // Outputs
-    output OnTrue(bool) : "Fired when the input value is true (nonzero)." 
-    output OnFalse(bool) : "Fired when the input value is false (zero)." 
+    output OnTrue(void) : "Fired when the input value is true (nonzero)." 
+    output OnFalse(void) : "Fired when the input value is false (zero)." 
 ]
 
 
@@ -4157,6 +4348,12 @@
     "PickRandom input. One of the OnCase outputs that is connected to another entity will " +
     "be picked at random and fired."
 [
+    MultipleCasesAllowed(choices) : "Multiple case hits allowed" : 0 : "If an input value matches a given case, are we allowed to test the rest of the cases or should we stop there? Don't worry about this if you're only using this entity for PickRandom." =
+    [
+        0 : "No"
+        1 : "Yes"
+    ]
+
     Case01(string) : "Case 01"
     Case02(string) : "Case 02"
     Case03(string) : "Case 03"
@@ -4197,6 +4394,7 @@
     output OnCase15(void) : "Fired when the input value equals the Case15 value."
     output OnCase16(void) : "Fired when the input value equals the Case16 value."
     output OnDefault(void) : "Fired when the input value does not equal any of the Case values."
+    output OnUsed(string) : "Fired when an input value is received, regardless of whether it matches a case. Passes the input value."
 ]
 
 
@@ -4252,26 +4450,37 @@
 ]
 
 
-// NEEDHELP: Unused in HL2, not clear what it's useful for.
+// Original Comment >>> NEEDHELP: Unused in HL2, not clear what it's useful for.
+// 
+// Apparently, this entity's usefulness was called into question at some point by Valve programmers.
+// Either way, I've changed it a lot, so this may (or may not) be useful now.
 @PointClass base(Targetname) iconsprite("editor/logic_multicompare.vmt") = logic_multicompare :
     "Compares a set of inputs to each other. If they are all the same, fires an OnEqual output. " +
-    "If any are different, fires the OnNotEqual output."
+    "If any are different, fires the OnNotEqual output." +
+    "There is currently no way to remove inputs."
 [
-    // keys
-    IntegerValue(integer) : "Integer Value (optional)"
-    ShouldComparetoValue(choices) : "Should use Integer Value" : 0 =
+    // Keys
+    IntegerValue(string) : "Reference Value (optional)" : : "The value all inputs are compared to if ''Should use Reference Value'' is enabled."
+    ShouldComparetoValue(choices) : "Should use Reference Value" : 0 : "If enabled, all inputs are compared to the reference value. If not enabled, they are instead compared to the last input added." =
+    [
+        0 : "No"
+        1 : "Yes"
+    ]
+    StrLenAllowed(choices) : "String length allowed" : 0 : "Whether the input value (if it's numerical) can be compared against the Compare value's string length (if it is one)" =
     [
         0 : "No"
         1 : "Yes"
     ]
 
     // Inputs
-    input InputValue(integer) : "Input value"
-    input CompareValues(void) : "Compares the values and fires appropriate outputs"
+    input InputValue(string) : "Adds a value to our set of inputs and fires CompareValues automatically, comparing existing inputs to this one if set to do so."
+    input InputValueNoFire(string) : "Adds a value to our set of inputs without firing CompareValues."
+    input SetReferenceValue(string) : "Sets our reference value."
+    input CompareValues(void) : "Compares the values and fires appropriate outputs."
 
     // Outputs
-    output OnEqual(void) : "Fires if the values are equal"
-    output OnNotEqual(void) : "Fires if the values are not equal"
+    output OnEqual(string) : "Fires if the compared value is equal to all of our inputs. Passes the compared value."
+    output OnNotEqual(string) : "Fires if the compared value is equal to all of our inputs. Passes the violator."
 ]
 
 @PointClass base(Targetname, EnableDisable) iconsprite("editor/logic_relay.vmt") = logic_relay :
@@ -4288,15 +4497,49 @@
     ]
 
     // Inputs
-    input Trigger(void) : "Trigger the relay, causing its OnTrigger output to fire if it is enabled."
+    input Trigger(void) : "Triggers the relay, causing its OnTrigger output to fire if it is enabled."
+    input TriggerWithParameter(string) : "Triggers the relay with a parameter, causing its OnTriggerParameter output to fire if it is enabled."
     input Toggle(void) : "Toggle the relay between enabled and disabled."
-    input CancelPending(void) : "Cancel any events fired by this relay that are currently pending in the I/O event queue."
+    input EnableRefire(void) : "If fast retrigger is disabled, the relay will not be able to fire again until its most delayed output has been fired. "+
+        "This input allows the relay to fire again early if it is in this state."
     
     // Outputs
     output OnSpawn(void) : "Fired when the relay is spawned. If the relay is set to only trigger once, it will "+
         "delete itself after firing this output."
     output OnTrigger(void) : "Fired when the relay is triggered. If the relay is set to only trigger once, it will "+
         "delete itself after firing this output."
+    output OnTriggerParameter(string) : "Fired when the relay is triggered with a parameter. If the relay is set to only trigger once, it will "+
+        "delete itself after firing this output."
+]
+
+@PointClass base(Targetname, EnableDisable) iconsprite("editor/logic_relay_queue.vmt") = logic_relay_queue :
+    "A special variant of logic_relay designed to queue trigger inputs. " +
+    "If the relay is still handling its I/O connections after being triggered, additional Trigger inputs will be queued and automatically fire when the relay is able to be re-fired. Activator, output ID, and parameter are all kept and saved. " +
+    "Inputs are added to the queue each time Trigger or TriggerWithParameter are received while the relay is disabled or still handling its current I/O connections. The first one in the queue will trigger the moment an opportunity becomes available and the next one in the queue will wait for that one.\n\n" +
+    "This is useful for when you don't want something to happen multiple times at once, but don't want to discard further requests either."
+[
+    SetMaxQueueItems(integer) : "Maximum Items" : 3 : "The maximum number of Trigger and TriggerWithParameter inputs allowed in the queue. Any others received while this value is full will be discarded. Keep in mind this does not count the I/O chain currently being handled."
+    
+    DontQueueWhenDisabled(choices) : "Don't queue when disabled" : 0 : "Prevents the relay from queuing inputs when disabled. This means inputs will only be queued when enabled and still handling its current I/O connections." =
+    [
+        0 : "No"
+        1 : "Yes"
+    ]
+
+    // Inputs
+    input Trigger(void) : "Triggers the relay, causing its OnTrigger output to fire if it is enabled."
+    input TriggerWithParameter(string) : "Triggers the relay with a parameter, causing its OnTriggerParameter output to fire if it is enabled."
+    input Toggle(void) : "Toggle the relay between enabled and disabled."
+    //input CancelPending(void) : "Cancel any events fired by this relay that are currently pending in the I/O event queue."
+    input EnableRefire(void) : "If fast retrigger is disabled, the relay will not be able to fire again until its most delayed output has been fired. "+
+        "This input allows the relay to fire again early if it is in this state."
+        
+    input ClearQueue(void) : "Clears the input queue."
+    input SetMaxQueueItems(integer) : "Sets the maximum queue items."
+    
+    // Outputs
+    output OnTrigger(void) : "Fired when the relay is triggered."
+    output OnTriggerParameter(string) : "Fired when the relay is triggered with a parameter."
 ]
 
 @PointClass base(Targetname, EnableDisable) iconsprite("editor/logic_timer.vmt") = logic_timer :
@@ -4318,6 +4561,12 @@
     LowerRandomBound(string) : "Minimum Random Interval" : : "If 'Use Random Time' is set, this is the minimum time between timer fires. The time will be a random number between this and the 'Maximum Random Interval'."
     UpperRandomBound(string) : "Maximum Random Interval" : : "If 'Use Random Time' is set, this is the maximum time between timer fires. The time will be a random number between the 'Minimum Random Interval' and this."
     RefireTime(string) : "Refire Interval" : : "If 'Use Random Time' isn't set, this is the time between timer fires, in seconds."
+	
+    UseBoundsForTimerInputs(choices) : "Limit Timer Inputs" : 0 : "Allows the Minumum/Maximum Random Interval keyvalues to limit the total timer value when it receives AddToTimer or SubtractFromTimer inputs." =
+    [
+        0 : "No"
+        1 : "Yes"
+    ]
 
     // Inputs
     input RefireTime(integer) : "Set a new Refire Interval."
@@ -4477,28 +4726,74 @@
     "performed and only the OutValue output will be fired."
 [
     // Keys
-    startvalue(integer) : "Initial Value" : 0 : "Starting value for the counter."
-    min(integer) : "Minimum Legal Value" : 0 : "Minimum legal value for the counter. If min=0 and max=0, no clamping is performed."
-    max(integer) : "Maximum Legal Value" : 0 : "Maximum legal value for the counter. If min=0 and max=0, no clamping is performed."
+    startvalue(float) : "Initial Value" : 0 : "Starting value for the counter."
+    min(float) : "Minimum Legal Value" : 0 : "Minimum legal value for the counter. If min=0 and max=0, no clamping is performed."
+    max(float) : "Maximum Legal Value" : 0 : "Maximum legal value for the counter. If min=0 and max=0, no clamping is performed."
 
     // Inputs
-    input Add(integer) : "Add an amount to the counter and fire the OutValue output with the result."
-    input Divide(integer): "Divide the counter by an amount and fire the OutValue output with the result."
-    input Multiply(integer): "Multiply the counter by an amount and fire the OutValue output with the result."
-    input SetValue(integer): "Set the counter to a new value and fire the OutValue output with the result."
-    input SetValueNoFire(integer): "Set the counter to a new value without firing any outputs."
-    input Subtract(integer): "Subtract an amount from the counter and fire the OutValue output with the result."
-    input SetHitMax(integer): "Set the upper bound of the counter and fire the OutValue output with the current value."
-    input SetHitMin(integer): "Set the lower bound of the counter and fire the OutValue output with the current value."
-    input GetValue(void): "Causes the counter fire its OnGetValue output with the current value of the counter. Used for polling the counter when you don't want constant updates from the OutValue output."
+    input Add(float) : "Add an amount to the counter and fire the OutValue output with the result."
+    input Divide(float): "Divide the counter by an amount and fire the OutValue output with the result."
+    input Multiply(float): "Multiply the counter by an amount and fire the OutValue output with the result."
+    input SetValue(float): "Set the counter to a new value and fire the OutValue output with the result."
+    input SetValueNoFire(float): "Set the counter to a new value without firing any outputs."
+    input Subtract(float): "Subtract an amount from the counter and fire the OutValue output with the result."
+    input SetHitMax(float): "Set the upper bound of the counter and fire the OutValue output with the current value."
+    input SetHitMin(float): "Set the lower bound of the counter and fire the OutValue output with the current value."
+    input GetValue(void): "Causes the counter to fire its OnGetValue output with the current value of the counter. Used for polling the counter when you don't want constant updates from the OutValue output."
+    input SetMaxValueNoFire(float): "Set the upper bound of the counter without firing any outputs."
+    input SetMinValueNoFire(float): "Set the lower bound of the counter without firing any outputs."
 
     // Outputs
-    output OutValue(integer) : "Fired when the counter value changes."
+    output OutValue(float) : "Fired when the counter value changes."
     output OnHitMin(void) : "Fired when the counter value meets or goes below the min value. The counter must go back above the min value before the output will fire again."
     output OnHitMax(void) : "Fired when the counter value meets or exceeds the max value. The counter must go below the max value before the output will fire again."
-    output OnGetValue(integer) : "Fired in response to the GetValue input. Used for polling the counter when you don't want constant updates from the OutValue output."
-    output OnChangedFromMin(integer) : "Fired when the counter value changes from the minimum value."
-    output OnChangedFromMax(integer) : "Fired when the counter value changes from the maximum value."
+    output OnGetValue(float) : "Fired in response to the GetValue input. Used for polling the counter when you don't want constant updates from the OutValue output."
+    output OnChangedFromMin(void) : "Fired when the counter value changes from the minimum value."
+    output OnChangedFromMax(void) : "Fired when the counter value changes from the maximum value."
+]
+
+@PointClass base(Targetname, EnableDisable, math_counter) iconsprite("editor/math_counter_advanced.vmt") = math_counter_advanced :
+    "A special version of math_counter with the ability to perform advanced calculations. " +
+    "Otherwise functions identically to math_counter."
+[
+    // Keys
+    PreserveValue(choices) : "Preserve Value?" : 0 : "If set to 'Yes', calculations will fire OutValue with the resulting value, but the actual value stored in this entity will stay the same, allowing future calculations to use a constant value. If you want to change the value, you must use SetValueNoFire to set the counter's value or the PreserveValue input to toggle this feature. This also disables min/max functionality." =
+    [
+        0 : "No"
+        1 : "Yes"
+    ]
+    
+    AlwaysOutputAsInt(choices) : "Always Output As Int" : 0 : "If set to 'Yes', the stored value (and OutValue) will always be rounded to an integer before firing." =
+    [
+        0 : "No"
+        1 : "Yes"
+    ]
+    
+    SetLerpPercent(float) : "Lerp Percent" : "0.5" : "The percentage used by the LerpTo input."
+
+    // Inputs
+    input PreserveValue(bool): "Sets whether this counter's value should be preserved after calculations. 1 = Yes, 0 = No"
+    input AlwaysOutputAsInt(bool): "Sets whether this counter's value should always output as an integer. 1 = Yes, 0 = No"
+    
+    input SetValueToPi(void) : "Sets the counter's value to 3.14159265358979323846 and fires the OutValue output with it."
+    
+    input SquareRoot(void) : "Calculates the square root of the counter's current value. Fires the OutValue output with the result."
+    input Power(integer) : "Raises the power of the counter's current value to this value. Fires the OutValue output with the result."
+    
+    input Round(integer) : "Rounds the counter's current value to the specified number place. For example, rounding 256 to 100 will round it to 300 and rounding 256 to 10 will round it to 260. Use 0 to round decimals to integers. Fires the OutValue output with the result."
+    input Floor(integer) : "Floors, or rounds down, the counter's current value to the specified number place. Fires the OutValue output with the result."
+    input Ceil(integer) : "Ceils, or rounds up, the counter's current value to the specified number place. Fires the OutValue output with the result."
+    input Trunc(integer) : "Truncates, or rounds toward zero, the counter's current value to the specified number place. Fires the OutValue output with the result."
+    
+    input Sin(void) : "Applies sine to the counter's current value. Fires the OutValue output with the result."
+    input Cos(void) : "Applies cosine to the counter's current value. Fires the OutValue output with the result."
+    input Tan(void) : "Applies tangent to the counter's current value. Fires the OutValue output with the result."
+    
+    input RandomInt(string) : "Generates a random integer between the specified bounds. Format = 'lowerbound upperbound', like '22 65'. Fires the OutValue output with the result."
+    input RandomFloat(string) : "Generates a random float between the specified bounds. Format = 'lowerbound upperbound', like '22.5 48.721'. Fires the OutValue output with the result."
+    
+    input LerpTo(float) : "Lerps this counter's value to the specified value based on the lerp percent."
+    input SetLerpPercent(float) : "Sets the lerp percent."
 ]
 
 @PointClass base(Targetname) size(-8 -8 -8, 8 8 8) = logic_lineto : 
@@ -4559,6 +4854,501 @@
     // Inputs
     input Enable(void) : "Enable the entity"
     input Disable(void) : "Enable the entity"
+]
+
+@PointClass base(Targetname) iconsprite("editor/logic_console.vmt") = logic_console :
+    "Sends messages to the console. Not to be confused with point_clientcommand or point_servercommand."
+[
+    // Keys
+    SetDevLvl(integer) : "Developer Level" : 1 : "What level developer messages should appear at."
+    SetMsgColor(color255) : "Message Color" : "210 250 255 255" : "The color of standard messages."
+    SetWarningColor(color255) : "Warning Color" : "255 210 210 255" : "The color of warning messages."
+    
+    SetNewLineNotAuto(choices) : "Don't automatically append \n?" : 0 : "Prevents this logic_console from automatically appending a new line each time it prints." =
+    [
+        0 : "No"
+        1 : "Yes"
+    ]
+    
+    // Inputs
+    input SendMsg(string) : "Sends a message to the console."
+    input SendWarning(string) : "Sends a message to the console in red text."
+    input SendDevMsg(string) : "Sends a message to the console that can only be viewed in developer mode."
+    input SendDevWarning(string) : "Sends a red-colored message to the console that can only be viewed in developer mode."
+    input SetDevLvl(integer) : "Sets the level developer messages should appear at."
+    input SetMsgColor(color255) : "Sets the color of standard messages."
+    input SetWarningColor(color255) : "Sets the color of warning messages."
+    input SetNewLineNotAuto(bool) : "Enables or disables this logic_console's ability to append \n to each message."
+    input NewLine(void) : "Manually sends \n."
+    input DevNewLine(void) : "Manually sends \n in the specified developer level."
+    input ClearConsole(void) : "Clears the console of all output."
+    
+    // No way, you wacko!
+    //input SendError(string) : "Crashes the player's game and gives the parameter as an error message. Please handle with care."
+]
+
+@PointClass base(Targetname) iconsprite("editor/logic_convar.vmt") = logic_convar :
+    "A powerful entity that can read the specified ConVar's value. " +
+    "It functions similarly to a logic_branch, except you could also output the value directly. " +
+    "Due to theoretical abuse, players have the option to disable logic_ConVar usage on a map. " +    
+    "Use the 'OnDenied' output to prevent any issues from players who have disabled logic_ConVar."
+[
+    // Keys
+    SetConVar(string) : "ConVar" : : "The ConVar to read. Can be serverside or clientside(?)"
+    SetTestValue(string) : "Compare value" : : "The value to compare with the ConVar's value during comparisons. You could use <, !=, etc. at the beginning similar to a Response System criterion."
+    
+    // Inputs
+    input SetConVar(string) : "Sets the ConVar whose variable will be retrieved."
+    input SetTestValue(string) : "Sets the value that will be compared with the ConVar variable during comparisons."
+    input GetValue(void) : "Retrieves the ConVar's value, firing OutValue with its value."
+    input Test(void) : "Compares the ConVar's value with the compare value."
+    
+    // Outputs
+    output OnTrue(void) : "Fired when a comparison is true."
+    output OnFalse(void) : "Fired when a comparison is false."
+    output OutValue(string) : "Fired with the GetValue input. Passes the ConVar's current value."
+    output OnDenied(void) : "Fires when the ConVar is requested and logic_convar is not allowed by the server."
+]
+
+@PointClass base(Targetname) iconsprite("editor/logic_format.vmt") = logic_format :
+    "Formats a line of text akin to C# String.Format.\n" +
+    "As curly brackets cannot be used in the help window, please see Mapbase documentation for clear instructions."
+    //"For example, take the following values:\n\n" +
+    //"Input Value: 'A  {0} there and a \{1\} {1} there\n" +
+    //"Parameter 0: 'poot'\n" +
+    //"Parameter 1: 'doot'\n" +
+    //"\n" +
+    //"The 'GetFormattedString' input will create the following text:\n\n" +
+    //"'A poot poot there and a doot doot there'\n\n" +
+    //"This will be sent out via the OutFormattedValue output."
+[
+    // Keys
+    SetInputValue(string) : "Input Value" : : "The input value. Should contain {0}, {1}, etc, which will be replaced by the parameters and then output as OutFormattedValue."
+    SetParameter0(string) : "Parameter 0" : : "Will replace all instances of {0} in the input value."
+    SetParameter1(string) : "Parameter 1" : : "Will replace all instances of {1} in the input value."
+    SetParameter2(string) : "Parameter 2" : : "Will replace all instances of {2} in the input value."
+    SetParameter3(string) : "Parameter 3" : : "Will replace all instances of {3} in the input value."
+    SetParameter4(string) : "Parameter 4" : : "Will replace all instances of {4} in the input value."
+    SetParameter5(string) : "Parameter 5" : : "Will replace all instances of {5} in the input value."
+    SetParameter6(string) : "Parameter 6" : : "Will replace all instances of {6} in the input value."
+    SetParameter7(string) : "Parameter 7" : : "Will replace all instances of {7} in the input value."
+    SetBackupParameter(string) : "Backup Parameter" : : "If an invalid parameter is used (e.g. null parameter or asks for a parameter beyond {7}), then this will be used instead. Otherwise just uses '<null>'."
+    
+    // Inputs
+    input GetFormattedValue(void) : "Fires OutFormattedValue, which passes the formatted input value."
+    input SetInputValue(string) : "Sets the input value. Should contain {0}, {1}, etc. enclosed by curly brackets, which will be replaced by the parameters and then output as OutFormattedValue."
+    input SetParameter0(string) : "Sets the text that will replace all instances of {0}."
+    input SetParameter1(string) : "Sets the text that will replace all instances of {1}."
+    input SetParameter2(string) : "Sets the text that will replace all instances of {2}."
+    input SetParameter3(string) : "Sets the text that will replace all instances of {3}."
+    input SetParameter4(string) : "Sets the text that will replace all instances of {4}."
+    input SetParameter5(string) : "Sets the text that will replace all instances of {5}."
+    input SetParameter6(string) : "Sets the text that will replace all instances of {6}."
+    input SetParameter7(string) : "Sets the text that will replace all instances of {7}."
+    input SetBackupParameter(string) : "Sets the text that will replace all invalid parameters."
+    
+    // Outputs
+    output OutFormattedValue(string) : "Fired when the formatted value is requested. Outputs the formatted value."
+]
+
+@PointClass base(Targetname) iconsprite("editor/logic_keyfield.vmt") = logic_keyfield :
+    "A logic entity that could read an entity's keyfields. " +
+    "Use the target and key name options if you want to store a specific target and/or keyvalue. " +
+    "Use the 'Test' input to look for the key within the target's datadesc. " +
+    "The 'OutValue' output will fire with the keyfield's value if it is found." +
+    "\n\nPlease note that some keyvalues do not work with this entity. (most do though, so don't worry about it)"
+[
+    // Keys
+    target(target_destination) : "Target Entity" : : "The entity with the key to measure."
+    keyname(string) : "Key Name" : : "The name of the key to measure."
+    
+    // Inputs
+    input Test(void) : "Gets the stored key's value from stored target."
+    input TestKey(string) : "Tests the specified key against the target instead of using the stored key. Does not change the stored key."
+    input TestTarget(target_destination) : "Tests the specified target against the key instead of using the stored target. Does not change the stored target."
+    input SetKey(string) : "Sets the key to measure."
+    input SetValue(string) : "Sets the stored target's stored key value to the specified string."
+    input SetTarget(target_destination) : "Sets the target entity."
+    
+    // Outputs
+    output OutValue(string) : "Fires when a keyfield is found. Passes its value."
+    output OnFailed(void) : "Fires when this entity fails to find the specified keyfield."
+]
+
+@PointClass base(Targetname) iconsprite("editor/logic_datadesc_accessor.vmt") = logic_datadesc_accessor :
+    "A logic entity that could read or write any field in an entity's data description, keyvalue or not, based on its internal name. It otherwise functions identically to logic_keyfield.\n\n" +
+    "You'd better know what you're doing."
+[
+    // Keys
+    target(target_destination) : "Target Entity" : : "The entity whose data description will be measured."
+    keyname(string) : "Element Name" : : "The internal name (e.g. m_iName) of the field to measure. Use the ''ent_info_datatable'' command followed by an entity's class name to see all of their fields."
+    
+    // Inputs
+    input Test(void) : "Gets the stored field's value from stored target."
+    input TestKey(string) : "Tests the specified field against the target instead of using the stored field. Does not change the stored field."
+    input TestTarget(target_destination) : "Tests the specified target against the field instead of using the stored target. Does not change the stored target."
+    input SetKey(string) : "Sets the field to measure."
+    input SetValue(string) : "Sets the stored target's stored field to the specified string."
+    input SetTarget(target_destination) : "Sets the target entity."
+    
+    // Outputs
+    output OutValue(string) : "Fires when a field is found. Passes its value."
+    output OnFailed(void) : "Fires when this entity fails to find the specified field."
+]
+
+@PointClass base(Targetname) iconsprite("editor/math_clamp.vmt") = math_clamp :
+    "Clamps a value between two values. Supports integers, floats, and vectors."
+[
+    // Keys
+    SetMax(string) : "Max" : : "The maximum value. Can be an integer, a float, or a vector."
+    SetMin(string) : "Min" : : "The minimum value. Can be an integer, a float, or a vector."
+    
+    // Inputs
+    input ClampValue(string) : "Clamps the specified value. Can be an integer, a float, or a vector."
+    input SetMax(string) : "Sets the max value. Can be an integer, a float, or a vector."
+    input SetMin(string) : "Sets the max value. Can be an integer, a float, or a vector."
+    
+    // Outputs
+    output OutValue(string) : "Outputs the clamped value."
+    output OnBeforeMin(string) : "Fires when a clamped value was before the minimum value. Outputs the clamped value."
+    output OnBeyondMax(string) : "Fires when a clamped value was beyond the maximum value. Outputs the clamped value."
+]
+
+@PointClass base(Targetname, EnableDisable) iconsprite("editor/math_bits.vmt") = math_bits :
+    "A math_counter variant that specializes in bitwise operations."
+[
+    // Keys
+    startvalue(integer) : "Initial Value" : 0 : "The bits this entity should start with."
+
+    // Inputs
+    input Add(integer) : "Adds bit(s) to this entity's value and fires the OutValue output with the result."
+    input Subtract(integer): "Subtracts bit(s) to this entity's value and fires the OutValue output with the result."
+    input ShiftLeft(integer): "Shifts this entity's value to the left by the specified number and fires the OutValue output with the result."
+    input ShiftRight(integer): "Shifts this entity's value to the right by the specified number and fires the OutValue output with the result."
+    input SetValue(integer): "Changes this entity's value and fires the OutValue output with the result."
+    input SetValueNoFire(integer): "Changes this entity's value without firing any outputs."
+    input GetValue(void): "Causes this entity to fire its OnGetValue output with its current bits. Used for polling the current bits when you don't want constant updates from the OutValue output."
+    input ContainsBits(integer): "Tests whether this entity's current value contains at least one of the specified bit(s)."
+    input ContainsAllBits(integer): "Tests whether this entity's current value contains all of the specified bit(s)."
+
+    // Outputs
+    output OutValue(integer) : "Fired when the value changes."
+    output OnGetValue(integer) : "Fired in response to the GetValue input. Used for polling the current bits when you don't want constant updates from the OutValue output."
+    output OnTrue(void) : "Fired by ContainsBits when the current value contains the specified bit." 
+    output OnFalse(void) : "Fired by ContainsBits when the current value does not contain the specified bit." 
+]
+
+@PointClass base(Targetname, EnableDisable) iconsprite("editor/math_vector.vmt") = math_vector :
+    "A math_counter variant that specializes in vector operations."
+[
+    // Keys
+    startvalue(vector) : "Initial Value" : "0 0 0" : "The vector this entity should start with."
+    
+    spawnflags(flags) =
+    [
+        1 : "Disable X" : 0
+        2 : "Disable Y" : 0
+        4 : "Disable Z" : 0
+    ]
+
+    // Inputs
+    input Add(vector) : "Adds a vector to this entity's current value and fires the OutValue output with the result."
+    input Divide(vector): "Divides a vector from this entity's current value and fire the OutValue output with the result."
+    input Multiply(vector): "Multiplies a vector from this entity's current value and fires the OutValue output with the result."
+    input SetValue(vector): "Sets this entity's current vector to a new value and fires the OutValue output with the result."
+    input SetValueNoFire(vector): "Sets this entity's current vector to a new value without firing any outputs."
+    input Subtract(vector): "Subtracts a vector from this entity's current value and fires the OutValue output with the result."
+    input GetValue(void): "Causes this entity to fire its OnGetValue output with its current vector. Used for polling the counter when you don't want constant updates from the OutValue output."
+    
+    input PointAtLocation(vector): "Creates an angle pointing from the entity's current vector to the specified point and fires the OutValue output with the result."
+    input PointAtEntity(target_destination): "Creates an angle pointing from the entity's current vector to the specified entity and fires the OutValue output with the result."
+    
+    input Normalize(void): "Normalizes this entity's vector and fires the OutValue output with the result."
+    input NormalizeAngles(void): "Normalizes this entity's vector as angles and fires the OutValue output with the result."
+    input VectorAngles(void): "Converts this entity's vector to an angle, assuming the current vector is a direction vector. Fires the OutValue output with the result."
+    input AngleVectorForward(void): "Converts this entity's vector angles to a vector in the forward direction. Fires the OutValue output with the result."
+    input AngleVectorRight(void): "Converts this entity's vector angles to a vector in the right direction. Fires the OutValue output with the result."
+    input AngleVectorUp(void): "Converts this entity's vector angles to a vector in the up direction. Fires the OutValue output with the result."
+    
+    input SetX(float) : "Sets this entity's X coordinate."
+    input SetY(float) : "Sets this entity's Y coordinate."
+    input SetZ(float) : "Sets this entity's Z coordinate."
+    input GetX(void) : "Gets this entity's X coordinate."
+    input GetY(void) : "Gets this entity's Y coordinate."
+    input GetZ(void) : "Gets this entity's Z coordinate."
+    input AddX(float) : "Adds to this entity's X coordinate."
+    input AddY(float) : "Adds to this entity's Y coordinate."
+    input AddZ(float) : "Adds to this entity's Z coordinate."
+    input SubtractX(float) : "Subtracts from this entity's X coordinate."
+    input SubtractY(float) : "Subtracts from this entity's Y coordinate."
+    input SubtractZ(float) : "Subtracts from this entity's Z coordinate."
+
+    // Outputs
+    output OutValue(vector) : "Fired when the value changes."
+    output OutX(float) : "Fired when the value changes, passing the resulting X coordinate."
+    output OutY(float) : "Fired when the value changes, passing the resulting Y coordinate."
+    output OutZ(float) : "Fired when the value changes, passing the resulting Z coordinate."
+    
+    output OnGetValue(vector) : "Fired in response to the GetValue input. Used for polling this entity's current value when you don't want constant updates from the OutValue output."
+    output OnGetX(float) : "Fired in response to the GetX input."
+    output OnGetY(float) : "Fired in response to the GetY input."
+    output OnGetZ(float) : "Fired in response to the GetZ input."
+]
+
+@PointClass base(Targetname, EnableDisable) iconsprite("editor/math_mod.vmt") = math_mod :
+    "A lightweight entity that performs simple calculations on the fly without needing a complicated I/O chain. "+
+    "This is useful for values that are outputted on a per-frame basis and might not work with a math_counter chain."
+[
+    // Keys
+    startvalue(string) : "Mod Value" : "0" : "The value that is applied to input values."
+    
+    SetOperator(choices) : "Operator" : 43 : "What calculation to perform with the mod value. (input value _ mod value)" = 
+    [
+        43 : "Addition"
+        45 : "Subtraction"
+        42 : "Multiplication"
+        47 : "Division"
+    ]
+
+    // Inputs
+    input SetMod(string) : "Sets the mod value."
+    input ModInt(integer) : "Applies modification to the specified integer."
+    input ModFloat(float) : "Applies modification to the specified float."
+    input ModVector(vector) : "Applies modification to the specified vector."
+    input SetOperator(string): "Sets the operator. Use +, -, *, or / to choose addition, subtraction, multiplication, or division respectively."
+
+    // Outputs
+    output OutInt(integer) : "Outputs the modified integer."
+    output OutFloat(float) : "Outputs the modified float."
+    output OutVector(vector) : "Outputs the modified vector."
+]
+
+@PointClass base(Targetname, EnableDisable) size(-8 -8 -8, 8 8 8) = logic_modelinfo :
+    "Gets and outputs some model information from an entity."
+[
+    target(target_destination) : "Target" : "" : "The entity whose model will be evaluated."
+    PoseParameterName(string) : "Pose Parameter Name" : "" : "(Optional) The pose parameter to use for pose parameter-related I/O."
+
+    // Inputs
+    input SetTarget(target_destination) : "Sets this entity's target."
+    input GetNumSkins(void) : "Gets the number of skins on the target entity."
+    input LookupSequence(string) : "Looks up the specified sequence on the target entity."
+    input LookupActivity(string) : "Looks up the specified activity on the target entity. Uses the sequence outputs and outputs the first sequence with the given activity."
+    
+    input SetPoseParameterName(string) : "Sets the pose parameter to target."
+    input SetPoseParameterValue(float) : "Sets the target pose parameter's current value."
+    input GetPoseParameter(void) : "Gets the current value of the target pose parameter and fires OutPoseParameterValue with it."
+
+    // Outputs
+    output OutNumSkins(integer) : "Outputs number of skins."
+    output OnHasSequence(integer) : "Fires when the target has the sequence requested. Outputs the sequence's index."
+    output OnLacksSequence(void) : "Fires when the target does not have the sequence requested."
+    
+    output OutPoseParameterValue(float) : "Fires when the pose parameter value is requested, outputting its current value."
+]
+
+@PointClass base(Targetname, EnableDisable) size(-8 -8 -8, 8 8 8) = game_globalvars :
+    "Outputs a few global variables when requested."
+[
+    // Inputs
+    input GetCurtime(void) : "Gets curtime."
+    input GetFrameCount(void) : "Gets frame count."
+    input GetFrametime(void) : "Gets frame time."
+    input GetTickCount(void) : "Gets tick count."
+    input GetIntervalPerTick(void) : "Gets interval per tick."
+
+    // Outputs
+    output OutCurtime(float) : "Outputs curtime."
+    output OutFrameCount(integer) : "Outputs frame count."
+    output OutFrametime(float) : "Outputs frame time."
+    output OutTickCount(integer) : "Outputs tick count."
+    output OutIntervalPerTick(integer) : "Outputs interval per tick."
+]
+
+@PointClass base(Targetname) iconsprite("editor/logic_entity_position.vmt") = logic_entity_position :
+    "Outputs an entity's position. Prediction operations can be performed as well."
+[
+    target(target_destination) : "Target" : "" : "Who's position should be measured? Use the SetTarget input to change mid-game."
+    PositionType(choices) : "Position Type" : 0 : "What position should be measured." =
+    [
+        0 : "Origin (default)"
+        1 : "Local Origin"
+        2 : "Worldspace Center"
+        3 : "Eyes"
+        4 : "Ears"
+        5 : "Attachment (use parameter keyvalue)"
+    ]
+    PositionParameter(string) : "Position Type Parameter" : "" : "If using an attachment's position, enter the name of the attachment here."
+
+    // Inputs
+    input GetPosition(void) : "Gets the target's position."
+    input SetPosition(vector) : "Sets the target's position. Using the default 'Origin' will set absolute origin while using 'Local Origin' will set local origin."
+    input PredictPosition(float) : "Predicts what position the target will be at in the specified number of seconds."
+
+    // Outputs
+    output OutPosition(vector) : "Outputs the position."
+    output OutAngles(vector) : "Outputs the angles."
+]
+
+@PointClass base(Targetname) iconsprite("editor/logic_context_accessor.vmt") = logic_context_accessor :
+    "A logic entity that could read an entity's response contexts. " +
+    "Use the target and context name keyvalues if you want to store a specific target and/or context. " +
+    "Use the 'Test' input to look for the context on the target. " +
+    "The 'OutValue' output will fire with the context's value if it is found."
+[
+    // Keys
+    target(target_destination) : "Target Entity" : : "The entity with the context to measure."
+    context(string) : "Context Name" : : "The name of the context to measure."
+    
+    // Inputs
+    input Test(void) : "Gets the stored context's value from stored target."
+    input TestContext(string) : "Tests the specified context against the target instead of using the stored context. Does not change the stored context."
+    input TestTarget(target_destination) : "Tests the specified target against the context instead of using the stored target. Does not change the stored target."
+    input SetContext(string) : "Sets the context to measure."
+    input SetValue(string) : "Sets the stored target's stored context value to the specified string."
+    input SetTarget(target_destination) : "Sets the target entity."
+    
+    // Outputs
+    output OutValue(string) : "Fires when a context is found. Passes its value."
+    output OnFailed(void) : "Fires when this entity fails to find the specified context."
+]
+
+@PointClass base(Targetname, EnableDisable) iconsprite("editor/math_lightpattern.vmt") = math_lightpattern :
+    "A logic entity that attempts to replicate light patterns that can be used on named lights.\n\n" +
+    "WARNING: This is currently out of sync with default light patterns. TODO: Fix that!"
+[
+    // Keys
+    style(Choices) : "Appearance" : "" : "Which preset pattern to use." =
+    [
+        "" : "None"
+        0 : "Normal"
+        10: "Fluorescent flicker"
+        2 : "Slow, strong pulse"
+        11: "Slow pulse, noblack"
+        5 : "Gentle pulse"
+        1 : "Flicker A"
+        6 : "Flicker B"
+        3 : "Candle A"
+        7 : "Candle B"
+        8 : "Candle C"
+        4 : "Fast strobe"
+        9 : "Slow strobe"
+    ]
+    
+    pattern(string) : "Custom Appearance" : : "A custom pattern to use. a = fully dark, z = fully bright. This should always contain lowercase letters for light patterns. Uppercase letters or other types of characters won't work with actual light patterns. (although they shouldn't break the whole entity either)"
+    
+    PatternSpeed(float) : "Pattern Speed" : "0.1" : "The speed of the pattern."
+    
+    // Inputs
+    input SetStyle(integer) : "Sets the pattern from the style presets."
+    input SetPattern(string) : "Sets the pattern directly."
+    input Enable(void) : "Enables this entity."
+    input Disable(void) : "Disables this entity."
+    input Toggle(void) : "Toggles this entity."
+    
+    // Outputs
+    output OutValue(float) : "Outputs with a brightness equivalent to the current letter."
+    output OutLetter(string) : "Outputs with the current letter itself."
+    output OnLightOn(void) : "Fires when the current letter is equivalnt to 'on' (greater than a)."
+    output OnLightOff(void) : "Fires when the current letter is equivalent to 'off' (equal to a)."
+]
+
+@PointClass base(Targetname) iconsprite("editor/logic_sequence.vmt") = logic_sequence :
+    "Coordinates a sequence out of up to 16 preset values. If the input value matches " +
+    "the sequence's current case value, an output is fired and (by default) the sequence increments to the next case.\n\n" +
+    "This is intended for things like passwords in keypads, which usually demand a specific combination of numbers."
+[
+    InitialCase(integer) : "Initial Case" : 1 : "Which case to start on, meaning inputs will initially compare with this case. Uses the case's index. (e.g. 4 for Case 04)"
+    
+    StartDisabled(choices) : "Start Disabled" : 0 : "If this entity is disabled, it will not accept any case tests. It will still accept other inputs, like SetSequenceIndex." =
+    [
+        0 : "No"
+        1 : "Yes"
+    ]
+
+    Case01(string) : "Case 01"
+    Case02(string) : "Case 02"
+    Case03(string) : "Case 03"
+    Case04(string) : "Case 04"
+    Case05(string) : "Case 05"
+    Case06(string) : "Case 06"
+    Case07(string) : "Case 07"
+    Case08(string) : "Case 08"
+    Case09(string) : "Case 09"
+    Case10(string) : "Case 10"
+    Case11(string) : "Case 11"
+    Case12(string) : "Case 12"
+    Case13(string) : "Case 13"
+    Case14(string) : "Case 14"
+    Case15(string) : "Case 15"
+    Case16(string) : "Case 16"
+    
+    DontIncrementOnPass(choices) : "Suppress auto increment" : 0 : "Prevents automatically incrementing the sequence each time a case passes." =
+    [
+        0 : "No"
+        1 : "Yes"
+    ]
+
+    // Inputs
+    input Enable(void) : "Enables this entity."
+    input Disable(void) : "Disables this entity."
+    input Toggle(void) : "Toggles whether this entity is disabled."
+    input InValue(string) : "Tests the input value against the current case."
+    input SetCurrentCase(integer) : "Sets the sequence's current case. This will fire OutCurCase."
+    input SetCurrentCaseNoFire(integer) : "Sets the sequence's current case without firing OutCurCase."
+    input IncrementSequence(integer) : "Increments the current case by the specified number. (1 if blank)"
+    input ResetSequence(void) : "Resets the sequence to Case 01."
+    
+    // Outputs
+    output OutCurCase(integer) : "Fires each time the sequence's current case value changes, e.g. when it's incremented by a passing case."
+    output OnCasePass(string) : "Fires when a case is matched, passing the input value."
+    output OnCaseFail(string) : "Fires when a case fails, passing the input value."
+    output OnSequenceComplete(string) : "Fires when the last case is matched and sequence is complete."
+]
+
+@PointClass base(Targetname) iconsprite("editor/math_generate.vmt") = math_generate :
+    "Continuously generates numbers using various generation modes based on material proxies."
+[
+    // Keys
+    StartDisabled(choices) : "Start Disabled" : 1 =
+    [
+        0 : "No"
+        1 : "Yes"
+    ]
+    
+    GenerateType(choices) : "Generation Type" : 1 =
+    [
+        0 : "Sine Wave (param 1 = time offset, param 2 = sine period)"
+        1 : "Linear Ramp (param 1 = rate)"
+        2 : "Uniform Noise"
+        3 : "Gaussian Noise (param 1 = mean, param 2 = half width)"
+        4 : "Exponential (param 1 = scale, param 2 = offset)"
+    ]
+    
+    InitialValue(float) : "Initial Value" : 0 : "Starting value for the math_generate."
+    SetHitMin(float) : "Minimum Legal Value" : 0 : "Minimum legal value for generation."
+    SetHitMax(float) : "Maximum Legal Value" : 1 : "Maximum legal value for generation."
+    
+    SetParam1(float) : "Parameter 1" : 0 : "Multi-purpose parameter #1 for the generation algorithms to use for their own needs."
+    SetParam2(float) : "Parameter 2" : 0 : "Multi-purpose parameter #2 for the generation algorithms to use for their own needs."
+    
+    // Inputs
+    input SetValue(float): "Sets the math_generate to a new value and fires the OutValue output with the result, performing all generation from that value."
+    input SetValueNoFire(float): "Sets the math_generate to a new value without firing any outputs."
+    input GetValue(void): "Causes the math_generate to fire its OnGetValue output with the current value. Used for polling the value when you don't want constant updates from the OutValue output."
+    input SetGenerateType(integer) : "Sets the type of generation this math_generate should perform."
+    
+    input Enable(void) : "Enables this entity."
+    input Disable(void) : "Disables this entity."
+    input Toggle(void) : "Toggles whether this entity is disabled."
+    
+    // Outputs
+    output OutValue(string) : "Fires each tick while generation is active, passing the value continuously generated by the math_generate."
+    output OnHitMin(void) : "Fired when generation meets the min value. Generation must go back above the min value before the output will fire again."
+    output OnHitMax(void) : "Fired when generation meets the max value. Generation must go below the max value before the output will fire again."
+    output OnGetValue(float) : "Fired in response to the GetValue input. Used for polling the value when you don't want constant updates from the OutValue output."
+    output OnChangedFromMin(void) : "Fired when the current generation value changes from the minimum value."
+    output OnChangedFromMax(void) : "Fired when the current generation value changes from the maximum value."
 ]
 
 @PointClass base(Targetname) size(-8 -8 -8, 8 8 8) = point_template : 
@@ -4649,9 +5439,17 @@
         0 : "Allow entities that match criteria"
         1 : "Disallow entities that match criteria"
     ]
+	
+    PassCallerWhenTested(choices) : "Pass caller when tested" : 0 : "When tested with TestActivator or TestEntity, this causes the OnPass and OnFail outputs to use either this filter as the caller or the entity that called the test as the caller." =
+    [
+        0 : "No"
+        1 : "Yes"
+    ]
 
     // Inputs
     input TestActivator(void) : "Test the activator against the filter and fires OnPass or OnFail output."
+    input TestEntity(target_destination) : "Tests the target entity against the specified entity and fires the OnPass or OnFail output."
+    input SetField(string) : "Sets this filter's primary test criteria. (e.g. the name to test against the activator)"
 
     // Outputs
     output OnPass(void) : "Fired in response to TestActivator input if the activator passes the filter."
@@ -4691,27 +5489,42 @@
         "all entities EXCEPT those whose name matches the string will pass the filter."
 ]
 
-@FilterClass base(BaseFilter) iconsprite("editor/filter_name.vmt") = filter_activator_model :
+@FilterClass base(BaseFilter) iconsprite("editor/filter_model.vmt") = filter_activator_model :
     "A filter that filters by the model of the activator."
 [
-    model(studio) : "Filter Model" : : "The model to filter by. If the filter mode is Allow, only entities whose "+
+    filtermodel(studio) : "Filter Model" : : "The model to filter by. If the filter mode is Allow, only entities whose "+
         "model matches the given string will pass the filter. If the filter mode is Disallow, "+
-        "all entities EXCEPT those whose model matches the string will pass the filter."
+        "all entities EXCEPT those whose model matches the given string will pass the filter."
+        
+    skin(string) : "Skin" : -1 : "Some models have multiple versions of their textures, called skins. Use this if you want to filter by skins as well. If you want any skin to be allowed, be sure to leave this at -1! It might automatically change when you choose a model."
 ]
 
-@FilterClass base(BaseFilter) iconsprite("editor/filter_name.vmt") = filter_activator_context :
+@FilterClass base(BaseFilter) iconsprite("editor/filter_context.vmt") = filter_activator_context :
     "A filter that filters by a context and value on the activator."
 [
-    CompareType(choices) : "Compare Type" : 0 : "The comparison criteria" =
+    ResponseContext(string) : "Filter Context" : : "The context(s) to filter by. Syntax is 'key:value,key:value'. "+
+        "Values in this field can use wilcards. For example, if this filter contains 'lastname:*', it will pass any entity with the context 'lastname', regardless of its value. "+
+        "Wildcards do not apply to context names and you cannot define the same context multiple times, but inputs like AddContext or RemoveContext can be used to add to the filter context."
+        
+    any(choices) : "Pass if entity has any of these contexts" : 0 : "Should this filter only pass if the entity contains all of these contexts or can it pass if the entity has at least one of them?" =
     [
-        0 : "Greater than"
-        1 : "Equal"
-        2 : "Less than"
+        0 : "No"
+        1 : "Yes"
     ]
-    FilterContext(string) : "Filter Context" : : "The context to filter by. If the filter mode is Allow, only entities that "+
-        "have a context matching the given string, of a value that passes the criteria, will pass the filter. If the filter mode is Disallow, "+
-        "all entities EXCEPT those whose context passes the criteria will pass the filter."
-    FilterValue(integer) : "Filter Value" : 0 : "The context value to compare with."
+        
+    // Inputs
+    input AddContext(string) : "Adds a context to this fitler's list of response contexts. The format should be 'key:value'."
+    input RemoveContext(string) : "Remove a context from this filter's list of response contexts. The name should match the 'key' of a previously added context."
+    input ClearContext(void) : "Removes all contexts in this filter's list of response contexts."
+]
+
+@FilterClass base(BaseFilter) iconsprite("editor/filter_keyfield.vmt") = filter_activator_keyfield :
+    "A filter that filters by the activator's keyfields."
+[
+    keyname(string) : "Key" : : "The key name to filter by. Please note that certain keyvalues, particularly "+
+        "targetnames and base values related to clientside rendering (e.g. render mode), cannot be found by this filter."
+        
+    value(string) : "Value (Optional)" : : "The key value to filter by. If empty, the filter will pass if the entity just has the keyfield."
 ]
 
 @FilterClass base(BaseFilter) iconsprite("editor/filter_class.vmt") = filter_activator_class :
@@ -4722,7 +5535,7 @@
         "all entities EXCEPT those whose class name matches the given string will pass the filter."
 ]
 
-@FilterClass base(BaseFilter) iconsprite("editor/filter_class.vmt") = filter_activator_mass_greater :
+@FilterClass base(BaseFilter) iconsprite("editor/filter_generic.vmt") = filter_activator_mass_greater :
     "A filter that filters by the mass of the activator."
 [
     filtermass(float) : "Filter Mass" : : "The mass to filter by. If the filter mode is Allow, only entities whose "+
@@ -4778,6 +5591,31 @@
     spawnflags(Flags) =
     [
         1 : "Do not lose target if already aquired but filter failed." : 0
+    ]
+]
+
+@FilterClass base(BaseFilter) iconsprite("editor/filter_involume.vmt") = filter_activator_involume :
+    "A filter that tests whether the activator is within a volume."
+[
+    target(target_destination) : "Volume" : : "The volume to be tested with. This filter passes if the activator is within this volume. Intended to be a brush entity. (e.g. a trigger)"
+    
+    tester(target_destination) : "Volume Tester" : "!activator" : "Who should be in the volume for the filter to pass?"
+]
+
+@FilterClass base(BaseFilter) iconsprite("editor/filter_generic.vmt") = filter_activator_surfacedata :
+    "A filter that tests the activator's surface data."
+[
+    filtersurfaceprop(choices) : "Surface" : : "The surface to test with." =
+    [
+        "metal" : "Metal"
+        "metalgrate" : "Metal Grate"
+        "metalvent" : "Metal Vent"
+    ]
+    
+    SurfaceType(choices) : "Type" : 1 : "What to actually filter by."  =
+    [
+        0 : "Surface Prop"
+        1 : "Game Material"
     ]
 ]
 
@@ -6326,19 +7164,6 @@
                         "so it will be 0 when the entity is on the point, and 1 when the entity is at the edge of the radius."
 ]
 
-@SolidClass base(Trigger) = trigger_teleport : 
-    "A trigger volume that teleports entities that touch it. Entities are teleported to the Remote Destination, and have their angles "+
-    "set to that of the Remote Destination's. If a Local Destination Landmark is specified, teleported entities are offset from the target "+
-    "by their initial offset from the landmark, and their angles are left alone."
-[
-    target(target_destination) : "Remote Destination" : : "The entity specifying the point to which entities should be teleported."
-    landmark(target_destination) : "Local Destination Landmark" : : "If specified, then teleported entities are offset from the target by their initial offset from the landmark."
-    spawnflags(flags) =
-    [
-        32: "Preserve angles even when a local landmark is not specified" : 0
-    ]
-]
-
 @SolidClass base(Trigger) = trigger_teleport_relative : 
     "A trigger volume that teleports entities that touch it. Entities are teleported by Offset from their current position. Useful to get " +
     "objects out of situations where levels or entities suddenly appear interseting with them."
@@ -6398,6 +7223,83 @@
     input SetCheapWaterEndDistance(float) : "Set the distance that water finishes transitioning to cheap water."
 ]
 
+//-------------------------------------------------------------------------
+//
+// Camera/monitor entities
+//
+//-------------------------------------------------------------------------
+@PointClass base(Targetname, Parentname, Angles) studioprop("models/editor/camera.mdl") frustum(FOV,fogstart,fogend,250 250 250,-1) = point_camera : "Camera"
+[
+	// MAPBASE: sphere(fogstart) sphere(fogend) is distracting, especially with the frustum.
+	// Instead of using spheres, we just stuck it into the frustum peroperties.
+
+	spawnflags(Flags) =
+	[
+		1 : "Start Off" : 0
+	]
+
+	FOV(float) : "FOV" : 90 : "Field of view in degrees"
+//	resolution(float) : "resolution" : 256 : "width/height of the render target for the camera"
+	UseScreenAspectRatio(choices) : "Screen Aspect Ratio" : 0 =
+	[
+		0 : "No"
+		1 : "Yes"
+	]	
+	fogEnable(choices) : "Fog Enable" : 0 =
+	[
+		0 : "No"
+		1 : "Yes"
+	]	
+	fogColor(color255) : "Fog Color" : "0 0 0"
+	fogStart(float) : "Fog Start" : 2048 : "The near fog plane."
+	fogEnd(float) : "Fog End" : 4096 : "The far fog/clipping plane."
+	fogMaxDensity(float) : "Fog Max Density [0..1]" : 1 : "The maximum fog density. 0=no fog, 1=full fog."
+	
+	SkyMode(choices) : "Sky Mode" : 2 : "How to draw the sky through this point_camera." =
+	[
+		2 : "Draw sky texture"
+		1 : "Draw 3D skybox"
+	]
+
+	// Inputs
+	input ChangeFOV(string) : "Changes camera's FOV over time"
+	input SetOnAndTurnOthersOff(void) : "Turn the camera on, and turn all other cameras off."
+	input SetOn(void) : "Turn the camera on."
+	input SetOff(void) : "Turn the camera off."
+	input SetSkyMode(void) : "Sets the sky mode. NOTE: 2 = draw sky texture, 1 = draw 3D skybox!"
+]
+
+@PointClass base(point_camera) studioprop("models/editor/camera.mdl") = point_camera_ortho : "Orthographic Camera"
+[
+	Ortho0(float) : "Ortho Top" : 100 : "The ortho's top dimension. Will be FOV if 0."
+	Ortho1(float) : "Ortho Bottom" : 0 : "The ortho's bottom dimension. Will be a negative version of the top if 0."
+	Ortho2(float) : "Ortho Left" : 0 : "The ortho's left dimension. Will be the top if 0."
+	Ortho3(float) : "Ortho Right" : 0 : "The ortho's right dimension. Will be a negative version of the left if 0."
+	IsOrtho(choices) : "Ortho Enabled" : 1 : "Sets whether this camera is orthographic. This is for when you want to toggle ortho mode via input." =
+	[
+		0 : "No"
+		1 : "Yes"
+	]
+
+	// Inputs
+	input SetOrthoEnabled(bool) : "Changes camera's FOV over time"
+	input SetOrthoTop(string) : "Changes the top ortho over time"
+	input SetOrthoBottom(string) : "Changes the bottom ortho over time"
+	input SetOrthoLeft(string) : "Changes the left ortho over time"
+	input SetOrthoRight(string) : "Changes the right ortho over time"
+]
+
+@SolidClass base(func_brush) = func_monitor :
+	"A monitor that renders the view from a given point_camera entity."
+[
+	target(target_destination) : "Camera name"
+	
+	// Inputs
+	input Toggle(void) : "Toggle - If on, turn off, if off, turn on."
+	input Enable(void) : "Enable."
+	input Disable(void) : "Disable."
+	input SetCamera(target_destination) : "Sets the camera to use for this monitor. Takes the name of a point_camera entity in the map."
+]
 
 //-------------------------------------------------------------------------
 // Used to allow entities to use point_cameras for their materials
@@ -6430,23 +7332,134 @@
     MeasureReference(target_destination) : "Measure Reference" : "" : "The movement of Entity to Measure will be measured relative to this entity."
     Target(target_destination) : "Entity to Move" : "" : "This entity will be moved to mimic the motions of Entity to Measure."
     TargetReference(target_destination) : "Movement Reference" : "" : "The Entity to Move will move relative to this entity."
-    TargetScale(float) : "Movement scale" : "1" : "A scale to divide the measured movements by, before applying those movements to the Entity to Move. 1 = target entity moves as much as the measured entity, 2 = target entity moves half as far as the measured entity, and 0.5 = target entity moves twice as far as the measured entity."
+    TargetScale(float) : "Movement scale" : "1" : "A scale to *divide* the measured movements by before applying those movements to the Entity to Move. 1 = target entity moves as much as the measured entity, 2 = target entity moves half as far as the measured entity, and 0.5 = target entity moves twice as far as the measured entity."
+    ShouldOutputPosition(choices) : "Fire position outputs" : 0 : "Allows OutPosition and OutAngles to be fired with the resulting position while this entity is active. Does not apply to the GetPosition input." =
+    [
+        0 : "No"
+        1 : "Yes"
+    ]
     MeasureType(choices) : "Measurement Type" : 0 =
     [
         0 : "Position"
         1 : "Eye position"
+        2 : "Attachment point"
+        //3 : "Aim position"
+    ]
+    
+    spawnflags(Flags) = 
+    [
+        1 : "Ignore X" : 0
+        2 : "Ignore Y" : 0
+        4 : "Ignore Z" : 0
+        8 : "Use 'Ignore' flags for origin instead of angles" : 0
+        16 : "Use new teleportation rules (smoother movement)" : 1
+        32 : "Don't change target's angles" : 0
+    ]
+    
+    MeasureAttachment(string) : "Measurement Attachment" : "" : "Only useful for the ''Attachment point'' measurement type. This attachment should be on the Entity to Measure and measurements will correspond to its position and angles."
+    
+    // Inputs
+    input SetMeasureTarget(target_destination) : "Set the Entity to Measure, whose movement should be measured."
+    input SetMeasureReference(target_destination) : "Set the Measure Reference entity."
+    input SetTarget(target_destination) : "Set the Entity to Move, which will be moved to mimic the measured entity."
+    input SetTargetReference(target_destination) : "Set the Movement Reference entity."
+    input SetTargetScale(float) : "Set the scale to divide the measured movements by."
+    input SetMeasureType(integer) : "Sets the measurement type."
+    input SetMeasureAttachment(string) : "Sets the measurement attachment."
+    input ShouldOutputPosition(bool) : "Sets whether we are allowed to fire position outputs while this entity is active."
+    input GetPosition(void) : "Initiates a single measurement with the current settings, only firing OutPosition and OutAngles without moving anything. (it doesn't need a target to be available)\n"+
+                                "This input ignores the 'Fire position outputs' keyvalue and instead repurposes it to modify who the outputs' activator should be.\n"+
+                                "If 'Fire position outputs' is enabled, the target will be used as the activator if it is available.\n"+
+                                "If 'Fire position outputs' is disabled, the activator that fired GetPosition will be used instead."
+    input Enable(void) : "Enable the logic_measure_movement."
+    input Disable(void) : "Disable the logic_measure_movement."
+    
+    // Outputs
+    output OutPosition(vector)  : "Outputs the resulting position when allowed."
+    output OutAngles(vector)  : "Outputs the resulting angles when allowed."
+]
+
+@PointClass base(logic_measure_movement) = logic_mirror_movement :
+    "An entity that can measure the direction of an entity relative to another entity " +
+    "and apply the position the entity is looking at to a third entity."
+[
+    MeasureTarget(target_destination) : "Entity to Measure" : "" : "Entity whose movement you want to measure. (Remote target)"
+    MeasureReference(target_destination) : "Measure Reference" : "" : "The movement of Entity to Measure will be mirrored relative to this entity. (Mirror relative)"
+    Target(target_destination) : "Entity to Move" : "" : "This entity will be mirrored across the motions of Entity to Measure. (Movement target)"
+    TargetReference(target_destination) : "Movement Reference" : "" : "The Entity to Move will be mirrored relative to this entity. (Mirror target)"
+]
+
+@PointClass base(logic_measure_movement, Angles) sphere(TraceDistance) = logic_measure_direction :
+    "An entity that can measure the direction of an entity relative to another entity " +
+    "and apply the position the entity is looking at to a third entity."
+[
+    MeasureTarget(target_destination) : "Entity to Measure" : "" : "Entity whose direction you want to measure."
+    MeasureReference(target_destination) : "Measure Reference" : "" : "The direction of Entity to Measure will be measured from this entity."
+    Target(target_destination) : "Entity to Move" : "" : "This entity will be moved in the direction of the Entity to Measure."
+    TargetReference(target_destination) : "Movement Reference" : "" : "The Entity to Move will move relative to this entity."
+    TargetScale(float) : "Trace scale" : "1" : "A scale to *divide* the distance between the Entity to Measure and the trace's endpoint by before applying those movements to the Entity to Move. 1 = target entity moves to the end of the trace, 2 = target entity moves to the middle of the trace (half as far), and 0.5 = target entity moves twice as far as the trace."
+    MeasureType(choices) : "Measurement Type" : 0 : "How should the direction be measured?" =
+    [
+        0 : "Angles"
+        1 : "Eye angles"
+        2 : "Attachment point angles"
+        //3 : "Aim angles"
+    ]
+    
+    TraceDistance(float) : "Trace distance" : "8192" : "The maximum distance that the trace can go. 0 = no limit."
+    Mask(choices) : "Trace Mask" : 1174421507 : "How the measurement tracing should act in regards to what it should collide with." =
+    [
+        33570827 : "MASK_SOLID (Anything solid)"
+        33636363 : "MASK_PLAYERSOLID (Anything solid + player clip)"
+        33701899 : "MASK_NPCSOLID (Anything solid + NPC clip)"
+        16432 : "MASK_WATER (Water volumes)"
+        16513 : "MASK_OPAQUE (Anything opaque, e.g. windows)"
+        16449 : "MASK_BLOCKLOS (Anything that blocks line of sight)"
+        1174421507 : "MASK_SHOT (Anything that would be hit by a bullet)"
+    ]
+    
+    CollisionGroup(choices) : "Collision Group" : 0 : "The collision group the measurement tracing should use." =
+    [
+        0 : "None"
+    ]
+    
+    damagefilter(filterclass) : "Trace Filter" : "" : "A filter to use for tracing."
+    HitIfPassed(choices) : "Trace Filter behavior" : 0 : "What the filter should actually be used for." =
+    [
+        0 : "If pass, don't hit"
+        1 : "If pass, hit"
+    ]
+    
+    TraceTargetReference(choices) : "Additional trace from movement reference" : 0 : "Initiates another trace from the Movement Reference using the existing properties and adjusts the position to its end point. Only use this if the Movement Reference is different from the Measure Reference." =
+    [
+        0 : "No"
+        1 : "Yes"
     ]
     
     // Inputs
-    input SetMeasureTarget(string) : "Set the Entity to Measure, whose movement should be measured."
-    input SetMeasureReference(string) : "Set the Measure Reference entity."
-    input Target(string) : "Set the Entity to Move, which will be moved to mimic the measured entity."
-    input SetTargetReference(string) : "Set the Movement Reference entity."
+    input SetMeasureTarget(target_destination) : "Set the Entity to Measure, whose movement should be measured."
+    input SetMeasureReference(target_destination) : "Set the Measure Reference entity."
+    input SetTarget(target_destination) : "Set the Entity to Move, which will be moved to mimic the measured entity."
+    input SetTargetReference(target_destination) : "Set the Movement Reference entity."
     input SetTargetScale(float) : "Set the scale to divide the measured movements by."
-    input Enable(void) : "Enable the logic_measure_movement."
-    input Disable(void) : "Disable the logic_measure_movement."
+    input SetMeasureType(integer) : "Sets the measurement type."
+    input SetMeasureAttachment(string) : "Sets the measurement attachment."
+    input Enable(void) : "Enable the logic_measure_direction."
+    input Disable(void) : "Disable the logic_measure_direction."
+    input SetTraceFilter(target_destination) : "Sets the entity to use as the trace filter. Pass in an empty string to clear the trace filter."
 ]
 
+@PointClass base(Targetname) iconsprite("editor/logic_playerinfo.vmt") = logic_playerinfo : 
+    "An entity that gets basic info about a player, or finds a player by their basic info." 
+[
+    input GetPlayerInfo(target_destination) : "Gets player info from the specified entity. If no entity is passed, this will get the local player."
+    input GetPlayerByID(string) : "Gets a player by their steam ID. Supports wildcards."
+    input GetPlayerByName(string) : "Gets a player by their Steam name. Supports wildcards."
+    
+    output OutUserID(string) : "Outputs a player's user ID."
+    output OutPlayerName(string) : "Outputs a player's Steam name."
+    output OutPlayerEntity(ehandle) : "Outputs a player's entity."
+]
 
 //-------------------------------------------------------------------------
 // Misc
@@ -6538,20 +7551,29 @@
 ]
 
 // lightprop("models/editor/spot.mdl") <---- use this once the orientation is unfucked
-@PointClass base(Targetname, Parentname, Angles) size(-2 -2 -2, 2 2 2) frustum(lightfov,nearz,farz,lightcolor,-1) = env_projectedtexture : 
+@PointClass base(Targetname, Parentname, Angles) studio("models/editor/cone_projected_helper.mdl") frustum(lightfov,nearz,farz,lightcolor,-1) = env_projectedtexture : 
     "Projected texture entity."
 [
     spawnflags(flags) =
     [
         1  : "Enabled"                : 1
+        2  : "Always Update (moving light)"    : 0
     ]
 
-    target(target_destination)    : "target" : : "target"    
-    lightfov(float)                : "FOV" : "90.0" : "FOV"
-    nearz(float)                : "NearZ" : "4.0" : "Near Z for projected texture"
-    farz(float)                    : "FarZ" : "750.0" : "Far Z for projected texture"    
+    target(target_destination)    : "Target" : : "The entity will rotate to point at this target. Make sure you check the 'Always Update' flag if you set this."    
     
-    enableshadows(Choices) : "Enable Shadows" : 0 : "Enables/disables shadows from this projected texture." =
+    dontfollowtarget(Choices) : "Don't Follow Target" : 0 : "Prevents this entity from trying to point at its target, if it has one. Intended for when you want to use 'Light Only Target' without the entity trying to point to it." =
+    [
+        0 : "No"
+        1 : "Yes"
+    ]
+    
+    lightfov(float)                : "FOV" : "90.0" : "The field of view cone/pyramid at which the texture is projected. Can also be interpreted as 'size'."
+    lighthorfov(float)                : "Horizontal FOV" : "0" : "The horizontal FOV value. This allows the projected texture to use rectangular dimensions, but it causes shadow glitches and is usually not preferable unless shadows are disabled. Leave this at 0 if you want to keep this the same as the regular FOV value."
+    nearz(float)                : "NearZ" : "4.0" : "Objects closer than this will not receive the light from the projection. (Warning: Hard falloff, model lighting inconsistent)"
+    farz(float)                    : "FarZ" : "750.0" : "Objects beyond this distance will not receive the light from the projection. The projection fades out as it approaches this distance."    
+    
+    enableshadows(Choices) : "Enable Shadows" : 1 : "Enables/disables shadows from this projected texture." =
     [
         0 : "No"
         1 : "Yes"
@@ -6561,6 +7583,8 @@
         0 : "Low"
         1 : "High"
     ]
+    shadowatten(float)            : "Shadow Atten" : "0.0" : "The attenuation of the shadows, or how much the shadows should fade into the light of the projected texture, if at all. The player's flashlight uses 0.35 by default, although higher values may be needed for a visible effect."
+    
     lightonlytarget(Choices) : "Light Only Target" : 0 : "Limit flashlight effect to only effect target entity." =
     [
         0 : "No"
@@ -6571,15 +7595,57 @@
         0 : "No"
         1 : "Yes"
     ]
-    lightcolor(color255)        : "Light Color" : "255 255 255 200" : "Light Color RGB-Intensity"
-    cameraspace(integer)        : "Camera Space" : 0 : "Angles are interpreted as being relative to camera."
+    
+    brightnessscale(float)        : "Brightness Scale" : "1.0" : "The light color's brightness scale."    
+
+    lightcolor(color255)        : "Light Color" : "255 255 255 200" : "The color of the projected texture. Format is RGB-Intensity, like a light entity. Intensity can only range from 0 to 255, so use the Brightness Scale keyvalue to make the projected texture brighter than 255."
+    colortransitiontime(float)    : "Color Transition Time" : "0" : "Amount of time it takes for a color or brightness change to occur. 0 = instant"
+    constant_attn(string)    : "Constant" : "0" : "The light's constant attenuation, giving the light no falloff. (This value is internally corrected with x*0.5)"
+    linear_attn(string)    : "Linear" : "1" : "The light's linear attenuation, giving the light linear decline. This is the most common attenuation for projected textures. (This value is internally corrected with x*100)"
+    quadratic_attn(string)    : "Quadratic" : "0" : "The light's quadratic attenuation, giving the light exponentially decreasing falloff. (This value is internally corrected with x*10000)"
+    
+    cameraspace(Choices)        : "Camera Space" : 0 : "Angles are interpreted as being relative to camera." =
+    [
+        0 : "No"
+        1 : "Yes"
+    ]
+
+    texturename(material) : "Texture Name" : "effects/flashlight001" : "The texture which should be used. Please note that env_projectedtexture uses .vtf files directly and does not use .vmt files. The material browser is only available here to assist with finding textures since materials typically have the same name as their textures."
+    textureframe(integer) : "Texture Frame" : 0 : "Sets the frame of the projected texture. Only relevant if the texture is animated/has multiple frames."
+    
+    alwaysdraw(Choices)        : "Always Draw" : 0 : "Always draws the projected texture, regardless of whether the player can see its frustum. Use this for projected textures that can be seen on monitors or in the skybox." =
+    [
+        0 : "No"
+        1 : "Yes"
+    ]
+    
+    ProjectedTextureVersion(integer)    readonly    : "Projected Texture Version"      : 1  : "(Don't change). Differentiates between projected textures built before/outside of Mapbase and projected textures using new features."
 
     // Inputs
-    input TurnOn(void)        : "Turn on the texture"
-    input TurnOff(void)        : "Turn off the texture"
-    input SetFOV(float)        : "Set FOV"
+    input TurnOn(void)        : "Turns on the texture"
+    input TurnOff(void)        : "Turns off the texture"
+    input AlwaysUpdateOn(void)    : "Turns on per frame updating (for moving lights)"
+    input AlwaysUpdateOff(void)    : "Turns off per frame updating (for moving lights)"
+    input FOV(float)        : "Sets the FOV."
+    input VerFOV(float)        : "Sets the vertical FOV."
+    input HorFOV(float)        : "Sets the horizontal FOV."
+    input SpotlightTexture(string)        : "Sets the spotlight texture"
+    input SetSpotlightFrame(string)        : "Sets the spotlight texture frame"
+    input EnableShadows(bool)        : "Set the if shadows are enabled"
+    input LightColor(color255)        : "Change the light color"
+    input SetBrightness(float)        : "Sets brightness."
+    input SetColorTransitionTime(float)        : "Sets the color transition time."
+    input SetConstant(float)        : "Sets the constant attenuation."
+    input SetLinear(float)        : "Sets the linear attenuation."
+    input SetQuadratic(float)        : "Sets the quadratic attenuation."
+    input SetShadowAtten(float)        : "Sets the shadow attenuation."
+    input SetNearZ(float)        : "Sets NearZ."
+    input SetFarZ(float)        : "Sets FarZ."
+    input AlwaysDrawOn(void)    : "Turns off BBox culling (for skybox or monitor lights)"
+    input AlwaysDrawOff(void)    : "Turns on BBox culling if it was off before"
+    input StopFollowingTarget(void)    : "Causes this entity to stop following the target, if it has one"
+    input StartFollowingTarget(void)    : "Causes this entity to start following the target if it was set to not follow it before"
 ]
-
 
 @SolidClass base(func_brush) = func_reflective_glass :
     "Used to produce perfectly reflective glass that renders world + entities. " +
@@ -6660,6 +7726,152 @@
     parm10(instance_parm) : "Parm" : : "This is a parameter.  It goes in the form of $variable type."
 ]
 
+@PointClass base(Targetname) sphere(hint_range) iconsprite("editor/env_instructor_hint.vmt") = env_instructor_hint : "An entity that allows for creation and control of instructor lessons by map logic"
+[
+    hint_replace_key(string) : "Replace Key" : : "Unique name so that messages with the same key will replace each other."
+    hint_target(target_destination) : "Target Entity" : : "The entity to show this hint on top of. The entity used must exist on the client, info_target_instructor_hint can be parented to server only entities for this purpose."
+    hint_static(Choices) : "Positioning" : 0 : "Either show at the position of the Target Entity. Or show the hint directly on the hud at a fixed position." =
+    [
+        0 : "Follow the Target Entity"
+        1 : "Show on the hud"
+    ]
+    
+    hint_allow_nodraw_target(Choices) : "Allow invisible target" : 1 : "Do we allow the hint to follow entites with nodraw set?" =
+    [
+        0 : "End immediately on nodraw"
+        1 : "Yes"
+    ]
+    
+    hint_caption(string) : "Caption" : : "The text of your hint."
+    hint_activator_caption(string) : "Activator Caption" : : "The text of your hint shown to only the activating player."
+    hint_color(color255) : "Caption Color" : "255 255 255" : "The color of the caption text"
+    hint_forcecaption(Choices) : "Force caption" : 0 : "Do we show the caption text even if the hint is occluded by a wall?" =
+    [
+        0 : "No"
+        1 : "Show when occluded"
+    ]
+    
+    hint_icon_onscreen(Choices) : "Onscreen Icon" : "icon_tip" : "The icon to use when the hint is within the player's view." =
+    [
+        "icon_bulb" : "icon_bulb"
+        "icon_caution" : "icon_caution"
+        "icon_alert" : "icon_alert"
+        "icon_alert_red" : "icon_alert_red"
+        "icon_tip" : "icon_tip"
+        "icon_skull" : "icon_skull"
+        "icon_no" : "icon_no"
+        "icon_run" : "icon_run"
+        "icon_interact" : "icon_interact"
+        "icon_button" : "icon_button"
+        "icon_door" : "icon_door"
+        "icon_arrow_plain" : "icon_arrow_plain"
+        "icon_arrow_plain_white_dn" : "icon_arrow_plain_white_dn"
+        "icon_arrow_plain_white_up" : "icon_arrow_plain_white_up"
+        "icon_arrow_up" : "icon_arrow_up"
+        "icon_arrow_right" : "icon_arrow_right"
+        "icon_fire" : "icon_fire"
+        "icon_present" : "icon_present"
+        "use_binding" : "show key bindings"
+        
+        "icon_health" : "(HL2) icon_health"
+        "icon_battery" : "(HL2) icon_battery"
+        "icon_frag" : "(HL2) icon_frag"
+        "icon_cmbball" : "(HL2) icon_cmbball"
+        "icon_hl2" : "(HL2) icon_hl2"
+        "icon_gravgun" : "(HL2) icon_gravgun"
+        "icon_bugbait" : "(HL2) icon_bugbait"
+        "icon_rocket" : "(HL2) icon_rocket"
+        "icon_combine" : "(HL2) icon_combine"
+        "icon_lambda" : "(HL2) icon_lambda"
+        "icon_squad" : "(HL2) icon_squad"
+        "icon_squad_medic" : "(HL2) icon_squad_medic"
+        "icon_ammo" : "(HL2) icon_ammo"
+        "icon_flashlight" : "(HL2) icon_flashlight"
+        "icon_pistol" : "(HL2) icon_pistol"
+    ]
+    
+    hint_icon_offscreen(Choices) : "Offscreen Icon" : "icon_tip" : "The icon to use when the hint is outside the player's view." =
+    [
+        "icon_bulb" : "icon_bulb"
+        "icon_caution" : "icon_caution"
+        "icon_alert" : "icon_alert"
+        "icon_alert_red" : "icon_alert_red"
+        "icon_tip" : "icon_tip"
+        "icon_skull" : "icon_skull"
+        "icon_no" : "icon_no"
+        "icon_run" : "icon_run"
+        "icon_interact" : "icon_interact"
+        "icon_button" : "icon_button"
+        "icon_door" : "icon_door"
+        "icon_arrow_plain" : "icon_arrow_plain"
+        "icon_arrow_plain_white_dn" : "icon_arrow_plain_white_dn"
+        "icon_arrow_plain_white_up" : "icon_arrow_plain_white_up"
+        "icon_arrow_up" : "icon_arrow_up"
+        "icon_arrow_right" : "icon_arrow_right"
+        "icon_fire" : "icon_fire"
+        "icon_present" : "icon_present"
+    ]
+    
+    hint_nooffscreen(Choices) : "Show offscreen" : 0 : "When the hint is offscreen, do we show an icon and arrow?" =
+    [
+        0 : "Show"
+        1 : "Don't show"        
+    ]
+    
+    hint_binding(string) : "Bound Command" : : "If using 'show key bindings' for the onscreen icon, this field should be the command we want to show bindings for"
+    hint_icon_offset(float) : "Icon Height Offset" : 0 : "A height offset from the target entity's origin to display the hint"
+    hint_pulseoption(Choices) : "Size Pulsing" : 0 : "The icon size can pulsate" =
+    [
+        0 : "No Pulse"
+        1 : "Slow Pulse"
+        2 : "Fast Pulse"
+        3 : "Urgent Pulse"
+    ]
+    
+    hint_alphaoption(Choices) : "Alpha Pulsing" : 0 : "The icon alpha can pulsate" =
+    [
+        0 : "No Pulse"
+        1 : "Slow Pulse"
+        2 : "Fast Pulse"
+        3 : "Urgent Pulse"
+    ]
+    
+    hint_shakeoption(Choices) : "Shaking" : 0 : "The icon can shake" =
+    [
+        0 : "No Shaking"
+        1 : "Narrow Shake"
+        2 : "Wide Shake"
+    ]
+
+    hint_local_player_only(choices) : "Only Local Player" : "No" : "The hint will only be shown to the local player." =
+    [
+        0 : "No"
+        1 : "Yes"
+    ]
+    
+    hint_timeout(integer) : "Timeout" : 0 : "The automatic timeout for the hint. 0 will persist until stopped with EndHint."
+    hint_range(float) : "Display Range" : 0 : "The visible range of the hint."    
+    
+    hint_start_sound(sound) : "Sound" : "Instructor.LessonStart" : "The sound to play when the hint is first displayed."
+    
+    hint_target_pos(choices) : "Icon Target Position" : 0 : "Controls where the hint should appear on the icon target." =
+    [
+        0 : "Eye position"
+        1 : "Origin"
+        2 : "World Space Center"
+    ]
+    
+    input ShowHint(string) : "Start showing the hint. If an entity name is passed as a parameter, the hint is shown only to that entity."    
+    input EndHint(void) : "Stop showing the hint if it hasn't already timed out."
+    
+    input SetCaption(string) : "Sets the hint's caption. Does not update hints in progress."
+]
+
+@PointClass base(Targetname,Parentname) = info_target_instructor_hint : "A generic target that gets replicated to the client for hud hint targeting"
+[
+
+]
+
 @SolidClass base(Trigger) = trigger_apply_impulse : 
     "A trigger that adds impulse to touching entities."
 [
@@ -6687,10 +7899,18 @@
         32: "Suppress sprint" : 0
         64: "Suppress attack" : 0
         128: "Suppress zoom" : 0
+        256: "Don't suppress flashlight" : 0
     ]
+    
+    AdditionalButtons(integer) : "Additional Buttons" : 0 : "Additional buttons to suppress, other than those listed in the spawnflags. Advanced users only."
 
     // Inputs
-    input ModifySpeed(float) : "Modifies player speed by X ammount."
+    input ModifySpeed(float) : "Modifies player speed by X ammount. Use 1.0 to reset."
+    
+    input Enable(void) : "Enables the spawnflag abilities without actually modifying the player's speed."
+    input Disable(void) : "Disables the spawnflag abilities without actually modifying the player's speed."
+    
+    input SetAdditionalButtons(integer) : "Sets the additional suppressed buttons."
 ]
 
 @PointClass base(Targetname) iconsprite("editor/postprocess_controller.vmt") color(255 255 255) = postprocess_controller : 

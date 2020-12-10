@@ -1557,7 +1557,7 @@
 
 "Weapon_StickyBombLauncher.ModeSwitch"
 {
-	"channel"	"CHAN_WEAPON"
+	"channel"	"CHAN_AUTO"
 	"soundlevel"	"SNDLVL_NORM"
 	"volume"	"1.0"
 	"wave"		")weapons/stickybomblauncher_det.wav"
@@ -1589,7 +1589,7 @@
 
 "Weapon_StickyBombLauncher.ChargeUp"
 {
-	"channel"		"CHAN_WEAPON"
+	"channel"		"CHAN_STATIC"
 	"soundlevel"	"SNDLVL_NORM"
 	"volume"		"1"
 	"wave"		"weapons/stickybomblauncher_charge_up.wav"

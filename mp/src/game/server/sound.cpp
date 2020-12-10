@@ -173,6 +173,7 @@ public:
 
 	void ToggleSound();
 	void SendSound( SoundFlags_t flags );
+	void SoundEnd();
 
 	// Input handlers
 	void InputPlaySound( inputdata_t &inputdata );
@@ -182,6 +183,7 @@ public:
 	void InputVolume( inputdata_t &inputdata );
 	void InputFadeIn( inputdata_t &inputdata );
 	void InputFadeOut( inputdata_t &inputdata );
+	void InputSetSound( inputdata_t &inputdata );
 
 	DECLARE_DATADESC();
 
@@ -197,6 +199,10 @@ public:
 	string_t m_sSourceEntName;
 	EHANDLE m_hSoundSource;	// entity from which the sound comes
 	int		m_nSoundSourceEntIndex; // In case the entity goes away before we finish stopping the sound...
+
+	int		m_iSoundFlags;
+
+	COutputEvent m_OnSoundFinished;
 };
 
 LINK_ENTITY_TO_CLASS( ambient_generic, CAmbientGeneric );
@@ -209,6 +215,8 @@ BEGIN_DATADESC( CAmbientGeneric )
 	// recomputed in Activate()
 	// DEFINE_FIELD( m_hSoundSource, EHANDLE ),
 	// DEFINE_FIELD( m_nSoundSourceEntIndex, FIELD_INTERGER ),
+
+	DEFINE_KEYFIELD( m_iSoundFlags, FIELD_INTEGER, "soundflags" ),
 
 	DEFINE_FIELD( m_flMaxRadius, FIELD_FLOAT ),
 	DEFINE_FIELD( m_fActive, FIELD_BOOLEAN ),
@@ -224,6 +232,7 @@ BEGIN_DATADESC( CAmbientGeneric )
 
 	// Function Pointers
 	DEFINE_FUNCTION( RampThink ),
+	DEFINE_THINKFUNC( SoundEnd ),
 
 	// Inputs
 	DEFINE_INPUTFUNC(FIELD_VOID, "PlaySound", InputPlaySound ),
@@ -233,6 +242,9 @@ BEGIN_DATADESC( CAmbientGeneric )
 	DEFINE_INPUTFUNC(FIELD_FLOAT, "Volume", InputVolume ),
 	DEFINE_INPUTFUNC(FIELD_FLOAT, "FadeIn", InputFadeIn ),
 	DEFINE_INPUTFUNC(FIELD_FLOAT, "FadeOut", InputFadeOut ),
+	DEFINE_INPUTFUNC(FIELD_STRING, "SetSound", InputSetSound ),
+
+	DEFINE_OUTPUT( m_OnSoundFinished, "OnSoundFinished" ),
 
 END_DATADESC()
 
@@ -240,6 +252,8 @@ END_DATADESC()
 #define SF_AMBIENT_SOUND_EVERYWHERE			1
 #define SF_AMBIENT_SOUND_START_SILENT		16
 #define SF_AMBIENT_SOUND_NOT_LOOPING		32
+
+#define SOUND_END_CONTEXT "SoundEnd"
 
 
 //-----------------------------------------------------------------------------
@@ -416,6 +430,22 @@ void CAmbientGeneric::InputFadeOut( inputdata_t &inputdata )
 		m_dpv.fadeout = ( 100 << 8 ) / ( m_dpv.fadeout * AMBIENT_GENERIC_UPDATE_RATE );
 
 	SetNextThink( gpGlobals->curtime + 0.1f );
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+void CAmbientGeneric::InputSetSound( inputdata_t &inputdata )
+{
+	m_iszSound = inputdata.value.StringID();
+	if (STRING(m_iszSound)[0] != '!')
+	{
+		PrecacheScriptSound(STRING(m_iszSound));
+	}
+
+	// Try to refresh the sound
+	if (m_fActive)
+		SendSound(SND_NOFLAGS);
 }
 
 
@@ -857,6 +887,17 @@ void CAmbientGeneric::InputPlaySound( inputdata_t &inputdata )
 	{
 		//Adrian: Stop our current sound before starting a new one!
 		SendSound( SND_STOP ); 
+
+		// Procedural handling like !activator
+		if (STRING(m_sSourceEntName)[0] == '!')
+		{
+			CBaseEntity *pEntity = gEntList.FindEntityProcedural(STRING(m_sSourceEntName), this, inputdata.pActivator, inputdata.pCaller);
+			if (pEntity)
+			{
+				m_hSoundSource = pEntity;
+				m_nSoundSourceEntIndex = pEntity->entindex();
+			}
+		}
 		
 		ToggleSound();
 	}
@@ -876,35 +917,55 @@ void CAmbientGeneric::InputStopSound( inputdata_t &inputdata )
 
 void CAmbientGeneric::SendSound( SoundFlags_t flags)
 {
+	int iFlags = flags != SND_STOP ? ((int)flags | m_iSoundFlags) : flags;
 	char *szSoundFile = (char *)STRING( m_iszSound );
 	CBaseEntity* pSoundSource = m_hSoundSource;
 	if ( pSoundSource )
 	{
-		if ( flags == SND_STOP )
+		if ( iFlags & SND_STOP )
 		{
 			UTIL_EmitAmbientSound(pSoundSource->GetSoundSourceIndex(), pSoundSource->GetAbsOrigin(), szSoundFile, 
-						0, SNDLVL_NONE, flags, 0);
-            m_fActive = false;
+						0, SNDLVL_NONE, iFlags, 0);
+
+			SetContextThink( NULL, TICK_NEVER_THINK, SOUND_END_CONTEXT );
+
+			m_fActive = false;
 		}
 		else
 		{
+			float duration = 0.0f;
 			UTIL_EmitAmbientSound(pSoundSource->GetSoundSourceIndex(), pSoundSource->GetAbsOrigin(), szSoundFile, 
-				(m_dpv.vol * 0.01), m_iSoundLevel, flags, m_dpv.pitch);
+				(m_dpv.vol * 0.01), m_iSoundLevel, iFlags, m_dpv.pitch, 0.0f, &duration);
 
-            if (m_fLooping)
-                m_fActive = true;
+			SetContextThink( &CAmbientGeneric::SoundEnd, gpGlobals->curtime + duration, SOUND_END_CONTEXT );
+
+			// Only mark active if this is a looping sound.  If not looping, each
+			// trigger will cause the sound to play.  If the sound is still
+			// playing from a previous trigger press, it will be shut off
+			// and then restarted.
+
+			if (m_fLooping)
+				m_fActive = true;
 		}
 	}	
 	else
 	{
-		if ( ( flags == SND_STOP ) && 
+		if ( ( iFlags & SND_STOP ) && 
 			( m_nSoundSourceEntIndex != -1 ) )
 		{
 			UTIL_EmitAmbientSound(m_nSoundSourceEntIndex, GetAbsOrigin(), szSoundFile, 
-					0, SNDLVL_NONE, flags, 0);
-            m_fActive = false;
+					0, SNDLVL_NONE, iFlags, 0);
+
+			SetContextThink( NULL, TICK_NEVER_THINK, SOUND_END_CONTEXT );
+
+			m_fActive = false;
 		}
 	}
+}
+
+void CAmbientGeneric::SoundEnd()
+{
+	m_OnSoundFinished.FireOutput(this, this);
 }
 
 
@@ -913,6 +974,17 @@ void CAmbientGeneric::SendSound( SoundFlags_t flags)
 //-----------------------------------------------------------------------------
 void CAmbientGeneric::InputToggleSound( inputdata_t &inputdata )
 {
+	// Procedural handling like !activator
+	if (STRING(m_sSourceEntName)[0] == '!')
+	{
+		CBaseEntity *pEntity = gEntList.FindEntityProcedural(STRING(m_sSourceEntName), this, inputdata.pActivator, inputdata.pCaller);
+		if (pEntity)
+		{
+			m_hSoundSource = pEntity;
+			m_nSoundSourceEntIndex = pEntity->entindex();
+		}
+	}
+
 	ToggleSound();
 }
 

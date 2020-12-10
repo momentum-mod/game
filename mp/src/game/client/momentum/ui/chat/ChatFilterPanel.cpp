@@ -24,7 +24,7 @@ ChatFilterPanel::ChatFilterPanel(ChatPanel *pParent) : BaseClass(pParent, "ChatF
     new ChatFilterCheckButton(this, "namechange_button", CHAT_FILTER_NAMECHANGE);
     new ChatFilterCheckButton(this, "publicchat_button", CHAT_FILTER_PUBLICCHAT);
     new ChatFilterCheckButton(this, "servermsg_button", CHAT_FILTER_SERVERMSG);
-    new ChatFilterCheckButton(this, "teamchange_button", CHAT_FILTER_TEAMCHANGE);
+    new ChatFilterCheckButton(this, "specspawn_button", CHAT_FILTER_SPEC_SPAWN);
     new ChatFilterCheckButton(this, "achivement_button", CHAT_FILTER_ACHIEVEMENT);
 
     LoadControlSettings("resource/ui/ChatFilters.res");

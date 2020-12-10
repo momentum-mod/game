@@ -29,7 +29,10 @@ public:
     
 #else
     virtual float GetDamageAmount() { return 0.0f; }
-    virtual void Destroy(bool bShowFizzleSprite);
+    virtual void Destroy();
+    virtual void Fizzle();
+    virtual void ShowFizzleSprite();
+    virtual void PlayFizzleSound() {}
     virtual void InitExplosive(CBaseEntity *pOwner, const Vector &velocity, const QAngle &angles);
 
     float GetDamage() const { return m_fDamage; }

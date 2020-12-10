@@ -5,6 +5,7 @@
 #include "mom_player_shared.h"
 #include "mom_shareddefs.h"
 #include "mom_replay_entity.h"
+#include "run/mom_run_entity.h"
 #include "mom_system_gamemode.h"
 #include "mom_system_progress.h"
 #include "mom_stickybomb.h"
@@ -25,6 +26,13 @@ static MAKE_TOGGLE_CONVAR(mom_triggers_overlay_bbox_enable, "0", FCVAR_DEVELOPME
 static MAKE_TOGGLE_CONVAR(mom_triggers_overlay_text_enable, "0", FCVAR_DEVELOPMENTONLY,
                           "Toggles showing the entity text for momentum triggers, needs map restart if changed!\n");
 
+CMomentumTriggerSystem g_MomentumTriggerSystem;
+
+void CMomentumTriggerSystem::FrameUpdatePostEntityThink()
+{
+    DoVariablePushes();
+}
+
 // ------------- Base Trigger ------------------------------------
 BEGIN_DATADESC(CBaseMomentumTrigger)
     DEFINE_KEYFIELD(m_iTrackNumber, FIELD_INTEGER, "track_number")
@@ -37,7 +45,6 @@ CBaseMomentumTrigger::CBaseMomentumTrigger()
 
 void CBaseMomentumTrigger::Spawn()
 {
-    AddSpawnFlags(SF_TRIGGER_ALLOW_CLIENTS);
     BaseClass::Spawn();
     InitTrigger();
 
@@ -56,6 +63,18 @@ bool CBaseMomentumTrigger::PassesTriggerFilters(CBaseEntity* pOther)
 
     // Otherwise we need to pass it through
     return BaseClass::PassesTriggerFilters(pOther);
+}
+
+int CBaseMomentumTrigger::DrawDebugTextOverlays()
+{
+    int text_offset = BaseClass::DrawDebugTextOverlays();
+
+    char tempstr[255];
+    Q_snprintf(tempstr, sizeof(tempstr), "Track: %d", m_iTrackNumber.Get());
+    EntityText(text_offset, tempstr, 0);
+    text_offset++;
+
+    return text_offset;
 }
 
 // -------------- FilterTrackNumber --------------------------
@@ -86,6 +105,155 @@ bool CFilterTrackNumber::PassesFilterImpl(CBaseEntity *pCaller, CBaseEntity *pEn
     return (m_iTrackNumber > -1 && pEnt && pEnt->GetRunEntData()->m_iCurrentTrack == m_iTrackNumber);
 }
 
+// -------------- FilterPlayerState --------------------------
+LINK_ENTITY_TO_CLASS(filter_momentum_player_state, CFilterPlayerState);
+
+BEGIN_DATADESC(CFilterPlayerState)
+DEFINE_KEYFIELD(m_iPlayerState, FIELD_INTEGER, "player_state"),
+END_DATADESC();
+
+CFilterPlayerState::CFilterPlayerState()
+{
+    m_iPlayerState = -1;
+}
+
+bool CFilterPlayerState::PassesFilterImpl(CBaseEntity* pCaller, CBaseEntity* pEntity)
+{
+    if (!pEntity || !pEntity->IsPlayer())
+        return false;
+
+    const auto pPlayer = static_cast<CMomentumPlayer*>(pEntity);
+
+    // 0 for any of these means they are the current interaction
+    int floor = pPlayer->GetInteractionIndex(SurfInt::TYPE_FLOOR);      // Player is sliding on the floor
+    int land = pPlayer->GetInteractionIndex(SurfInt::TYPE_LAND);        // Player landed on the floor such that they can jump off without speed loss (perfect bhop)
+    int ground = pPlayer->GetInteractionIndex(SurfInt::TYPE_GROUNDED);  // Player has settled on the ground
+
+    switch (m_iPlayerState)
+    {
+    case PLAYER_STATE_GROUND:
+        return (floor == 0 && pPlayer->GetInteraction(0).trace.plane.normal.z >= 0.7) || land == 0 || ground == 0;
+
+    case PLAYER_STATE_SURF:
+        return floor == 0 && pPlayer->GetInteraction(0).trace.plane.normal.z < 0.7; // The floor is a surf ramp
+
+    case PLAYER_STATE_BHOP:
+        return land == 0 && pPlayer->m_nButtons & IN_JUMP;
+
+    default:
+        return false;
+    }
+}
+
+// -------------- FilterCollectibles --------------------------
+LINK_ENTITY_TO_CLASS(filter_momentum_collectibles, CFilterCollectibles);
+
+BEGIN_DATADESC(CFilterCollectibles)
+DEFINE_KEYFIELD(m_iCollectibleCount, FIELD_INTEGER, "player_collectibles"),
+END_DATADESC();
+
+CFilterCollectibles::CFilterCollectibles()
+{
+    m_iCollectibleCount = 0;
+}
+
+bool CFilterCollectibles::PassesFilterImpl(CBaseEntity* pCaller, CBaseEntity* pEntity)
+{
+    if (!pEntity || !pEntity->IsPlayer())
+        return false;
+
+    const auto pPlayer = static_cast<CMomentumPlayer*>(pEntity);
+
+    return pPlayer->m_Collectibles.GetCollectibleCount() >= m_iCollectibleCount;
+}
+
+// -------------- FilterVelocity --------------------------
+LINK_ENTITY_TO_CLASS(filter_momentum_velocity, CFilterVelocity);
+
+BEGIN_DATADESC(CFilterVelocity)
+    DEFINE_KEYFIELD(m_iMode, FIELD_INTEGER, "Mode"),
+    DEFINE_KEYFIELD(m_bAbove, FIELD_BOOLEAN, "Above"),
+
+    DEFINE_KEYFIELD(m_bVertical, FIELD_BOOLEAN, "EnableVertical"),
+    DEFINE_KEYFIELD(m_bHorizontal, FIELD_BOOLEAN, "EnableHorizontal"),
+    DEFINE_KEYFIELD(m_flVerticalVelocity, FIELD_FLOAT, "VerticalVelocity"),
+    DEFINE_KEYFIELD(m_flHorizontalVelocity, FIELD_FLOAT, "HorizontalVelocity"),
+
+    DEFINE_KEYFIELD(m_bIgnoreSign, FIELD_INTEGER, "IgnoreSign"),
+    DEFINE_KEYFIELD(m_vecVelocity, FIELD_VECTOR, "VelocityVector"),
+    DEFINE_KEYFIELD(m_vecVelocityAxes, FIELD_VECTOR, "VelocityAxes"),
+END_DATADESC();
+
+CFilterVelocity::CFilterVelocity()
+{
+    m_iMode = VELOCITYFILTER_TOTAL;
+    m_bAbove = true;
+    m_bVertical = false;
+    m_bHorizontal = false;
+    m_flVerticalVelocity = 500.0f;
+    m_flHorizontalVelocity = 1000.0f;
+    m_bIgnoreSign = false;
+}
+
+bool CFilterVelocity::PassesFilterImpl(CBaseEntity *pCaller, CBaseEntity *pEntity)
+{
+    if (!pEntity->IsPlayer())
+        return false;
+
+    switch (m_iMode)
+    {
+    case VELOCITYFILTER_TOTAL:
+        return CheckTotalVelocity(pEntity);
+
+    case VELOCITYFILTER_PER_AXIS:
+        return CheckPerAxisVelocity(pEntity);
+
+    default:
+        return false;
+    }
+}
+
+bool CFilterVelocity::CheckTotalVelocity(CBaseEntity *pEntity)
+{
+    const auto vel = pEntity->GetAbsVelocity();
+
+    if (!m_bHorizontal && !m_bVertical)
+        DevWarning("filter_velocity: Both vertical and horizontal velocity are ignored!\n");
+
+    const bool bHorizontal = m_bHorizontal ? CheckTotalVelocityInternal(vel.Length2D(), true) : true;
+    const bool bVertical = m_bVertical ? CheckTotalVelocityInternal(fabsf(vel.z), false) : true;
+
+    return bHorizontal && bVertical;
+}
+
+inline bool CFilterVelocity::CheckTotalVelocityInternal(const float flToCheck, bool bIsHorizontal)
+{
+    const auto speed = bIsHorizontal ? m_flHorizontalVelocity : m_flVerticalVelocity;
+    return m_bAbove ? flToCheck > speed : flToCheck < speed;
+}
+
+bool CFilterVelocity::CheckPerAxisVelocity(CBaseEntity *pEntity)
+{
+    auto vel = pEntity->GetAbsVelocity();
+    bool check;
+
+    for (int i = 0; i < 3; i++)
+    {
+        if (m_bIgnoreSign)
+            vel[i] = fabsf(vel[i]);
+
+        if (m_vecVelocityAxes[i] == 0.0f)
+            continue;
+
+        check = m_bAbove ? vel[i] > m_vecVelocity[i] : vel[i] < m_vecVelocity[i];
+
+        if (!check)
+            return false;
+    }
+
+    return true;
+}
+
 // -------------- BaseMomZoneTrigger ------------------------------
 IMPLEMENT_SERVERCLASS_ST(CBaseMomZoneTrigger, DT_BaseMomZoneTrigger)
 SendPropInt(SENDINFO(m_iTrackNumber)),
@@ -102,6 +270,7 @@ CBaseMomZoneTrigger::CBaseMomZoneTrigger()
 void CBaseMomZoneTrigger::Spawn()
 {
     Precache();
+    AddSpawnFlags(SF_TRIGGER_ALLOW_CLIENTS | SF_TRIGGER_ALLOW_GHOSTS);
     BaseClass::Spawn();
 }
 
@@ -177,7 +346,7 @@ bool CBaseMomZoneTrigger::LoadFromKeyValues(KeyValues *pKvFrom)
     return true;
 }
 
-int CBaseMomZoneTrigger::GetZoneType()
+int CBaseMomZoneTrigger::GetZoneType() const
 {
     return ZONE_TYPE_INVALID;
 }
@@ -212,7 +381,7 @@ bool CBaseMomZoneTrigger::FindStandableGroundBelow(const Vector& traceStartPos, 
 
 const Vector& CBaseMomZoneTrigger::GetRestartPosition()
 {
-    if(m_vecRestartPos == vec3_invalid)
+    if (m_vecRestartPos == vec3_invalid)
     {
         Vector zoneMaxsRel = CollisionProp()->OBBMaxs();
         Vector zoneMaxs;
@@ -235,6 +404,20 @@ const Vector& CBaseMomZoneTrigger::GetRestartPosition()
     return m_vecRestartPos;
 }
 
+int CBaseMomZoneTrigger::DrawDebugTextOverlays()
+{
+    int text_offset = BaseClass::DrawDebugTextOverlays();
+    
+    const char *szZoneType[ZONE_TYPE_COUNT] = {"start", "stop", "stage", "checkpoint"};
+
+    char tempstr[255];
+    Q_snprintf(tempstr, sizeof(tempstr), "Zone type: %s", szZoneType[GetZoneType()]);
+    EntityText(text_offset, tempstr, 0);
+    text_offset++;
+
+    return text_offset;
+}
+
 // --------- CTriggerZone ----------------------------------------------
 BEGIN_DATADESC(CTriggerZone)
     DEFINE_KEYFIELD(m_iZoneNumber, FIELD_INTEGER, "zone_number")
@@ -245,7 +428,18 @@ CTriggerZone::CTriggerZone()
     m_iZoneNumber = 0; // 0 by default ("end trigger")
 }
 
-void CTriggerZone::OnStartTouch(CBaseEntity* pOther)
+bool CTriggerZone::IsTeleportableTo() const
+{
+    return GetZoneType() == ZONE_TYPE_START || GetZoneType() == ZONE_TYPE_STAGE;
+}
+
+void CTriggerZone::Spawn()
+{
+    BaseClass::Spawn();
+    m_hTeleDest.Set(gEntList.FindEntityByName(nullptr, m_strTeleDestName, this, this));
+}
+
+void CTriggerZone::OnStartTouch(CBaseEntity *pOther)
 {
     CMomRunEntity *pEnt = dynamic_cast<CMomRunEntity*>(pOther);
     if (pEnt)
@@ -266,11 +460,22 @@ void CTriggerZone::OnEndTouch(CBaseEntity* pOther)
 bool CTriggerZone::ToKeyValues(KeyValues* pKvInto)
 {
     pKvInto->SetInt("zoneNum", m_iZoneNumber);
+
+    if (IsTeleportableTo())
+    {
+        pKvInto->SetString("teleport_destination", m_strTeleDestName.ToCStr());
+    }
+
     return BaseClass::ToKeyValues(pKvInto);
 }
 
 bool CTriggerZone::LoadFromKeyValues(KeyValues* kv)
 {
+    if (IsTeleportableTo())
+    {
+        m_strTeleDestName = AllocPooledString(kv->GetString("teleport_destination", ""));
+    }
+
     m_iZoneNumber = kv->GetInt("zoneNum", -1);
     if (m_iZoneNumber >= 0 && m_iZoneNumber < MAX_ZONES)
         return BaseClass::LoadFromKeyValues(kv);
@@ -278,6 +483,17 @@ bool CTriggerZone::LoadFromKeyValues(KeyValues* kv)
     return false;
 }
 
+int CTriggerZone::DrawDebugTextOverlays()
+{
+    int text_offset = BaseClass::DrawDebugTextOverlays();
+
+    char tempstr[255];
+    Q_snprintf(tempstr, sizeof(tempstr), "Zone number: %d", m_iZoneNumber);
+    EntityText(text_offset, tempstr, 0);
+    text_offset++;
+
+    return text_offset;
+}
 
 //---------- CTriggerCheckpoint -----------------------------------------------------------
 LINK_ENTITY_TO_CLASS(trigger_momentum_timer_checkpoint, CTriggerCheckpoint);
@@ -285,7 +501,7 @@ LINK_ENTITY_TO_CLASS(trigger_momentum_timer_checkpoint, CTriggerCheckpoint);
 IMPLEMENT_SERVERCLASS_ST(CTriggerCheckpoint, DT_TriggerCheckpoint)
 END_SEND_TABLE()
 
-int CTriggerCheckpoint::GetZoneType()
+int CTriggerCheckpoint::GetZoneType() const
 {
     return ZONE_TYPE_CHECKPOINT;
 }
@@ -293,10 +509,14 @@ int CTriggerCheckpoint::GetZoneType()
 //---------- CTriggerStage -----------------------------------------------------------------
 LINK_ENTITY_TO_CLASS(trigger_momentum_timer_stage, CTriggerStage);
 
+BEGIN_DATADESC(CTriggerStage)
+    DEFINE_KEYFIELD(m_strTeleDestName, FIELD_STRING, "teleport_destination")
+END_DATADESC()
+
 IMPLEMENT_SERVERCLASS_ST(CTriggerStage, DT_TriggerStage)
 END_SEND_TABLE()
 
-int CTriggerStage::GetZoneType()
+int CTriggerStage::GetZoneType() const
 {
     return ZONE_TYPE_STAGE;
 }
@@ -310,7 +530,8 @@ BEGIN_DATADESC(CTriggerTimerStart)
     DEFINE_KEYFIELD(m_fSpeedLimit, FIELD_FLOAT, "speed_limit"),
     DEFINE_KEYFIELD(m_angLook, FIELD_VECTOR, "look_angles"),
     DEFINE_KEYFIELD(m_bTimerStartOnJump, FIELD_BOOLEAN, "start_on_jump"),
-    DEFINE_KEYFIELD(m_iLimitSpeedType, FIELD_INTEGER, "speed_limit_type")
+    DEFINE_KEYFIELD(m_iLimitSpeedType, FIELD_INTEGER, "speed_limit_type"),
+    DEFINE_KEYFIELD(m_strTeleDestName, FIELD_STRING, "teleport_destination")
 END_DATADESC()
 
 IMPLEMENT_SERVERCLASS_ST(CTriggerTimerStart, DT_TriggerTimerStart)
@@ -322,6 +543,7 @@ CTriggerTimerStart::CTriggerTimerStart()
 {
     m_iZoneNumber = 1;
 }
+
 bool CTriggerTimerStart::ToKeyValues(KeyValues *pKvInto)
 {
     // Structured like this because properties are another DB table for the site
@@ -342,43 +564,41 @@ bool CTriggerTimerStart::ToKeyValues(KeyValues *pKvInto)
     pKvInto->AddSubKey(pZoneProps);
 
     return BaseClass::ToKeyValues(pKvInto);
-};
+}
 
 bool CTriggerTimerStart::LoadFromKeyValues(KeyValues *zoneKV)
 {
-    if (BaseClass::LoadFromKeyValues(zoneKV))
+    if (!BaseClass::LoadFromKeyValues(zoneKV))
+        return false;
+
+    const auto pZoneProps = zoneKV->FindKey("zoneProps");
+    if (!pZoneProps)
+        return false;
+
+    const auto pActualProps = pZoneProps->FindKey("properties");
+    if (!pActualProps)
+        return false;
+
+    SetSpeedLimit(pActualProps->GetFloat("speed_limit", 350.0f));
+    SetIsLimitingSpeed(pActualProps->GetBool("limiting_speed", true));
+    SetStartOnJump(pActualProps->GetBool("start_on_jump", true));
+    SetLimitSpeedType(pActualProps->GetInt("speed_limit_type", SPEED_NORMAL_LIMIT));
+
+    const float nolook = -190.0f;
+    float yaw = pActualProps->GetFloat("yaw", nolook);
+    if (!CloseEnough(yaw, nolook))
     {
-        const auto pZoneProps = zoneKV->FindKey("zoneProps");
-        if (!pZoneProps)
-            return false;
-
-        const auto pActualProps = pZoneProps->FindKey("properties");
-        if (!pActualProps)
-            return false;
-
-        SetSpeedLimit(pActualProps->GetFloat("speed_limit", 350.0f));
-        SetIsLimitingSpeed(pActualProps->GetBool("limiting_speed", true));
-        SetStartOnJump(pActualProps->GetBool("start_on_jump", true));
-        SetLimitSpeedType(pActualProps->GetInt("speed_limit_type", SPEED_NORMAL_LIMIT));
-
-        const float nolook = -190.0f;
-        float yaw = pActualProps->GetFloat("yaw", nolook);
-        if (!CloseEnough(yaw, nolook))
-        {
-            SetHasLookAngles(true);
-            SetLookAngles(QAngle(0.0f, yaw, 0.0f));
-        }
-        else
-        {
-            SetHasLookAngles(false);
-        }
-        return true;
+        SetHasLookAngles(true);
+        SetLookAngles(QAngle(0.0f, yaw, 0.0f));
     }
-
-    return false;
+    else
+    {
+        SetHasLookAngles(false);
+    }
+    return true;
 }
 
-int CTriggerTimerStart::GetZoneType()
+int CTriggerTimerStart::GetZoneType() const
 {
     return ZONE_TYPE_START;
 }
@@ -393,8 +613,7 @@ void CTriggerTimerStart::Spawn()
 
     g_pMomentumTimer->SetStartTrigger(m_iTrackNumber, this);
 }
-void CTriggerTimerStart::SetSpeedLimit(const float fSpeed) { m_fSpeedLimit = fSpeed; }
-void CTriggerTimerStart::SetLookAngles(const QAngle &newang) { m_angLook = newang; }
+
 void CTriggerTimerStart::SetIsLimitingSpeed(const bool bIsLimitSpeed)
 {
     if (bIsLimitSpeed)
@@ -412,6 +631,7 @@ void CTriggerTimerStart::SetIsLimitingSpeed(const bool bIsLimitSpeed)
         }
     }
 }
+
 void CTriggerTimerStart::SetHasLookAngles(const bool bHasLook)
 {
     if (bHasLook)
@@ -429,6 +649,7 @@ void CTriggerTimerStart::SetHasLookAngles(const bool bHasLook)
         }
     }
 }
+
 //----------------------------------------------------------------------------------------------
 
 //----------- CTriggerTimerStop ----------------------------------------------------------------
@@ -453,7 +674,7 @@ void CTriggerTimerStop::Spawn()
     BaseClass::Spawn();
 }
 
-int CTriggerTimerStop::GetZoneType()
+int CTriggerTimerStop::GetZoneType() const
 {
     return ZONE_TYPE_STOP;
 }
@@ -484,7 +705,7 @@ void CTriggerTrickZone::Spawn()
     g_pTrickSystem->AddZone(this);
 }
 
-int CTriggerTrickZone::GetZoneType()
+int CTriggerTrickZone::GetZoneType() const
 {
     return ZONE_TYPE_TRICK;
 }
@@ -523,20 +744,141 @@ void CTriggerTrickZone::OnEndTouch(CBaseEntity *pOther)
     }
 }
 
+//----------------------------------------------------------------------------------------------
+
+bool MomTeleportEntity(CBaseEntity* pTeleportTo, 
+                    CBaseEntity* pEntToTeleport, 
+                    CBaseEntity* pLandmark = nullptr, 
+                    int iMode = 0, 
+                    Vector vecVelocityScaler = Vector(1.0f, 1.0f, 1.0f), 
+                    bool bResetAngles = true, 
+                    bool bReorientLandmark = false)
+{
+    if (!(pTeleportTo && pEntToTeleport))
+        return false;
+
+    pEntToTeleport->SetGroundEntity(nullptr);
+
+    QAngle* pAngles = const_cast<QAngle*>(&pTeleportTo->GetAbsAngles());
+    Vector* pOrigin = const_cast<Vector*>(&pTeleportTo->GetAbsOrigin());
+    Vector* pVelocity = const_cast<Vector*>(&pEntToTeleport->GetAbsVelocity());
+
+    VectorMultiply(*pVelocity, vecVelocityScaler, *pVelocity);
+
+    switch (iMode)
+    {
+        // Redundant due to the velocity scaler but kept just in case anyone wants a straightforward way to reset velocity
+        case TELEPORT_RESET:
+        {
+            pVelocity->Init();
+            break;
+        }
+        case TELEPORT_KEEP_NEGATIVE_Z:
+        {
+            pVelocity->x = pVelocity->y = 0;
+
+            if (pVelocity->z > 0.0f)
+                pVelocity->z = 0;
+
+            break;
+        }
+        case TELEPORT_SNAP_TO_DESTINATION:
+        {
+            matrix3x4_t matMyModelToWorld;
+            VMatrix matMyInverse, matRemoteTransform;
+            QAngle angVelocityAngle;
+
+            // Build a transformation from the teleportee's velocity vector
+            VectorAngles(pEntToTeleport->GetAbsVelocity(), angVelocityAngle);
+            AngleMatrix(angVelocityAngle, matMyModelToWorld);
+            MatrixInverseGeneral(matMyModelToWorld, matMyInverse);
+            matRemoteTransform = pTeleportTo->EntityToWorldTransform();
+
+            // Reorient the velocity
+            *pVelocity = matMyInverse.ApplyRotation(*pVelocity);
+            *pVelocity = matRemoteTransform.ApplyRotation(*pVelocity);
+            break;
+        }
+        case TELEPORT_LANDMARK:
+        {
+            if (!pLandmark)
+            {
+                DevWarning("TeleportEntity: Invalid landmark entity while in landmark mode!\n");
+                return false;
+            }
+
+            Vector vecNewOrigin;
+
+            // Old landmark behavior is just use the origin offset from the landmark without any transformations
+            if (!bReorientLandmark)
+            {
+                vecNewOrigin = pTeleportTo->GetAbsOrigin() + (pEntToTeleport->GetAbsOrigin() - pLandmark->GetAbsOrigin());
+
+                pEntToTeleport->Teleport(&vecNewOrigin, nullptr, nullptr);
+
+                return true;
+            }
+            
+            Vector vecNewVelocity;
+            QAngle angNewAngles;
+
+            matrix3x4_t pTransformMatrix;
+            matrix3x4_t pLocalLandmarkMatrix;
+            matrix3x4_t pRemoteLandmarkMatrix = pTeleportTo->EntityToWorldTransform();
+
+            MatrixInvert(pLandmark->EntityToWorldTransform(), pLocalLandmarkMatrix);
+            ConcatTransforms(pRemoteLandmarkMatrix, pLocalLandmarkMatrix, pTransformMatrix);
+
+            angNewAngles = TransformAnglesToWorldSpace(pEntToTeleport->GetAbsAngles(), pTransformMatrix);
+            VectorTransform(pEntToTeleport->GetAbsOrigin(), pTransformMatrix, vecNewOrigin);
+            VectorRotate(pEntToTeleport->GetAbsVelocity(), pTransformMatrix, vecNewVelocity);
+
+            pEntToTeleport->Teleport(&vecNewOrigin, &angNewAngles, &vecNewVelocity);
+
+            return true;
+        }
+        default:
+        {
+            // vphysics objects get stopped if pVelocity is null
+            if (pEntToTeleport->GetMoveType() != MOVETYPE_VPHYSICS)
+                pVelocity = nullptr;
+        }
+    };
+
+    if (!bResetAngles && iMode != TELEPORT_SNAP_TO_DESTINATION)
+        pAngles = nullptr;
+
+    pEntToTeleport->Teleport(pOrigin, pAngles, pVelocity);
+
+    return true;
+}
+
 //----------- CTriggerTeleport -----------------------------------------------------------------
-LINK_ENTITY_TO_CLASS(trigger_momentum_teleport, CTriggerMomentumTeleport);
+LINK_ENTITY_TO_CLASS(trigger_teleport, CTriggerMomentumTeleport);
 
 BEGIN_DATADESC(CTriggerMomentumTeleport)
-    DEFINE_KEYFIELD(m_bResetVelocity, FIELD_BOOLEAN, "stop"),
+    DEFINE_KEYFIELD(m_iMode, FIELD_INTEGER, "mode"),
+    DEFINE_KEYFIELD(m_vecVelocityScaler, FIELD_VECTOR, "velocityscale"),
     DEFINE_KEYFIELD(m_bResetAngles, FIELD_BOOLEAN, "resetang"),
     DEFINE_KEYFIELD(m_bFail, FIELD_BOOLEAN, "fail"),
+    DEFINE_KEYFIELD(m_Landmark, FIELD_STRING, "landmark"),
+    DEFINE_KEYFIELD(m_bReorientLandmark, FIELD_BOOLEAN, "reorient_landmark"),
 END_DATADESC()
 
-void CTriggerMomentumTeleport::OnStartTouch(CBaseEntity *pOther)
+CTriggerMomentumTeleport::CTriggerMomentumTeleport()
 {
-    BaseClass::OnStartTouch(pOther);
+    m_iMode = TELEPORT_DEFAULT;
+    m_vecVelocityScaler.Init(1.0f, 1.0f, 1.0f);
+    m_bResetAngles = true;
+    m_bReorientLandmark = false;
+    m_bFail = false;
+}
 
-    // SF_TELE_ONEXIT defaults to 0 so ents that inherit from this class and call this method DO fire the tp logic
+void CTriggerMomentumTeleport::Touch(CBaseEntity* pOther)
+{
+    if (!PassesTriggerFilters(pOther))
+        return;
+
     if (pOther && !HasSpawnFlags(SF_TELE_ONEXIT))
     {
         HandleTeleport(pOther);
@@ -558,33 +900,38 @@ void CTriggerMomentumTeleport::HandleTeleport(CBaseEntity *pOther)
     if (!pOther)
         return;
 
+    if (m_target != NULL_STRING)
+    {
+        m_hDestinationEnt = gEntList.FindEntityByName(nullptr, m_target, nullptr, pOther, pOther);
+    }
+
     if (!m_hDestinationEnt.Get())
     {
-        if (m_target != NULL_STRING)
-            m_hDestinationEnt = gEntList.FindEntityByName(nullptr, m_target, nullptr, pOther, pOther);
-        else
+        DevWarning("trigger_teleport: invalid destination entity!\n");
+        return;
+    }
+
+    CBaseEntity *pLandmark = nullptr;
+
+    if (m_Landmark != NULL_STRING)
+    {
+        pLandmark = gEntList.FindEntityByName(nullptr, m_Landmark, nullptr, pOther, pOther);
+
+        // Legacy trigger_teleports assume landmark mode if the landmark entity is valid,
+        // and someone who specifies a landmark almost certainly intends to make it a landmark teleport
+        if (pLandmark)
         {
-            DevWarning("CTriggerTeleport cannot teleport, pDestinationEnt and m_target are null!\n");
-            return;
+            m_iMode = TELEPORT_LANDMARK;
         }
     }
 
-    DoTeleport(m_hDestinationEnt.Get(), pOther);
+    // Deprecated spawnflag (SF_TELEPORT_PRESERVE_ANGLES = 1 << 5) from the old trigger_teleport
+    const bool bResetAngles = HasSpawnFlags(1 << 5) ? false : m_bResetAngles;
+
+    MomTeleportEntity(m_hDestinationEnt.Get(), pOther, pLandmark, m_iMode, m_vecVelocityScaler, bResetAngles, m_bReorientLandmark);
 
     if (m_bFail)
         OnFailTeleport(pOther);
-}
-
-bool CTriggerMomentumTeleport::DoTeleport(CBaseEntity *pTeleportTo, CBaseEntity *pEntToTeleport)
-{
-    if (!(pTeleportTo && pEntToTeleport))
-        return false;
-
-    pEntToTeleport->Teleport(&pTeleportTo->GetAbsOrigin(),
-                             m_bResetAngles ? &pTeleportTo->GetAbsAngles() : nullptr,
-                     m_bResetVelocity ? &vec3_origin : nullptr);
-    AfterTeleport(pEntToTeleport);
-    return true;
 }
 
 void CTriggerMomentumTeleport::OnFailTeleport(CBaseEntity *pEntTeleported)
@@ -595,6 +942,104 @@ void CTriggerMomentumTeleport::OnFailTeleport(CBaseEntity *pEntTeleported)
 
     pPlayer->m_nButtonsToggled = 0;
 }
+
+int CTriggerMomentumTeleport::DrawDebugTextOverlays(void) 
+{
+    int text_offset = BaseClass::DrawDebugTextOverlays();
+    static const char *szTeleportMode[TELEPORT_COUNT] = { "default", "reset", "keep downwards speed", "redirect", "landmark teleport" };
+
+    char tempstr[255];
+
+    if (m_target != NULL_STRING) 
+    {
+        Q_snprintf(tempstr, sizeof(tempstr), "Destination: %s", m_target.ToCStr());
+        EntityText(text_offset, tempstr, 0);
+        text_offset++;
+    }
+
+    if (m_iMode >= 0 && m_iMode < TELEPORT_COUNT)
+    {
+        Q_snprintf(tempstr, sizeof(tempstr), "Teleport mode: %s", szTeleportMode[m_iMode]);
+        EntityText(text_offset, tempstr, 0);
+        text_offset++;
+    }
+
+    Q_snprintf(tempstr, sizeof(tempstr), "Velocity scale: %.2f %.2f %.2f", m_vecVelocityScaler.x, m_vecVelocityScaler.y, m_vecVelocityScaler.z);
+    EntityText(text_offset, tempstr, 0);
+    text_offset++;
+
+    if (m_Landmark != NULL_STRING) 
+    {
+        Q_snprintf(tempstr, sizeof(tempstr), "Landmark: %s", m_Landmark.ToCStr());
+        EntityText(text_offset, tempstr, 0);
+        text_offset++;
+
+        Q_snprintf(tempstr, sizeof(tempstr), "Reorient landmark: %s", m_bReorientLandmark ? "yes" : "no");
+        EntityText(text_offset, tempstr, 0);
+        text_offset++;
+    }
+
+    if (m_iMode < TELEPORT_SNAP_TO_DESTINATION)
+    {
+        Q_snprintf(tempstr, sizeof(tempstr), "Reset angles: %s", m_bResetAngles ? "yes" : "no");
+        EntityText(text_offset, tempstr, 0);
+        text_offset++;
+    }
+
+    Q_snprintf(tempstr, sizeof(tempstr), "Fail teleport: %s", m_bFail ? "yes" : "no");
+    EntityText(text_offset, tempstr, 0);
+    text_offset++;
+
+    return text_offset;
+}
+
+//----------------------------------------------------------------------------------------------
+
+//---------- CEnvSurfaceTeleport ---------------------------------------------------------------
+LINK_ENTITY_TO_CLASS(env_momentum_surface_teleport, CEnvSurfaceTeleport);
+
+void CEnvSurfaceTeleport::PlayerSurfaceChanged(CBasePlayer *pPlayer, char gameMaterial)
+{
+    if (m_bDisabled)
+        return;
+
+    // Do our thing only if it involves the target material
+    if ( gameMaterial != m_iCurrentGameMaterial &&
+         ( gameMaterial == m_iTargetGameMaterial || m_iCurrentGameMaterial == m_iTargetGameMaterial ) )
+    {
+        DevMsg(2, "Player changed material to %d (was %d)\n", gameMaterial, m_iCurrentGameMaterial);
+
+        m_iCurrentGameMaterial = gameMaterial;
+
+        // Teleporting the player while still processing movement isn't nice
+        SetThink(&CEnvPlayerSurfaceTrigger::UpdateMaterialThink);
+        SetNextThink(gpGlobals->curtime);
+    }
+}
+
+void CEnvSurfaceTeleport::UpdateMaterialThink()
+{
+    if (m_iCurrentGameMaterial != m_iTargetGameMaterial)
+        return;
+
+    CBasePlayer *pPlayer = UTIL_GetLocalPlayer();
+
+    if (!m_hDestinationEnt.Get())
+    {
+        if (m_target != NULL_STRING)
+        {
+            m_hDestinationEnt = gEntList.FindEntityByName(nullptr, m_target, nullptr, pPlayer, pPlayer);
+        }
+        else
+        {
+            DevWarning("CEnvSurfaceTeleport cannot teleport, pDestinationEnt and m_target are null!\n");
+            return;
+        }
+    }
+
+    MomTeleportEntity(m_hDestinationEnt.Get(), pPlayer, nullptr, TELEPORT_DEFAULT, Vector(0.0f, 0.0f, 0.0f));
+}
+//----------------------------------------------------------------------------------------------
 
 //---------- CTriggerProgress ----------------------------------------------------------------
 LINK_ENTITY_TO_CLASS(trigger_momentum_progress, CTriggerProgress);
@@ -634,12 +1079,12 @@ bool CFilterProgress::PassesFilterImpl(CBaseEntity *pCaller, CBaseEntity *pEntit
 //----------- CTriggerTeleportCheckpoint -------------------------------------------------------
 LINK_ENTITY_TO_CLASS(trigger_momentum_teleport_progress, CTriggerTeleportProgress);
 
-void CTriggerTeleportProgress::OnStartTouch(CBaseEntity *pOther)
+void CTriggerTeleportProgress::Touch(CBaseEntity *pOther)
 {
     CMomentumPlayer *pPlayer = ToCMOMPlayer(pOther);
     if (pPlayer)
         SetDestinationEnt(pPlayer->GetCurrentProgressTrigger());
-    BaseClass::OnStartTouch(pOther);
+    BaseClass::Touch(pOther);
 }
 
 //-----------------------------------------------------------------------------------------------
@@ -663,7 +1108,6 @@ void CTriggerMultihop::OnStartTouch(CBaseEntity *pOther)
     if (pOther->IsPlayer())
     {
         m_mapOnStartTouchedTimes.InsertOrReplace(pOther->entindex(), gpGlobals->curtime);
-        SetNextThink(gpGlobals->curtime);
     }
 }
 
@@ -674,29 +1118,21 @@ void CTriggerMultihop::OnEndTouch(CBaseEntity *pOther)
     m_mapOnStartTouchedTimes.Remove(pOther->entindex());
 }
 
-void CTriggerMultihop::Think()
+void CTriggerMultihop::Touch(CBaseEntity *pOther)
 {
-    if (m_hTouchingEntities.Count())
+    if (PassesTriggerFilters(pOther) && pOther->IsPlayer())
     {
-        FOR_EACH_VEC_BACK(m_hTouchingEntities, i)
+        const auto pPlayer = static_cast<CMomentumPlayer*>(pOther);
+        if (pPlayer && m_mapOnStartTouchedTimes.IsValidIndex(m_mapOnStartTouchedTimes.Find(pPlayer->entindex())))
         {
-            if (m_hTouchingEntities[i]->IsPlayer())
+            const auto fEnterTime = m_mapOnStartTouchedTimes[m_mapOnStartTouchedTimes.Find(pPlayer->entindex())];
+            if (gpGlobals->curtime - fEnterTime >= m_fMaxHoldSeconds)
             {
-                const auto pPlayer = static_cast<CMomentumPlayer*>(m_hTouchingEntities[i].Get());
-                if (pPlayer && m_mapOnStartTouchedTimes.IsValidIndex(m_mapOnStartTouchedTimes.Find(pPlayer->entindex())))
-                {
-                    const auto fEnterTime = m_mapOnStartTouchedTimes[m_mapOnStartTouchedTimes.Find(pPlayer->entindex())];
-                    if (gpGlobals->curtime - fEnterTime >= m_fMaxHoldSeconds)
-                    {
-                        DoTeleport(pPlayer->GetCurrentProgressTrigger(), pPlayer);
-                    }
-                }
+                SetDestinationEnt(pPlayer->GetCurrentProgressTrigger());
+                HandleTeleport(pPlayer);
             }
         }
-        SetNextThink(gpGlobals->curtime);
     }
-    else
-        SetNextThink(TICK_NEVER_THINK);
 }
 
 //-----------------------------------------------------------------------------------------------
@@ -719,7 +1155,8 @@ void CTriggerOnehop::OnStartTouch(CBaseEntity *pOther)
     {
         if (pPlayer->FindOnehopOnList(this))
         {
-            DoTeleport(pPlayer->GetCurrentProgressTrigger(), pPlayer);
+            SetDestinationEnt(pPlayer->GetCurrentProgressTrigger());
+            HandleTeleport(pPlayer);
         }
         else
         {
@@ -731,7 +1168,7 @@ void CTriggerOnehop::OnStartTouch(CBaseEntity *pOther)
                 m_bhopNoLongerJumpableFired = true;
             }
 
-            BaseClass::OnStartTouch(pOther);
+            BaseClass::OnStartTouch(pPlayer);
         }
     }
 }
@@ -764,6 +1201,8 @@ LINK_ENTITY_TO_CLASS(trigger_momentum_userinput, CTriggerUserInput);
 BEGIN_DATADESC(CTriggerUserInput)
     DEFINE_KEYFIELD(m_eKey, FIELD_INTEGER, "lookedkey"),
     DEFINE_OUTPUT(m_OnKeyPressed, "OnKeyPressed"),
+    DEFINE_OUTPUT(m_OnKeyHeld, "OnKeyHeld"),
+    DEFINE_OUTPUT(m_OnKeyReleased, "OnKeyReleased"),
 END_DATADESC();
 
 CTriggerUserInput::CTriggerUserInput()
@@ -812,44 +1251,22 @@ void CTriggerUserInput::Spawn()
     BaseClass::Spawn();
 }
 
-void CTriggerUserInput::OnStartTouch(CBaseEntity *pOther)
+void CTriggerUserInput::Touch(CBaseEntity *pOther)
 {
-    BaseClass::OnStartTouch(pOther);
-
-    if (pOther->IsPlayer())
+    if (PassesTriggerFilters(pOther))
     {
-        CheckEnt(pOther);
-        SetNextThink(gpGlobals->curtime);
-    }
-}
-
-void CTriggerUserInput::Think()
-{
-    if (m_hTouchingEntities.Count())
-    {
-        FOR_EACH_VEC(m_hTouchingEntities, i)
+        const auto pPlayer = static_cast<CBasePlayer*>(pOther);
+        if (pPlayer)
         {
-            const auto pEnt = m_hTouchingEntities[i].Get();
-            CheckEnt(pEnt);
+            if (pPlayer->m_afButtonPressed & m_ButtonRep)
+                m_OnKeyPressed.FireOutput(pPlayer, this);
+
+            if (pPlayer->m_nButtons & m_ButtonRep)
+                m_OnKeyHeld.FireOutput(pPlayer, this);
+
+            if (pPlayer->m_afButtonReleased & m_ButtonRep)
+                m_OnKeyReleased.FireOutput(pPlayer, this);
         }
-
-        SetNextThink(gpGlobals->curtime);
-    }
-    else
-    {
-        SetNextThink(TICK_NEVER_THINK);
-    }
-}
-
-void CTriggerUserInput::CheckEnt(CBaseEntity *pOther)
-{
-    if (!(pOther && pOther->IsPlayer()))
-        return;
-
-    const auto pPlayer = static_cast<CBasePlayer*>(pOther);
-    if (pPlayer && pPlayer->m_nButtons & m_ButtonRep)
-    {
-        m_OnKeyPressed.FireOutput(pPlayer, this);
     }
 }
 
@@ -858,13 +1275,16 @@ void CTriggerUserInput::CheckEnt(CBaseEntity *pOther)
 //--------- CTriggerLimitMovement -------------------------------------------------------------------
 LINK_ENTITY_TO_CLASS(trigger_momentum_limitmovement, CTriggerLimitMovement);
 
-void CTriggerLimitMovement::OnStartTouch(CBaseEntity *pOther)
+void CTriggerLimitMovement::Touch(CBaseEntity *pOther)
 {
+    if (!PassesTriggerFilters(pOther))
+        return;
+
     CMomRunEntity *pEnt = dynamic_cast<CMomRunEntity*>(pOther);
     if (pEnt)
         ToggleButtons(pEnt, false);
 
-    BaseClass::OnStartTouch(pOther);
+    BaseClass::Touch(pOther);
 }
 
 void CTriggerLimitMovement::OnEndTouch(CBaseEntity *pOther)
@@ -900,16 +1320,98 @@ void CTriggerLimitMovement::ToggleButtons(CMomRunEntity* pEnt, bool bEnable)
 
 //-----------------------------------------------------------------------------------------------
 
+void CMomentumTriggerSystem::InitVariablePush(CBaseEntity *pOther, Vector vecForce, float flDuration, float flBias, bool bIncreasing)
+{
+    VariablePush push;
+
+    push.m_pEntity = pOther;
+    push.m_vecPushForce = vecForce;
+    push.m_iNumTicks = Ceil2Int(flDuration / gpGlobals->interval_per_tick);
+    push.m_iElapsedTicks = 0;
+    push.m_flDuration = flDuration;
+    push.m_flBias = flBias;
+    push.m_bIncreasing = bIncreasing;
+
+    m_VariablePushes.AddToTail(push);
+}
+
+void CMomentumTriggerSystem::DoVariablePushes()
+{
+    FOR_EACH_VEC(m_VariablePushes, i)
+    {
+        VariablePush *pPush = &m_VariablePushes[i];
+
+        if (pPush->m_iElapsedTicks == 0)
+        {
+            pPush->m_flStartTime = (float)Plat_FloatTime();
+        }
+
+        if (pPush->m_iElapsedTicks == pPush->m_iNumTicks)
+        {
+            DevLog("Variable push: %d ticks in %.4f seconds, average %.4f seconds per tick\n", 
+                pPush->m_iElapsedTicks, Plat_FloatTime() - pPush->m_flStartTime, (Plat_FloatTime() - pPush->m_flStartTime) / pPush->m_iElapsedTicks);
+        
+            m_VariablePushes.Remove(i);
+            continue;
+        }
+
+        // We start on tick 0 hence the -1 here
+        float flFactor = pPush->m_iElapsedTicks / (float)(pPush->m_iNumTicks - 1);
+
+        if (!pPush->m_bIncreasing)
+        {
+            flFactor = 1.0f - flFactor;
+        }
+
+        Vector vecForce = pPush->m_vecPushForce * Bias(flFactor, pPush->m_flBias);
+
+        pPush->m_pEntity->SetAbsVelocity(vecForce + pPush->m_pEntity->GetAbsVelocity());
+        pPush->m_iElapsedTicks++;
+    }
+}
+
+void MomPushEntity(CBaseEntity *pEntity, Vector vecPush, int iMode, float flVariableDuration = 1.0f, float flVariableBias = 0.5f, bool bVariableIncreasing = false)
+{
+    switch (iMode)
+    {
+    case PUSH_ADD:
+        vecPush += pEntity->GetAbsVelocity();
+        break;
+    case PUSH_SET_IF_LOWER:
+        if (vecPush.LengthSqr() < pEntity->GetAbsVelocity().LengthSqr())
+            vecPush = pEntity->GetAbsVelocity();
+        break;
+    case PUSH_ADD_IF_LOWER:
+        if (vecPush.LengthSqr() < pEntity->GetAbsVelocity().LengthSqr())
+            vecPush += pEntity->GetAbsVelocity();
+        break;
+    case PUSH_BASEVELOCITY:
+        pEntity->SetBaseVelocity(vecPush);
+        return;
+    case PUSH_VARIABLE:
+        g_MomentumTriggerSystem.InitVariablePush(pEntity, vecPush, flVariableDuration, flVariableBias, bVariableIncreasing);
+        return;
+    default:
+        DevWarning("PushEntity: invalid mode %d, defaulting to set velocity\n", iMode);
+        break;
+    }
+
+    pEntity->SetAbsVelocity(vecPush);
+}
+
 //---------- CFuncShootBoost --------------------------------------------------------------------
 LINK_ENTITY_TO_CLASS(func_shootboost, CFuncShootBoost);
 
 BEGIN_DATADESC(CFuncShootBoost)
     DEFINE_KEYFIELD(m_vPushDir, FIELD_VECTOR, "pushdir"),
-    DEFINE_KEYFIELD(m_fPushForce, FIELD_FLOAT, "force"),
+    DEFINE_KEYFIELD(m_flPushForce, FIELD_FLOAT, "force"),
     DEFINE_KEYFIELD(m_iIncrease, FIELD_INTEGER, "increase"),
+    DEFINE_KEYFIELD(m_flVariablePushDuration, FIELD_FLOAT, "varpushduration"),
+    DEFINE_KEYFIELD(m_flVariablePushBias, FIELD_FLOAT, "varpushbias"),
+    DEFINE_KEYFIELD(m_bVariablePushIncreasing, FIELD_BOOLEAN, "varpushincrease")
 END_DATADESC()
 
-CFuncShootBoost::CFuncShootBoost(): m_fPushForce(300.0f), m_iIncrease(4)
+CFuncShootBoost::CFuncShootBoost(): m_flPushForce(300.0f), m_iIncrease(3), m_flVariablePushDuration(1.0f), m_flVariablePushBias(0.5), m_bVariablePushIncreasing(false)
 {
     m_vPushDir.Init();
 }
@@ -926,8 +1428,15 @@ void CFuncShootBoost::Spawn()
     // Transform the vector into entity space
     VectorIRotate(vecAbsDir, EntityToWorldTransform(), m_vPushDir);
 
-    // temporary
-    m_debugOverlays |= (OVERLAY_BBOX_BIT | OVERLAY_TEXT_BIT);
+    // We don't need health here
+    SetMaxHealth(0);
+
+    // Enable "damage" so OnTakeDamage gets called
+    m_takedamage = DAMAGE_YES;
+
+    m_debugOverlays |= ((OVERLAY_BBOX_BIT * mom_triggers_overlay_bbox_enable.GetBool()) |
+                        (OVERLAY_TEXT_BIT * mom_triggers_overlay_text_enable.GetBool()));
+
     if (m_target != NULL_STRING)
         m_hEntityCheck = gEntList.FindEntityByName(nullptr, m_target);
 }
@@ -937,47 +1446,94 @@ int CFuncShootBoost::OnTakeDamage(const CTakeDamageInfo &info)
     const auto pInflictor = info.GetAttacker();
     if (pInflictor)
     {
-        Vector finalVel = m_vPushDir.Normalized() * m_fPushForce;
-        switch (m_iIncrease)
-        {
-        case 0:
-            break;
-        case 1:
-            finalVel += pInflictor->GetAbsVelocity();
-            break;
-        case 2:
-            if (finalVel.LengthSqr() < pInflictor->GetAbsVelocity().LengthSqr())
-                finalVel = pInflictor->GetAbsVelocity();
-            break;
-        case 3:
-            // The description of this method says the player velocity is increased by final velocity,
-            // but we're just adding one vec to the other, which is not quite the same
-            if (finalVel.LengthSqr() < pInflictor->GetAbsVelocity().LengthSqr())
-                finalVel += pInflictor->GetAbsVelocity();
-            break;
-        case 4:
-            pInflictor->SetBaseVelocity(finalVel);
-            break;
-        default:
-            DevWarning("CFuncShootBoost:: %i not recognized as valid for m_iIncrease", m_iIncrease);
-            break;
-        }
         if (m_hEntityCheck.Get())
         {
             const auto pTrigger = dynamic_cast<CBaseTrigger*>(m_hEntityCheck.Get());
-            if (pTrigger && pTrigger->IsTouching(pInflictor))
-            {
-                pInflictor->SetAbsVelocity(finalVel);
-            }
+            if (pTrigger && !pTrigger->IsTouching(pInflictor))
+                return info.GetDamage();
         }
-        else
-        {
-            pInflictor->SetAbsVelocity(finalVel);
-        }
+
+        // Transform the vector back to world space
+        Vector vecAbsDir;
+        VectorRotate(m_vPushDir, EntityToWorldTransform(), vecAbsDir);
+
+        Vector finalVel = HasSpawnFlags(SF_PUSH_DIRECTION_AS_FINAL_FORCE) ? vecAbsDir : vecAbsDir.Normalized() * m_flPushForce;
+
+        MomPushEntity(pInflictor, finalVel, m_iIncrease, m_flVariablePushDuration, m_flVariablePushBias, m_bVariablePushIncreasing);
     }
     // As we don't want to break it, we don't call BaseClass::OnTakeDamage(info);
     // OnTakeDamage returns the damage dealt
     return info.GetDamage();
+}
+
+int CFuncShootBoost::DrawDebugTextOverlays(void) 
+{
+    int text_offset = BaseClass::DrawDebugTextOverlays();
+
+    char tempstr[255];
+    static const char *szBoostType[PUSH_COUNT] = { "set", "add", "set if lower", "add if lower", "basevelocity", "variable push" };
+
+    if (m_iIncrease >= 0 && m_iIncrease < PUSH_COUNT)
+    {
+        Q_snprintf(tempstr, sizeof(tempstr), "Push type: %s", szBoostType[m_iIncrease]);
+        EntityText(text_offset, tempstr, 0);
+        text_offset++;
+    }
+    
+    Q_snprintf(tempstr, sizeof(tempstr), "Force: %.2f", m_flPushForce);
+    EntityText(text_offset, tempstr, 0);
+    text_offset++;
+
+    Vector vecFinalVel;
+    VectorRotate(m_vPushDir, EntityToWorldTransform(), vecFinalVel);
+
+    if (!HasSpawnFlags(SF_PUSH_DIRECTION_AS_FINAL_FORCE))
+        vecFinalVel = vecFinalVel.Normalized() * m_flPushForce;
+
+    if (m_iIncrease == PUSH_VARIABLE)
+    {
+        Q_snprintf(tempstr, sizeof(tempstr), "Variable push duration: %.2f", m_flVariablePushDuration);
+        EntityText(text_offset, tempstr, 0);
+        text_offset++;
+
+        const int iNumTicks = Ceil2Int(m_flVariablePushDuration / gpGlobals->interval_per_tick);
+
+        float flFactor;
+        Vector vecTotalForce(0.0f, 0.0f, 0.0f);
+
+        // Calculate the total velocity given over the duration
+        // This is pretty dumb but it's the most accurate method, and we're only doing this when printing debug text anyway
+        for (int i = 0; i < iNumTicks; i++)
+        {
+            flFactor = i / (float)(iNumTicks - 1);
+
+            if (!m_bVariablePushIncreasing)
+            {
+                flFactor = 1.0f - flFactor;
+            }
+
+            vecTotalForce += vecFinalVel * Bias(1.0f - flFactor, m_flVariablePushBias);
+        }
+
+        vecFinalVel = vecTotalForce;
+
+        Q_snprintf(tempstr, sizeof(tempstr), "Variable push total force: %.2f", vecFinalVel.Length());
+        EntityText(text_offset, tempstr, 0);
+        text_offset++;
+    }
+
+    Q_snprintf(tempstr, sizeof(tempstr), "Push force vector: %.2f %.2f %.2f", vecFinalVel.x, vecFinalVel.y, vecFinalVel.z);
+    EntityText(text_offset, tempstr, 0);
+    text_offset++;
+
+    if (m_target != NULL_STRING) 
+    {
+        Q_snprintf(tempstr, sizeof(tempstr), "Trigger: %s", m_target.ToCStr());
+        EntityText(text_offset, tempstr, 0);
+        text_offset++;
+    }
+
+    return text_offset;
 }
 //-----------------------------------------------------------------------------------------------
 
@@ -986,13 +1542,29 @@ LINK_ENTITY_TO_CLASS(trigger_momentum_push, CTriggerMomentumPush);
 
 BEGIN_DATADESC(CTriggerMomentumPush)
     DEFINE_KEYFIELD(m_vPushDir, FIELD_VECTOR, "pushdir"),
-    DEFINE_KEYFIELD(m_fPushForce, FIELD_FLOAT, "force"),
-    DEFINE_KEYFIELD(m_iIncrease, FIELD_INTEGER, "increase")
+    DEFINE_KEYFIELD(m_flPushForce, FIELD_FLOAT, "force"),
+    DEFINE_KEYFIELD(m_iIncrease, FIELD_INTEGER, "increase"),
+    DEFINE_KEYFIELD(m_flVariablePushDuration, FIELD_FLOAT, "varpushduration"),
+    DEFINE_KEYFIELD(m_flVariablePushBias, FIELD_FLOAT, "varpushbias"),
+    DEFINE_KEYFIELD(m_bVariablePushIncreasing, FIELD_BOOLEAN, "varpushincrease")
 END_DATADESC()
 
-CTriggerMomentumPush::CTriggerMomentumPush(): m_fPushForce(300.0f), m_iIncrease(3)
+CTriggerMomentumPush::CTriggerMomentumPush(): m_flPushForce(300.0f), m_iIncrease(3), m_flVariablePushDuration(1.0f), m_flVariablePushBias(0.5), m_bVariablePushIncreasing(false)
 {
     m_vPushDir.Init();
+}
+
+void CTriggerMomentumPush::Spawn()
+{
+    BaseClass::Spawn();
+
+    // Convert pushdir from angles to a vector (copied straight from CTriggerPush::Spawn)
+    Vector vecAbsDir;
+    QAngle angPushDir = QAngle(m_vPushDir.x, m_vPushDir.y, m_vPushDir.z);
+    AngleVectors(angPushDir, &vecAbsDir);
+
+    // Transform the vector into entity space
+    VectorIRotate(vecAbsDir, EntityToWorldTransform(), m_vPushDir);
 }
 
 void CTriggerMomentumPush::OnStartTouch(CBaseEntity *pOther)
@@ -1013,32 +1585,77 @@ void CTriggerMomentumPush::OnSuccessfulTouch(CBaseEntity *pOther)
 {
     if (pOther)
     {
-        Vector finalVel;
-        if (HasSpawnFlags(SF_PUSH_DIRECTION_AS_FINAL_FORCE))
-            finalVel = m_vPushDir;
-        else
-            finalVel = m_vPushDir.Normalized() * m_fPushForce;
-        switch (m_iIncrease)
+        // Transform the vector back to world space
+        Vector vecAbsDir;
+        VectorRotate(m_vPushDir, EntityToWorldTransform(), vecAbsDir);
+
+        Vector finalVel = HasSpawnFlags(SF_PUSH_DIRECTION_AS_FINAL_FORCE) ? vecAbsDir : vecAbsDir.Normalized() * m_flPushForce;
+
+        MomPushEntity(pOther, finalVel, m_iIncrease, m_flVariablePushDuration, m_flVariablePushBias, m_bVariablePushIncreasing);
+    }
+} 
+
+int CTriggerMomentumPush::DrawDebugTextOverlays(void) 
+{
+    int text_offset = BaseClass::DrawDebugTextOverlays();
+
+    char tempstr[255];
+    static const char *szBoostType[PUSH_COUNT] = { "set", "add", "set if lower", "add if lower", "basevelocity", "variable push" };
+
+    if (m_iIncrease >= 0 && m_iIncrease < PUSH_COUNT)
+    {
+        Q_snprintf(tempstr, sizeof(tempstr), "Push type: %s", szBoostType[m_iIncrease]);
+        EntityText(text_offset, tempstr, 0);
+        text_offset++;
+    }
+    
+    Q_snprintf(tempstr, sizeof(tempstr), "Force: %.2f", m_flPushForce);
+    EntityText(text_offset, tempstr, 0);
+    text_offset++;
+
+    Vector vecFinalVel;
+    VectorRotate(m_vPushDir, EntityToWorldTransform(), vecFinalVel);
+
+    if (!HasSpawnFlags(SF_PUSH_DIRECTION_AS_FINAL_FORCE))
+        vecFinalVel = vecFinalVel.Normalized() * m_flPushForce;
+
+    if (m_iIncrease == PUSH_VARIABLE)
+    {
+        Q_snprintf(tempstr, sizeof(tempstr), "Variable push duration: %.2f", m_flVariablePushDuration);
+        EntityText(text_offset, tempstr, 0);
+        text_offset++;
+
+        const int iNumTicks = Ceil2Int(m_flVariablePushDuration / gpGlobals->interval_per_tick);
+
+        float flFactor;
+        Vector vecTotalForce(0.0f, 0.0f, 0.0f);
+
+        // Calculate the total velocity given over the duration
+        // This is pretty dumb but it's the most accurate method, and we're only doing this when printing debug text anyway
+        for (int i = 0; i < iNumTicks; i++)
         {
-        case 0:
-            break;
-        case 1:
-            finalVel += pOther->GetAbsVelocity();
-            break;
-        case 2:
-            if (finalVel.LengthSqr() < pOther->GetAbsVelocity().LengthSqr())
-                finalVel = pOther->GetAbsVelocity();
-            break;
-        case 3:
-            pOther->SetBaseVelocity(finalVel);
-            break;
-        default:
-            DevWarning("CTriggerMomentumPush:: %i not recognized as valid for m_iIncrease", m_iIncrease);
-            break;
+            flFactor = i / (float)(iNumTicks - 1);
+
+            if (!m_bVariablePushIncreasing)
+            {
+                flFactor = 1 - flFactor;
+            }
+
+            vecTotalForce += vecFinalVel * Bias(1 - flFactor, m_flVariablePushBias);
         }
 
-        pOther->SetAbsVelocity(finalVel);
+        vecFinalVel = vecTotalForce;
+
+        Q_snprintf(tempstr, sizeof(tempstr), "Variable push total force: %.2f", vecFinalVel.Length());
+        EntityText(text_offset, tempstr, 0);
+        text_offset++;
     }
+
+    Q_snprintf(tempstr, sizeof(tempstr), "Push force vector: %.2f %.2f %.2f", vecFinalVel.x, vecFinalVel.y, vecFinalVel.z);
+    EntityText(text_offset, tempstr, 0);
+    text_offset++;
+
+    return text_offset;
 }
 //-----------------------------------------------------------------------------------------------
 
@@ -1342,87 +1959,6 @@ void CTriggerSetSpeed::CalculateSpeed(CBaseEntity *pOther)
     m_mapCalculatedVelocities.InsertOrReplace(pOther->entindex(), vecNewFinalVelocity);
 }
 
-//-----------------------------------------------------------------------------------------------
-LINK_ENTITY_TO_CLASS(trigger_momentum_speedthreshold, CTriggerSpeedThreshold);
-
-BEGIN_DATADESC(CTriggerSpeedThreshold)
-    DEFINE_KEYFIELD(m_iAboveOrBelow, FIELD_INTEGER, "AboveOrBelow"),
-    DEFINE_KEYFIELD(m_bVertical, FIELD_BOOLEAN, "Vertical"),
-    DEFINE_KEYFIELD(m_bHorizontal, FIELD_BOOLEAN, "Horizontal"),
-    DEFINE_KEYFIELD(m_flVerticalSpeed, FIELD_FLOAT, "VerticalSpeed"),
-    DEFINE_KEYFIELD(m_flHorizontalSpeed, FIELD_FLOAT, "HorizontalSpeed"),
-    DEFINE_KEYFIELD(m_flInterval, FIELD_FLOAT, "Interval"),
-    DEFINE_KEYFIELD(m_bOnThink, FIELD_BOOLEAN, "OnThink"),
-    DEFINE_OUTPUT(m_OnThresholdEvent, "OnThreshold")
-END_DATADESC();
-
-CTriggerSpeedThreshold::CTriggerSpeedThreshold()
-{
-    m_iAboveOrBelow = THRESHOLD_ABOVE;
-    m_bVertical = false;
-    m_bHorizontal = false;
-    m_flVerticalSpeed = 500.0f;
-    m_flHorizontalSpeed = 1000.0f;
-    m_flInterval = 1.0f;
-    m_bOnThink = false;
-}
-
-void CTriggerSpeedThreshold::OnStartTouch(CBaseEntity *pOther)
-{
-    BaseClass::OnStartTouch(pOther);
-
-    if (pOther->IsPlayer())
-    {
-        CheckSpeed(pOther);
-
-        if (m_bOnThink)
-            SetNextThink(gpGlobals->curtime + m_flInterval);
-    }
-}
-
-void CTriggerSpeedThreshold::CheckSpeed(CBaseEntity *pOther)
-{
-    const auto vel = pOther->GetAbsVelocity();
-
-    if (m_bHorizontal)
-    {
-        if (CheckSpeedInternal(vel.Length2D(), true))
-            m_OnThresholdEvent.FireOutput(pOther, this);
-    }
-
-    if (m_bVertical)
-    {
-        if (CheckSpeedInternal(fabs(vel.z), false))
-            m_OnThresholdEvent.FireOutput(pOther, this);
-    }
-}
-
-void CTriggerSpeedThreshold::Think()
-{
-    if (m_bOnThink)
-    {
-        FOR_EACH_VEC(m_hTouchingEntities, i)
-        {
-            const auto pEnt = m_hTouchingEntities[i].Get();
-            if (pEnt && pEnt->IsPlayer())
-            {
-                CheckSpeed(pEnt);
-                SetNextThink(gpGlobals->curtime + m_flInterval);
-            }
-        }
-    }
-    else
-    {
-        SetNextThink(TICK_NEVER_THINK);
-    }
-}
-
-bool CTriggerSpeedThreshold::CheckSpeedInternal(const float flToCheck, bool bIsHorizontal)
-{
-    const auto speed = bIsHorizontal ? m_flHorizontalSpeed : m_flVerticalSpeed;
-    return m_iAboveOrBelow == THRESHOLD_ABOVE ? flToCheck > speed : flToCheck < speed;
-}
-
 // --------------------------------------------------------------------------------------
 
 LINK_ENTITY_TO_CLASS(func_momentum_brush, CFuncMomentumBrush);
@@ -1671,7 +2207,7 @@ void CNoGrenadesZone::OnStartTouch(CBaseEntity* pOther)
 
     if (m_iExplosivePreventionType == FIZZLE_ON_ENTRANCE)
     {
-        pExplosive->Destroy(true);
+        pExplosive->Fizzle();
         return;
     }
 
@@ -2015,16 +2551,7 @@ int CTriggerMomentumCatapult::DrawDebugTextOverlays()
 {
     int text_offset = BaseClass::DrawDebugTextOverlays();
 
-
     char tempstr[255];
-
-    Q_snprintf(tempstr, sizeof(tempstr), "Name: %s", GetDebugName());
-    EntityText(text_offset, tempstr, 0);
-    text_offset++;
-
-    Q_snprintf(tempstr, sizeof(tempstr), "Position: %f, %f, %f", GetAbsOrigin().x, GetAbsOrigin().y, GetAbsOrigin().z);
-    EntityText(text_offset, tempstr, 0);
-    text_offset++;
 
     if (m_target != NULL_STRING)
     {
@@ -2056,3 +2583,20 @@ int CTriggerMomentumCatapult::DrawDebugTextOverlays()
 }
 
 //-----------------------------------------------------------------------------------------------
+
+LINK_ENTITY_TO_CLASS(info_teleport_destination, CTeleportDestination);
+
+IMPLEMENT_SERVERCLASS_ST(CTeleportDestination, DT_TeleportDestination)
+END_SEND_TABLE();
+
+void CTeleportDestination::Spawn()
+{
+    Precache();
+    BaseClass::Spawn();
+}
+
+void CTeleportDestination::Precache()
+{
+    BaseClass::Precache();
+    PrecacheMaterial(MOM_ZONE_DRAW_MATERIAL);
+}

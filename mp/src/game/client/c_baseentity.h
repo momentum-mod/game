@@ -1140,7 +1140,7 @@ public:
 #ifdef _DEBUG
 	void FunctionCheck( void *pFunction, const char *name );
 
-	ENTITYFUNCPTR TouchSet( ENTITYFUNCPTR func, char *name ) 
+	ENTITYFUNCPTR TouchSet( ENTITYFUNCPTR func, const char *name ) 
 	{ 
 		//COMPILE_TIME_ASSERT( sizeof(func) == 4 );
 		m_pfnTouch = func; 
@@ -1273,6 +1273,8 @@ public:
 	unsigned short					m_EntClientFlags;
 
 	CNetworkColor32( m_clrRender );
+
+	int								m_iViewHideFlags;
 
 private:
 	

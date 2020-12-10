@@ -62,6 +62,7 @@ BEGIN_DATADESC( CBaseDoor )
 
 	DEFINE_KEYFIELD( m_bLoopMoveSound, FIELD_BOOLEAN, "loopmovesound" ),
 	DEFINE_KEYFIELD( m_bIgnoreDebris, FIELD_BOOLEAN, "ignoredebris" ),
+	DEFINE_KEYFIELD( m_bSolidBsp, FIELD_BOOLEAN, "solidbsp" ),
 
 	DEFINE_INPUTFUNC( FIELD_VOID, "Open", InputOpen ),
 	DEFINE_INPUTFUNC( FIELD_VOID, "Close", InputClose ),
@@ -252,10 +253,7 @@ void CBaseDoor::Spawn()
 {
 	Precache();
 
-#ifdef HL1_DLL
-	SetSolid( SOLID_BSP );
-#else
-	if ( GetMoveParent() && GetRootMoveParent()->GetSolid() == SOLID_BSP )
+	if ( ( GetMoveParent() && GetRootMoveParent()->GetSolid() == SOLID_BSP ) || m_bSolidBsp )
 	{
 		SetSolid( SOLID_BSP );
 	}
@@ -263,7 +261,6 @@ void CBaseDoor::Spawn()
 	{
 		SetSolid( SOLID_VPHYSICS );
 	}
-#endif
 
 	// Convert movedir from angles to a vector
 	QAngle angMoveDir = QAngle( m_vecMoveDir.x, m_vecMoveDir.y, m_vecMoveDir.z );
@@ -1341,17 +1338,9 @@ public:
 	// This is ONLY used by the node graph to test movement through a door
 	virtual void SetToggleState( int state );
 	virtual bool IsRotatingDoor() { return true; }
-
-	bool m_bSolidBsp;
-
-	DECLARE_DATADESC();
 };
 
 LINK_ENTITY_TO_CLASS( func_door_rotating, CRotDoor );
-
-BEGIN_DATADESC( CRotDoor )
-	DEFINE_KEYFIELD( m_bSolidBsp, FIELD_BOOLEAN, "solidbsp" ),
-END_DATADESC()
 
 //-----------------------------------------------------------------------------
 // Purpose: 
@@ -1402,16 +1391,6 @@ void CRotDoor::Spawn( void )
 	else
 	{
 		m_toggle_state = TS_AT_BOTTOM;
-	}
-
-#ifdef HL1_DLL
-	SetSolid( SOLID_VPHYSICS );
-#endif
-		
-	// Slam the object back to solid - if we really want it to be solid.
-	if ( m_bSolidBsp )
-	{
-		SetSolid( SOLID_BSP );
 	}
 }
 

@@ -510,7 +510,12 @@ void KeyValues::RemoveEverything()
 
 void KeyValues::RecursiveSaveToFile( CUtlBuffer& buf, int indentLevel, bool sortKeys /*= false*/, bool bAllowEmptyString /*= false*/ )
 {
-	RecursiveSaveToFile( NULL, FILESYSTEM_INVALID_HANDLE, &buf, indentLevel, sortKeys, bAllowEmptyString );
+	RecursiveSaveToFile( NULL, FILESYSTEM_INVALID_HANDLE, &buf, indentLevel, sortKeys ? -1 : 0, bAllowEmptyString );
+}
+
+void KeyValues::RecursiveSaveToFile( CUtlBuffer& buf, int indentLevel, int subKeySortCount, bool bAllowEmptyString /*= false*/ )
+{
+	RecursiveSaveToFile( NULL, FILESYSTEM_INVALID_HANDLE, &buf, indentLevel, subKeySortCount, bAllowEmptyString );
 }
 
 //-----------------------------------------------------------------------------
@@ -755,7 +760,7 @@ bool KeyValues::SaveToFile( IBaseFileSystem *filesystem, const char *resourceNam
 	if ( bCacheResult ) {
 		KeyValuesSystem()->AddFileKeyValuesToCache( this, resourceName, pathID );
 	}
-	RecursiveSaveToFile(filesystem, f, NULL, 0, sortKeys, bAllowEmptyString );
+	RecursiveSaveToFile(filesystem, f, NULL, 0, sortKeys ? -1 : 0, bAllowEmptyString );
 	filesystem->Close(f);
 
 	return true;
@@ -819,7 +824,7 @@ void KeyValues::InternalWrite( IBaseFileSystem *filesystem, FileHandle_t f, CUtl
 // Purpose: Save keyvalues from disk, if subkey values are detected, calls
 //			itself to save those
 //-----------------------------------------------------------------------------
-void KeyValues::RecursiveSaveToFile( IBaseFileSystem *filesystem, FileHandle_t f, CUtlBuffer *pBuf, int indentLevel, bool sortKeys, bool bAllowEmptyString )
+void KeyValues::RecursiveSaveToFile( IBaseFileSystem *filesystem, FileHandle_t f, CUtlBuffer *pBuf, int indentLevel, int sortKeyCount, bool bAllowEmptyString )
 {
 	// write header
 	WriteIndents( filesystem, f, pBuf, indentLevel );
@@ -830,7 +835,7 @@ void KeyValues::RecursiveSaveToFile( IBaseFileSystem *filesystem, FileHandle_t f
 	INTERNALWRITE("{\n", 2);
 
 	// loop through all our keys writing them to disk
-	if ( sortKeys )
+	if ( sortKeyCount )
 	{
 		CUtlSortVector< KeyValues*, CUtlSortVectorKeyValuesByName > vecSortedKeys;
 
@@ -842,13 +847,13 @@ void KeyValues::RecursiveSaveToFile( IBaseFileSystem *filesystem, FileHandle_t f
 		
 		FOR_EACH_VEC( vecSortedKeys, i )
 		{
-			SaveKeyToFile( vecSortedKeys[i], filesystem, f, pBuf, indentLevel, sortKeys, bAllowEmptyString );
+			SaveKeyToFile( vecSortedKeys[i], filesystem, f, pBuf, indentLevel, sortKeyCount - 1, bAllowEmptyString );
 		}
 	}
 	else
 	{
 		for ( KeyValues *dat = m_pSub; dat != NULL; dat = dat->m_pPeer )
-			SaveKeyToFile( dat, filesystem, f, pBuf, indentLevel, sortKeys, bAllowEmptyString );
+			SaveKeyToFile( dat, filesystem, f, pBuf, indentLevel, 0, bAllowEmptyString );
 	}
 
 	// write tail
@@ -856,11 +861,11 @@ void KeyValues::RecursiveSaveToFile( IBaseFileSystem *filesystem, FileHandle_t f
 	INTERNALWRITE("}\n", 2);
 }
 
-void KeyValues::SaveKeyToFile( KeyValues *dat, IBaseFileSystem *filesystem, FileHandle_t f, CUtlBuffer *pBuf, int indentLevel, bool sortKeys, bool bAllowEmptyString )
+void KeyValues::SaveKeyToFile( KeyValues *dat, IBaseFileSystem *filesystem, FileHandle_t f, CUtlBuffer *pBuf, int indentLevel, int sortKeyCount, bool bAllowEmptyString )
 {
 	if ( dat->m_pSub )
 	{
-		dat->RecursiveSaveToFile( filesystem, f, pBuf, indentLevel + 1, sortKeys, bAllowEmptyString );
+		dat->RecursiveSaveToFile( filesystem, f, pBuf, indentLevel + 1, sortKeyCount, bAllowEmptyString );
 	}
 	else
 	{

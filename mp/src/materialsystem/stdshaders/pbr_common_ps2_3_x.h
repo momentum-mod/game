@@ -311,3 +311,18 @@ float3 worldToRelative(float3 worldVector, float3 surfTangent, float3 surfBasis,
        dot(worldVector, surfNormal)
    );
 }
+
+float3 rgb2hsv(float3 c)
+{
+    float4 P = (c.g < c.b) ? float4(c.bg, -1.0, 2.0 / 3.0) : float4(c.gb, 0.0, -1.0 / 3.0);
+    float4 Q = (c.r < P.x) ? float4(P.xyw, c.r) : float4(c.r, P.yzx);
+    float C = Q.x - min(Q.w, Q.y);
+    return float3(abs(Q.z + (Q.w - Q.y) / (6.0 * C + EPSILON)), C / (Q.x + EPSILON), Q.x);
+}
+
+float3 hsv2rgb(float3 c)
+{
+    float4 K = float4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
+    float3 p = abs(frac(c.xxx + K.xyz) * 6.0 - K.www);
+    return c.z * lerp(K.xxx, saturate(p - K.xxx), c.y);
+} 

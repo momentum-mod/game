@@ -32,6 +32,7 @@ public:
 protected:
 	int			m_iEffectIndex;
 	bool		m_bActive;
+	bool		m_bDestroyImmediately;
 	bool		m_bOldActive;
 	float		m_flStartTime;	// Time at which the effect started
 
@@ -43,6 +44,9 @@ protected:
 	unsigned char m_iControlPointParents[kMAXCONTROLPOINTS];
 
 	bool		m_bWeatherEffect;
+	bool		m_bAttachToPlayer;
+
+	C_BaseEntity	*m_pEffectEntity;
 };
 
 IMPLEMENT_CLIENTCLASS(C_ParticleSystem, DT_ParticleSystem, CParticleSystem);
@@ -56,24 +60,20 @@ BEGIN_RECV_TABLE_NOBASE( C_ParticleSystem, DT_ParticleSystem )
 
 	RecvPropInt( RECVINFO( m_iEffectIndex ) ),
 	RecvPropBool( RECVINFO( m_bActive ) ),
+	RecvPropBool( RECVINFO( m_bDestroyImmediately ) ),
 	RecvPropFloat( RECVINFO( m_flStartTime ) ),
 
 	RecvPropArray3( RECVINFO_ARRAY(m_hControlPointEnts), RecvPropEHandle( RECVINFO( m_hControlPointEnts[0] ) ) ),
 	RecvPropArray3( RECVINFO_ARRAY(m_iControlPointParents), RecvPropInt( RECVINFO(m_iControlPointParents[0]))), 
 	RecvPropBool( RECVINFO( m_bWeatherEffect ) ),
+	RecvPropBool( RECVINFO( m_bAttachToPlayer ) ),
 END_RECV_TABLE();
 
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
 C_ParticleSystem::C_ParticleSystem()
 {
 	m_bWeatherEffect = false;
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
 void C_ParticleSystem::PreDataUpdate( DataUpdateType_t updateType )
 {
 	m_bOldActive = m_bActive;
@@ -81,12 +81,11 @@ void C_ParticleSystem::PreDataUpdate( DataUpdateType_t updateType )
 	BaseClass::PreDataUpdate( updateType );
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
 void C_ParticleSystem::PostDataUpdate( DataUpdateType_t updateType )
 {
 	BaseClass::PostDataUpdate( updateType );
+
+	m_pEffectEntity = m_bAttachToPlayer ? (CBaseEntity*)UTIL_PlayerByIndex(1) : this;
 
 	// Always restart if just created and updated
 	// FIXME: Does this play fairly with PVS?
@@ -107,17 +106,18 @@ void C_ParticleSystem::PostDataUpdate( DataUpdateType_t updateType )
 				// Delayed here so that we don't get invalid abs queries on level init with active particle systems
 				SetNextClientThink( gpGlobals->curtime );
 			}
+			else if ( !m_bDestroyImmediately )
+			{
+				m_pEffectEntity->ParticleProp()->StopEmission();
+			}
 			else
 			{
-						ParticleProp()->StopEmission();
-					}
+				m_pEffectEntity->ParticleProp()->StopEmissionAndDestroyImmediately();
+			}
 		}
 	}
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
 void C_ParticleSystem::ClientThink( void )
 {
 	if ( m_bActive )
@@ -131,7 +131,7 @@ void C_ParticleSystem::ClientThink( void )
 			if ( m_bWeatherEffect && !GameRules()->AllowWeatherParticles() )
 				return;
 
-			CNewParticleEffect *pEffect = ParticleProp()->Create( pszName, PATTACH_ABSORIGIN_FOLLOW );
+			CNewParticleEffect *pEffect = m_pEffectEntity->ParticleProp()->Create( pszName, PATTACH_ABSORIGIN_FOLLOW );
 			AssertMsg1( pEffect, "Particle system couldn't make %s", pszName );
 			if (pEffect)
 			{
@@ -140,7 +140,7 @@ void C_ParticleSystem::ClientThink( void )
 					CBaseEntity *pOnEntity = m_hControlPointEnts[i].Get();
 					if ( pOnEntity )
 					{
-						ParticleProp()->AddControlPoint( pEffect, i + 1, pOnEntity, PATTACH_ABSORIGIN_FOLLOW );
+						m_pEffectEntity->ParticleProp()->AddControlPoint( pEffect, i + 1, pOnEntity, PATTACH_ABSORIGIN_FOLLOW );
 					}
 
 					AssertMsg2( m_iControlPointParents[i] >= 0 && m_iControlPointParents[i] <= kMAXCONTROLPOINTS ,
@@ -157,7 +157,7 @@ void C_ParticleSystem::ClientThink( void )
 				//		 already past the end of it, denoting that we're finished.  In that case, just destroy us and be done. -- jdw
 
 				// TODO: This can go when the SkipToTime code below goes
-				ParticleProp()->OnParticleSystemUpdated( pEffect, 0.0f );
+				m_pEffectEntity->ParticleProp()->OnParticleSystemUpdated( pEffect, 0.0f );
 
 				// Skip the effect ahead if we're restarting it
 				float flTimeDelta = gpGlobals->curtime - m_flStartTime;
@@ -175,9 +175,6 @@ void C_ParticleSystem::ClientThink( void )
 //======================================================================================================================
 // PARTICLE SYSTEM DISPATCH EFFECT
 //======================================================================================================================
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
 void ParticleEffectCallback( const CEffectData &data )
 {
 	if ( SuppressingParticleEffects() )
@@ -263,9 +260,6 @@ DECLARE_CLIENT_EFFECT( "ParticleEffect", ParticleEffectCallback );
 //======================================================================================================================
 // PARTICLE SYSTEM STOP EFFECT
 //======================================================================================================================
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
 void ParticleEffectStopCallback( const CEffectData &data )
 {
 	if ( data.m_hEntity.Get() )

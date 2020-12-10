@@ -37,6 +37,7 @@ MAKE_TOGGLE_CONVAR(mom_map_download_auto, "0", FCVAR_ARCHIVE | FCVAR_REPLICATED,
 MAKE_TOGGLE_CONVAR_C(mom_map_download_queue, "1", FCVAR_ARCHIVE | FCVAR_REPLICATED, "If 1, maps will be queued to download, allowing mom_map_download_queue_parallel parallel downloads.\n", DownloadQueueCallback);
 MAKE_CONVAR_C(mom_map_download_queue_parallel, "3", FCVAR_ARCHIVE | FCVAR_REPLICATED, "The number of parallel map downloads if mom_map_download_queue is 1.\n", 1, 3, DownloadQueueParallelCallback);
 MAKE_TOGGLE_CONVAR(mom_map_download_cancel_confirm, "1", FCVAR_ARCHIVE | FCVAR_REPLICATED, "If 1, a messagebox will be created to ask to confirm cancelling downloads.\n");
+extern ConVar mom_gamemode_override;
 
 // =============================================================================================
 
@@ -373,6 +374,22 @@ void CMapCache::SetMapGamemode(const char *pMapName /* = nullptr*/)
 {
     if (!pMapName)
         pMapName = MapName();
+
+    const auto eGameModeOverride = g_pGameModeSystem->GetGameMode(mom_gamemode_override.GetInt())->GetType();
+
+    if (eGameModeOverride)
+    {
+        if ((m_pCurrentMapData && m_pCurrentMapData->m_eType == eGameModeOverride)
+            || g_pGameModeSystem->GetGameModeFromMapName(pMapName)->GetType() == eGameModeOverride)
+        {
+            mom_gamemode_override.Revert();
+        }
+        else
+        {
+            g_pGameModeSystem->SetGameMode(eGameModeOverride);
+            return;
+        }
+    }
 
     if (m_pCurrentMapData)
     {

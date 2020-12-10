@@ -1747,9 +1747,16 @@ void CParticleMgr::BuildParticleSimList( CUtlVector< ParticleSimListEntry_t > &l
 		bool bNeedsBboxUpdate = false;
 
 		if ( flNow >= pNewEffect->m_flNextSleepTime && pNewEffect->m_nActiveParticles > 0 )
+		{
 			bSkip = true;
+
+			// Make sure this guy is given a chance to simulate next time
+			pNewEffect->m_flNextSleepTime = flNow + pNewEffect->m_pDef->m_flNoDrawTimeToGoToSleep;
+		}
 		if ( pNewEffect->GetRemoveFlag() )
+		{
 			bSkip = true;
+		}
 
 		if ( !bSkip && g_bMeasureParticlePerformance )
 		{

@@ -63,7 +63,7 @@ class CHudKeyPressDisplay : public CHudElement, public Panel
     CPanelAnimationVarAliasType(float, jump_count_xpos, "jump_count_xpos", "80", "proportional_float");
 
   private:
-    int GetTextCenter(HFont font, wchar_t *wstring);
+    int GetTextCenter(HFont font, const wchar_t *wstring);
 
     bool m_bIsDucked;
     int m_nButtonsToggled;
@@ -313,7 +313,7 @@ void CHudKeyPressDisplay::OnThink()
             m_nDisabledButtons = pPlayer->m_afButtonDisabled;
             m_bIsDucked = pPlayer->GetFlags() & FL_DUCKING;
             // we should only draw the strafe/jump counters when the timer is running
-            m_bShouldDrawCounts = pPlayer->m_Data.m_bTimerRunning;
+            m_bShouldDrawCounts = pPlayer->m_Data.m_iTimerState == TIMER_STATE_RUNNING;
             if (m_bShouldDrawCounts)
             {
                 m_nStrafes = pPlayer->m_RunStats.m_iZoneStrafes[0];
@@ -331,7 +331,7 @@ void CHudKeyPressDisplay::Reset()
     m_fJumpColorUntil = 0;
 }
 
-int CHudKeyPressDisplay::GetTextCenter(HFont font, wchar_t *wstring)
+int CHudKeyPressDisplay::GetTextCenter(HFont font, const wchar_t *wstring)
 {
     return GetWide() / 2 - UTIL_ComputeStringWidth(font, wstring) / 2;
 }

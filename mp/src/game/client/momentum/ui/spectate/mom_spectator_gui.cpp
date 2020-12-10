@@ -28,6 +28,8 @@
 #include "mom_player_shared.h"
 #include "util/mom_util.h"
 #include "c_mom_online_ghost.h"
+#include "hud_chat.h"
+#include "leaderboards/ClientTimesDisplay.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -46,6 +48,7 @@ CMOMSpectatorGUI::CMOMSpectatorGUI(IViewPort *pViewPort) : EditablePanel(nullptr
     m_bSpecScoreboard = false;
     m_pViewPort = pViewPort;
     ListenForGameEvent("spec_target_updated");
+    ListenForGameEvent("hud_chat_opened");
 
     surface()->CreatePopup(GetVPanel(), false, false, false, false, false);
 
@@ -140,13 +143,17 @@ void CMOMSpectatorGUI::OnMousePressed(MouseCode code)
 
 void CMOMSpectatorGUI::FireGameEvent(IGameEvent* pEvent)
 {
-    if (!Q_strcmp(pEvent->GetName(), "spec_target_updated"))
+    if (FStrEq(pEvent->GetName(), "spec_target_updated"))
     {
         // So apparently calling Update from here doesn't work, due to some weird
         // thing that happens upon the player's m_hObserverTarget getting updated.
         // Pushing this back three ticks is more than long enough to delay the Update()
         // to fill the panel with the replay's info.
         m_flNextUpdateTime = gpGlobals->curtime + gpGlobals->interval_per_tick * 3.0f;
+    }
+    else if (FStrEq(pEvent->GetName(), "hud_chat_opened"))
+    {
+        SetMouseInputEnabled(true);
     }
 }
 //-----------------------------------------------------------------------------
@@ -221,7 +228,7 @@ void CMOMSpectatorGUI::ShowPanel(bool bShow)
 
         if (m_bSpecScoreboard)
         {
-            m_pViewPort->ShowPanel(PANEL_TIMES, false);
+            g_pClientTimes->ShowPanel(false);
         }
     }
 }

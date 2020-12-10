@@ -27,16 +27,15 @@ public:
 	void	OnRestore( void );
 
 	// Main interface to all surface triggers
-	static void	SetPlayerSurface( CBasePlayer *pPlayer, char gameMaterial );
+	static void	SetPlayerSurface( CBasePlayer *pPlayer, const trace_t &tr );
 
-	void	UpdateMaterialThink( void );
+	virtual void UpdateMaterialThink( void );
 
-private:
-	void	PlayerSurfaceChanged( CBasePlayer *pPlayer, char gameMaterial );
+protected:
+	virtual void	PlayerSurfaceChanged( CBasePlayer *pPlayer, char gameMaterial );
 	void	InputDisable( inputdata_t &inputdata );
 	void	InputEnable( inputdata_t &inputdata );
 
-private:
 	int		m_iTargetGameMaterial;
 	int		m_iCurrentGameMaterial;
 	bool	m_bDisabled;

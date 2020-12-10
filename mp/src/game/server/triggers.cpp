@@ -152,19 +152,6 @@ void CBaseTrigger::InputTouchTest( inputdata_t &inputdata )
 	TouchTest();
 }
 
-//------------------------------------------------------------------------------
-//------------------------------------------------------------------------------
-void CBaseTrigger::Spawn()
-{
-	if ( HasSpawnFlags( SF_TRIGGER_ONLY_PLAYER_ALLY_NPCS ) )
-	{
-		// Automatically set this trigger to work with NPC's.
-		AddSpawnFlags( SF_TRIGGER_ALLOW_NPCS );
-	}
-
-	BaseClass::Spawn();
-}
-
 
 //------------------------------------------------------------------------------
 // Cleanup
@@ -289,6 +276,13 @@ int CBaseTrigger::DrawDebugTextOverlays(void)
 		}
 		EntityText(text_offset,tempstr,0);
 		text_offset++;
+
+		if (m_iFilterName != NULL_STRING)
+		{
+			Q_snprintf(tempstr, sizeof(tempstr), "Filter: %s", m_iFilterName.ToCStr());
+			EntityText(text_offset, tempstr, 0);
+			text_offset++;
+		}
 	}
 	return text_offset;
 }
@@ -348,7 +342,7 @@ bool CBaseTrigger::PassesTriggerFilters(CBaseEntity *pOther)
 	// First test spawn flag filters
 	if ( HasSpawnFlags(SF_TRIGGER_ALLOW_ALL) ||
 		(HasSpawnFlags(SF_TRIGGER_ALLOW_CLIENTS) && (pOther->GetFlags() & FL_CLIENT)) ||
-		(HasSpawnFlags(SF_TRIGGER_ALLOW_NPCS) && (pOther->GetFlags() & FL_NPC)) ||
+		(HasSpawnFlags(SF_TRIGGER_ALLOW_GHOSTS) && (pOther->GetFlags() & FL_GHOST)) ||
 		(HasSpawnFlags(SF_TRIGGER_ALLOW_PUSHABLES) && FClassnameIs(pOther, "func_pushable")) ||
 		(HasSpawnFlags(SF_TRIGGER_ALLOW_PHYSICS) && pOther->GetMoveType() == MOVETYPE_VPHYSICS) 
 #if defined( HL2_EPISODIC ) || defined( TF_DLL )		
@@ -361,19 +355,6 @@ bool CBaseTrigger::PassesTriggerFilters(CBaseEntity *pOther)
 #endif
 		)
 	{
-		if ( pOther->GetFlags() & FL_NPC )
-		{
-			CAI_BaseNPC *pNPC = pOther->MyNPCPointer();
-
-			if ( HasSpawnFlags( SF_TRIGGER_ONLY_PLAYER_ALLY_NPCS ) )
-			{
-				if ( !pNPC || !pNPC->IsPlayerAlly() )
-				{
-					return false;
-				}
-			}
-		}
-
 		bool bOtherIsPlayer = pOther->IsPlayer();
 
 		if ( bOtherIsPlayer )
@@ -1208,7 +1189,7 @@ int CTriggerLook::DrawDebugTextOverlays(void)
 		// Print Look time
 		// ----------------
 		char tempstr[255];
-		Q_snprintf(tempstr,sizeof(tempstr),"Time:   %3.2f",m_flLookTime - MAX(0,m_flLookTimeTotal));
+		Q_snprintf(tempstr,sizeof(tempstr),"Time: %3.2f",m_flLookTime - MAX(0,m_flLookTimeTotal));
 		EntityText(text_offset,tempstr,0);
 		text_offset++;
 	}
@@ -1715,7 +1696,7 @@ struct collidelist_t
 
 // NOTE: This routine is relatively slow.  If you need to use it for per-frame work, consider that fact.
 // UNDONE: Expand this to the full matrix of solid types on each side and move into enginetrace
-static bool TestEntityTriggerIntersection_Accurate( CBaseEntity *pTrigger, CBaseEntity *pEntity )
+bool TestEntityTriggerIntersection_Accurate( CBaseEntity *pTrigger, CBaseEntity *pEntity )
 {
 	Assert( pTrigger->GetSolid() == SOLID_BSP );
 
@@ -2129,6 +2110,8 @@ public:
 	void Touch( CBaseEntity *pOther );
 	void Untouch( CBaseEntity *pOther );
 
+	int DrawDebugTextOverlays();
+
 	Vector m_vecPushDir;
 
 	DECLARE_DATADESC();
@@ -2168,6 +2151,21 @@ void CTriggerPush::Spawn()
 	}
 }
 
+//-----------------------------------------------------------------------------
+// Purpose: Draw any debug text overlays
+// Output : Current text offset from the top
+//-----------------------------------------------------------------------------
+int CTriggerPush::DrawDebugTextOverlays(void) 
+{
+	int text_offset = BaseClass::DrawDebugTextOverlays();
+
+	char tempstr[255];
+	Q_snprintf(tempstr, sizeof(tempstr), "Force: %.2f", m_flSpeed);
+	EntityText(text_offset,tempstr,0);
+	text_offset++;
+
+	return text_offset;
+}
 
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
@@ -2275,118 +2273,6 @@ void CTriggerPush::Touch( CBaseEntity *pOther )
 		break;
 	}
 }
-
-
-//-----------------------------------------------------------------------------
-// Teleport trigger
-//-----------------------------------------------------------------------------
-const int SF_TELEPORT_PRESERVE_ANGLES = 0x20;	// Preserve angles even when a local landmark is not specified
-
-class CTriggerTeleport : public CBaseTrigger
-{
-public:
-	DECLARE_CLASS( CTriggerTeleport, CBaseTrigger );
-
-	virtual void Spawn( void ) OVERRIDE;
-	virtual void Touch( CBaseEntity *pOther ) OVERRIDE;
-
-	string_t m_iLandmark;
-
-	DECLARE_DATADESC();
-};
-
-LINK_ENTITY_TO_CLASS( trigger_teleport, CTriggerTeleport );
-
-BEGIN_DATADESC( CTriggerTeleport )
-
-	DEFINE_KEYFIELD( m_iLandmark, FIELD_STRING, "landmark" ),
-
-END_DATADESC()
-
-void CTriggerTeleport::Spawn( void )
-{
-	InitTrigger();
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: Teleports the entity that touched us to the location of our target,
-//			setting the toucher's angles to our target's angles if they are a
-//			player.
-//
-//			If a landmark was specified, the toucher is offset from the target
-//			by their initial offset from the landmark and their angles are
-//			left alone.
-//
-// Input  : pOther - The entity that touched us.
-//-----------------------------------------------------------------------------
-void CTriggerTeleport::Touch( CBaseEntity *pOther )
-{
-	CBaseEntity	*pentTarget = NULL;
-
-	if (!PassesTriggerFilters(pOther))
-	{
-		return;
-	}
-
-	// The activator and caller are the same
-	pentTarget = gEntList.FindEntityByName( pentTarget, m_target, NULL, pOther, pOther );
-	if (!pentTarget)
-	{
-	   return;
-	}
-	
-	//
-	// If a landmark was specified, offset the player relative to the landmark.
-	//
-	CBaseEntity	*pentLandmark = NULL;
-	Vector vecLandmarkOffset(0, 0, 0);
-	if (m_iLandmark != NULL_STRING)
-	{
-		// The activator and caller are the same
-		pentLandmark = gEntList.FindEntityByName(pentLandmark, m_iLandmark, NULL, pOther, pOther );
-		if (pentLandmark)
-		{
-			vecLandmarkOffset = pOther->GetAbsOrigin() - pentLandmark->GetAbsOrigin();
-		}
-	}
-
-	pOther->SetGroundEntity( NULL );
-	
-	Vector tmp = pentTarget->GetAbsOrigin();
-
-	if (!pentLandmark && pOther->IsPlayer())
-	{
-		// make origin adjustments in case the teleportee is a player. (origin in center, not at feet)
-		tmp.z -= pOther->WorldAlignMins().z;
-	}
-
-	//
-	// Only modify the toucher's angles and zero their velocity if no landmark was specified.
-	//
-	const QAngle *pAngles = NULL;
-	Vector *pVelocity = NULL;
-
-#ifdef HL1_DLL
-	Vector vecZero(0,0,0);		
-#endif
-
-	if (!pentLandmark && !HasSpawnFlags(SF_TELEPORT_PRESERVE_ANGLES) )
-	{
-		pAngles = &pentTarget->GetAbsAngles();
-
-#ifdef HL1_DLL
-		pVelocity = &vecZero;
-#else
-		pVelocity = NULL;	//BUGBUG - This does not set the player's velocity to zero!!!
-#endif
-	}
-
-	tmp += vecLandmarkOffset;
-	pOther->Teleport( &tmp, pAngles, pVelocity );
-}
-
-
-LINK_ENTITY_TO_CLASS( info_teleport_destination, CPointEntity );
 
 
 //-----------------------------------------------------------------------------
@@ -4221,13 +4107,6 @@ LINK_ENTITY_TO_CLASS( trigger_playermovement, CTriggerPlayerMovement );
 //-----------------------------------------------------------------------------
 void CTriggerPlayerMovement::Spawn( void )
 {
-	if( HasSpawnFlags( SF_TRIGGER_ONLY_PLAYER_ALLY_NPCS ) )
-	{
-		// @Note (toml 01-07-04): fix up spawn flag collision coding error. Remove at some point once all maps fixed up please!
-		DevMsg("*** trigger_playermovement using obsolete spawnflag. Remove and reset with new value for \"Disable auto player movement\"\n" );
-		RemoveSpawnFlags(SF_TRIGGER_ONLY_PLAYER_ALLY_NPCS);
-		AddSpawnFlags(SF_TRIGGER_MOVE_AUTODISABLE);
-	}
 	BaseClass::Spawn();
 
 	InitTrigger();
@@ -4435,21 +4314,10 @@ bool CBaseVPhysicsTrigger::PassesTriggerFilters( CBaseEntity *pOther )
 	// First test spawn flag filters
 	if ( HasSpawnFlags(SF_TRIGGER_ALLOW_ALL) ||
 		(HasSpawnFlags(SF_TRIGGER_ALLOW_CLIENTS) && (pOther->GetFlags() & FL_CLIENT)) ||
-		(HasSpawnFlags(SF_TRIGGER_ALLOW_NPCS) && (pOther->GetFlags() & FL_NPC)) ||
+		(HasSpawnFlags(SF_TRIGGER_ALLOW_GHOSTS) && (pOther->GetFlags() & FL_GHOST)) ||
 		(HasSpawnFlags(SF_TRIGGER_ALLOW_PUSHABLES) && FClassnameIs(pOther, "func_pushable")) ||
 		(HasSpawnFlags(SF_TRIGGER_ALLOW_PHYSICS) && pOther->GetMoveType() == MOVETYPE_VPHYSICS))
 	{
-		bool bOtherIsPlayer = pOther->IsPlayer();
-		if( HasSpawnFlags(SF_TRIGGER_ONLY_PLAYER_ALLY_NPCS) && !bOtherIsPlayer )
-		{
-			CAI_BaseNPC *pNPC = pOther->MyNPCPointer();
-
-			if( !pNPC || !pNPC->IsPlayerAlly() )
-			{
-				return false;
-			}
-		}
-
 		CBaseFilter *pFilter = m_hFilter.Get();
 		return (!pFilter) ? true : pFilter->PassesFilter( this, pOther );
 	}

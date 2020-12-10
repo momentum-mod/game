@@ -22,6 +22,8 @@ class CFuncMoveLinear : public CBaseToggle
 public:
 	DECLARE_CLASS( CFuncMoveLinear, CBaseToggle );
 
+	CFuncMoveLinear() : m_bSolidBsp(true) {};
+
 	void		Spawn( void );
 	void		Precache( void );
 	bool		CreateVPhysics( void );
@@ -55,6 +57,8 @@ public:
 	float		m_flBlockDamage;		// Damage inflicted when blocked.
 	float		m_flStartPosition;		// Position of brush when spawned
 	float		m_flMoveDistance;		// Total distance the brush can move
+
+	bool		m_bSolidBsp;
 
 	IPhysicsFluidController *m_pFluidController;
 

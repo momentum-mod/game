@@ -3,6 +3,7 @@
 #include "mom_run_safeguards.h"
 #include "in_buttons.h"
 #include "mom_player_shared.h"
+#include "fmtstr.h"
 
 #ifdef CLIENT_DLL
 #include "input.h"
@@ -17,6 +18,9 @@ static MAKE_CONVAR(mom_run_safeguard_doublepress_maxtime, "0.5", FCVAR_ARCHIVE |
     "Controls the max amount of time (in seconds) that a double press is registered for run safeguards "
     "with the doublepress safeguard mode active.\n",
     0.0f, 5.0f);
+
+static MAKE_CONVAR(mom_run_safeguard_warning_delay, "10.0", FCVAR_ARCHIVE | FCVAR_REPLICATED,
+    "Controls the amount of time (in seconds) between warning the player that the desired command is safeguarded.\n", 0.0f, 30.0f);
 
 static MAKE_CONVAR(mom_run_safeguard_practicemode, "1", FCVAR_ARCHIVE | FCVAR_REPLICATED,
     "Changes the safeguard for enabling practice mode during a run.\n"
@@ -58,9 +62,15 @@ static MAKE_TOGGLE_CONVAR(mom_run_safeguard_quit_map, "1", FCVAR_ARCHIVE | FCVAR
 static MAKE_TOGGLE_CONVAR(mom_run_safeguard_quit_game, "1", FCVAR_ARCHIVE | FCVAR_REPLICATED, "Changes the safeguard setting for preventing quitting the game while in a run. 0 = OFF, 1 = ON\n");
 
 CRunSafeguard::CRunSafeguard(const char *szAction)
-    : m_flLastTimePressed(0.0f), m_bDoublePressSafeguard(true), m_pRelatedVar(nullptr), m_bIgnoredInMenu(true)
+    : m_flLastTimePressed(0.0f), m_flLastTimeWarned(0.0f), m_pRelatedVar(nullptr), m_bIgnoredInMenu(true)
 {
     Q_strncpy(m_szAction, szAction, sizeof(m_szAction));
+}
+
+void CRunSafeguard::Reset()
+{
+    m_flLastTimePressed = -(mom_run_safeguard_doublepress_maxtime.GetFloat());
+    m_flLastTimeWarned = -(mom_run_safeguard_warning_delay.GetFloat());
 }
 
 bool CRunSafeguard::IsSafeguarded(RunSafeguardMode_t mode)
@@ -79,7 +89,7 @@ bool CRunSafeguard::IsSafeguarded(RunSafeguardMode_t mode)
     if (!pEntData)
         return false;
 
-    if (!pEntData->m_bTimerRunning || pPlayer->IsObserver())
+    if (pEntData->m_iTimerState != TIMER_STATE_RUNNING || pPlayer->IsObserver())
         return false;
 
 #ifdef GAME_DLL
@@ -100,9 +110,9 @@ bool CRunSafeguard::IsSafeguarded(RunSafeguardMode_t mode)
     switch (mode)
     {
     case RUN_SAFEGUARD_MODE_MOVEMENTKEYS:
-        return IsMovementKeysSafeguarded(nButtons);
+        return IsMovementKeysSafeguarded(nButtons, pPlayer);
     case RUN_SAFEGUARD_MODE_DOUBLEPRESS:
-        return IsDoublePressSafeguarded();
+        return IsDoublePressSafeguarded(pPlayer);
     case RUN_SAFEGUARD_MODE_POPUP_CONFIRM:
         return m_pRelatedVar && m_pRelatedVar->GetBool();
     default:
@@ -110,32 +120,36 @@ bool CRunSafeguard::IsSafeguarded(RunSafeguardMode_t mode)
     } 
 }
 
-bool CRunSafeguard::IsMovementKeysSafeguarded(int nButtons)
+bool CRunSafeguard::IsMovementKeysSafeguarded(int nButtons, CBasePlayer *pPlayer)
 {
     if ((nButtons & (IN_FORWARD | IN_MOVELEFT | IN_MOVERIGHT | IN_BACK | IN_JUMP | IN_DUCK | IN_WALK)) != 0)
     {
-        Warning("You cannot %s when movement keys are held down while the timer is running!\n"
-                "You can turn this safeguard off in the Gameplay Settings!\n", m_szAction);
+        if (gpGlobals->curtime - m_flLastTimeWarned > mom_run_safeguard_warning_delay.GetFloat())
+        {
+            ClientPrint(pPlayer, HUD_PRINTTALK, CFmtStr("You cannot %s when movement keys are held down while the timer is running! You can turn this safeguard off in the Gameplay Settings!\n", m_szAction));
+            m_flLastTimeWarned = gpGlobals->curtime;
+        }
+
         return true;
     }
     return false;
 }
 
-bool CRunSafeguard::IsDoublePressSafeguarded()
+bool CRunSafeguard::IsDoublePressSafeguarded(CBasePlayer *pPlayer)
 {
-    if (gpGlobals->curtime > m_flLastTimePressed + mom_run_safeguard_doublepress_maxtime.GetFloat())
+    if (gpGlobals->curtime - m_flLastTimePressed > mom_run_safeguard_doublepress_maxtime.GetFloat())
     {
-        m_bDoublePressSafeguard = true;
-    }
-    m_flLastTimePressed = gpGlobals->curtime;
-    if (m_bDoublePressSafeguard)
-    {
-        Warning("You must double press the key to %s while the timer is running!\n"
-                "You can turn this safeguard off in the Gameplay Settings!\n", m_szAction);
-        m_bDoublePressSafeguard = false;
+        if (gpGlobals->curtime - m_flLastTimeWarned > mom_run_safeguard_warning_delay.GetFloat())
+        {
+            ClientPrint(pPlayer, HUD_PRINTTALK, CFmtStr("You must double press the key to %s while the timer is running! You can turn this safeguard off in the Gameplay Settings!\n", m_szAction));
+            m_flLastTimeWarned = gpGlobals->curtime;
+        }
+
+        m_flLastTimePressed = gpGlobals->curtime;
         return true;
     }
 
+    Reset();
     return false;
 }
 
@@ -163,6 +177,27 @@ MomRunSafeguards::MomRunSafeguards()
     m_bGameUIActive = false;
     g_pModuleComms->ListenForEvent("gameui_toggle", UtlMakeDelegate(this, &MomRunSafeguards::OnGameUIToggled));
 #endif
+}
+
+void MomRunSafeguards::ResetAllSafeguards()
+{
+    for (int i = 0; i < RUN_SAFEGUARD_COUNT; i++)
+    {
+        m_pSafeguards[i]->Reset();
+    }
+}
+
+void MomRunSafeguards::ResetSafeguard(int type)
+{
+    if (type <= RUN_SAFEGUARD_INVALID || type >= RUN_SAFEGUARD_COUNT)
+        return;
+
+    ResetSafeguard(RunSafeguardType_t(type));
+}
+
+void MomRunSafeguards::ResetSafeguard(RunSafeguardType_t type)
+{
+    m_pSafeguards[type]->Reset();
 }
 
 #ifdef GAME_DLL

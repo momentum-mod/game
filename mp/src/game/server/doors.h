@@ -52,7 +52,7 @@ public:
 
 	DECLARE_SERVERCLASS();
     
-    CBaseDoor() : m_bIsBhopBlock(false) {};
+    CBaseDoor() : m_bIsBhopBlock(false), m_bSolidBsp(true) {};
 
 	void Spawn( void );
 	void Precache( void );
@@ -117,6 +117,7 @@ public:
 	bool	m_bLocked;				// Whether the door is locked
 	bool	m_bIgnoreDebris;
 	bool	m_bIgnoreNonPlayerEntsOnBlock;	// Non-player entities should never block.  This variable needs more letters.
+	bool	m_bSolidBsp;
 	
 	FuncDoorSpawnPos_t m_eSpawnPosition;
 

@@ -327,6 +327,8 @@ class CFuncRotating : public CBaseEntity
 {
 	DECLARE_CLASS( CFuncRotating, CBaseEntity );
 public:
+	CFuncRotating() : m_bSolidBsp(true) {}
+
 	// basic functions
 	void Spawn( void  );
 	void Precache( void  );

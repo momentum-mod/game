@@ -7,15 +7,16 @@ class CAvatarImage;
 
 class CGhostEntityPanel : public vgui::EditablePanel
 {
-public:
+  public:
     DECLARE_CLASS_SIMPLE(CGhostEntityPanel, vgui::EditablePanel);
 
     CGhostEntityPanel();
     ~CGhostEntityPanel();
 
     void Init(C_MomentumOnlineGhostEntity *pEntity);
-    void OnThink() OVERRIDE;
-    void OnTick() OVERRIDE;
+    void OnThink() override;
+    void OnTick() override;
+    void PerformLayout() override;
 
     bool ShouldDraw();
 
@@ -23,12 +24,9 @@ public:
 
     bool GetEntityPosition(int& sx, int& sy);
 
-    // Offset from entity that we should draw
-    CPanelAnimationVar(int, m_OffsetX, "OffsetX", "-74");
-    CPanelAnimationVar(int, m_OffsetY, "OffsetY", "-60");
+    CPanelAnimationVar(int, m_iOffsetY, "OffsetY", "-60");
 
-private:
-
+  private:
     bool m_bPaintName;
 
     C_MomentumOnlineGhostEntity *m_pEntity;

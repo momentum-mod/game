@@ -1695,6 +1695,29 @@ bool variant_t::Convert( fieldtype_t newType )
 	return false;
 }
 
+//-----------------------------------------------------------------------------
+// Only for when something like !activator needs to become a FIELD_EHANDLE, or when that's a possibility.
+//-----------------------------------------------------------------------------
+bool variant_t::Convert(fieldtype_t newType, CBaseEntity* pSelf, CBaseEntity* pActivator, CBaseEntity* pCaller)
+{
+	// Support for turning !activator, !caller, and !self into a FIELD_EHANDLE.
+	// Extremely necessary.
+	if (newType == FIELD_EHANDLE)
+	{
+		if (newType == fieldType)
+			return true;
+
+		CBaseEntity* ent = NULL;
+		if (iszVal != NULL_STRING)
+		{
+			ent = gEntList.FindEntityGeneric(NULL, STRING(iszVal), pSelf, pActivator, pCaller);
+		}
+		SetEntity(ent);
+		return true;
+	}
+
+	return Convert(newType);
+}
 
 //-----------------------------------------------------------------------------
 // Purpose: All types must be able to display as strings for debugging purposes.

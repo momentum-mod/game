@@ -33,6 +33,7 @@
 #include <vgui_controls/Controls.h>
 #include <vgui/ISurface.h>
 #include "ScreenSpaceEffects.h"
+#include "util/engine_patch.h"
 
 #if defined( HL2_CLIENT_DLL ) || defined( CSTRIKE_DLL ) || defined ( SDK_DLL )
 #define USE_MONITORS
@@ -68,6 +69,7 @@ IViewRender *view = NULL;	// set in cldll_client_init.cpp if no mod creates thei
 bool g_bRenderingCameraView = false;
 #endif
 
+static void(*R_LoadSkys)() = nullptr;
 
 // These are the vectors for the "main" view - the one the player is looking down.
 // For stereo views, they are the vectors for the middle eye.
@@ -244,6 +246,13 @@ void CViewRender::Init( void )
 	QAngle angles;
 	engine->GetViewAngles( angles );
 	AngleVectors( angles, &m_vecLastFacing );
+
+    // Grab the R_LoadSkys pointer from engine
+#ifdef _WIN32
+    R_LoadSkys = (void(*)())CEngineBinary::FindPattern("\x55\x8B\xEC\x81\xEC\x88\x00\x00\x00\x8D\x4D\xF8", "xxxxxxxxxxxx");
+#else // POSIX
+    R_LoadSkys = (void(*)())CEngineBinary::FindPattern("\x55\x89\xE5\x81\xEC\xA8\x00\x00\x00\x89\x5D\xF8", "xxxxxxxxxxxx");
+#endif // WIN32
 
 #if defined( CSTRIKE_DLL )
 	m_flLastFOV = default_fov.GetFloat();
@@ -893,6 +902,12 @@ void CViewRender::Render( vrect_t *rect )
 
 	// Stub out the material system if necessary.
 	CMatStubHandler matStub;
+
+    // Reload the 2D skybox in case sv_skyname was changed
+    if (R_LoadSkys)
+    {
+        (R_LoadSkys)();
+    }
 
 	engine->EngineStats_BeginFrame();
 	

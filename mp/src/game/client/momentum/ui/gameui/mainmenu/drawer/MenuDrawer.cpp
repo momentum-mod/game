@@ -147,6 +147,8 @@ void MenuDrawerPanel::ToggleDrawer(bool bAnimate /*= true*/)
         GetAnimationController()->RunAnimationCommand(this, "PanelX", GetDesiredDrawerPosition(m_bDrawerOpen), 0.0f, mom_drawer_animation_time.GetFloat(), AnimationController::INTERPOLATOR_SIMPLESPLINE);
 
     InvalidateLayout();
+
+    RequestFocus(0);
 }
 
 void MenuDrawerPanel::OnLobbyEnter()

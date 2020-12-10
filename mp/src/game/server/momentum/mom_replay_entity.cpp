@@ -178,15 +178,13 @@ void CMomentumReplayGhostEntity::Think()
         return;
 
     if (!m_pPlaybackReplay)
-    {
         return;
-    }
 
     if (m_iCurrentTick == m_Data.m_iStartTick)
     {
         m_Data.m_bIsInZone = false;
         m_Data.m_bMapFinished = false;
-        m_Data.m_bTimerRunning = true;
+        m_Data.m_iTimerState = TIMER_STATE_RUNNING;
         StartTimer(gpGlobals->tickcount);
 
         // Needed for hud_comparisons
@@ -409,7 +407,7 @@ void CMomentumReplayGhostEntity::HandleGhostFirstPerson()
         // networked var that allows the replay to control keypress display on the client
         m_nGhostButtons = currentStep->PlayerButtons();
 
-        if (m_Data.m_bTimerRunning)
+        if (m_Data.m_iTimerState == TIMER_STATE_RUNNING)
             UpdateStats(interpolatedVel);
 
         SetViewOffset(Vector(0, 0, currentStep->PlayerViewOffset()));
@@ -620,12 +618,13 @@ void CMomentumReplayGhostEntity::OnZoneEnter(CTriggerZone *pTrigger)
     {
     case ZONE_TYPE_START:
         m_Data.m_iCurrentTrack = pTrigger->GetTrackNumber();
-        m_Data.m_bTimerRunning = false;
+        m_Data.m_iTimerState = TIMER_STATE_NOT_RUNNING;
+        m_Data.m_bMapFinished = false;
         break;
     case ZONE_TYPE_STOP:
         {
             m_Data.m_bMapFinished = true;
-            m_Data.m_bTimerRunning = false;
+            m_Data.m_iTimerState = TIMER_STATE_NOT_RUNNING;
 
             FinishTimer();
             // MOM_TODO: Maybe play effects if the player is racing against us and lost?
@@ -648,6 +647,7 @@ void CMomentumReplayGhostEntity::OnZoneExit(CTriggerZone *pTrigger)
     switch (pTrigger->GetZoneType())
     {
     case ZONE_TYPE_START:
+        m_Data.m_iTimerState = TIMER_STATE_RUNNING;
         break;
     case ZONE_TYPE_STOP:
         m_Data.m_bMapFinished = false;

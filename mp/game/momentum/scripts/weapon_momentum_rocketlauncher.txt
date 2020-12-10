@@ -18,7 +18,7 @@ WeaponData
 
     "ModelData"
     {
-        "view"  "models/weapons/mom_rocketlauncher/v_mom_rocketlauncher.mdl"
+        "view"  "models/weapons/mom_rocketlauncher/v_mom_rocketlauncher_c.mdl"
         "world" "models/weapons/mom_rocketlauncher/w_mom_rocketlauncher.mdl"
 
         "rocket"    "models/weapons/mom_rocketlauncher/w_missile.mdl"
@@ -36,9 +36,9 @@ WeaponData
     // Weapon particles
     ParticleData
     {
-        "ExplosionEffect"          "mom_rocket_explosion_c"
-        "ExplosionMidAirEffect"    "mom_rocket_explosion_b"
-        "ExplosionWaterEffect"     "mom_rocket_explosion_b_"
+        "ExplosionEffect"          "mom_rocket_explosion_regular"
+        "ExplosionMidAirEffect"    "mom_rocket_explosion_midair"
+        "ExplosionWaterEffect"     "mom_rocket_explosion_underwater"
 
         // Trail
         "RocketTrail"              "mom_rocket_trail_a" // mom_rocket_trail_b

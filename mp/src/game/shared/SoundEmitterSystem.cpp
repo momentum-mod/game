@@ -41,6 +41,7 @@ static ConVar sv_snd_filter( "sv_snd_filter", "", FCVAR_REPLICATED, "Filters out
 
 extern ISoundEmitterSystemBase *soundemitterbase;
 static ConVar *g_pClosecaption = NULL;
+static ConVar *g_pHostTimescale = NULL;
 
 static bool g_bPermitDirectSoundPrecache = false;
 
@@ -212,6 +213,7 @@ public:
 #endif
 		g_pClosecaption = cvar->FindVar("closecaption");
 		Assert(g_pClosecaption);
+		g_pHostTimescale = cvar->FindVar("host_timescale");
 		return soundemitterbase->ModInit();
 	}
 
@@ -522,7 +524,8 @@ public:
 			params.volume,
 			(soundlevel_t)params.soundlevel,
 			ep.m_nFlags,
-			params.pitch,
+			// Scale pitch by timescale, and clamp to prevent overflow because it's sent as a byte
+			g_pHostTimescale->GetFloat() != 0.0f ? clamp(FastFloatToSmallInt(params.pitch * g_pHostTimescale->GetFloat()), 0, 255) : params.pitch,
 			ep.m_nSpecialDSP,
 			ep.m_pOrigin,
 			NULL,
@@ -597,7 +600,8 @@ public:
 				ep.m_flVolume, 
 				ep.m_SoundLevel, 
 				ep.m_nFlags, 
-				ep.m_nPitch, 
+				// Scale pitch by timescale, and clamp to prevent overflow because it's sent as a byte
+				g_pHostTimescale->GetFloat() != 0.0f ? clamp(FastFloatToSmallInt(ep.m_nPitch * g_pHostTimescale->GetFloat()), 0, 255) : ep.m_nPitch,
 				ep.m_nSpecialDSP,
 				ep.m_pOrigin,
 				NULL, 
@@ -819,6 +823,12 @@ public:
 			params.volume = flVolume;
 		}
 
+		// Scale pitch by timescale, and clamp to prevent overflow because it's sent as a byte
+		if ( g_pHostTimescale->GetFloat() != 0.0f )
+		{
+			params.pitch = clamp(FastFloatToSmallInt(params.pitch * g_pHostTimescale->GetFloat()), 0, 255);
+		}
+
 #if defined( CLIENT_DLL )
 		enginesound->EmitAmbientSound( params.soundname, params.volume, params.pitch, iFlags, soundtime );
 #else
@@ -947,6 +957,12 @@ public:
 
 		if ( pSample && ( Q_stristr( pSample, ".wav" ) || Q_stristr( pSample, ".mp3" )) )
 		{
+			// Scale pitch by timescale, and clamp to prevent overflow because it's sent as a byte
+			if ( g_pHostTimescale->GetFloat() != 0.0f )
+			{
+				pitch = clamp(FastFloatToSmallInt(pitch * g_pHostTimescale->GetFloat()), 0, 255);
+			}
+
 #if defined( CLIENT_DLL )
 			enginesound->EmitAmbientSound( pSample, volume, pitch, flags, soundtime );
 #else

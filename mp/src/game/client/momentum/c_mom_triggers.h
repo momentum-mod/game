@@ -119,3 +119,18 @@ class C_TriggerSlide : public C_BaseMomZoneTrigger
     CNetworkVar(bool, m_bAllowingJump);
     CNetworkVar(bool, m_bDisableGravity);
 };
+
+class C_TeleportDestination : public C_BaseEntity
+{
+    DECLARE_CLASS(C_TeleportDestination, C_BaseEntity);
+    DECLARE_CLIENTCLASS();
+
+  public:
+    C_TeleportDestination() = default;
+
+    bool ShouldDraw() override { return true; }
+    int DrawModel(int flags) override;
+    void Spawn() override;
+    void Precache() override;
+    void GetRenderBounds(Vector &mins, Vector &maxs) override;
+};

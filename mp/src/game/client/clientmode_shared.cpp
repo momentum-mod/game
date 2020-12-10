@@ -922,53 +922,14 @@ void ClientModeShared::FireGameEvent( IGameEvent *event )
 		if (!pPlayer)
 			return;
 
-		bool bDisconnected = event->GetBool("disconnect");
-
-		if ( bDisconnected )
+		if (event->GetBool("disconnect"))
 			return;
 
 		int team = event->GetInt( "team" );
-		bool bAutoTeamed = event->GetInt( "autoteam", false );
-		bool bSilent = event->GetInt( "silent", false );
 
 		const char *pszName = event->GetString( "name" );
 		if ( PlayerNameNotSetYet( pszName ) )
 			return;
-
-		if ( !bSilent )
-		{
-			wchar_t wszPlayerName[MAX_PLAYER_NAME_LENGTH];
-			g_pVGuiLocalize->ConvertANSIToUnicode( pszName, wszPlayerName, sizeof(wszPlayerName) );
-
-			wchar_t wszTeam[64];
-			C_Team *pTeam = GetGlobalTeam( team );
-			if ( pTeam )
-			{
-				g_pVGuiLocalize->ConvertANSIToUnicode( pTeam->Get_Name(), wszTeam, sizeof(wszTeam) );
-			}
-			else
-			{
-				_snwprintf ( wszTeam, sizeof( wszTeam ) / sizeof( wchar_t ), L"%d", team );
-			}
-
-			if ( !IsInCommentaryMode() )
-			{
-				wchar_t wszLocalized[100];
-				if ( bAutoTeamed )
-				{
-					g_pVGuiLocalize->ConstructString( wszLocalized, sizeof( wszLocalized ), g_pVGuiLocalize->Find( "#game_player_joined_autoteam" ), 2, wszPlayerName, wszTeam );
-				}
-				else
-				{
-					g_pVGuiLocalize->ConstructString( wszLocalized, sizeof( wszLocalized ), g_pVGuiLocalize->Find( "#game_player_joined_team" ), 2, wszPlayerName, wszTeam );
-				}
-
-				char szLocalized[100];
-				g_pVGuiLocalize->ConvertUnicodeToANSI( wszLocalized, szLocalized, sizeof(szLocalized) );
-
-				g_pChatPanel->Printf( CHAT_FILTER_TEAMCHANGE, "%s", szLocalized );
-			}
-		}
 
 		if ( pPlayer->IsLocalPlayer() )
 		{
