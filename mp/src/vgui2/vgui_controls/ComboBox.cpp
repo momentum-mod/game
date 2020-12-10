@@ -729,7 +729,7 @@ void ComboBox::OnMenuItemSelected()
 	//if ( m_bAllowEdit )
 	{
 		int idx = GetActiveItem();
-		SelectMenuItem(idx);
+		SilentActivateItem(idx);
 	}
 
 	Repaint();
