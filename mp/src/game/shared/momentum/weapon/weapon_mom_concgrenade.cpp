@@ -13,7 +13,7 @@
 #include "tier0/memdbgon.h"
 
 // Minimum time the grenade needs to be cooked for before it can be thrown
-#define CONC_THROW_DELAY 0.5f
+#define CONC_THROW_DELAY 0.8f
 #define CONC_THROWSPEED 660.0f
 #define CONC_SPAWN_ANG_X 18.5f
 
@@ -152,7 +152,7 @@ void CMomentumConcGrenade::ItemPostFrame()
 
 void CMomentumConcGrenade::StartGrenadeThrow()
 {
-    m_flThrowTime = gpGlobals->curtime + (0.5f - (gpGlobals->curtime - m_flTimer));
+    m_flThrowTime = gpGlobals->curtime + (0.8f - (gpGlobals->curtime - m_flTimer));
 }
 
 void CMomentumConcGrenade::ThrowGrenade(float flTimer)
@@ -197,5 +197,5 @@ void CMomentumConcGrenade::ThrowGrenade(float flTimer)
 
     SendWeaponAnim(ACT_VM_THROW);
 
-    m_flNextPrimaryAttack = gpGlobals->curtime + 0.5f;
+    m_flNextPrimaryAttack = gpGlobals->curtime + 0.1f;
 }
