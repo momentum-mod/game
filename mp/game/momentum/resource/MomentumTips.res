@@ -21,12 +21,17 @@
         "17" "#MOM_Tip_General_17"
         "18" "#MOM_Tip_General_18"
         "19" "#MOM_Tip_General_19"
+        "20" "#MOM_Tip_General_20"
+        "21" "#MOM_Tip_General_21"
+        "22" "#MOM_Tip_General_22"
+        "23" "#MOM_Tip_General_23"
 
         "alt1" "#MOM_Tip_General_Alt_1"
         "alt2" "#MOM_Tip_General_Alt_2"
         "alt3" "#MOM_Tip_General_Alt_3"
         "alt4" "#MOM_Tip_General_Alt_4"
         "alt5" "#MOM_Tip_General_Alt_5"
+        "alt6" "#MOM_Tip_General_Alt_6"
     }
     "#MOM_GameType_Surf"
     {
@@ -42,7 +47,11 @@
         "10" "#MOM_Tip_Surf_10"
         "11" "#MOM_Tip_Surf_11"
 
+        "alt1" "#MOM_Tip_Surf_Alt_1"
+        "alt2" "#MOM_Tip_Surf_Alt_2"
+
         "shared1" "#MOM_Tip_Bhop_11"
+        "shared2" "MOM_Tip_Bhop_12"
     }
     "#MOM_GameType_Tricksurf"
     {
@@ -62,6 +71,7 @@
         "alt2" "#MOM_Tip_Surf_Alt_2"
         
         "shared1" "#MOM_Tip_Bhop_11"
+        "shared2" "MOM_Tip_Bhop_12"
     }
     "#MOM_GameType_Bhop"
     {
@@ -76,10 +86,24 @@
         "9" "#MOM_Tip_Bhop_9"
         "10" "#MOM_Tip_Bhop_10"
         "11" "#MOM_Tip_Bhop_11"
+        "12" "#MOM_Tip_Bhop_12"
+        "13" "#MOM_Tip_Bhop_13"
+
+        "alt1" "#MOM_Tip_Bhop_Alt_1"
+
+        "shared1" "#MOM_Tip_Surf_3"
     }
     "#MOM_GameType_KZ"
     {
         "1" "#MOM_Tip_KZ_1"
+        "2" "#MOM_Tip_KZ_2"
+        "3" "#MOM_Tip_KZ_3"
+        "4" "#MOM_Tip_KZ_4"
+        "5" "#MOM_Tip_KZ_5"
+        "6" "#MOM_Tip_KZ_6"
+        "7" "#MOM_Tip_KZ_7"
+        "8" "#MOM_Tip_KZ_8"
+        "9" "#MOM_Tip_KZ_9"
 
         "alt1" "#MOM_Tip_KZ_Alt_1"
     }
