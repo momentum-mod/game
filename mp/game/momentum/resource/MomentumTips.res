@@ -127,6 +127,8 @@
         "3" "#MOM_Tip_SJ_3"
         "4" "#MOM_Tip_SJ_4"
         "5" "#MOM_Tip_SJ_5"
+        "6" "#MOM_Tip_SJ_6"
+        "7" "#MOM_Tip_SJ_7"
 
         "shared1" "#MOM_Tip_RJ_8"
     }
