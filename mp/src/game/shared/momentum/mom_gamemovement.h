@@ -138,6 +138,10 @@ public:
 
     // Defrag movement functions
     void DFPlayerMove();
+    void DFFullWalkMove();
+    void DFDuck();
+    void DFWalkMove();
+    void DFFriction();
 
 private:
     CMomentumPlayer *m_pPlayer;
