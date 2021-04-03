@@ -136,6 +136,9 @@ public:
 
     void PerformLurchChecks();
 
+    // Defrag movement functions
+    void DFPlayerMove();
+
 private:
     CMomentumPlayer *m_pPlayer;
 

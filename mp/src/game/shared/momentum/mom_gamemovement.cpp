@@ -1156,7 +1156,10 @@ void CMomentumGameMovement::FinishDuck()
 
 void CMomentumGameMovement::PlayerMove()
 {
-    BaseClass::PlayerMove();
+    if (g_pGameModeSystem->GameModeIs(GAMEMODE_DEFRAG))
+        DFPlayerMove();
+    else
+        BaseClass::PlayerMove();
 
     if (player->IsAlive())
     {
