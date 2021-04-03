@@ -364,10 +364,8 @@ void CGameMode_Defrag::SetGameModeVars()
     CGameModeBase::SetGameModeVars();
 
     sv_maxvelocity.SetValue(100000);
+    sv_airaccelerate.SetValue(1000);
     sv_accelerate.SetValue(10);
-    sv_friction.SetValue(6);
-    sv_airaccelerate.SetValue(320);
-    sv_accelerate.SetValue(1);
 }
 
 void CGameMode_Defrag::OnPlayerSpawn(CMomentumPlayer *pPlayer)
