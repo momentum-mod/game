@@ -19,6 +19,28 @@
 
 #include "tier0/memdbgon.h"
 
+bool CMomentumGameMovement::DFCheckJumpButton()
+{
+    trace_t pm;
+
+    // Avoid nullptr access, return false if somehow we don't have a player
+    if (!player)
+        return false;
+
+    if (player->pl.deadflag)
+    {
+        mv->m_nOldButtons |= IN_JUMP; // don't jump again until released
+        return false;
+    }
+
+    // In the air now.
+    SetGroundEntity(nullptr);
+
+    mv->m_vecVelocity[2] = 270;
+
+    return true;
+}
+
 void CMomentumGameMovement::DFDuck()
 {
     Duck();
@@ -61,6 +83,91 @@ void CMomentumGameMovement::DFFriction()
     mv->m_vecVelocity[2] *= newspeed;
 }
 
+void CMomentumGameMovement::DFAirAccelerate(Vector wishdir, float wishspeed, float accel, float maxspeed)
+{
+    int i;
+    float addspeed, accelspeed, currentspeed;
+    float wishspd;
+
+    wishspd = wishspeed;
+
+    if (player->pl.deadflag)
+        return;
+
+    if (player->m_flWaterJumpTime)
+        return;
+
+    // Cap speed
+    if (wishspd > maxspeed)
+        wishspd = maxspeed;
+
+    // Determine veer amount
+    currentspeed = mv->m_vecVelocity.Dot(wishdir);
+
+    // See how much to add
+    addspeed = wishspd - currentspeed;
+
+    // If not adding any, done.
+    if (addspeed <= 0)
+        return;
+
+    // Determine acceleration speed after acceleration
+    accelspeed = accel * wishspeed * gpGlobals->frametime * player->m_surfaceFriction;
+
+    // Cap it
+    if (accelspeed > addspeed)
+        accelspeed = addspeed;
+
+    // Adjust pmove vel.
+    for (i = 0; i < 3; i++)
+    {
+        mv->m_vecVelocity[i] += accelspeed * wishdir[i];
+        mv->m_outWishVel[i] += accelspeed * wishdir[i];
+    }
+}
+
+void CMomentumGameMovement::DFAirMove()
+{
+    int i;
+    Vector wishvel;
+    float fmove, smove;
+    Vector wishdir;
+    float wishspeed;
+    Vector forward, right, up;
+
+    AngleVectors(mv->m_vecViewAngles, &forward, &right, &up); // Determine movement angles
+
+    // Copy movement amounts
+    fmove = mv->m_flForwardMove;
+    smove = mv->m_flSideMove;
+
+    // Zero out z components of movement vectors
+    forward[2] = 0;
+    right[2] = 0;
+    VectorNormalize(forward); // Normalize remainder of vectors
+    VectorNormalize(right);   //
+
+    for (i = 0; i < 2; i++) // Determine x and y parts of velocity
+        wishvel[i] = forward[i] * fmove + right[i] * smove;
+    wishvel[2] = 0; // Zero out z part of velocity
+
+    VectorCopy(wishvel, wishdir); // Determine magnitude of speed of move
+    wishspeed = VectorNormalize(wishdir);
+
+    //
+    // clamp to server defined max speed
+    //
+    if (wishspeed != 0 && (wishspeed > mv->m_flMaxSpeed))
+    {
+        VectorScale(wishvel, mv->m_flMaxSpeed / wishspeed, wishvel);
+        wishspeed = mv->m_flMaxSpeed;
+    }
+
+    DFAirAccelerate(wishdir, wishspeed, sv_airaccelerate.GetFloat(), 30);
+
+    TryPlayerMove();
+}
+
 void CMomentumGameMovement::DFWalkMove()
 {
     int i;
@@ -78,7 +185,11 @@ void CMomentumGameMovement::DFWalkMove()
 
     if (mv->m_nButtons & IN_JUMP)
     {
-        CheckJumpButton();
+        if (DFCheckJumpButton())
+        {
+            DFAirMove();
+            return;
+        }
     }
     else
     {
@@ -138,11 +249,27 @@ void CMomentumGameMovement::DFWalkMove()
     TracePlayerBBox(mv->GetAbsOrigin(), dest, PlayerSolidMask(), COLLISION_GROUP_PLAYER_MOVEMENT, pm);
 
     StepMove(dest, pm);
+
+    StayOnGround();
 }
 
 void CMomentumGameMovement::DFFullWalkMove()
 {
-    DFWalkMove();
+    StartGravity();
+    CheckVelocity();
+
+    if (player->GetGroundEntity() != nullptr)
+    {
+        mv->m_vecVelocity[2] = 0.0f;
+        DFWalkMove();
+    }
+    else
+    {
+        DFAirMove();
+    }
+
+    CheckFalling();
+    StuckGround();
 }
 
 void CMomentumGameMovement::DFPlayerMove()
@@ -161,7 +288,7 @@ void CMomentumGameMovement::DFPlayerMove()
 
     DFDuck();
 
-    SetGroundEntity(NULL);
+    CategorizePosition();
 
     switch (player->GetMoveType())
     {

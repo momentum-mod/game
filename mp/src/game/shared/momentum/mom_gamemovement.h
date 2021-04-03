@@ -142,6 +142,9 @@ public:
     void DFDuck();
     void DFWalkMove();
     void DFFriction();
+    bool DFCheckJumpButton();
+    void DFAirMove();
+    void DFAirAccelerate(Vector wishdir, float wishspeed, float accel, float maxspeed);
 
 private:
     CMomentumPlayer *m_pPlayer;
