@@ -369,7 +369,7 @@ void CGameMode_Defrag::SetGameModeVars()
     sv_accelerate.SetValue(10);
     sv_friction.SetValue(6);
 
-    sv_airaccelerate.SetValue(1000);
+    sv_airaccelerate.SetValue(1);
 }
 
 void CGameMode_Defrag::OnPlayerSpawn(CMomentumPlayer *pPlayer)

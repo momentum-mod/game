@@ -184,7 +184,7 @@ void CMomentumGameMovement::DFAirMove()
         wishspeed = mv->m_flMaxSpeed;
     }
 
-    DFAirAccelerate(wishdir, wishspeed, sv_airaccelerate.GetFloat(), 30);
+    DFAirAccelerate(wishdir, wishspeed, sv_airaccelerate.GetFloat(), 320);
 
     DFStepSlideMove(true);
 }
@@ -424,8 +424,8 @@ bool CMomentumGameMovement::DFSlideMove(bool inAir)
     // never turn against the ground plane
     if (player->GetGroundEntity() != nullptr)
     {
-        numPlanes = 1;
         VectorCopy(mv->m_vecGroundNormal, planes[0]);
+        numPlanes = 1;
     }
     else
     {
@@ -510,7 +510,7 @@ bool CMomentumGameMovement::DFSlideMove(bool inAir)
 
             for (j = 0; j < numPlanes; j++)
             {
-                if (j == 1)
+                if (j == i)
                 {
                     continue;
                 }
@@ -563,6 +563,7 @@ bool CMomentumGameMovement::DFSlideMove(bool inAir)
             // if we have failed all interactions, try another move
             VectorCopy(clipVelocity, mv->m_vecVelocity);
             VectorCopy(endClipVelocity, endVelocity);
+            break;
         }
     }
 
@@ -582,14 +583,14 @@ void CMomentumGameMovement::DFStepSlideMove(bool inAir)
     Vector up, down;
     float stepSize;
 
+    VectorCopy(mv->m_vecAbsOrigin, startOrigin);
+    VectorCopy(mv->m_vecVelocity, startVel);
+
     // can we move without having to step?
     if (!DFSlideMove(inAir))
     {
         return;
     }
-
-    VectorCopy(mv->m_vecAbsOrigin, startOrigin);
-    VectorCopy(mv->m_vecVelocity, startVel);
 
     VectorCopy(startOrigin, down);
     down[2] -= sv_stepsize.GetFloat();
