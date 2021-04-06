@@ -101,13 +101,13 @@ static CViewVectors g_ViewVectorsConc(Vector(0, 0, 64),      // eye position
                                       Vector(0, 0, 14)       // dead view height
 );
 
-static CViewVectors g_ViewVectorsDefrag(Vector(0, 0, 50),    // eye position
-                                        Vector(-15, -15, 0), // hull min
-                                        Vector(15, 15, 56),  // hull max
+static CViewVectors g_ViewVectorsDefrag(Vector(0, 0, 26),    // eye position
+                                        Vector(-15, -15, -24), // hull min
+                                        Vector(15, 15, 32),  // hull max
 
-                                        Vector(-15, -15, 0), // duck hull min
-                                        Vector(15, 15, 40),  // duck hull max
-                                        Vector(0, 0, 36),    // duck view
+                                        Vector(-15, -15, -24), // duck hull min
+                                        Vector(15, 15, 32),  // duck hull max
+                                        Vector(0, 0, 12),    // duck view
       
                                         Vector(-10, -10, -10), // observer hull min
                                         Vector(10, 10, 10),    // observer hull max

@@ -145,6 +145,11 @@ public:
     bool DFCheckJumpButton();
     void DFAirMove();
     void DFAirAccelerate(Vector wishdir, float wishspeed, float accel, float maxspeed);
+    void DFGroundTrace();
+    void DFClipVelocity(Vector in, Vector &normal, Vector &out, float overbounce);
+    bool DFSlideMove(bool inAir);
+    void DFStepSlideMove(bool inAir);
+    void DFSetGroundEntity(const trace_t *pm);
 
 private:
     CMomentumPlayer *m_pPlayer;
