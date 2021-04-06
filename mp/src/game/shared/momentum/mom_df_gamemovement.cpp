@@ -29,12 +29,28 @@ bool CMomentumGameMovement::DFCheckJumpButton()
 
     if (player->pl.deadflag)
     {
-        mv->m_nOldButtons |= IN_JUMP; // don't jump again until released
+        mv->m_nOldButtons |= IN_JUMP;
+        return false;
+    }
+    
+    if (!(mv->m_nButtons & IN_JUMP))
+    {
+        mv->m_nOldButtons &= ~IN_JUMP;
+        mv->m_bJumpReleased = true;
+        return false;
+    }
+
+    // don't jump again until released
+    if (!mv->m_bJumpReleased)
+    {
         return false;
     }
 
     // In the air now.
     DFSetGroundEntity(nullptr);
+    mv->m_bJumpReleased = false;
+
+    player->PlayStepSound(mv->GetAbsOrigin(), player->m_pSurfaceData, 1.0, true);
 
     mv->m_vecVelocity[2] = 270;
 
@@ -203,20 +219,11 @@ void CMomentumGameMovement::DFWalkMove()
     Vector forward, right, up;
     const bool bIsSliding = m_pPlayer->m_CurrentSlideTrigger != nullptr;
 
-    if (mv->m_nButtons & IN_JUMP)
+    if (DFCheckJumpButton())
     {
-        if (DFCheckJumpButton())
-        {
-            DFAirMove();
-            return;
-        }
-    }
-    else
-    {
-        //mv->m_bJumpReleased = true;
-        //mv->m_flJumpTime = -1;
-        mv->m_nOldButtons &= ~IN_JUMP;
-    }
+        DFAirMove();
+        return;
+     }
 
     DFFriction();
 
@@ -256,6 +263,11 @@ void CMomentumGameMovement::DFWalkMove()
 
 void CMomentumGameMovement::DFFullWalkMove()
 {
+    if (!(mv->m_nButtons & IN_JUMP))
+    {
+        mv->m_nOldButtons &= ~IN_JUMP;
+        mv->m_bJumpReleased = true;
+    }
 
     if (player->GetGroundEntity() != nullptr)
     {
