@@ -62,21 +62,21 @@ void CMomentumGameMovement::DFDuck()
     trace_t trace;
     Vector playerMins, playerMaxs;
 
-    playerMins[0] = -15;
-    playerMins[1] = -15;
-    playerMaxs[0] = 15;
-    playerMaxs[1] = 15;
+    playerMins[0] = VEC_HULL_MIN[0];
+    playerMins[1] = VEC_HULL_MIN[1];
+    playerMaxs[0] = VEC_HULL_MAX[0];
+    playerMaxs[1] = VEC_HULL_MAX[1];
 
-    playerMins[2] = -24;
+    playerMins[2] = VEC_HULL_MIN[2];
 
     if (mv->m_nButtons & IN_DUCK)
     {
-        playerMaxs[2] = 16;
+        playerMaxs[2] = VEC_DUCK_HULL_MAX[2];
         player->SetViewOffset(VEC_DUCK_VIEW);
     }
     else
     {
-        playerMaxs[2] = 32;
+        playerMaxs[2] = VEC_HULL_MAX[2];
         player->SetViewOffset(VEC_VIEW);
     }
 
@@ -312,7 +312,7 @@ void CMomentumGameMovement::DFGroundTrace()
     trace_t trace;
 
     VectorCopy(mv->m_vecAbsOrigin, point);
-    point[2] -= 0.25f;
+    point[2] -= 0.1f;
 
     TracePlayerBBox(mv->m_vecAbsOrigin, point, MASK_PLAYERSOLID, COLLISION_GROUP_PLAYER_MOVEMENT, trace);
 
