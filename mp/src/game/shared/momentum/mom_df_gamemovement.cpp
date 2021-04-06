@@ -43,7 +43,28 @@ bool CMomentumGameMovement::DFCheckJumpButton()
 
 void CMomentumGameMovement::DFDuck()
 {
-    Duck();
+    trace_t trace;
+    Vector playerMins, playerMaxs;
+
+    playerMins[0] = -15;
+    playerMins[1] = -15;
+    playerMaxs[0] = 15;
+    playerMaxs[1] = 15;
+
+    playerMins[2] = -24;
+
+    if (mv->m_nButtons & IN_DUCK)
+    {
+        playerMaxs[2] = 16;
+        player->SetViewOffset(VEC_DUCK_VIEW);
+    }
+    else
+    {
+        playerMaxs[2] = 32;
+        player->SetViewOffset(VEC_VIEW);
+    }
+
+    player->SetCollisionBounds(playerMins, playerMaxs);
 }
 
 void CMomentumGameMovement::DFFriction()
@@ -277,9 +298,6 @@ void CMomentumGameMovement::DFGroundTrace()
 {
     Vector point;
     trace_t trace;
-    float initVel;
-
-    initVel = mv->m_vecVelocity.Length();
 
     VectorCopy(mv->m_vecAbsOrigin, point);
     point[2] -= 0.25f;
@@ -305,7 +323,6 @@ void CMomentumGameMovement::DFGroundTrace()
     }
 
     DFSetGroundEntity(&trace);
-    Msg("slowdown: %f - %f =  %f\n", initVel, mv->m_vecVelocity.Length(), initVel - mv->m_vecVelocity.Length());
     VectorCopy(trace.plane.normal, mv->m_vecGroundNormal);
 }
 
