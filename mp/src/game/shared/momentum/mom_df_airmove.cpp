@@ -19,6 +19,38 @@
 
 #include "tier0/memdbgon.h"
 
+#define VectorMAM(scale1, b1, scale2, b2, c)                                                                           \
+    (c.x = scale1 * b1.x + scale2 * b2.x, c.y = scale1 * b1.y + scale2 * b2.y, c.z = scale1 * b1.z + scale2 * b2.z)
+void CMomentumGameMovement::DFAirControl(Vector &wishdir, float wishspeed)
+{
+    float k = 32;
+    float kMult = wishspeed / sv_maxairspeed.GetFloat();
+    float speed;
+    float dot;
+    float zVel = mv->m_vecVelocity.z;
+
+    mv->m_vecVelocity.z = 0;
+
+    kMult = clamp(kMult, 0, 1);
+    k *= kMult;
+
+    speed = mv->m_vecVelocity.Length();
+    mv->m_vecVelocity = mv->m_vecVelocity.Normalized();
+    dot = mv->m_vecVelocity.Dot(wishdir);
+
+    if (dot > 0)
+    {
+        k *= powf(dot, sv_aircontrolpower.GetFloat()) * gpGlobals->frametime;
+        speed = max(0, speed);
+        k *= sv_aircontrol.GetFloat();
+        VectorMAM(speed, mv->m_vecVelocity, k, wishdir, mv->m_vecVelocity);
+        mv->m_vecVelocity = mv->m_vecVelocity.Normalized();
+    }
+
+    mv->m_vecVelocity.x *= speed;
+    mv->m_vecVelocity.y *= speed;
+    mv->m_vecVelocity.z = zVel;
+}
 
 void CMomentumGameMovement::DFAirAccelerate(Vector wishdir, float wishspeed, float accel, float maxspeed)
 {
@@ -72,6 +104,9 @@ void CMomentumGameMovement::DFAirMove()
     float wishspeed;
     Vector forward, right, up;
 
+    float realAcceleration;
+    float realMaxSpeed;
+
     AngleVectors(mv->m_vecViewAngles, &forward, &right, &up); // Determine movement angles
 
     // Copy movement amounts
@@ -91,16 +126,41 @@ void CMomentumGameMovement::DFAirMove()
     VectorCopy(wishvel, wishdir); // Determine magnitude of speed of move
     wishspeed = VectorNormalize(wishdir);
 
-    //
     // clamp to server defined max speed
-    //
     if (wishspeed != 0 && (wishspeed > mv->m_flMaxSpeed))
     {
         VectorScale(wishvel, mv->m_flMaxSpeed / wishspeed, wishvel);
         wishspeed = mv->m_flMaxSpeed;
     }
 
-    DFAirAccelerate(wishdir, wishspeed, sv_airaccelerate.GetFloat(), 320);
+    if (sv_cpm_physics.GetBool())
+    {
+        if ((smove > 0.1 || smove < -0.1) && !(fmove > 0.1 || fmove < -0.1))
+        {
+            realAcceleration = sv_airstrafeaccelerate.GetFloat();
+            realMaxSpeed = sv_maxairstrafespeed.GetFloat();
+        }
+        else
+        {
+            realAcceleration = sv_airaccelerate.GetFloat();
+            realMaxSpeed = sv_maxairspeed.GetFloat();
+        }
+    }
+    else
+    {
+        realAcceleration = sv_airaccelerate.GetFloat();
+        realMaxSpeed = sv_maxairspeed.GetFloat();
+    }
+
+    DFAirAccelerate(wishdir, wishspeed, realAcceleration, realMaxSpeed);
+
+    if (sv_cpm_physics.GetBool())
+    {
+        if (!(smove > 0.1 || smove < -0.1) && (fmove > 0.1 || fmove < -0.1))
+        {
+            DFAirControl(wishdir, wishspeed);
+        }
+    }
 
     DFStepSlideMove(true);
 }

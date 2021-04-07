@@ -150,6 +150,7 @@ public:
     bool DFSlideMove(bool inAir);
     void DFStepSlideMove(bool inAir);
     void DFSetGroundEntity(const trace_t *pm);
+    void DFAirControl(Vector &wishdir, float wishspeed);
 
 private:
     CMomentumPlayer *m_pPlayer;
