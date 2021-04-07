@@ -53,7 +53,42 @@ bool CMomentumGameMovement::DFCheckJumpButton()
 
     player->PlayStepSound(mv->GetAbsOrigin(), player->m_pSurfaceData, 1.0, true);
 
-    mv->m_vecVelocity[2] = 270;
+    float multiplier;
+
+    if (gpGlobals->curtime - m_pPlayer->m_Data.m_flLastJumpTime < 0.4 &&
+        mv->m_bCanCPMDoubleJump && sv_cpm_physics.GetBool())
+    {
+        multiplier = 370;
+        mv->m_bCanCPMDoubleJump = false;
+    }
+    else
+    {
+        multiplier = 270;
+        mv->m_bCanCPMDoubleJump = true;
+    }
+
+    Vector vecVelocity = mv->m_vecVelocity * Vector(1.0f, 1.0f, 0.0f);
+    float flHorizontalSpeed = vecVelocity.Length();
+
+    if (flHorizontalSpeed > 0)
+        vecVelocity /= flHorizontalSpeed;
+
+    float flDotProduct = DotProduct(vecVelocity, mv->m_vecGroundNormal);
+    
+    if (flDotProduct < 0.0f && sv_cpm_physics.GetBool())
+    {
+        multiplier += -flDotProduct * flHorizontalSpeed * sv_cpm_trimpmultiplier.GetFloat();
+
+        if (sv_cpm_trimpmultiplier.GetFloat() > 0)
+        {
+            mv->m_vecVelocity[0] /= sv_cpm_trimpslowdown.GetFloat();
+            mv->m_vecVelocity[1] /= sv_cpm_trimpslowdown.GetFloat();
+        }
+    }
+
+    mv->m_vecVelocity[2] = multiplier;
+
+    m_pPlayer->m_Data.m_flLastJumpTime = gpGlobals->curtime;
 
     return true;
 }
