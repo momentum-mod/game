@@ -1161,7 +1161,7 @@ void CMomentumGameMovement::PlayerMove()
     else
         BaseClass::PlayerMove();
 
-    if (player->IsAlive())
+    if (player->IsAlive() && !g_pGameModeSystem->GameModeIs(GAMEMODE_DEFRAG))
     {
         // Check if our eye height is too close to the ceiling and lower it.
         // This is needed because we have taller models with the old collision bounds.

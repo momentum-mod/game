@@ -59,28 +59,8 @@ bool CMomentumGameMovement::DFCheckJumpButton()
 
 void CMomentumGameMovement::DFDuck()
 {
-    trace_t trace;
-    Vector playerMins, playerMaxs;
-
-    playerMins[0] = VEC_HULL_MIN[0];
-    playerMins[1] = VEC_HULL_MIN[1];
-    playerMaxs[0] = VEC_HULL_MAX[0];
-    playerMaxs[1] = VEC_HULL_MAX[1];
-
-    playerMins[2] = VEC_HULL_MIN[2];
-
-    if (mv->m_nButtons & IN_DUCK)
-    {
-        playerMaxs[2] = VEC_DUCK_HULL_MAX[2];
-        player->SetViewOffset(VEC_DUCK_VIEW);
-    }
-    else
-    {
-        playerMaxs[2] = VEC_HULL_MAX[2];
-        player->SetViewOffset(VEC_VIEW);
-    }
-
-    player->SetCollisionBounds(playerMins, playerMaxs);
+    BaseClass::Duck();
+    return;
 }
 
 void CMomentumGameMovement::DFFriction()

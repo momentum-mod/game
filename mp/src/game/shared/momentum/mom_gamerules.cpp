@@ -106,7 +106,7 @@ static CViewVectors g_ViewVectorsDefrag(Vector(0, 0, 26),    // eye position
                                         Vector(15, 15, 32),  // hull max
 
                                         Vector(-15, -15, -24), // duck hull min
-                                        Vector(15, 15, 32),  // duck hull max
+                                        Vector(15, 15, 16),  // duck hull max
                                         Vector(0, 0, 12),    // duck view
       
                                         Vector(-10, -10, -10), // observer hull min
