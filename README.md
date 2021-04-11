@@ -24,4 +24,5 @@ This is my modification of Momentum Mod 0.8.7 to include more accurate Quake 3 /
 
 There are currently many missing features, like slick surfaces, water movement, velocity snapping, and others, and no Quake 3 weapons have been implemented yet. After a complete implementation is finished, I will gladly implement non-VQ3/CPMA mechanics such as Quake 2 additive jumps.
 
+Run faster!!!
 ![run faster!!](https://cdn.donmai.us/original/34/0b/__rumia_and_sin_sack_touhou_drawn_by_okahi__340b2f7081c34a459fea5c95464e990f.jpg)
