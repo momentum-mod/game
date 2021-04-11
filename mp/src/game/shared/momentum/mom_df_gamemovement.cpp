@@ -176,7 +176,10 @@ void CMomentumGameMovement::DFSetGroundEntity(const trace_t *pm)
         // if this is on, then trimping isn't possible in CPM
         // however, turning it off means there is a weird visual glitch where
         // your vertical velocity will oscillate quickly until you move.
-        if (!sv_cpm_physics.GetBool())
+        // the glitch only happens when landing on the ground with very little
+        // horizontal velocity. you would hardly trimp anyway with that much speed so
+        // its alright to set it to zero.
+        if (!sv_cpm_physics.GetBool() || mv->m_vecVelocity.Length2D() < 2)
         {
             mv->m_vecVelocity.z = 0;
         }
