@@ -231,6 +231,9 @@ void CMomentumGameMovement::DFStepSlideMove(bool inAir)
         return;
     }
 
+    VectorCopy(startOrigin, mv->m_vecAbsOrigin);
+    VectorCopy(startVel, mv->m_vecVelocity);
+
     if (!sv_cpm_physics.GetBool())
     {
         VectorCopy(startOrigin, down);
@@ -277,17 +280,4 @@ void CMomentumGameMovement::DFStepSlideMove(bool inAir)
     {
         DFClipVelocity(mv->m_vecVelocity, trace.plane.normal, mv->m_vecVelocity, 1.001f);
     }
-}
-
-void CMomentumGameMovement::DFAirStep()
-{
-    Vector vecEndPos;
-    Vector oldVel;
-    Vector dest;
-    trace_t trace;
-
-    // Add in any base velocity to the current velocity.
-    VectorAdd(mv->m_vecVelocity, player->GetBaseVelocity(), mv->m_vecVelocity);
-    dest[0] = mv->GetAbsOrigin()[0] + mv->m_vecVelocity[0] * gpGlobals->frametime;
-    dest[1] = mv->GetAbsOrigin()[1] + mv->m_vecVelocity[1] * gpGlobals->frametime;
 }

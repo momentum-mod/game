@@ -32,8 +32,6 @@ extern ConVar sv_maxairstrafespeed;
 extern ConVar sv_airstrafeaccelerate;
 
 extern ConVar sv_cpm_physics;
-extern ConVar sv_cpm_trimpmultiplier;
-extern ConVar sv_cpm_trimpslowdown;
 extern ConVar sv_wallcliptime;
 extern ConVar sv_aircontrol;
 extern ConVar sv_aircontrolpower;

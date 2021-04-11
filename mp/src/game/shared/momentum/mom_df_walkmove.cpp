@@ -23,6 +23,7 @@
 bool CMomentumGameMovement::DFCheckJumpButton()
 {
     trace_t pm;
+    float add;
 
     // Avoid nullptr access, return false if somehow we don't have a player
     if (!player)
@@ -53,40 +54,31 @@ bool CMomentumGameMovement::DFCheckJumpButton()
 
     player->PlayStepSound(mv->GetAbsOrigin(), player->m_pSurfaceData, 1.0, true);
 
-    float multiplier;
-
     if (gpGlobals->curtime - m_pPlayer->m_Data.m_flLastJumpTime < 0.4 &&
         mv->m_bCanCPMDoubleJump && sv_cpm_physics.GetBool())
     {
-        multiplier = 370;
+        add = 370;
         mv->m_bCanCPMDoubleJump = false;
     }
     else
     {
-        multiplier = 270;
+        add = 270;
         mv->m_bCanCPMDoubleJump = true;
     }
 
-    Vector vecVelocity = mv->m_vecVelocity * Vector(1.0f, 1.0f, 0.0f);
-    float flHorizontalSpeed = vecVelocity.Length();
-
-    if (flHorizontalSpeed > 0)
-        vecVelocity /= flHorizontalSpeed;
-
-    float flDotProduct = DotProduct(vecVelocity, mv->m_vecGroundNormal);
-    
-    if (flDotProduct < 0.0f && sv_cpm_physics.GetBool())
+    if (sv_cpm_physics.GetBool())
     {
-        multiplier += -flDotProduct * flHorizontalSpeed * sv_cpm_trimpmultiplier.GetFloat();
-
-        if (sv_cpm_trimpmultiplier.GetFloat() > 0)
-        {
-            mv->m_vecVelocity[0] /= sv_cpm_trimpslowdown.GetFloat();
-            mv->m_vecVelocity[1] /= sv_cpm_trimpslowdown.GetFloat();
-        }
+        mv->m_vecVelocity[2] += add;
+    }
+    else
+    {
+        mv->m_vecVelocity[2] = add;
     }
 
-    mv->m_vecVelocity[2] = multiplier;
+    if (mv->m_vecVelocity[2] < 270)
+    {
+        mv->m_vecVelocity[2] = 270;
+    }
 
     m_pPlayer->m_Data.m_flLastJumpTime = gpGlobals->curtime;
 

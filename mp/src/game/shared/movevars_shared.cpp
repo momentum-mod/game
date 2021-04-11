@@ -96,8 +96,6 @@ ConVar sv_aircontrol("sv_aircontrol", "150", FCVAR_NOTIFY | FCVAR_REPLICATED | F
 ConVar sv_aircontrolpower("sv_aircontrolpower", "2", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_MAPPING);
 
 ConVar	sv_cpm_physics("sv_cpm_physics", "0", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_MAPPING);
-ConVar	sv_cpm_trimpmultiplier("sv_cpm_trimpmultiplier", "1.3", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_MAPPING);
-ConVar  sv_cpm_trimpslowdown("sv_cpm_trimpslowdown", "1.4", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_MAPPING);
 
 ConVar  sv_wallcliptime("sv_wallcliptime", "0.25", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_MAPPING);
 

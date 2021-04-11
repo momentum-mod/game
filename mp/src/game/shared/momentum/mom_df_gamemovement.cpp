@@ -121,7 +121,14 @@ void CMomentumGameMovement::DFSetGroundEntity(const trace_t *pm)
         // Subtract ground velocity at instant we hit ground jumping
         vecBaseVelocity -= newGround->GetAbsVelocity();
         vecBaseVelocity.z = newGround->GetAbsVelocity().z;
-        mv->m_vecVelocity.z = 0;
+        
+        // if this is on, then trimping isn't possible in CPM
+        // however, turning it off means there is a weird visual glitch where
+        // your vertical velocity will oscillate quickly until you move.
+        if (!sv_cpm_physics.GetBool())
+        {
+            mv->m_vecVelocity.z = 0;
+        }
     }
     else if (oldGround && !newGround)
     {
