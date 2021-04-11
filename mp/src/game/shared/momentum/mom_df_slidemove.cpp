@@ -231,8 +231,11 @@ void CMomentumGameMovement::DFStepSlideMove(bool inAir)
         return;
     }
 
-    VectorCopy(startOrigin, mv->m_vecAbsOrigin);
-    VectorCopy(startVel, mv->m_vecVelocity);
+    if (sv_cpm_physics.GetBool())
+    {
+        VectorCopy(startOrigin, mv->m_vecAbsOrigin);
+        VectorCopy(startVel, mv->m_vecVelocity);
+    }
 
     if (!sv_cpm_physics.GetBool())
     {
