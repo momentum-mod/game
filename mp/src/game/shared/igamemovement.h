@@ -44,6 +44,8 @@ public:
 	bool			m_bCanCPMDoubleJump : 1;
 	float			m_flJumpTime;
 
+	float			m_flWallClipTime;
+
 	EntityHandle_t	m_nPlayerHandle;	// edict index on server, client entity handle on client
 
 	int				m_nImpulseCommand;	// Impulse command issued.

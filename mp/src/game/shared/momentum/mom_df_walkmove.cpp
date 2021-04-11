@@ -107,6 +107,9 @@ void CMomentumGameMovement::DFWalkMove()
     Vector forward, right, up;
     const bool bIsSliding = m_pPlayer->m_CurrentSlideTrigger != nullptr;
 
+    float oldSpeed;
+    Vector oldVel;
+
     if (DFCheckJumpButton())
     {
         DFAirMove();
@@ -146,5 +149,14 @@ void CMomentumGameMovement::DFWalkMove()
     VectorNormalize(mv->m_vecVelocity);
     VectorScale(mv->m_vecVelocity, spd, mv->m_vecVelocity);
 
+    oldSpeed = mv->m_vecVelocity.Length2D();
+    VectorCopy(mv->m_vecVelocity, oldVel);
+
     DFStepSlideMove(false);
+
+    if (gpGlobals->curtime - mv->m_flWallClipTime < sv_wallcliptime.GetFloat() &&
+        oldSpeed > mv->m_vecVelocity.Length2D())
+    {
+        VectorCopy(oldVel, mv->m_vecVelocity);
+    }
 }

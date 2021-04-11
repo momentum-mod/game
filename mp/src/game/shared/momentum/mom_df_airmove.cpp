@@ -107,6 +107,9 @@ void CMomentumGameMovement::DFAirMove()
     float realAcceleration;
     float realMaxSpeed;
 
+    float oldSpeed;
+    Vector oldVel;
+
     AngleVectors(mv->m_vecViewAngles, &forward, &right, &up); // Determine movement angles
 
     // Copy movement amounts
@@ -162,5 +165,14 @@ void CMomentumGameMovement::DFAirMove()
         }
     }
 
+    oldSpeed = mv->m_vecVelocity.Length2D();
+    VectorCopy(mv->m_vecVelocity, oldVel);
+
     DFStepSlideMove(true);
+
+    if (gpGlobals->curtime - mv->m_flWallClipTime < sv_wallcliptime.GetFloat() &&
+        oldSpeed > mv->m_vecVelocity.Length2D())
+    {
+        VectorCopy(oldVel, mv->m_vecVelocity);
+    }
 }
