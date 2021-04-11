@@ -19,9 +19,60 @@
 
 #include "tier0/memdbgon.h"
 
+bool CMomentumGameMovement::DFCanUnDuck()
+{
+    trace_t trace;
+    Vector point;
+
+    VectorCopy(mv->m_vecAbsOrigin, point);
+    point[2] += 0.01;
+
+    TracePlayerBBox(mv->m_vecAbsOrigin, point, MASK_PLAYERSOLID, COLLISION_GROUP_PLAYER_MOVEMENT, trace);
+
+    return !(trace.fraction < 1.0);
+}
+
 void CMomentumGameMovement::DFDuck()
 {
-    BaseClass::Duck();
+    if (mv->m_nButtons & IN_DUCK)
+    {
+        // we want to stand while ducking, but we don't want to actually "unduck", since
+        // we can't jump while doing this
+        if (mv->m_nButtons & IN_JUMP && DFCanUnDuck())
+        {
+            player->RemoveFlag(FL_DUCKING);
+            player->m_Local.m_bDucked = false;
+
+            player->SetViewOffset(GetPlayerViewOffset(false));
+        }
+        else
+        {
+            player->AddFlag(FL_DUCKING);
+            player->m_Local.m_bDucked = true;
+
+            player->SetViewOffset(GetPlayerViewOffset(true));
+        }
+    }
+    else
+    {
+        // set this to false so tracebox uses standing bbox
+        player->m_Local.m_bDucked = false;
+
+        if (!DFCanUnDuck())
+        {
+            player->AddFlag(FL_DUCKING);
+            player->m_Local.m_bDucked = true;
+
+            player->SetViewOffset(GetPlayerViewOffset(true));
+        }
+        else
+        {
+            player->RemoveFlag(FL_DUCKING);
+            player->m_Local.m_bDucked = false;
+
+            player->SetViewOffset(GetPlayerViewOffset(false));
+        }
+    }
     return;
 }
 

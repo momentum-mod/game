@@ -34,6 +34,11 @@ bool CMomentumGameMovement::DFCheckJumpButton()
         mv->m_nOldButtons |= IN_JUMP;
         return false;
     }
+
+    if (mv->m_nButtons & IN_DUCK)
+    {
+        return false;
+    }
     
     if (!(mv->m_nButtons & IN_JUMP))
     {
@@ -131,6 +136,15 @@ void CMomentumGameMovement::DFWalkMove()
 
     VectorCopy(wishvel, wishdir); // Determine maginitude of speed of move
     wishspeed = VectorNormalize(wishdir);
+
+    // clamp the speed lower if ducking
+    if (player->GetFlags() & FL_DUCKING)
+    {
+        if (wishspeed > sv_maxspeed.GetFloat() * sv_duckscale.GetFloat())
+        {
+            wishspeed = sv_maxspeed.GetFloat() * sv_duckscale.GetFloat();
+        }
+    }
 
     // Set pmove velocity
     Accelerate(wishdir, wishspeed, sv_accelerate.GetFloat());

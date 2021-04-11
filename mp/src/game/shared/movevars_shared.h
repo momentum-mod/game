@@ -24,6 +24,7 @@ extern ConVar sv_noclipspeed_sprint_multiplier;
 
 extern ConVar sv_maxspeed;
 extern ConVar sv_accelerate;
+extern ConVar sv_duckscale;
 
 extern ConVar sv_maxairspeed;
 extern ConVar sv_airaccelerate;

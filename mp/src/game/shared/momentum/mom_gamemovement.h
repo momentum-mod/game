@@ -139,6 +139,7 @@ public:
     // Defrag movement functions
     void DFPlayerMove();
     void DFFullWalkMove();
+    bool DFCanUnDuck();
     void DFDuck();
     void DFWalkMove();
     void DFFriction();
