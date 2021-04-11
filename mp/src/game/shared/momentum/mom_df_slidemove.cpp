@@ -231,16 +231,18 @@ void CMomentumGameMovement::DFStepSlideMove(bool inAir)
         return;
     }
 
-    VectorCopy(startOrigin, down);
-    down[2] -= sv_stepsize.GetFloat();
-
-    TracePlayerBBox(startOrigin, down, MASK_PLAYERSOLID, COLLISION_GROUP_PLAYER_MOVEMENT, trace);
-
-    // never step up when you still have velocity
-    if (mv->m_vecVelocity[2] > 0 && (trace.fraction == 1.0 ||
-        DotProduct(trace.plane.normal, up) < 0.7))
+    if (!sv_cpm_physics.GetBool())
     {
-        return;        
+        VectorCopy(startOrigin, down);
+        down[2] -= sv_stepsize.GetFloat();
+
+        TracePlayerBBox(startOrigin, down, MASK_PLAYERSOLID, COLLISION_GROUP_PLAYER_MOVEMENT, trace);
+
+        // never step up when you still have velocity
+        if (mv->m_vecVelocity[2] > 0 && (trace.fraction == 1.0 || DotProduct(trace.plane.normal, up) < 0.7))
+        {
+            return;
+        }
     }
 
     VectorCopy(mv->m_vecAbsOrigin, downOrigin);
