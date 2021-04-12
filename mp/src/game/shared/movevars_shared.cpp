@@ -88,9 +88,11 @@ ConVar	sv_duckscale	( "sv_duckscale", "0.25",  FCVAR_REPLICATED | FCVAR_DEVELOPM
 
 ConVar	sv_maxairspeed(  "sv_maxairspeed", "320", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_MAPPING );
 ConVar	sv_airaccelerate(  "sv_airaccelerate", "150", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_MAPPING );
+ConVar	sv_airdecelerate(  "sv_airdecelerate", "0.1", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_MAPPING );
+ConVar	sv_airdeceleratetime(  "sv_airdeceleratetime", "0.1", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_MAPPING );
+
 ConVar	sv_maxairstrafespeed(  "sv_maxairstrafespeed", "30", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_MAPPING );
 ConVar	sv_airstrafeaccelerate(  "sv_airstrafeaccelerate", "10", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_MAPPING );
-
 
 ConVar sv_aircontrol("sv_aircontrol", "150", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_MAPPING);
 ConVar sv_aircontrolpower("sv_aircontrolpower", "2", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_MAPPING);

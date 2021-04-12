@@ -117,8 +117,13 @@ void CMomentumGameMovement::DFFullWalkMove()
 {
     if (!(mv->m_nButtons & IN_JUMP))
     {
+        mv->m_flJumpHoldTime = -1;
         mv->m_nOldButtons &= ~IN_JUMP;
         mv->m_bJumpReleased = true;
+    }
+    else if (mv->m_flJumpHoldTime < 0)
+    {
+        mv->m_flJumpHoldTime = gpGlobals->curtime;
     }
 
     if (player->GetGroundEntity() != nullptr)

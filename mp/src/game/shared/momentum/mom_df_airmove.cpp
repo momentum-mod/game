@@ -155,6 +155,12 @@ void CMomentumGameMovement::DFAirMove()
         realMaxSpeed = sv_maxairspeed.GetFloat();
     }
 
+    // less accel if holding jump for too long
+    if (mv->m_flJumpHoldTime > 0 && gpGlobals->curtime - mv->m_flJumpHoldTime > sv_airdeceleratetime.GetFloat())
+    {
+        realAcceleration *= (1 - sv_airdecelerate.GetFloat());
+    }
+
     DFAirAccelerate(wishdir, wishspeed, realAcceleration, realMaxSpeed);
 
     if (sv_cpm_physics.GetBool())
