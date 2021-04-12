@@ -106,15 +106,28 @@ void CMomentumGameMovement::DFWalkMove()
     float oldSpeed;
     Vector oldVel;
 
+    AngleVectors(mv->m_vecViewAngles, &forward, &right, &up); // Determine movement angles
+
+    if (player->GetWaterLevel() > 2 && DotProduct(forward, mv->m_vecGroundNormal) > 0)
+    {
+        DFWaterMove();
+        return;
+    }
+
     if (DFCheckJumpButton())
     {
-        DFAirMove();
+        if (player->GetWaterLevel() > 1)
+        {
+            DFWaterMove();
+        }
+        else
+        {
+            DFAirMove();
+        }
         return;
      }
 
     DFFriction();
-
-    AngleVectors(mv->m_vecViewAngles, &forward, &right, &up); // Determine movement angles
 
     // Copy movement amounts
     fmove = mv->m_flForwardMove;
@@ -146,7 +159,7 @@ void CMomentumGameMovement::DFWalkMove()
     }
 
     // Set pmove velocity
-    Accelerate(wishdir, wishspeed, sv_accelerate.GetFloat());
+    DFAccelerate(wishdir, wishspeed, sv_accelerate.GetFloat());
 
     spd = mv->m_vecVelocity.Length();
     DFClipVelocity(mv->m_vecVelocity, mv->m_vecGroundNormal, mv->m_vecVelocity, 1.001f);

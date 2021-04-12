@@ -139,6 +139,32 @@ void CMomentumGameMovement::DFDuck()
     return;
 }
 
+void CMomentumGameMovement::DFAccelerate(Vector& wishdir, float wishspeed, float accel)
+{
+    int i;
+    float addspeed, accelspeed, currentspeed;
+
+    currentspeed = DotProduct(mv->m_vecVelocity, wishdir);
+    addspeed = wishspeed - currentspeed;
+
+    if (addspeed <= 0)
+    {
+        return;
+    }
+
+    accelspeed = accel * wishspeed * gpGlobals->frametime;
+
+    if (accelspeed > addspeed)
+    {
+        accelspeed = addspeed;
+    }
+
+    for (i = 0; i < 3; i++)
+    {
+        mv->m_vecVelocity[i] += accelspeed * wishdir[i];
+    }
+}
+
 void CMomentumGameMovement::DFFriction()
 {
     Vector vel;
@@ -314,7 +340,7 @@ void CMomentumGameMovement::DFSetGroundEntity(const trace_t *pm)
         CategorizeGroundSurface(*pm);
 
         // Then we are not in water jump sequence
-        player->m_flWaterJumpTime = -1;
+        player->m_flWaterJumpTime = 0;
 
         // Standing on an entity other than the world, so signal that we are touching something.
         if (!pm->DidHitWorld())

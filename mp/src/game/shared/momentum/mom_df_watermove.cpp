@@ -75,7 +75,7 @@ void CMomentumGameMovement::DFWaterJumpMove()
     mv->m_vecVelocity[2] -= sv_gravity.GetFloat() * gpGlobals->frametime;
     if (mv->m_vecVelocity[2] < 0)
     {
-        player->m_flWaterJumpTime = -1;
+        player->m_flWaterJumpTime = 0;
     }
 }
 
@@ -108,7 +108,7 @@ void CMomentumGameMovement::DFWaterMove()
 
     if (mv->m_nButtons & IN_JUMP)
     {
-        umove = 450;
+        umove = sv_maxspeed.GetFloat();
     }
 
     if (!fmove && !smove && !umove)

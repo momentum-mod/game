@@ -143,6 +143,7 @@ public:
     void DFSetWaterLevel();
     bool DFCanUnDuck();
     void DFDuck();
+    void DFAccelerate(Vector &wishdir, float wishspeed, float accel);
     void DFFriction();
     void DFFullWalkMove();
     void DFPlayerMove();
