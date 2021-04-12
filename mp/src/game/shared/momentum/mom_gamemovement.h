@@ -140,6 +140,7 @@ public:
     void DFPlayerMove();
     void DFFullWalkMove();
     bool DFCanUnDuck();
+    void DFSetWaterLevel();
     void DFDuck();
     void DFWalkMove();
     void DFFriction();

@@ -32,6 +32,45 @@ bool CMomentumGameMovement::DFCanUnDuck()
     return !(trace.fraction < 1.0);
 }
 
+void CMomentumGameMovement::DFSetWaterLevel()
+{
+    Vector point;
+    int contents = CONTENTS_EMPTY;
+    int sample1, sample2;
+    int waterlevel = WL_NotInWater;
+    int watertype;
+    
+    VectorCopy(mv->GetAbsOrigin(), point);
+    point[2] = mv->GetAbsOrigin()[2] + VEC_HULL_MIN[2] + 1;
+
+    contents = GetPointContentsCached(point, 0);
+
+    if (contents & MASK_WATER)
+    {
+        watertype = contents;
+
+        sample2 = player->GetViewOffset()[2] - VEC_HULL_MIN[2];
+        sample1 = sample2 / 2;
+        
+        waterlevel = WL_Feet;
+        point[2] = mv->GetAbsOrigin()[2] + VEC_HULL_MIN[2] + sample1;
+        contents = GetPointContentsCached(point, 1);
+        if (contents & MASK_WATER)
+        {
+            waterlevel = WL_Waist;
+            point[2] = mv->GetAbsOrigin()[2] + VEC_HULL_MIN[2] + sample2;
+            contents = GetPointContentsCached(point, 2);
+            if (contents & MASK_WATER)
+            {
+                waterlevel = WL_Eyes;
+            }
+        }
+    }
+
+    player->SetWaterLevel(waterlevel);
+    player->SetWaterType(contents);
+}
+
 void CMomentumGameMovement::DFDuck()
 {
     if (mv->m_nButtons & IN_DUCK)
@@ -258,6 +297,8 @@ void CMomentumGameMovement::DFPlayerMove()
     MoveHelper()->ResetTouchList();
 
     ReduceTimers();
+
+    DFSetWaterLevel();
 
     DFDuck();
 
