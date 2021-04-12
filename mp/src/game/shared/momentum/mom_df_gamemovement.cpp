@@ -196,7 +196,11 @@ void CMomentumGameMovement::DFFullWalkMove()
         mv->m_flJumpHoldTime = gpGlobals->curtime;
     }
 
-    if (player->GetWaterLevel() > 1)
+    if (player->m_flWaterJumpTime > 0 && gpGlobals->curtime - player->m_flWaterJumpTime < 2)
+    {
+        DFWaterJumpMove();
+    }
+    else if (player->GetWaterLevel() > 1)
     {
         DFWaterMove();
     }
@@ -310,7 +314,7 @@ void CMomentumGameMovement::DFSetGroundEntity(const trace_t *pm)
         CategorizeGroundSurface(*pm);
 
         // Then we are not in water jump sequence
-        player->m_flWaterJumpTime = 0;
+        player->m_flWaterJumpTime = -1;
 
         // Standing on an entity other than the world, so signal that we are touching something.
         if (!pm->DidHitWorld())

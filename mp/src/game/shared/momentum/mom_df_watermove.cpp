@@ -22,9 +22,63 @@
 
 bool CMomentumGameMovement::DFCheckWaterJump()
 {
-	return false;
+    Vector spot;
+    int cont;
+    Vector flatForward;
+    Vector forward, right, up;
+
+    if (player->m_flWaterJumpTime > 0 && gpGlobals->curtime - player->m_flWaterJumpTime < 2)
+    {
+        return false;
+    }
+
+    if (player->GetWaterLevel() != 2)
+    {
+        return false;
+    }
+
+    AngleVectors(mv->m_vecViewAngles, &forward, &right, &up); // Determine movement angles
+
+    flatForward[0] = forward[0];
+    flatForward[1] = forward[1];
+    flatForward[2] = 0;
+    VectorNormalize(flatForward);
+
+    VectorMA(mv->GetAbsOrigin(), 30, flatForward, spot);
+    spot[2] += 4;
+    cont = GetPointContentsCached(spot, 0);
+    if (!(cont & CONTENTS_SOLID))
+    {
+        return false;
+    }
+
+    spot[2] += 16;
+    cont = GetPointContentsCached(spot, 1);
+    // no idea why we have to mask out CONTENTS_TESTFOGVOLUME here but it works
+    if (cont & (~CONTENTS_TESTFOGVOLUME))
+    {
+        return false;
+    }
+
+    VectorScale(forward, 200, mv->m_vecVelocity);
+    mv->m_vecVelocity[2] = 350;
+
+    player->m_flWaterJumpTime = gpGlobals->curtime;
+
+	return true;
 }
-void CMomentumGameMovement::DFWaterJumpMove() {}
+
+void CMomentumGameMovement::DFWaterJumpMove()
+{
+    DFStepSlideMove(true);
+
+    mv->m_vecVelocity[2] -= sv_gravity.GetFloat() * gpGlobals->frametime;
+    if (mv->m_vecVelocity[2] < 0)
+    {
+        player->m_flWaterJumpTime = -1;
+    }
+}
+
 void CMomentumGameMovement::DFWaterMove()
 {
     int i;
@@ -34,10 +88,8 @@ void CMomentumGameMovement::DFWaterMove()
     float fmove, smove, umove;
     Vector wishdir;
     float wishspeed;
-
     Vector dest;
     Vector forward, right, up;
-    const bool bIsSliding = m_pPlayer->m_CurrentSlideTrigger != nullptr;
 
     if (DFCheckWaterJump())
     {
@@ -53,6 +105,11 @@ void CMomentumGameMovement::DFWaterMove()
     fmove = mv->m_flForwardMove;
     smove = mv->m_flSideMove;
     umove = mv->m_flUpMove;
+
+    if (mv->m_nButtons & IN_JUMP)
+    {
+        umove = 450;
+    }
 
     if (!fmove && !smove && !umove)
     {
