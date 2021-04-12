@@ -369,6 +369,7 @@ void CGameMode_Defrag::SetGameModeVars()
     sv_accelerate.SetValue(10);
     sv_friction.SetValue(6);
     sv_wateraccelerate.SetValue(4);
+    sv_stepsize.SetValue(17);
 
     sv_airaccelerate.SetValue(1);
 }
@@ -376,11 +377,6 @@ void CGameMode_Defrag::SetGameModeVars()
 void CGameMode_Defrag::OnPlayerSpawn(CMomentumPlayer *pPlayer)
 {
     CGameModeBase::OnPlayerSpawn(pPlayer);
-
-#ifdef GAME_DLL
-    pPlayer->GiveWeapon(WEAPON_ROCKETLAUNCHER);
-    pPlayer->GiveWeapon(WEAPON_MACHINEGUN);
-#endif
 }
 
 bool CGameMode_Defrag::HasCapability(GameModeHUDCapability_t capability)
@@ -390,9 +386,7 @@ bool CGameMode_Defrag::HasCapability(GameModeHUDCapability_t capability)
 
 bool CGameMode_Defrag::WeaponIsAllowed(WeaponID_t weapon)
 {
-    return weapon == WEAPON_ROCKETLAUNCHER ||
-           weapon == WEAPON_MACHINEGUN ||
-           weapon == WEAPON_KNIFE;
+    return true;
 }
 
 CGameModeSystem::CGameModeSystem() : CAutoGameSystem("CGameModeSystem")
