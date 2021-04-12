@@ -160,8 +160,15 @@ void CMomentumGameMovement::DFFriction()
 
     drop = 0;
 
-    control = speed < sv_stopspeed.GetFloat() ? sv_stopspeed.GetFloat() : speed;
-    drop += control * sv_friction.GetFloat() * gpGlobals->frametime;
+    if (player->GetWaterLevel() <= 1)
+    {
+        control = speed < sv_stopspeed.GetFloat() ? sv_stopspeed.GetFloat() : speed;
+        drop += control * sv_friction.GetFloat() * gpGlobals->frametime;
+    }
+    else
+    {
+        drop += speed * sv_waterfriction.GetFloat() * gpGlobals->frametime;
+    }
 
     newspeed = speed - drop;
     if (newspeed < 0)
@@ -189,7 +196,11 @@ void CMomentumGameMovement::DFFullWalkMove()
         mv->m_flJumpHoldTime = gpGlobals->curtime;
     }
 
-    if (player->GetGroundEntity() != nullptr)
+    if (player->GetWaterLevel() > 1)
+    {
+        DFWaterMove();
+    }
+    else if (player->GetGroundEntity() != nullptr)
     {
         DFWalkMove();
     }
