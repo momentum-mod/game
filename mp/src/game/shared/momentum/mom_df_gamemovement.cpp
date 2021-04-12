@@ -19,17 +19,28 @@
 
 #include "tier0/memdbgon.h"
 
-bool CMomentumGameMovement::DFCanUnDuck()
+void CMomentumGameMovement::DFClipVelocity(Vector in, Vector &normal, Vector &out, float overbounce)
 {
-    trace_t trace;
-    Vector point;
+    float backoff;
+    float change;
+    int i;
 
-    VectorCopy(mv->m_vecAbsOrigin, point);
-    point[2] += 0.01;
+    backoff = DotProduct(in, normal);
 
-    TracePlayerBBox(mv->m_vecAbsOrigin, point, MASK_PLAYERSOLID, COLLISION_GROUP_PLAYER_MOVEMENT, trace);
+    if (backoff < 0)
+    {
+        backoff *= overbounce;
+    }
+    else
+    {
+        backoff /= overbounce;
+    }
 
-    return !(trace.fraction < 1.0);
+    for (i = 0; i < 3; i++)
+    {
+        change = normal[i] * backoff;
+        out[i] = in[i] - change;
+    }
 }
 
 void CMomentumGameMovement::DFSetWaterLevel()
@@ -69,6 +80,19 @@ void CMomentumGameMovement::DFSetWaterLevel()
 
     player->SetWaterLevel(waterlevel);
     player->SetWaterType(contents);
+}
+
+bool CMomentumGameMovement::DFCanUnDuck()
+{
+    trace_t trace;
+    Vector point;
+
+    VectorCopy(mv->m_vecAbsOrigin, point);
+    point[2] += 0.01;
+
+    TracePlayerBBox(mv->m_vecAbsOrigin, point, MASK_PLAYERSOLID, COLLISION_GROUP_PLAYER_MOVEMENT, trace);
+
+    return !(trace.fraction < 1.0);
 }
 
 void CMomentumGameMovement::DFDuck()
@@ -178,30 +202,62 @@ void CMomentumGameMovement::DFFullWalkMove()
     }
 }
 
-void CMomentumGameMovement::DFClipVelocity(Vector in, Vector &normal, Vector &out, float overbounce)
+void CMomentumGameMovement::DFPlayerMove()
 {
-    float backoff;
-    float change;
-    int i;
 
-    backoff = DotProduct(in, normal);
+	CheckParameters();
 
-    if (backoff < 0)
-    {
-        backoff *= overbounce;
-    }
-    else
-    {
-        backoff /= overbounce;
-    }
+    // clear output applied velocity
+    mv->m_outWishVel.Init();
+    mv->m_outJumpVel.Init();
 
-    for (i = 0; i < 3; i++)
+    MoveHelper()->ResetTouchList();
+
+    ReduceTimers();
+
+    DFSetWaterLevel();
+
+    DFDuck();
+
+    DFGroundTrace();
+
+    switch (player->GetMoveType())
     {
-        change = normal[i] * backoff;
-        out[i] = in[i] - change;
+        case MOVETYPE_NONE:
+            break;
+
+        case MOVETYPE_NOCLIP:
+            FullNoClipMove(sv_noclipspeed.GetFloat(), sv_noclipaccelerate.GetFloat());
+            break;
+
+        case MOVETYPE_FLY:
+        case MOVETYPE_FLYGRAVITY:
+            FullTossMove();
+            break;
+
+        case MOVETYPE_LADDER:
+            FullLadderMove();
+            break;
+
+        case MOVETYPE_WALK:
+            DFFullWalkMove();
+            break;
+
+        case MOVETYPE_ISOMETRIC:
+            // IsometricMove();
+            // Could also try:  FullTossMove();
+            DFFullWalkMove();
+            break;
+
+        case MOVETYPE_OBSERVER:
+            FullObserverMove(); // clips against world&players
+            break;
+
+        default:
+            DevMsg(1, "Bogus pmove player movetype %i on (%i) 0=cl 1=sv\n", player->GetMoveType(), player->IsServer());
+            break;
     }
 }
-
 
 void CMomentumGameMovement::DFSetGroundEntity(const trace_t *pm)
 {
@@ -216,7 +272,7 @@ void CMomentumGameMovement::DFSetGroundEntity(const trace_t *pm)
         // Subtract ground velocity at instant we hit ground jumping
         vecBaseVelocity -= newGround->GetAbsVelocity();
         vecBaseVelocity.z = newGround->GetAbsVelocity().z;
-        
+
         // if this is on, then trimping isn't possible in CPM
         // however, turning it off means there is a weird visual glitch where
         // your vertical velocity will oscillate quickly until you move.
@@ -283,61 +339,4 @@ void CMomentumGameMovement::DFGroundTrace()
 
     DFSetGroundEntity(&trace);
     VectorCopy(trace.plane.normal, mv->m_vecGroundNormal);
-}
-
-void CMomentumGameMovement::DFPlayerMove()
-{
-
-	CheckParameters();
-
-    // clear output applied velocity
-    mv->m_outWishVel.Init();
-    mv->m_outJumpVel.Init();
-
-    MoveHelper()->ResetTouchList();
-
-    ReduceTimers();
-
-    DFSetWaterLevel();
-
-    DFDuck();
-
-    DFGroundTrace();
-
-    switch (player->GetMoveType())
-    {
-        case MOVETYPE_NONE:
-            break;
-
-        case MOVETYPE_NOCLIP:
-            FullNoClipMove(sv_noclipspeed.GetFloat(), sv_noclipaccelerate.GetFloat());
-            break;
-
-        case MOVETYPE_FLY:
-        case MOVETYPE_FLYGRAVITY:
-            FullTossMove();
-            break;
-
-        case MOVETYPE_LADDER:
-            FullLadderMove();
-            break;
-
-        case MOVETYPE_WALK:
-            DFFullWalkMove();
-            break;
-
-        case MOVETYPE_ISOMETRIC:
-            // IsometricMove();
-            // Could also try:  FullTossMove();
-            DFFullWalkMove();
-            break;
-
-        case MOVETYPE_OBSERVER:
-            FullObserverMove(); // clips against world&players
-            break;
-
-        default:
-            DevMsg(1, "Bogus pmove player movetype %i on (%i) 0=cl 1=sv\n", player->GetMoveType(), player->IsServer());
-            break;
-    }
 }

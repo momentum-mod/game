@@ -137,22 +137,35 @@ public:
     void PerformLurchChecks();
 
     // Defrag movement functions
-    void DFPlayerMove();
-    void DFFullWalkMove();
-    bool DFCanUnDuck();
-    void DFSetWaterLevel();
-    void DFDuck();
-    void DFWalkMove();
-    void DFFriction();
-    bool DFCheckJumpButton();
-    void DFAirMove();
-    void DFAirAccelerate(Vector wishdir, float wishspeed, float accel, float maxspeed);
-    void DFGroundTrace();
+
+    // mom_df_gamemovement.cpp
     void DFClipVelocity(Vector in, Vector &normal, Vector &out, float overbounce);
+    void DFSetWaterLevel();
+    bool DFCanUnDuck();
+    void DFDuck();
+    void DFFriction();
+    void DFFullWalkMove();
+    void DFPlayerMove();
+    void DFSetGroundEntity(const trace_t *pm);
+    void DFGroundTrace();
+
+    // mom_df_walkmove.cpp
+    bool DFCheckJumpButton();
+    void DFWalkMove();
+
+    // mom_df_airmove.cpp
+    void DFAirControl(Vector &wishdir, float wishspeed);
+    void DFAirAccelerate(Vector wishdir, float wishspeed, float accel, float maxspeed);
+    void DFAirMove();
+
+    // mom_df_watermove.cpp
+    bool DFCheckWaterJump();
+    void DFWaterJumpMove();
+    void DFWaterMove();
+
+    // mom_df_slidemove.cpp
     bool DFSlideMove(bool inAir);
     void DFStepSlideMove(bool inAir);
-    void DFSetGroundEntity(const trace_t *pm);
-    void DFAirControl(Vector &wishdir, float wishspeed);
 
 private:
     CMomentumPlayer *m_pPlayer;

@@ -19,7 +19,6 @@
 
 #include "tier0/memdbgon.h"
 
-
 bool CMomentumGameMovement::DFCheckJumpButton()
 {
     trace_t pm;
