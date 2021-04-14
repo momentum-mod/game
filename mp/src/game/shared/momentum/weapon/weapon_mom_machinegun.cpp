@@ -2,6 +2,7 @@
 
 #include "weapon_mom_machinegun.h"
 #include "mom_player_shared.h"
+#include "mom_system_gamemode.h"
 
 #include "tier0/memdbgon.h"
 
@@ -20,8 +21,14 @@ static MAKE_TOGGLE_CONVAR(sv_smg_recoil, "0", FCVAR_ARCHIVE, "Toggles the SMG re
 
 int CMomentumMachinegun::GetSlot(void) const
 {
-    // temporary, until we can detect which gamemode we're in
-    return 1;
+    if (g_pGameModeSystem->GameModeIs(GAMEMODE_DEFRAG))
+    {
+        return 1;
+    }
+    else
+    {
+        return BaseClass::GetSlot();
+    }
 }
 
 CMomentumMachinegun::CMomentumMachinegun()
