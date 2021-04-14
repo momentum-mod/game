@@ -25,7 +25,7 @@ PRECACHE_WEAPON_REGISTER(weapon_momentum_df_plasmagun);
 CMomentumDFPlasmaGun::CMomentumDFPlasmaGun()
 {
     m_flIdleInterval = 20.0f;
-    m_flTimeToIdleAfterFire = 0.1f;
+    m_flTimeToIdleAfterFire = 0.092f;
 }
 
 void CMomentumDFPlasmaGun::Precache()
@@ -44,7 +44,7 @@ void CMomentumDFPlasmaGun::PrimaryAttack()
     if (!pPlayer)
         return;
 
-    m_flNextPrimaryAttack = m_flNextSecondaryAttack = gpGlobals->curtime + 0.1f;
+    m_flNextPrimaryAttack = m_flNextSecondaryAttack = gpGlobals->curtime + 0.092f;
     SetWeaponIdleTime(gpGlobals->curtime + m_flTimeToIdleAfterFire);
     pPlayer->m_iShotsFired++;
 
@@ -69,7 +69,7 @@ void CMomentumDFPlasmaGun::PrimaryAttack()
 
     VectorCopy(pPlayer->GetAbsOrigin(), muzzle);
     muzzle[2] += pPlayer->GetViewOffset()[2];
-    scale = 14 + gpGlobals->frametime * 900 * 8;
+    scale = 14 + gpGlobals->frametime * 2000 * 8;
     VectorMA(muzzle, scale, vForward, dest);
 
     UTIL_TraceLine(muzzle, dest, MASK_RADIUS_DAMAGE, pPlayer, COLLISION_GROUP_NONE, &trace);
@@ -80,7 +80,7 @@ void CMomentumDFPlasmaGun::PrimaryAttack()
 
     VectorAngles(vForward, angForward);
 
-    CMomDFRocket::EmitRocket(muzzle, angForward, pPlayer);
+    CMomDFRocket::EmitRocket(muzzle, angForward, pPlayer, DF_PLASMA);
 
     DecalPacket rocket = DecalPacket::Rocket(muzzle, angForward);
     g_pMomentumGhostClient->SendDecalPacket(&rocket);

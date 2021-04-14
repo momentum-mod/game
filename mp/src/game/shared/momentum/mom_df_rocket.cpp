@@ -14,9 +14,6 @@
 #include "mom_system_gamemode.h"
 #include "tier0/memdbgon.h"
 
-#define MOM_DF_ROCKET_SPEED 900.0f
-#define MOM_DF_ROCKET_RADIUS 120.0f
-
 IMPLEMENT_NETWORKCLASS_ALIASED(MomDFRocket, DT_MomDFRocket);
 
 BEGIN_NETWORK_TABLE(CMomDFRocket, DT_MomDFRocket)
@@ -77,7 +74,7 @@ void CMomDFRocket::StopTrailSound()
 
 float CMomDFRocket::GetDamageAmount()
 {
-    return 100.0f;
+    return damage[type];
 }
 
 void CMomDFRocket::Destroy()
@@ -239,7 +236,7 @@ void CMomDFRocket::Explode(trace_t *pTrace, CBaseEntity *pOther)
 
     // Damage
     const CTakeDamageInfo info(this, GetOwnerEntity(), vec3_origin, vecOrigin, GetDamage(), GetDamageType());
-    DFRadiusDamage(info, vecOrigin, MOM_DF_ROCKET_RADIUS, CLASS_NONE, nullptr);
+    DFRadiusDamage(info, vecOrigin, splashRadius[type], CLASS_NONE, nullptr);
 
     StopTrailSound();
 
@@ -275,7 +272,8 @@ void CMomDFRocket::RocketTouch(CBaseEntity *pOther)
     Explode(&trace, pOther);
 }
 
-CMomDFRocket *CMomDFRocket::EmitRocket(const Vector &vecOrigin, const QAngle &vecAngles, CBaseEntity *pOwner)
+CMomDFRocket *CMomDFRocket::EmitRocket(const Vector &vecOrigin, const QAngle &vecAngles, CBaseEntity *pOwner,
+                                       DFProjectileType_t projType)
 {
     const auto pRocket = dynamic_cast<CMomDFRocket *>(CreateNoSpawn("momentum_df_rocket", vecOrigin, vecAngles, pOwner));
     if (!pRocket)
@@ -283,13 +281,15 @@ CMomDFRocket *CMomDFRocket::EmitRocket(const Vector &vecOrigin, const QAngle &ve
         return nullptr;
     }
 
+    pRocket->type = projType;
+
     DispatchSpawn(pRocket);
 
     Vector vecForward;
     AngleVectors(vecAngles, &vecForward);
     VectorNormalize(vecForward);
 
-    const Vector velocity = vecForward * MOM_DF_ROCKET_SPEED;
+    const Vector velocity = vecForward * speed[projType];
 
     QAngle angles;
     VectorAngles(velocity, angles);

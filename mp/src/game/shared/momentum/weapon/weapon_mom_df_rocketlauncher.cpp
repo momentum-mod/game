@@ -80,7 +80,7 @@ void CMomentumDFRocketLauncher::PrimaryAttack()
 
     VectorAngles(vForward, angForward);
 
-    CMomDFRocket::EmitRocket(muzzle, angForward, pPlayer);
+    CMomDFRocket::EmitRocket(muzzle, angForward, pPlayer, DF_ROCKET);
 
     DecalPacket rocket = DecalPacket::Rocket(muzzle, angForward);
     g_pMomentumGhostClient->SendDecalPacket(&rocket);

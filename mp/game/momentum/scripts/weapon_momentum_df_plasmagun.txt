@@ -1,80 +1,61 @@
 WeaponData
 {
-    "CrosshairMinDistance"      "4"
-    "CrosshairDeltaDistance"    "4"
+    "CrosshairMinDistance"      "7"
+    "CrosshairDeltaDistance"    "3"
     "BuiltRightHanded"          "1"
-    "PlayerAnimationExtension"  "ak"
     
     // Weapon data is loaded by both the Game and Client DLLs.
-    "printname"         "#MOM_Weapon_RocketLauncher"
+    "printname"         "#MOM_Weapon_Machinegun" 
     
-    "anim_prefix"      "anim"
+    "anim_prefix"       "anim"
     "bucket"            "1"
     "bucket_position"   "0"
 
-    "clip_size"         "4"
-
-    "weight"            "25"
+    "clip_size"         "50"
+    "weight"            "26"
 
     "ModelData"
     {
-        "view"  "models/weapons/mom_rocketlauncher/v_mom_rocketlauncher_c.mdl"
-        "world" "models/weapons/mom_rocketlauncher/w_mom_rocketlauncher.mdl"
-
-        "rocket"    "models/weapons/mom_rocketlauncher/w_missile.mdl"
-        "surprise"  "models/custom_props/yee_rider.mdl"
+        "view"  "models/weapons/v_smg_old.mdl"
+        "world" "models/weapons/v_smg_old.mdl"
     }
 
-    // Sounds for the weapon
+    // Sounds for the weapon.
     SoundData
     {
-        "single_shot"       "Weapon_RL.Single"
-        "explosion"         "Weapon_RL.Explosion"
-        "RocketTrail"       "Rocket.Trail"
-    }
-
-    // Weapon particles
-    ParticleData
-    {
-        "ExplosionEffect"          "mom_rocket_explosion_regular"
-        "ExplosionMidAirEffect"    "mom_rocket_explosion_midair"
-        "ExplosionWaterEffect"     "mom_rocket_explosion_underwater"
-
-        // Trail
-        "RocketTrail"              "mom_rocket_trail_a" // mom_rocket_trail_b
+        "single_shot"       "Weapon_SMG1.Single"
     }
 
     // Weapon Sprite data is loaded by the Client DLL.
     TextureData
     {
-        //Weapon Select Images
         "weapon"
-        {
-            "font"		"WeaponIcons"
-            "character"	"i"
-        }
-        "weapon_s"
-        {	
-            "font"		"WeaponIconsSelected"
-            "character"	"i"
-        }
-        "weapon_small"
-        {
-            "font"		"WeaponIconsSmall"
-            "character"	"i"
-        }
-        "ammo"
-        {
-            "font"		"WeaponIconsSmall"
-            "character"	"x"
-        }
+		{
+				"font"		"WeaponIcons"
+				"character"	"s"
+		}
+		"weapon_s"
+		{	
+				"font"		"WeaponIconsSelected"
+				"character"	"s"
+		}
+		"weapon_small"
+		{
+				"font"		"WeaponIconsSmall"
+				"character"	"s"
+		}
+		"ammo"
+		{
+				"font"		"WeaponIconsSmall"
+				"character"	"s"
+		}
         "crosshair"
         {
-            "file"      "sprites/crosshairs"
-            "x"         "0"
-            "y"         "48"
-            "width"     "24"
-            "height"    "24"
+                "file"      "sprites/crosshairs"
+                "x"         "0"
+                "y"         "48"
+                "width"     "24"
+                "height"    "24"
         }
     }
 }

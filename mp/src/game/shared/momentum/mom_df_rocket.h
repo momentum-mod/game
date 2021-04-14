@@ -6,6 +6,16 @@
 #define CMomDFRocket C_MomDFRocket
 #endif
 
+enum DFProjectileType_t
+{
+    DF_ROCKET = 0,
+    DF_PLASMA
+};
+
+const float damage[] = {100, 15};
+const float splashRadius[] = {120, 20};
+const float speed[] = {900, 2000};
+
 class CMomDFRocket : public CMomExplosive
 {
   public:
@@ -30,10 +40,11 @@ class CMomDFRocket : public CMomExplosive
     void DFRadiusDamage(const CTakeDamageInfo &info, const Vector &vecSrcIn, float flRadius, int iClassIgnore,
                         CBaseEntity *pEntityIgnore);
 
-    static CMomDFRocket *EmitRocket(const Vector &vecOrigin, const QAngle &vecAngles, CBaseEntity *pOwner);
+    static CMomDFRocket *EmitRocket(const Vector &vecOrigin, const QAngle &vecAngles, CBaseEntity *pOwner,
+                                    DFProjectileType_t projType);
+    DFProjectileType_t type;
 
   private:
-    void SpawnRocketSurprise();
     void StopTrailSound();
 #endif
 };
