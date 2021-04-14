@@ -60,12 +60,23 @@ void CMomentumDFRocketLauncher::PrimaryAttack()
     Vector vForward, vRight, vUp;
     QAngle angForward;
     Vector muzzle;
+    Vector dest;
+    float scale;
+    trace_t trace;
+    const int MASK_RADIUS_DAMAGE = MASK_SHOT & (~CONTENTS_HITBOX);
 
     pPlayer->EyeVectors(&vForward, &vRight, &vUp);
 
     VectorCopy(pPlayer->GetAbsOrigin(), muzzle);
     muzzle[2] += pPlayer->GetViewOffset()[2];
-    VectorMA(muzzle, 14, vForward, muzzle);
+    scale = 14 + gpGlobals->frametime * 900 * 8;
+    VectorMA(muzzle, scale, vForward, dest);
+
+    UTIL_TraceLine(muzzle, dest, MASK_RADIUS_DAMAGE, pPlayer, COLLISION_GROUP_NONE, &trace);
+    if (trace.fraction < 0.99)
+    {
+        VectorCopy(trace.endpos, muzzle);
+    }
 
     VectorAngles(vForward, angForward);
 

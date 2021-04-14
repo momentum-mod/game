@@ -50,8 +50,6 @@ void CMomDFRocket::Spawn()
 
     SetTouch(&CMomDFRocket::RocketTouch);
     SetNextThink(gpGlobals->curtime);
-
-    SpawnRocketSurprise();
 #endif
 }
 
@@ -75,21 +73,6 @@ void CMomDFRocket::CreateTrailParticles()
 void CMomDFRocket::StopTrailSound()
 {
     StopSound(g_pWeaponDef->GetWeaponSound(WEAPON_ROCKETLAUNCHER, "RocketTrail"));
-}
-
-void CMomDFRocket::SpawnRocketSurprise()
-{
-    if (random->RandomInt(0, 10000) != 234 /*official number picked by kurt*/)
-        return;
-
-    const auto pModelEnt = CreateNoSpawn("prop_dynamic", GetAbsOrigin(), GetAbsAngles(), this);
-    if (pModelEnt)
-    {
-        pModelEnt->SetModel(g_pWeaponDef->GetWeaponModel(WEAPON_ROCKETLAUNCHER, "surprise"));
-        pModelEnt->AddEffects(EF_NOSHADOW);
-        DispatchSpawn(pModelEnt);
-        pModelEnt->FollowEntity(this);
-    }
 }
 
 float CMomDFRocket::GetDamageAmount()
@@ -304,6 +287,7 @@ CMomDFRocket *CMomDFRocket::EmitRocket(const Vector &vecOrigin, const QAngle &ve
 
     Vector vecForward;
     AngleVectors(vecAngles, &vecForward);
+    VectorNormalize(vecForward);
 
     const Vector velocity = vecForward * MOM_DF_ROCKET_SPEED;
 
