@@ -16,6 +16,13 @@ END_PREDICTION_DATA();
 LINK_ENTITY_TO_CLASS(weapon_momentum_machinegun, CMomentumMachinegun);
 PRECACHE_WEAPON_REGISTER(weapon_momentum_machinegun);
 
+static MAKE_TOGGLE_CONVAR(sv_smg_recoil, "0", FCVAR_ARCHIVE, "Toggles the SMG recoil. 0 = OFF, 1 = ON\n");
+
+int CMomentumMachinegun::GetSlot(void) const
+{
+    // temporary, until we can detect which gamemode we're in
+    return 1;
+}
 
 CMomentumMachinegun::CMomentumMachinegun()
 {
@@ -34,15 +41,16 @@ void CMomentumMachinegun::PrimaryAttack()
     if (!BaseGunFire(0.0f, 0.07f, true))
         return;
 
-    //MOM_TODO: Do we want this kickback? Should it be convar'd?
-
-    // Kick the gun based on the state of the player.
-    if (!FBitSet(pPlayer->GetFlags(), FL_ONGROUND))
-        pPlayer->KickBack(.33, 0.23, 0.18, 0.020, 3.7, 2.1, 4.5);
-    else if (pPlayer->GetAbsVelocity().Length2D() > 5)
-        pPlayer->KickBack(0.40, 0.25, 0.2, 0.0260, 4, 2.17, 4.9);
-    else if (FBitSet(pPlayer->GetFlags(), FL_DUCKING))
-        pPlayer->KickBack(0.275, 0.2, 0.125, 0.02, 3, 1, 9);
-    else
-        pPlayer->KickBack(0.3, 0.225, 0.125, 0.02, 3.25, 1.25, 8);
+    if (sv_smg_recoil.GetBool())
+    {
+        // Kick the gun based on the state of the player.
+        if (!FBitSet(pPlayer->GetFlags(), FL_ONGROUND))
+            pPlayer->KickBack(.33, 0.23, 0.18, 0.020, 3.7, 2.1, 4.5);
+        else if (pPlayer->GetAbsVelocity().Length2D() > 5)
+            pPlayer->KickBack(0.40, 0.25, 0.2, 0.0260, 4, 2.17, 4.9);
+        else if (FBitSet(pPlayer->GetFlags(), FL_DUCKING))
+            pPlayer->KickBack(0.275, 0.2, 0.125, 0.02, 3, 1, 9);
+        else
+            pPlayer->KickBack(0.3, 0.225, 0.125, 0.02, 3.25, 1.25, 8);
+    }
 }
