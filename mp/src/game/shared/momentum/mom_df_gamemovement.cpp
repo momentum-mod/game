@@ -189,7 +189,7 @@ void CMomentumGameMovement::DFFriction()
     if (player->GetWaterLevel() <= 1)
     {
         control = speed < sv_stopspeed.GetFloat() ? sv_stopspeed.GetFloat() : speed;
-        drop += control * sv_friction.GetFloat() * gpGlobals->frametime * (sv_cpm_physics.GetBool() ? (2.0 / 3.0) : 1);
+        drop += control * sv_friction.GetFloat() * gpGlobals->frametime;
     }
     else
     {
