@@ -196,6 +196,7 @@ void CWeaponDef::LoadWeaponDefinitions()
     m_vecWeaponDefs[WEAPON_ROCKETLAUNCHER]  = ParseWeaponScript(g_szWeaponNames[WEAPON_ROCKETLAUNCHER]);
     m_vecWeaponDefs[WEAPON_STICKYLAUNCHER]  = ParseWeaponScript(g_szWeaponNames[WEAPON_STICKYLAUNCHER]);
     m_vecWeaponDefs[WEAPON_DF_ROCKETLAUNCHER] = ParseWeaponScript(g_szWeaponNames[WEAPON_DF_ROCKETLAUNCHER]);
+    m_vecWeaponDefs[WEAPON_DF_PLASMAGUN]    = ParseWeaponScript(g_szWeaponNames[WEAPON_DF_PLASMAGUN]);
 }
 
 void CWeaponDef::ReloadWeaponDefinitions()
