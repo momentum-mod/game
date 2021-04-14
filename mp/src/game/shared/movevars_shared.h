@@ -22,6 +22,8 @@ extern ConVar sv_noclipspeed_vertical;
 extern ConVar sv_noclipspeed_duck_multiplier;
 extern ConVar sv_noclipspeed_sprint_multiplier;
 
+extern ConVar sv_jumpsound;
+
 extern ConVar sv_maxspeed;
 extern ConVar sv_accelerate;
 extern ConVar sv_duckscale;

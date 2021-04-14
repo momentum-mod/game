@@ -57,6 +57,12 @@ bool CMomentumGameMovement::DFCheckJumpButton()
     mv->m_bJumpReleased = false;
 
     player->PlayStepSound(mv->GetAbsOrigin(), player->m_pSurfaceData, 1.0, true);
+    #ifdef GAME_DLL
+    if (sv_jumpsound.GetBool())
+    {
+        engine->ServerCommand("play player/jump.wav\n");
+    }
+    #endif
 
     if (gpGlobals->curtime - m_pPlayer->m_Data.m_flLastJumpTime < 0.4 &&
         mv->m_bCanCPMDoubleJump && sv_cpm_physics.GetBool())

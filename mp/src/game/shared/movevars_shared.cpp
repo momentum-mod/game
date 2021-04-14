@@ -82,6 +82,8 @@ ConVar	sv_specaccelerate( "sv_specaccelerate", "5", FCVAR_NOTIFY | FCVAR_ARCHIVE
 ConVar	sv_specspeed	( "sv_specspeed", "3", FCVAR_ARCHIVE | FCVAR_NOTIFY | FCVAR_REPLICATED);
 ConVar	sv_specnoclip	( "sv_specnoclip", "1", FCVAR_ARCHIVE | FCVAR_NOTIFY | FCVAR_REPLICATED);
 
+ConVar	sv_jumpsound	( "sv_jumpsound", "0",  FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_MAPPING);
+
 ConVar	sv_maxspeed		( "sv_maxspeed", "320",  FCVAR_REPLICATED | FCVAR_DEVELOPMENTONLY);
 ConVar	sv_accelerate	( "sv_accelerate", "5", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_MAPPING);
 ConVar	sv_duckscale	( "sv_duckscale", "0.25",  FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_MAPPING);
