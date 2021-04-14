@@ -33,7 +33,7 @@ void CMomentumDFRocketLauncher::Precache()
     BaseClass::Precache();
 
 #ifndef CLIENT_DLL
-    UTIL_PrecacheOther("momentum_rocket");
+    UTIL_PrecacheOther("momentum_df_rocket");
 #endif
 }
 
@@ -69,7 +69,7 @@ void CMomentumDFRocketLauncher::PrimaryAttack()
 
     VectorAngles(vForward, angForward);
 
-    CMomRocket::EmitRocket(muzzle, angForward, pPlayer);
+    CMomDFRocket::EmitRocket(muzzle, angForward, pPlayer);
 
     DecalPacket rocket = DecalPacket::Rocket(muzzle, angForward);
     g_pMomentumGhostClient->SendDecalPacket(&rocket);
