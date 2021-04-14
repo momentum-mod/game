@@ -2154,8 +2154,58 @@ int CMomentumPlayer::OnTakeDamage_Alive(const CTakeDamageInfo &info)
         // Done
         return 1;
     }
+    else if (pAttacker == GetLocalPlayer() && FClassnameIs(pInflictor, "momentum_df_rocket"))
+    {
+        DFApplyPushFromDamage(info);
+        return 1;
+    }
 
     return BaseClass::OnTakeDamage_Alive(info);
+}
+
+void CMomentumPlayer::DFApplyPushFromDamage(const CTakeDamageInfo &info)
+{
+    Vector dir;
+    float knockback;
+
+    if (info.GetDamageType() & DMG_PREVENT_PHYSICS_FORCE)
+        return;
+
+    CBaseEntity *pAttacker = info.GetAttacker();
+    CBaseEntity *pInflictor = info.GetInflictor();
+
+    if (!pInflictor || GetMoveType() != MOVETYPE_WALK || pAttacker->IsSolidFlagSet(FSOLID_TRIGGER))
+        return;
+
+    VectorSubtract(GetAbsOrigin(), info.GetInflictor()->WorldSpaceCenter(), dir);
+    dir[2] += 24;
+
+    knockback = info.GetDamage();
+
+    if (knockback > 200)
+    {
+        knockback = 200;
+    }
+
+    Vector kvel;
+    float mass = 200;
+
+    VectorNormalize(dir);
+    VectorScale(dir, 1000 * knockback / mass, kvel);
+
+    ApplyAbsVelocityImpulse(kvel);
+
+    if (GetFlags() & FL_ONGROUND)
+    {
+        UpdateLastAction(SurfInt::ACTION_KNOCKBACK);
+    }
+
+    IGameEvent *pEvent = gameeventmanager->CreateEvent("player_explosive_hit");
+    if (pEvent)
+    {
+        pEvent->SetFloat("speed", GetAbsVelocity().Length());
+        gameeventmanager->FireEvent(pEvent);
+    }
 }
 
 // Apply TF2-like knockback when damaging self with rockets

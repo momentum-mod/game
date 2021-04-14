@@ -222,8 +222,6 @@ void CMomDFRocket::DFRadiusDamage(const CTakeDamageInfo &info, const Vector &vec
 
         if (DFCanDamage(info, pEntity, vecSrc))
         {
-            VectorSubtract(pEntity->GetAbsOrigin(), vecSrc, dir);
-            dir[2] += 24;
             CTakeDamageInfo adjustedInfo = info;
             adjustedInfo.SetDamage(flAdjustedDamage);
             pEntity->TakeDamage(adjustedInfo);

@@ -252,6 +252,7 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
 
     int OnTakeDamage_Alive(const CTakeDamageInfo &info) OVERRIDE;
 
+    void DFApplyPushFromDamage(const CTakeDamageInfo &info);
     void ApplyPushFromDamage(const CTakeDamageInfo &info, Vector &vecDir);
 
     // Ladder stuff
