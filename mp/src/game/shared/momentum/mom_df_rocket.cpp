@@ -4,6 +4,7 @@
 
 #include "mom_shareddefs.h"
 #include "weapon/weapon_def.h"
+#include "weapon/weapon_shareddefs.h"
 
 #ifndef CLIENT_DLL
 #include "momentum/fx_mom_shared.h"
@@ -14,6 +15,7 @@
 #include "tier0/memdbgon.h"
 
 #define MOM_DF_ROCKET_SPEED 900.0f
+#define MOM_DF_ROCKET_RADIUS 120.0f
 
 IMPLEMENT_NETWORKCLASS_ALIASED(MomDFRocket, DT_MomDFRocket);
 
@@ -110,6 +112,125 @@ void CMomDFRocket::PlayFizzleSound()
     }
 }
 
+bool CMomDFRocket::DFCanDamage(const CTakeDamageInfo &info, CBaseEntity *other, const Vector &origin)
+{
+    const int MASK_RADIUS_DAMAGE = MASK_SHOT & (~CONTENTS_HITBOX);
+    Vector dest, midpoint;
+    Vector otherMins, otherMaxs;
+    trace_t trace;
+
+    otherMins = other->GetAbsOrigin() + other->WorldAlignMins();
+    otherMaxs = other->GetAbsOrigin() + other->WorldAlignMaxs();
+
+    VectorAdd(otherMins, otherMaxs, midpoint);
+    VectorScale(midpoint, 0.5f, midpoint);
+
+    VectorCopy(midpoint, dest);
+    UTIL_TraceLine(origin, dest, MASK_RADIUS_DAMAGE, info.GetInflictor(), COLLISION_GROUP_NONE, &trace);
+    if (trace.fraction == 1.0)
+    {
+        return true;
+    }
+
+    VectorCopy(midpoint, dest);
+    dest[0] += 15.0;
+    dest[1] += 15.0;
+    UTIL_TraceLine(origin, dest, MASK_RADIUS_DAMAGE, info.GetInflictor(), COLLISION_GROUP_NONE, &trace);
+    if (trace.fraction == 1.0)
+    {
+        return true;
+    }
+
+    VectorCopy(midpoint, dest);
+    dest[0] += 15.0;
+    dest[1] -= 15.0;
+    UTIL_TraceLine(origin, dest, MASK_RADIUS_DAMAGE, info.GetInflictor(), COLLISION_GROUP_NONE, &trace);
+    if (trace.fraction == 1.0)
+    {
+        return true;
+    }
+
+    VectorCopy(midpoint, dest);
+    dest[0] -= 15.0;
+    dest[1] += 15.0;
+    UTIL_TraceLine(origin, dest, MASK_RADIUS_DAMAGE, info.GetInflictor(), COLLISION_GROUP_NONE, &trace);
+    if (trace.fraction == 1.0)
+    {
+        return true;
+    }
+
+    VectorCopy(midpoint, dest);
+    dest[0] -= 15.0;
+    dest[1] -= 15.0;
+    UTIL_TraceLine(origin, dest, MASK_RADIUS_DAMAGE, info.GetInflictor(), COLLISION_GROUP_NONE, &trace);
+    if (trace.fraction == 1.0)
+    {
+        return true;
+    }
+
+    return false;
+}
+
+
+void CMomDFRocket::DFRadiusDamage(const CTakeDamageInfo &info, const Vector &vecSrcIn, float flRadius, int iClassIgnore,
+                    CBaseEntity *pEntityIgnore)
+{
+    CBaseEntity *pEntity = NULL;
+    float flAdjustedDamage, falloff;
+
+    Vector vecSrc = vecSrcIn;
+    Vector dist;
+    Vector otherMins, otherMaxs;
+    Vector dir;
+
+    vecSrc.z += 1;
+
+    if (flRadius)
+        falloff = info.GetDamage() / flRadius;
+    else
+        falloff = 1.0;
+
+    for (CEntitySphereQuery sphere(vecSrc, flRadius); (pEntity = sphere.GetCurrentEntity()) != NULL;
+         sphere.NextEntity())
+    {
+        if (pEntity == pEntityIgnore)
+            continue;
+
+        if (pEntity->m_takedamage == DAMAGE_NO)
+            continue;
+
+        otherMins = pEntity->GetAbsOrigin() + pEntity->WorldAlignMins();
+        otherMaxs = pEntity->GetAbsOrigin() + pEntity->WorldAlignMaxs();
+
+        // find the distance to the edge of the bounding box
+        for (int i = 0; i < 3; i++)
+        {
+            if (vecSrc[i] < otherMins[i])
+                dist[i] = otherMins[i] - vecSrc[i];
+            if (vecSrc[i] > otherMaxs[i])
+                dist[i] = vecSrc[i] - otherMaxs[i];
+            else
+                dist[i] = 0;
+        }
+
+        if (dist.Length() > flRadius)
+        {
+            continue;
+        }
+
+        flAdjustedDamage = info.GetDamage() * (1.0 - (dist.Length() / flRadius));
+
+        if (DFCanDamage(info, pEntity, vecSrc))
+        {
+            VectorSubtract(pEntity->GetAbsOrigin(), vecSrc, dir);
+            dir[2] += 24;
+            CTakeDamageInfo adjustedInfo = info;
+            adjustedInfo.SetDamage(flAdjustedDamage);
+            pEntity->TakeDamage(adjustedInfo);
+        }
+    }
+}
+
 void CMomDFRocket::Explode(trace_t *pTrace, CBaseEntity *pOther)
 {
     if (CNoGrenadesZone::IsInsideNoGrenadesZone(this))
@@ -137,7 +258,7 @@ void CMomDFRocket::Explode(trace_t *pTrace, CBaseEntity *pOther)
 
     // Damage
     const CTakeDamageInfo info(this, GetOwnerEntity(), vec3_origin, vecOrigin, GetDamage(), GetDamageType());
-    RadiusDamage(info, vecOrigin, MOM_EXPLOSIVE_RADIUS, CLASS_NONE, nullptr);
+    DFRadiusDamage(info, vecOrigin, MOM_DF_ROCKET_RADIUS, CLASS_NONE, nullptr);
 
     StopTrailSound();
 
@@ -178,7 +299,6 @@ CMomDFRocket *CMomDFRocket::EmitRocket(const Vector &vecOrigin, const QAngle &ve
     const auto pRocket = dynamic_cast<CMomDFRocket *>(CreateNoSpawn("momentum_df_rocket", vecOrigin, vecAngles, pOwner));
     if (!pRocket)
     {
-        Msg("nullptr returned\n");
         return nullptr;
     }
 

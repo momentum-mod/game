@@ -26,6 +26,10 @@ class CMomDFRocket : public CMomExplosive
     void RocketTouch(CBaseEntity *pOther);
     void Explode(trace_t *pTrace, CBaseEntity *pOther);
 
+    bool DFCanDamage(const CTakeDamageInfo &info, CBaseEntity *other, const Vector &origin);
+    void DFRadiusDamage(const CTakeDamageInfo &info, const Vector &vecSrcIn, float flRadius, int iClassIgnore,
+                        CBaseEntity *pEntityIgnore);
+
     static CMomDFRocket *EmitRocket(const Vector &vecOrigin, const QAngle &vecAngles, CBaseEntity *pOwner);
 
   private:

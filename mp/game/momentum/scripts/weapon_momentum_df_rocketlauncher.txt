@@ -9,7 +9,7 @@ WeaponData
     "printname"         "#MOM_Weapon_RocketLauncher"
     
     "anim_prefix"      "anim"
-    "bucket"            "0"
+    "bucket"            "4"
     "bucket_position"   "0"
 
     "clip_size"         "4"
