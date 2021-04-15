@@ -165,7 +165,12 @@ void CMomentumGameMovement::DFWalkMove()
     }
 
     // Set pmove velocity
-    DFAccelerate(wishdir, wishspeed, sv_accelerate.GetFloat());
+    float realAccelerate = sv_accelerate.GetFloat();
+    if (sv_cpm_physics.GetBool())
+    {
+        realAccelerate *= sv_cpm_accelmult.GetFloat();
+    }
+    DFAccelerate(wishdir, wishspeed, realAccelerate);
 
     spd = mv->m_vecVelocity.Length();
     DFClipVelocity(mv->m_vecVelocity, mv->m_vecGroundNormal, mv->m_vecVelocity, 1.001f);
