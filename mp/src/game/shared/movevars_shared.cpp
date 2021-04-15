@@ -102,7 +102,8 @@ ConVar  sv_aircontrolpower("sv_aircontrolpower", "2", FCVAR_NOTIFY | FCVAR_REPLI
 ConVar	sv_wadescale	( "sv_wadescale", "0.7",  FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_MAPPING);
 ConVar	sv_swimscale	( "sv_swimscale", "0.5",  FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_MAPPING);
 
-ConVar	sv_cpm_physics("sv_cpm_physics", "0", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_MAPPING);
+ConVar	sv_cpm_physics  ("sv_cpm_physics", "0", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_MAPPING);
+ConVar	sv_autojump     ("sv_autojump", "0", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_MAPPING);
 
 ConVar  sv_wallcliptime("sv_wallcliptime", "0.25", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_MAPPING);
 

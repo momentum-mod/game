@@ -47,7 +47,7 @@ bool CMomentumGameMovement::DFCheckJumpButton()
     }
 
     // don't jump again until released
-    if (!mv->m_bJumpReleased)
+    if (!mv->m_bJumpReleased && !sv_autojump.GetBool())
     {
         return false;
     }
