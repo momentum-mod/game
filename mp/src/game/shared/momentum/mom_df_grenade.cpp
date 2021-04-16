@@ -421,8 +421,6 @@ void CMomDFGrenade::Explode(trace_t *pTrace)
     // Damage
     const CTakeDamageInfo info(this, GetOwnerEntity(), vec3_origin, vecOrigin, 100, GetDamageType());
     DFRadiusDamage(info, vecOrigin, 150, CLASS_NONE, nullptr);
-       
-    UTIL_DecalTrace(pTrace, "RocketScorch");
 
     UTIL_Remove(this);
 }
