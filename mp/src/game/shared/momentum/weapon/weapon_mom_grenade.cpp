@@ -72,7 +72,7 @@ bool CMomentumGrenade::Deploy()
 bool CMomentumGrenade::Holster(CBaseCombatWeapon *pSwitchingTo)
 {
     m_bRedraw = false;
-    m_bPinPulled = false; // when this is holstered make sure the pin isn’t pulled.
+    m_bPinPulled = false; // when this is holstered make sure the pin isnï¿½t pulled.
     m_fThrowTime = 0;
 
 #ifndef CLIENT_DLL
