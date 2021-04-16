@@ -402,7 +402,8 @@ bool CMomentumGameRules::AllowDamage(CBaseEntity *pVictim, const CTakeDamageInfo
                                           FClassnameIs(info.GetInflictor(), "momentum_generic_bomb") ||
                                           FClassnameIs(info.GetInflictor(), "momentum_stickybomb") ||
                                           FClassnameIs(info.GetInflictor(), "momentum_concgrenade") ||
-                                          FClassnameIs(info.GetInflictor(), "momentum_df_rocket")))
+                                          FClassnameIs(info.GetInflictor(), "momentum_df_rocket") ||
+                                          FClassnameIs(info.GetInflictor(), "momentum_df_grenade")))
         return true;
 
     return !pVictim->IsPlayer();

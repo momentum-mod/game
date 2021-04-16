@@ -5,6 +5,8 @@
 
 #ifndef CLIENT_DLL
 #include "te_effect_dispatch.h"
+#include "momentum/fx_mom_shared.h"
+#include "momentum/mom_triggers.h"
 #include "momentum/mom_player.h"
 #endif
 
@@ -13,6 +15,10 @@
 #define DF_GRENADE_GRAVITY         0.8f
 #define DF_GRENADE_ELASTICITY      0.6f
 #define DF_GRENADE_FRICTION        0.4f
+
+extern short g_sModelIndexFireball;   // (in combatweapon.cpp) holds the index for the fireball
+extern short g_sModelIndexWExplosion; // (in combatweapon.cpp) holds the index for the underwater explosion
+extern short g_sModelIndexSmoke;      // (in combatweapon.cpp) holds the index for the smoke cloud
 
 IMPLEMENT_NETWORKCLASS_ALIASED(MomDFGrenade, DT_MomDFGrenade);
 
@@ -24,8 +30,8 @@ BEGIN_NETWORK_TABLE(CMomDFGrenade, DT_MomDFGrenade)
 #endif
 END_NETWORK_TABLE();
 
-LINK_ENTITY_TO_CLASS(mom_df_grenade, CMomDFGrenade);
-PRECACHE_WEAPON_REGISTER(mom_df_grenade);
+LINK_ENTITY_TO_CLASS(momentum_df_grenade, CMomDFGrenade);
+PRECACHE_WEAPON_REGISTER(momentum_df_grenade);
 
 void CMomDFGrenade::Spawn()
 {
@@ -72,11 +78,9 @@ void CMomDFGrenade::PostDataUpdate(DataUpdateType_t type)
 
 CMomDFGrenade *CMomDFGrenade::Create(const Vector &position, const QAngle &angles, const Vector &velocity, const AngularImpulse &angVelocity, CBaseEntity *pOwner)
 {
-    const auto pGrenade = dynamic_cast<CMomDFGrenade *>(CreateNoSpawn("mom_df_grenade", position, angles, pOwner));
+    const auto pGrenade = dynamic_cast<CMomDFGrenade *>(CreateNoSpawn("momentum_df_grenade", position, angles, pOwner));
     DispatchSpawn(pGrenade);
 
-    // Set the timer for 1 second less than requested. We're going to issue a SOUND_DANGER
-    // one second before detonation.
     pGrenade->SetDetonateTimerLength(2.5f);
     pGrenade->SetAbsVelocity(velocity);
     pGrenade->SetupInitialTransmittedGrenadeVelocity(velocity);
@@ -96,7 +100,7 @@ CMomDFGrenade *CMomDFGrenade::Create(const Vector &position, const QAngle &angle
         pGrenade->SetDamage(0.0f);
     }
 
-    pGrenade->SetDamageRadius(pGrenade->GetDamage() * 3.5f);
+    pGrenade->SetDamageRadius(150);
     pGrenade->ApplyLocalAngularVelocityImpulse(angVelocity);
 
     pGrenade->SetThink(&CMomDFGrenade::DetonateThink);
@@ -109,11 +113,29 @@ void CMomDFGrenade::DetonateThink()
 {
     if (gpGlobals->curtime > m_flDetonateTime)
     {
-        Detonate();
+        trace_t tr;
+        Vector vecSpot; // trace starts here!
+
+        SetThink(NULL);
+
+        vecSpot = GetAbsOrigin() + Vector(0, 0, 8);
+        UTIL_TraceLine(vecSpot, vecSpot + Vector(0, 0, -32), MASK_SHOT_HULL, this, COLLISION_GROUP_NONE, &tr);
+
+        if (tr.startsolid)
+        {
+            // Since we blindly moved the explosion origin vertically, we may have inadvertently moved the explosion
+            // into a solid, in which case nothing is going to be harmed by the grenade's explosion because all
+            // subsequent traces will startsolid. If this is the case, we do the downward trace again from the actual
+            // origin of the grenade. (sjb) 3/8/2007  (for ep2_outland_09)
+            UTIL_TraceLine(GetAbsOrigin(), GetAbsOrigin() + Vector(0, 0, -32), MASK_SHOT_HULL, this,
+                           COLLISION_GROUP_NONE, &tr);
+        }
+
+        Explode(&tr);
         return;
     }
 
-    DangerSoundThink();
+    SetNextThink(gpGlobals->curtime + 0.2);
 }
 
 void CMomDFGrenade::SetDetonateTimerLength(float timer)
@@ -236,6 +258,173 @@ void CMomDFGrenade::ResolveFlyCollisionCustom(trace_t &trace, Vector &vecVelocit
 void CMomDFGrenade::SetupInitialTransmittedGrenadeVelocity(const Vector &velocity)
 {
     m_vInitialVelocity = velocity;
+}
+
+bool CMomDFGrenade::DFCanDamage(const CTakeDamageInfo &info, CBaseEntity *other, const Vector &origin)
+{
+    const int MASK_RADIUS_DAMAGE = MASK_SHOT & (~CONTENTS_HITBOX);
+    Vector dest, midpoint;
+    Vector otherMins, otherMaxs;
+    trace_t trace;
+
+    otherMins = other->GetAbsOrigin() + other->WorldAlignMins();
+    otherMaxs = other->GetAbsOrigin() + other->WorldAlignMaxs();
+
+    VectorAdd(otherMins, otherMaxs, midpoint);
+    VectorScale(midpoint, 0.5f, midpoint);
+
+    VectorCopy(midpoint, dest);
+    UTIL_TraceLine(origin, dest, MASK_RADIUS_DAMAGE, info.GetInflictor(), COLLISION_GROUP_NONE, &trace);
+    if (trace.fraction == 1.0)
+    {
+        return true;
+    }
+
+    VectorCopy(midpoint, dest);
+    dest[0] += 15.0;
+    dest[1] += 15.0;
+    UTIL_TraceLine(origin, dest, MASK_RADIUS_DAMAGE, info.GetInflictor(), COLLISION_GROUP_NONE, &trace);
+    if (trace.fraction == 1.0)
+    {
+        return true;
+    }
+
+    VectorCopy(midpoint, dest);
+    dest[0] += 15.0;
+    dest[1] -= 15.0;
+    UTIL_TraceLine(origin, dest, MASK_RADIUS_DAMAGE, info.GetInflictor(), COLLISION_GROUP_NONE, &trace);
+    if (trace.fraction == 1.0)
+    {
+        return true;
+    }
+
+    VectorCopy(midpoint, dest);
+    dest[0] -= 15.0;
+    dest[1] += 15.0;
+    UTIL_TraceLine(origin, dest, MASK_RADIUS_DAMAGE, info.GetInflictor(), COLLISION_GROUP_NONE, &trace);
+    if (trace.fraction == 1.0)
+    {
+        return true;
+    }
+
+    VectorCopy(midpoint, dest);
+    dest[0] -= 15.0;
+    dest[1] -= 15.0;
+    UTIL_TraceLine(origin, dest, MASK_RADIUS_DAMAGE, info.GetInflictor(), COLLISION_GROUP_NONE, &trace);
+    if (trace.fraction == 1.0)
+    {
+        return true;
+    }
+
+    return false;
+}
+
+void CMomDFGrenade::DFRadiusDamage(const CTakeDamageInfo &info, const Vector &vecSrcIn, float flRadius, int iClassIgnore,
+                                  CBaseEntity *pEntityIgnore)
+{
+    CBaseEntity *pEntity = NULL;
+    float flAdjustedDamage, falloff;
+
+    Vector vecSrc = vecSrcIn;
+    Vector dist;
+    Vector otherMins, otherMaxs;
+    Vector dir;
+
+    vecSrc.z += 1;
+
+    if (flRadius)
+        falloff = info.GetDamage() / flRadius;
+    else
+        falloff = 1.0;
+
+    for (CEntitySphereQuery sphere(vecSrc, flRadius); (pEntity = sphere.GetCurrentEntity()) != NULL;
+         sphere.NextEntity())
+    {
+        if (pEntity == pEntityIgnore)
+            continue;
+
+        if (pEntity->m_takedamage == DAMAGE_NO)
+            continue;
+
+        otherMins = pEntity->GetAbsOrigin() + pEntity->WorldAlignMins();
+        otherMaxs = pEntity->GetAbsOrigin() + pEntity->WorldAlignMaxs();
+
+        // find the distance to the edge of the bounding box
+        for (int i = 0; i < 3; i++)
+        {
+            if (vecSrc[i] < otherMins[i])
+                dist[i] = otherMins[i] - vecSrc[i];
+            if (vecSrc[i] > otherMaxs[i])
+                dist[i] = vecSrc[i] - otherMaxs[i];
+            else
+                dist[i] = 0;
+        }
+
+        if (dist.Length() > flRadius)
+        {
+            continue;
+        }
+
+        flAdjustedDamage = info.GetDamage() * (1.0 - (dist.Length() / flRadius));
+
+        if (DFCanDamage(info, pEntity, vecSrc))
+        {
+            CTakeDamageInfo adjustedInfo = info;
+            adjustedInfo.SetDamage(flAdjustedDamage);
+            pEntity->TakeDamage(adjustedInfo);
+        }
+    }
+}
+
+void CMomDFGrenade::Explode(trace_t *pTrace)
+{
+    if (CNoGrenadesZone::IsInsideNoGrenadesZone(this))
+    {
+        //Fizzle();
+        UTIL_Remove(this);
+        return;
+    }
+    
+    // Make invisible
+    SetModelName(NULL_STRING);
+    SetSolid(SOLID_NONE);
+    m_takedamage = DAMAGE_NO;
+
+    // Pull out a bit
+    if (!CloseEnough(pTrace->fraction, 1.0f))
+    {
+        SetAbsOrigin(pTrace->endpos + (pTrace->plane.normal * 1.0f));
+    }
+
+    const auto vecOrigin = GetAbsOrigin();
+
+    // Effect
+    //CPVSFilter filter(vecOrigin);
+    //TE_TFExplosion(filter, vecOrigin, pTrace->plane.normal, WEAPON_DF_ROCKETLAUNCHER);
+    
+	int contents = UTIL_PointContents(vecOrigin);
+    Vector vecNormal = pTrace->plane.normal;
+	surfacedata_t *pdata = physprops->GetSurfaceData( pTrace->surface.surfaceProps );	
+	CPASFilter filter( vecOrigin );
+
+	te->Explosion( filter, -1.0, // don't apply cl_interp delay
+		&vecOrigin,
+		!( contents & MASK_WATER ) ? g_sModelIndexFireball : g_sModelIndexWExplosion,
+		m_DmgRadius * .03, 
+		25,
+		TE_EXPLFLAG_NONE,
+		m_DmgRadius,
+		m_flDamage,
+		&vecNormal,
+		(char) pdata->game.material );
+
+    // Damage
+    const CTakeDamageInfo info(this, GetOwnerEntity(), vec3_origin, vecOrigin, 100, GetDamageType());
+    DFRadiusDamage(info, vecOrigin, 150, CLASS_NONE, nullptr);
+       
+    UTIL_DecalTrace(pTrace, "RocketScorch");
+
+    UTIL_Remove(this);
 }
 
 #define MAX_WATER_SURFACE_DISTANCE 512

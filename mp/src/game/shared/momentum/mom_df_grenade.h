@@ -34,6 +34,11 @@ class CMomDFGrenade : public CBaseGrenade
     // Without this, the entity wouldn't have an interpolation history initially, so it would
     // sit still until it had gotten a few updates from the server.
     void SetupInitialTransmittedGrenadeVelocity(const Vector &velocity);
+    
+    void Explode(trace_t *pTrace);
+    bool DFCanDamage(const CTakeDamageInfo &info, CBaseEntity *other, const Vector &origin);
+    void DFRadiusDamage(const CTakeDamageInfo &info, const Vector &vecSrcIn, float flRadius, int iClassIgnore,
+                        CBaseEntity *pEntityIgnore);
 
   protected:
     // Set the time to detonate ( now + timer )

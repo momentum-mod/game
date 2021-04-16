@@ -2154,7 +2154,8 @@ int CMomentumPlayer::OnTakeDamage_Alive(const CTakeDamageInfo &info)
         // Done
         return 1;
     }
-    else if (pAttacker == GetLocalPlayer() && FClassnameIs(pInflictor, "momentum_df_rocket"))
+    else if (pAttacker == GetLocalPlayer() &&
+        (FClassnameIs(pInflictor, "momentum_df_rocket") || FClassnameIs(pInflictor, "momentum_df_grenade")))
     {
         DFApplyPushFromDamage(info);
         return 1;
