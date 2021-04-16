@@ -22,6 +22,7 @@ enum WeaponID_t
     WEAPON_STICKYLAUNCHER,
     WEAPON_DF_ROCKETLAUNCHER,
     WEAPON_DF_PLASMAGUN,
+    WEAPON_DF_GRENADELAUNCHER,
 
     WEAPON_MAX, // number of weapons weapon index
 
@@ -42,7 +43,8 @@ static const char *const g_szWeaponNames[WEAPON_MAX] =
     "weapon_momentum_rocketlauncher",
     "weapon_momentum_stickylauncher",
     "weapon_momentum_df_rocketlauncher",
-    "weapon_momentum_df_plasmagun"
+    "weapon_momentum_df_plasmagun",
+    "weapon_momentum_df_grenadelauncher"
 };
 
 enum WeaponHudResource_t
