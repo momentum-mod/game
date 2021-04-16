@@ -46,7 +46,7 @@ void CMomDFGrenade::Spawn()
     SetMoveType(MOVETYPE_FLYGRAVITY, MOVECOLLIDE_FLY_CUSTOM);
     SetSolid(SOLID_BBOX); // So it will collide with physics props!
     // smaller, cube bounding box so we rest on the ground
-    SetSize(Vector(-2, -2, -2), Vector(2, 2, 2));
+    SetSize(Vector(-0, -0, -0), Vector(0, 0, 0));
 #endif
 }
 
