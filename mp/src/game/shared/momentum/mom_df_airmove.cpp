@@ -136,7 +136,22 @@ void CMomentumGameMovement::DFAirMove()
         wishspeed = mv->m_flMaxSpeed;
     }
 
-    if (sv_cpm_physics.GetBool())
+    if (sv_differentialstrafing.GetBool() && wishdir.Length() > 0.1)
+    {
+        double angle = acos(DotProduct(wishdir, mv->m_vecVelocity) / (wishdir.Length() * mv->m_vecVelocity.Length()));
+        angle *= (180 / 3.14159265);
+        if (angle < 80)
+        {
+            realAcceleration = sv_airaccelerate.GetFloat();
+            realMaxSpeed = sv_maxairspeed.GetFloat();
+        }
+        else
+        {
+            realAcceleration = sv_airstrafeaccelerate.GetFloat();
+            realMaxSpeed = sv_maxairstrafespeed.GetFloat();
+        }
+    }
+    else if (sv_cpm_physics.GetBool())
     {
         if ((smove > 0.1 || smove < -0.1) && !(fmove > 0.1 || fmove < -0.1))
         {
@@ -163,7 +178,7 @@ void CMomentumGameMovement::DFAirMove()
 
     DFAirAccelerate(wishdir, wishspeed, realAcceleration, realMaxSpeed);
 
-    if (sv_cpm_physics.GetBool())
+    if (sv_cpm_physics.GetBool() && !sv_differentialstrafing.GetBool())
     {
         if (!(smove > 0.1 || smove < -0.1) && (fmove > 0.1 || fmove < -0.1))
         {
