@@ -142,7 +142,15 @@ void CMomentumGameMovement::DFWalkMove()
         return;
      }
 
-    DFFriction();
+    if (m_pPlayer->m_CurrentSlideTrigger == nullptr)
+    {
+         DFFriction();
+    }
+    else if (!sv_cpm_physics.GetBool())
+    {
+        DFAirMove();
+        return;
+    }
 
     // Copy movement amounts
     fmove = mv->m_flForwardMove;
