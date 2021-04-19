@@ -54,7 +54,7 @@ C_MomentumPlayer::C_MomentumPlayer(): m_pSpecTarget(nullptr)
     m_afButtonDisabled = 0;
     m_flStartSpeed = 0.0f;
     m_flEndSpeed = 0.0f;
-    m_flStamina = 0.0f;
+    // m_flStamina = 0.0f;
     m_flGrabbableLadderTime = 0.0f;
 
     m_iLandTick = 0;
@@ -69,6 +69,16 @@ C_MomentumPlayer::C_MomentumPlayer(): m_pSpecTarget(nullptr)
     m_bIsPowerSliding = false;
     m_nWallRunState = WALLRUN_NOT;
     m_bWasSprinting = false;
+
+
+    m_bPSTurningLeft = false;
+    m_flPSBonusSpeed = 0.0f;
+    m_flPSTurnRate = 0.0f;
+    m_flPSVelMod = 1.0f;
+    m_flPSVelModLanding = 1.0f;
+    m_vecOldVelocity.Init();
+    m_iTicksSinceIncrement = 0;
+    m_vecLandingVelocity.Init();
 
     m_nButtonsToggled = 0;
 }

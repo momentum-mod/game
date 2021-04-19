@@ -213,8 +213,7 @@ static MAKE_TOGGLE_CONVAR_C(mom_trail_enable, "0", FCVAR_CLIENTCMD_CAN_EXECUTE |
 static CMomentumPlayer *s_pPlayer = nullptr;
 
 CMomentumPlayer::CMomentumPlayer()
-    : m_flStamina(0.0f),
-      m_flLastVelocity(0.0f), m_nPerfectSyncTicks(0), m_nStrafeTicks(0), m_nAccelTicks(0),
+    : m_flLastVelocity(0.0f), m_nPerfectSyncTicks(0), m_nStrafeTicks(0), m_nAccelTicks(0),
       m_nPrevButtons(0), m_flTweenVelValue(1.0f), m_bInAirDueToJump(false), m_iProgressNumber(-1), 
       m_cvarMapFinMoveEnable("mom_mapfinished_movement_enable")
 {
@@ -254,6 +253,15 @@ CMomentumPlayer::CMomentumPlayer()
 
     m_bIsWalking = false;
     m_bIsSprinting = false;
+
+    m_bPSTurningLeft = false;
+    m_flPSBonusSpeed = 0.0f;
+    m_flPSTurnRate = 0.0f;
+    m_flPSVelMod = 1.0f;
+    m_flPSVelModLanding = 1.0f;
+    m_vecOldVelocity.Init();
+    m_iTicksSinceIncrement = 0;
+    m_vecLandingVelocity.Init();
 
     m_bIsPowerSliding = false;
     m_nWallRunState = WALLRUN_NOT;

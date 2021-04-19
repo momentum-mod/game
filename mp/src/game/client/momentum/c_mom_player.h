@@ -107,7 +107,22 @@ public:
     Vector GetEscapeVel() const { return m_vecCornerEscapeVel; }
     void SetEscapeVel(const Vector &vecNewYaw) { m_vecCornerEscapeVel = vecNewYaw; }
 
+    void SetOldEyeAngles(const QAngle &ang) { m_qangOldEyeAngles = ang; }
+    const QAngle &OldEyeAngles() const { return m_qangOldEyeAngles; }
+
 private:
+
+    // KZ stuff (SKZ)
+    bool m_bPSTurningLeft;
+    float m_flPSBonusSpeed;
+    float m_flPSTurnRate;
+    float m_flPSVelMod;
+    float m_flPSVelModLanding;
+    Vector m_vecOldVelocity;
+    int m_iTicksSinceIncrement;
+    QAngle m_qangOldEyeAngles;    
+    Vector m_vecLandingVelocity;
+        
     // Mobility mod (parkour)
     bool m_bWasSprinting;
     bool m_bIsPowerSliding;
@@ -144,7 +159,7 @@ private:
     SurfInt m_surfIntList[SurfInt::TYPE_COUNT]; // Stores interactions by type
     SurfInt::Type m_surfIntHistory[SurfInt::TYPE_COUNT]; // Keeps track of the history of interactions
 
-    float m_flStamina;
+    // float m_flStamina;
 
     CMomRunEntity *m_pSpecTarget;
 

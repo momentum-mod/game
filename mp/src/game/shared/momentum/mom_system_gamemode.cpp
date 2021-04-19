@@ -138,6 +138,7 @@ void CGameMode_KZ::SetGameModeVars()
     sv_friction.SetValue(5.2f);
     sv_maxspeed.SetValue(320);
     sv_maxvelocity.SetValue(3500);
+    sv_stopspeed.SetValue(80);
 }
 
 bool CGameMode_KZ::WeaponIsAllowed(WeaponID_t weapon)

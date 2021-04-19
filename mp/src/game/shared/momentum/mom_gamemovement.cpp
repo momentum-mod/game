@@ -23,11 +23,22 @@
 #define BHOP_DELAY_TIME 15 // Time to delay successive bhops by, in ticks
 #define STOP_EPSILON 0.1
 #define MAX_CLIP_PLANES 5
-
+/*
 #define STAMINA_MAX 100.0f
 #define STAMINA_COST_JUMP 25.0f
 #define STAMINA_COST_FALL 20.0f // not used
 #define STAMINA_RECOVER_RATE 19.0f
+*/
+// SKZ prestrafe defines
+#define PERF_TICKS 2
+#define PS_MAX_REWARD_TURN_RATE 0.703125 // Degrees per tick (90 degrees per second)
+#define PS_MAX_TURN_RATE_DECREMENT 0.015625 // Degrees per tick (2 degrees per second)
+#define PS_SPEED_MAX 26.54321 // Units
+#define PS_SPEED_INCREMENT 0.35 // Units per tick
+#define PS_SPEED_DECREMENT_MIDAIR 0.2824 // Units per tick (lose PS_SPEED_MAX in 0 offset jump i.e. 94 ticks)
+#define PS_GRACE_TICKS 3 // No. of ticks allowed to fail prestrafe checks when prestrafing
+#define CS_RUN_SPEED 250.0f
+
 #define CS_WALK_SPEED 135.0f
 
 #define DUCK_SPEED_MULTIPLIER 0.34f
@@ -64,7 +75,6 @@ void CMomentumGameMovement::ProcessMovement(CBasePlayer *pPlayer, CMoveData *dat
 {
     m_pPlayer = ToCMOMPlayer(pPlayer);
     Assert(m_pPlayer);
-
     BaseClass::ProcessMovement(pPlayer, data);
 }
 
@@ -161,9 +171,10 @@ void CMomentumGameMovement::WalkMove()
     Vector dest;
     trace_t pm;
     Vector forward, right, up;
-
+    /*
     if (g_pGameModeSystem->GameModeIs(GAMEMODE_KZ))
     {
+        
         if (m_pPlayer->m_flStamina > 0)
         {
             float flRatio = (STAMINA_MAX - ((m_pPlayer->m_flStamina / 1000.0f) * STAMINA_RECOVER_RATE)) / STAMINA_MAX;
@@ -181,8 +192,9 @@ void CMomentumGameMovement::WalkMove()
             mv->m_vecVelocity.x *= flRatio;
             mv->m_vecVelocity.y *= flRatio;
         }
+               
     }
-
+    */ 
     AngleVectors(mv->m_vecViewAngles, &forward, &right, &up); // Determine movement angles
 
     CHandle<CBaseEntity> oldground;
@@ -244,6 +256,104 @@ void CMomentumGameMovement::WalkMove()
 
     wishspeed = VectorNormalize(wishdir);
 
+    // SKZ Prestrafe
+    if (g_pGameModeSystem->GameModeIs(GAMEMODE_KZ))
+    {
+        m_pPlayer->m_iTicksSinceIncrement++;
+        if (mv->m_vecVelocity.Length2D() < 0.000001f)
+        {
+            // Short circuit if speed is 0 (also avoids divide by 0 errors)
+            m_pPlayer->m_flPSBonusSpeed = 0.0f;
+            m_pPlayer->m_flPSVelMod = 1.0f;
+            m_pPlayer->m_flPSTurnRate = 0.0f;                
+        }
+        else
+        {
+            float baseSpeed = min(CS_RUN_SPEED, mv->m_vecVelocity.Length2D() / m_pPlayer->m_flPSVelMod);
+
+            float newBonusSpeed = m_pPlayer->m_flPSBonusSpeed;
+            
+            float dtAngle = m_pPlayer->EyeAngles().y - m_pPlayer->OldEyeAngles().y;
+            if (dtAngle > 180.f)
+                dtAngle -= 360.f;
+            else if (dtAngle < -180.f)
+                dtAngle += 360.f;
+            // If player is turning at the required speed, and has the correct button inputs, reward it
+            bool bValidPrestrafeButtons = (mv->m_nButtons & (IN_FORWARD | IN_BACK) && !(mv->m_nButtons & IN_FORWARD && mv->m_nButtons & IN_BACK))
+                || mv->m_nButtons & (IN_MOVELEFT | IN_MOVERIGHT) && !(mv->m_nButtons & IN_MOVELEFT && mv->m_nButtons & IN_MOVERIGHT);
+            if (dtAngle != 0 && bValidPrestrafeButtons) // player turned left
+            {
+                // If player changes their prestrafe direction, reset it
+                if (dtAngle > 0 && !m_pPlayer->m_bPSTurningLeft || dtAngle < 0 && m_pPlayer->m_bPSTurningLeft)
+                {
+                    m_pPlayer->m_flPSBonusSpeed = 0.0f;
+                    m_pPlayer->m_flPSVelMod = 1.0f;
+                    m_pPlayer->m_flPSTurnRate = 0.0f; 
+                    newBonusSpeed = 0.0f;
+                }
+                // Keep track of the direction of the turn
+                m_pPlayer->m_bPSTurningLeft = (dtAngle > 0);
+                float newTurningRate = dtAngle;
+                float reward;
+                if (m_pPlayer->m_iTicksSinceIncrement <= PS_GRACE_TICKS)
+                {
+                    // Also cap turn rate at maximum reward turn rate
+                    newTurningRate = min(abs(newTurningRate) / m_pPlayer->m_iTicksSinceIncrement, PS_MAX_REWARD_TURN_RATE);
+                    // Limit how fast turn rate can decrease (also scaled appropriately)
+                    m_pPlayer->m_flPSTurnRate = max(newTurningRate, m_pPlayer->m_flPSTurnRate - PS_MAX_TURN_RATE_DECREMENT * m_pPlayer->m_iTicksSinceIncrement);
+                    if (m_pPlayer->m_flPSTurnRate * m_pPlayer->m_iTicksSinceIncrement >= PS_MAX_REWARD_TURN_RATE)
+                    {
+                        reward = PS_SPEED_INCREMENT;
+                    }
+                    else
+                    {
+                        reward = PS_SPEED_INCREMENT * (m_pPlayer->m_flPSTurnRate * m_pPlayer->m_iTicksSinceIncrement / PS_MAX_REWARD_TURN_RATE);
+                    }
+                }
+                else
+                {
+                    // Cap turn rate at maximum reward turn rate
+                    newTurningRate = min(abs(newTurningRate), PS_MAX_REWARD_TURN_RATE);
+                    // Limit how fast turn rate can decrease
+                    m_pPlayer->m_flPSTurnRate = max(newTurningRate, m_pPlayer->m_flPSTurnRate - PS_MAX_TURN_RATE_DECREMENT);
+
+                    if (m_pPlayer->m_flPSTurnRate >= PS_MAX_REWARD_TURN_RATE)
+                    {
+                        reward = PS_SPEED_INCREMENT;
+                    }
+                    else
+                    {
+                        reward = PS_SPEED_INCREMENT * (m_pPlayer->m_flPSTurnRate / PS_MAX_REWARD_TURN_RATE);
+                    }
+                }
+                
+                newBonusSpeed += reward * baseSpeed / CS_RUN_SPEED;
+                m_pPlayer->m_iTicksSinceIncrement = 0;
+            }
+            else if (m_pPlayer->m_iTicksSinceIncrement > PS_GRACE_TICKS)
+            {
+                // They definitely aren't turning, but limit how fast turn rate can decrease
+                m_pPlayer->m_flPSTurnRate = max(0.0f, m_pPlayer->m_flPSTurnRate - PS_MAX_TURN_RATE_DECREMENT);
+            }
+            if (newBonusSpeed < 0.0f)
+            {
+                // Keep velocity modifier positive
+                newBonusSpeed = 0.0f;
+            }
+            else
+            {
+                // Scale the bonus speed based on current base speed and turn rate
+                float baseSpeedScaleFactor = baseSpeed / CS_RUN_SPEED; // Max 1.0
+                float turnRateScaleFactor = min(1.0, m_pPlayer->m_flPSTurnRate / PS_MAX_REWARD_TURN_RATE);
+                float scaledMaxBonusSpeed = PS_SPEED_MAX * baseSpeedScaleFactor * turnRateScaleFactor;
+                newBonusSpeed = min(newBonusSpeed, scaledMaxBonusSpeed);
+            }
+            m_pPlayer->m_flPSBonusSpeed = newBonusSpeed;
+            m_pPlayer->m_flPSVelMod = 1.0f + (newBonusSpeed / baseSpeed);
+        }
+               
+    }
+    
     //
     // Clamp to server defined max speed
     //
@@ -267,6 +377,16 @@ void CMomentumGameMovement::WalkMove()
             Vector direction = mv->m_vecVelocity;
             VectorNormalizeFast(direction);
             mv->m_vecVelocity = direction * cappedSpeed;
+        }
+    }
+
+    if (g_pGameModeSystem->GameModeIs(GAMEMODE_KZ)) 
+    {
+        // SKZ has no sliding on ground.
+        if ( mv->m_vecVelocity.LengthSqr() > mv->m_flMaxSpeed * mv->m_flMaxSpeed )
+        {
+            float fRatio = mv->m_flMaxSpeed / mv->m_vecVelocity.Length();
+            mv->m_vecVelocity *= fRatio;
         }
     }
 
@@ -1157,7 +1277,7 @@ void CMomentumGameMovement::FinishDuck()
 void CMomentumGameMovement::PlayerMove()
 {
     BaseClass::PlayerMove();
-
+    
     if (player->IsAlive())
     {
         // Check if our eye height is too close to the ceiling and lower it.
@@ -1207,23 +1327,48 @@ void CMomentumGameMovement::PlayerMove()
                 player->SetViewOffset(VEC_DUCK_VIEW);
             }
         }
+        // This isn't ideal, but just to absolutely sure that m_qangOldEyeAngles is updated after all movements
+        m_pPlayer->SetOldEyeAngles(m_pPlayer->EyeAngles());
     }
 }
 
 #define RJ_BUNNYHOP_MAX_SPEED_FACTOR 1.2f
 void CMomentumGameMovement::PreventBunnyHopping()
 {
-    float maxscaledspeed = RJ_BUNNYHOP_MAX_SPEED_FACTOR * mv->m_flMaxSpeed;
-    if (maxscaledspeed <= 0.0f)
-        return;
+    float fraction = 1.0f;
+    float speed = mv->m_vecVelocity.Length();;
 
-    float speed = mv->m_vecVelocity.Length();
-    if (speed <= maxscaledspeed)
-        return;
+    if (g_pGameModeSystem->GameModeIs(GAMEMODE_KZ))
+    {
+        // SKZ formula
+        float landingspeed = m_pPlayer->m_vecLandingVelocity.Length2D();
+        int cmdsSinceLanding = (gpGlobals->tickcount - m_pPlayer->m_iLandTick);
+        if (cmdsSinceLanding <= PERF_TICKS)
+        {
+            if (cmdsSinceLanding > 1)
+            {
+                // Restore prestrafe lost due to briefly being on the ground
+                m_pPlayer->m_flPSVelMod = m_pPlayer->m_flPSVelModLanding;
+            }
+            fraction = min(landingspeed, (0.2 * landingspeed + 200) * m_pPlayer->m_flPSVelMod) / speed;
+        }
+    }
+    else
+    {
+        speed = mv->m_vecVelocity.Length();
+        float maxscaledspeed = RJ_BUNNYHOP_MAX_SPEED_FACTOR * mv->m_flMaxSpeed;
 
-    float fraction = maxscaledspeed / speed;
+        if (maxscaledspeed <= 0.0f)
+            return;
+        
+        if (speed <= maxscaledspeed)
+            return;
 
+        fraction = maxscaledspeed / speed;
+    }
+    
     mv->m_vecVelocity *= fraction;
+    
 }
 
 void CMomentumGameMovement::CheckWaterJump()
@@ -1363,7 +1508,7 @@ bool CMomentumGameMovement::CheckJumpButton()
         return false;
     }
 
-    if (!g_pGameModeSystem->GetGameMode()->CanBhop())
+    if (!g_pGameModeSystem->GetGameMode()->CanBhop() || g_pGameModeSystem->GameModeIs(GAMEMODE_KZ))
     {
         PreventBunnyHopping();
     }
@@ -1448,6 +1593,7 @@ bool CMomentumGameMovement::CheckJumpButton()
     }
 
     // stamina stuff (scroll/kz gamemode only)
+    /*
     if (g_pGameModeSystem->GameModeIs(GAMEMODE_KZ))
     {
         if (m_pPlayer->m_flStamina > 0)
@@ -1458,7 +1604,7 @@ bool CMomentumGameMovement::CheckJumpButton()
 
         m_pPlayer->m_flStamina = (STAMINA_COST_JUMP / STAMINA_RECOVER_RATE) * 1000.0;
     }
-
+    */
     // Add the accelerated hop movement
     if (g_pGameModeSystem->GameModeIs(GAMEMODE_AHOP))
     {
@@ -1618,7 +1764,7 @@ bool CMomentumGameMovement::CheckJumpButton()
     {
         player->m_Local.m_flJumpTime = GAMEMOVEMENT_JUMP_TIME;
         player->m_Local.m_bInDuckJump = true;
-
+    
 #ifdef GAME_DLL
         // Reset toggle duck if it's toggled
         m_pPlayer->ResetToggledInput(IN_DUCK);
@@ -1653,6 +1799,10 @@ bool CMomentumGameMovement::CheckJumpButton()
 
     // Flag that we jumped.
     mv->m_nOldButtons |= IN_JUMP;
+
+    // This is a hack for KZ takeoff velocity HUD, there is probably a much better way of doing this
+    if (g_pGameModeSystem->GameModeIs(GAMEMODE_KZ))
+        player->SetLocalVelocity(mv->m_vecVelocity);
 
 #ifndef CLIENT_DLL
     m_pPlayer->SetIsInAirDueToJump(true);
@@ -2019,7 +2169,7 @@ void CMomentumGameMovement::FullWalkMove()
         {
             if (g_pGameModeSystem->IsTF2BasedMode())
                 mv->m_vecVelocity[2] = 0.f;
-
+            
             WalkMove();
 
             SurfInt::Action action = (player->GetFlags() & FL_DUCKING) ? SurfInt::ACTION_DUCKWALK : SurfInt::ACTION_WALK;
@@ -2364,6 +2514,29 @@ void CMomentumGameMovement::AirMove()
     if (g_pGameModeSystem->GameModeIs(GAMEMODE_PARKOUR))
     {
         PerformLurchChecks();
+    }
+    if (g_pGameModeSystem->GameModeIs(GAMEMODE_KZ))
+    {
+        if (mv->m_vecVelocity.Length2D() < 0.000001f)
+        {
+            // Short circuit if speed is 0 (also avoids divide by 0 errors)
+            m_pPlayer->m_flPSBonusSpeed = 0.0f;
+            m_pPlayer->m_flPSVelMod = 1.0f;
+            m_pPlayer->m_flPSTurnRate = 0.0f;                
+        }
+        else
+        {
+            float baseSpeed = min(CS_RUN_SPEED, mv->m_vecVelocity.Length2D() / m_pPlayer->m_flPSVelMod);
+
+            m_pPlayer->m_flPSBonusSpeed -= PS_SPEED_DECREMENT_MIDAIR;
+
+            if (m_pPlayer->m_flPSBonusSpeed < 0.0f)
+            {
+                m_pPlayer->m_flPSBonusSpeed = 0.0f;
+            }
+
+            m_pPlayer->m_flPSVelMod = 1.0f + (m_pPlayer->m_flPSBonusSpeed / baseSpeed);
+        }        
     }
 
     BaseClass::AirMove();
@@ -3062,6 +3235,8 @@ void CMomentumGameMovement::SetGroundEntity(const trace_t *pm)
     // Doing this after the BaseClass call in case OnLand wants to use the new ground stuffs
     if (bLanded)
     {
+        m_pPlayer->m_vecLandingVelocity = mv->m_vecVelocity;
+        m_pPlayer->m_flPSVelModLanding = m_pPlayer->m_flPSVelMod;
 #ifdef GAME_DLL
         m_pPlayer->SetIsInAirDueToJump(false);
 
@@ -3084,13 +3259,19 @@ void CMomentumGameMovement::CheckParameters()
         mv->m_flClientMaxSpeed = CS_WALK_SPEED;
     }
 
+    // SKZ velocity modifier
+    if (g_pGameModeSystem->GameModeIs(GAMEMODE_KZ))
+    {
+        mv->m_flMaxSpeed *= m_pPlayer->m_flPSVelMod;
+    }
     BaseClass::CheckParameters();
 }
 
 void CMomentumGameMovement::ReduceTimers()
 {
     float frame_msec = 1000.0f * gpGlobals->frametime;
-
+    // Stamina removed
+    /*
     if (m_pPlayer->m_flStamina > 0)
     {
         m_pPlayer->m_flStamina -= frame_msec;
@@ -3100,7 +3281,7 @@ void CMomentumGameMovement::ReduceTimers()
             m_pPlayer->m_flStamina = 0;
         }
     }
-
+    */
     if (m_pPlayer->m_Local.m_slideBoostCooldown > 0)
     {
         m_pPlayer->m_Local.m_slideBoostCooldown -= frame_msec;
