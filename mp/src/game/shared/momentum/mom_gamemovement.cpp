@@ -279,12 +279,13 @@ void CMomentumGameMovement::WalkMove()
             else if (dtAngle < -180.f)
                 dtAngle += 360.f;
             // If player is turning at the required speed, and has the correct button inputs, reward it
-            bool bValidPrestrafeButtons = (mv->m_nButtons & (IN_FORWARD | IN_BACK) && !(mv->m_nButtons & IN_FORWARD && mv->m_nButtons & IN_BACK))
-                || mv->m_nButtons & (IN_MOVELEFT | IN_MOVERIGHT) && !(mv->m_nButtons & IN_MOVELEFT && mv->m_nButtons & IN_MOVERIGHT);
+            // Basically overlapping will result in false here
+            bool bValidPrestrafeButtons = (((mv->m_nButtons & (IN_FORWARD | IN_BACK)) && !(mv->m_nButtons & IN_FORWARD && mv->m_nButtons & IN_BACK))
+                || ((mv->m_nButtons & (IN_MOVELEFT | IN_MOVERIGHT)) && !(mv->m_nButtons & IN_MOVELEFT && mv->m_nButtons & IN_MOVERIGHT)));
             if (dtAngle != 0 && bValidPrestrafeButtons) // player turned left
             {
                 // If player changes their prestrafe direction, reset it
-                if (dtAngle > 0 && !m_pPlayer->m_bPSTurningLeft || dtAngle < 0 && m_pPlayer->m_bPSTurningLeft)
+                if ((dtAngle > 0 && !m_pPlayer->m_bPSTurningLeft) || (dtAngle < 0 && m_pPlayer->m_bPSTurningLeft))
                 {
                     m_pPlayer->m_flPSBonusSpeed = 0.0f;
                     m_pPlayer->m_flPSVelMod = 1.0f;
