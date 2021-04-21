@@ -149,6 +149,7 @@ public:
     void DFPlayerMove();
     void DFSetGroundEntity(const trace_t *pm);
     void DFGroundTrace();
+    void DFSnapVector(Vector &v);
     float DFScale(float maxspeed);
 
     // mom_df_walkmove.cpp

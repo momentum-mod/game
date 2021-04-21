@@ -298,6 +298,9 @@ void CMomentumGameMovement::DFPlayerMove()
             DevMsg(1, "Bogus pmove player movetype %i on (%i) 0=cl 1=sv\n", player->GetMoveType(), player->IsServer());
             break;
     }
+
+    if (sv_snapvelocity.GetBool())
+        DFSnapVector(mv->m_vecVelocity);
 }
 
 void CMomentumGameMovement::DFSetGroundEntity(const trace_t *pm)
@@ -380,6 +383,13 @@ void CMomentumGameMovement::DFGroundTrace()
 
     DFSetGroundEntity(&trace);
     VectorCopy(trace.plane.normal, mv->m_vecGroundNormal);
+}
+
+void CMomentumGameMovement::DFSnapVector(Vector& v)
+{
+    v.x = roundf(v.x);
+    v.y = roundf(v.y);
+    v.z = roundf(v.z);
 }
 
 float CMomentumGameMovement::DFScale(float maxspeed)
