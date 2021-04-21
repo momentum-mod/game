@@ -130,17 +130,22 @@ void CMomentumGameMovement::DFAirMove()
     wishspeed = VectorNormalize(wishdir);
 
     // clamp to server defined max speed
+    /*
     if (wishspeed != 0 && (wishspeed > mv->m_flMaxSpeed))
     {
         VectorScale(wishvel, mv->m_flMaxSpeed / wishspeed, wishvel);
         wishspeed = mv->m_flMaxSpeed;
     }
+    */
 
     if (sv_differentialstrafing.GetBool() && wishdir.Length() > 0.1)
     {
-        double angle = acos(DotProduct(wishdir, mv->m_vecVelocity) / (wishdir.Length() * mv->m_vecVelocity.Length()));
+        double angle = acos(DotProduct(wishdir, mv->m_vecVelocity) / (wishdir.Length() * mv->m_vecVelocity.Length2D()));
         angle *= (180 / 3.14159265);
-        if (angle < 80)
+        double minQWAngle = acos((sv_maxairstrafespeed.GetFloat()) / mv->m_vecVelocity.Length2D());
+        minQWAngle *= (180 / 3.14159265);
+
+        if (angle <= minQWAngle)
         {
             realAcceleration = sv_airaccelerate.GetFloat();
             realMaxSpeed = sv_maxairspeed.GetFloat();
