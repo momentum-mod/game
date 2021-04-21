@@ -412,7 +412,7 @@ float CMomentumGameMovement::DFScale(float maxspeed)
     {
         max = smove;
     }
-    if (umove > max)
+    if (umove > max && !sv_scalecmd_fix.GetBool())
     {
         max = umove;
     }
@@ -421,7 +421,16 @@ float CMomentumGameMovement::DFScale(float maxspeed)
         return 0;
     }
 
-    total = sqrt(fmove * fmove + smove * smove + umove * umove);
+    if (sv_scalecmd_fix.GetBool())
+    {
+        // this is equal to 320 * 127 / (127 * sqrt(127^2 * 2))
+        //return 1.781686378;
+        total = sqrt(fmove * fmove + smove * smove);
+    }
+    else
+    {
+        total = sqrt(fmove * fmove + smove * smove + umove * umove);
+    }
     scale = (float)maxspeed * max / (127.0 * total);
     return scale;
 }
