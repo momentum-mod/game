@@ -381,3 +381,37 @@ void CMomentumGameMovement::DFGroundTrace()
     DFSetGroundEntity(&trace);
     VectorCopy(trace.plane.normal, mv->m_vecGroundNormal);
 }
+
+float CMomentumGameMovement::DFScale(float maxspeed)
+{
+    float fmove, smove, umove;
+    float total, scale;
+    int max;
+
+    fmove = clamp(abs(mv->m_flForwardMove), 0, 127);
+    smove = clamp(abs(mv->m_flSideMove), 0, 127);
+    umove = clamp(abs(mv->m_flUpMove), 0, 127);
+
+    if (mv->m_nButtons & IN_JUMP)
+    {
+        umove = 127;
+    }
+
+    max = fmove;
+    if (smove > max)
+    {
+        max = smove;
+    }
+    if (umove > max)
+    {
+        max = umove;
+    }
+    if (!max)
+    {
+        return 0;
+    }
+
+    total = sqrt(fmove * fmove + smove * smove + umove * umove);
+    scale = (float)maxspeed * max / (127.0 * total);
+    return scale;
+}
