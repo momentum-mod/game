@@ -30,8 +30,6 @@ extern ConVar sv_duckscale;
 
 extern ConVar sv_maxairspeed;
 extern ConVar sv_airaccelerate;
-extern ConVar sv_airdecelerate;
-extern ConVar sv_airdeceleratetime;
 
 extern ConVar sv_maxairstrafespeed;
 extern ConVar sv_airstrafeaccelerate;
