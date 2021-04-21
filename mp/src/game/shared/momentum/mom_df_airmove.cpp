@@ -98,14 +98,16 @@ void CMomentumGameMovement::DFAirAccelerate(Vector wishdir, float wishspeed, flo
 void CMomentumGameMovement::DFAirMove()
 {
     int i;
-    Vector wishvel;
+    Vector wishvel, clampedWishvel;
     float fmove, smove;
+    float clampedFmove, clampedSmove;
     Vector wishdir;
-    float wishspeed;
+    float wishspeed, clampedWishspeed;
     Vector forward, right, up;
 
     float realAcceleration;
     float realMaxSpeed;
+    float realWishspeed;
 
     float oldSpeed;
     Vector oldVel;
@@ -113,38 +115,51 @@ void CMomentumGameMovement::DFAirMove()
     AngleVectors(mv->m_vecViewAngles, &forward, &right, &up); // Determine movement angles
 
     // Copy movement amounts
-    fmove = clamp(mv->m_flForwardMove, -127, 127);
-    smove = clamp(mv->m_flSideMove, -127, 127);
+    fmove = mv->m_flForwardMove;
+    smove = mv->m_flSideMove;
+    // clamped to 127 for vq3
+    clampedFmove = clamp(fmove, -127, 127);
+    clampedSmove = clamp(smove, -127, 127);
 
     // Zero out z components of movement vectors
     forward[2] = 0;
     right[2] = 0;
     VectorNormalize(forward); // Normalize remainder of vectors
-    VectorNormalize(right);   //
+    VectorNormalize(right);
 
     for (i = 0; i < 2; i++) // Determine x and y parts of velocity
+    {
         wishvel[i] = forward[i] * fmove + right[i] * smove;
+        clampedWishvel[i] = forward[i] * clampedFmove + right[i] * clampedSmove;
+    }
     wishvel[2] = 0; // Zero out z part of velocity
+    clampedWishvel[2] = 0;
 
     VectorCopy(wishvel, wishdir); // Determine magnitude of speed of move
     wishspeed = VectorNormalize(wishdir);
+    clampedWishspeed = clampedWishvel.Length2D();
 
     if (sv_differentialstrafing.GetBool() && wishdir.Length() > 0.1)
     {
-        double angle = acos(DotProduct(wishdir, mv->m_vecVelocity) / (wishdir.Length() * mv->m_vecVelocity.Length2D()));
+        Vector vel2D;
+        VectorCopy(mv->m_vecVelocity, vel2D);
+        vel2D[2] = 0;
+        double angle = acos(DotProduct(wishdir, vel2D) / (wishdir.Length() * vel2D.Length2D()));
         angle *= (180 / 3.14159265);
-        double minQWAngle = acos((wishspeed * DFScale(sv_maxairstrafespeed.GetFloat())) / mv->m_vecVelocity.Length2D());
+        double minQWAngle = acos(sv_maxairstrafespeed.GetFloat() / mv->m_vecVelocity.Length2D());
         minQWAngle *= (180 / 3.14159265);
 
         if (angle <= minQWAngle)
         {
             realAcceleration = sv_airaccelerate.GetFloat();
             realMaxSpeed = sv_maxairspeed.GetFloat();
+            realWishspeed = clampedWishspeed * DFScale(realMaxSpeed);
         }
         else
         {
             realAcceleration = sv_airstrafeaccelerate.GetFloat();
             realMaxSpeed = sv_maxairstrafespeed.GetFloat();
+            realWishspeed = wishspeed;
         }
     }
     else if (sv_cpm_physics.GetBool())
@@ -153,28 +168,29 @@ void CMomentumGameMovement::DFAirMove()
         {
             realAcceleration = sv_airstrafeaccelerate.GetFloat();
             realMaxSpeed = sv_maxairstrafespeed.GetFloat();
+            realWishspeed = wishspeed;
         }
         else
         {
             realAcceleration = sv_airaccelerate.GetFloat();
             realMaxSpeed = sv_maxairspeed.GetFloat();
+            realWishspeed = clampedWishspeed * DFScale(realMaxSpeed);
         }
     }
     else
     {
         realAcceleration = sv_airaccelerate.GetFloat();
         realMaxSpeed = sv_maxairspeed.GetFloat();
+        realWishspeed = clampedWishspeed * DFScale(realMaxSpeed);
     }
 
-    wishspeed *= DFScale(realMaxSpeed);
-
-    DFAirAccelerate(wishdir, wishspeed, realAcceleration, realMaxSpeed);
+    DFAirAccelerate(wishdir, realWishspeed, realAcceleration, realMaxSpeed);
 
     if (sv_cpm_physics.GetBool() && !sv_differentialstrafing.GetBool())
     {
         if (!(smove > 0.1 || smove < -0.1) && (fmove > 0.1 || fmove < -0.1))
         {
-            DFAirControl(wishdir, wishspeed);
+            DFAirControl(wishdir, realWishspeed);
         }
     }
 
