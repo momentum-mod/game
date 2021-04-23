@@ -5,6 +5,7 @@
 #include "mom_shareddefs.h"
 #include "weapon/weapon_def.h"
 #include "weapon/weapon_shareddefs.h"
+#include "movevars_shared.h"
 
 #ifndef CLIENT_DLL
 #include "momentum/fx_mom_shared.h"
@@ -289,7 +290,11 @@ CMomDFRocket *CMomDFRocket::EmitRocket(const Vector &vecOrigin, const QAngle &ve
     AngleVectors(vecAngles, &vecForward);
     VectorNormalize(vecForward);
 
-    const Vector velocity = vecForward * speed[projType];
+    Vector velocity = vecForward * speed[projType];
+    if (projType == DF_ROCKET && sv_cpm_physics.GetBool())
+    {
+        velocity = vecForward * 1000;
+    }
 
     QAngle angles;
     VectorAngles(velocity, angles);
