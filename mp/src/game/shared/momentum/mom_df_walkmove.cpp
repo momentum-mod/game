@@ -116,7 +116,6 @@ void CMomentumGameMovement::DFWalkMove()
 
     Vector dest;
     Vector forward, right, up;
-    const bool bIsSliding = m_pPlayer->m_CurrentSlideTrigger != nullptr;
 
     float oldSpeed;
     Vector oldVel;
@@ -142,7 +141,7 @@ void CMomentumGameMovement::DFWalkMove()
         return;
      }
 
-    if (m_pPlayer->m_CurrentSlideTrigger == nullptr)
+    if (m_pPlayer->m_CurrentSlideTrigger == nullptr && m_pPlayer->m_flKnockbackTime )
     {
          DFFriction();
     }

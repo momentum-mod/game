@@ -107,7 +107,9 @@ public:
     Vector GetEscapeVel() const { return m_vecCornerEscapeVel; }
     void SetEscapeVel(const Vector &vecNewYaw) { m_vecCornerEscapeVel = vecNewYaw; }
 
-private:
+    float m_flKnockbackTime;
+
+  private:
     // Mobility mod (parkour)
     bool m_bWasSprinting;
     bool m_bIsPowerSliding;
