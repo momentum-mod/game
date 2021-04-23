@@ -19,6 +19,12 @@
 
 #include "tier0/memdbgon.h"
 
+#define SLIDEMOVE_PLANEINTERACT_EPSILON 0.05
+#define SLIDEMOVEFLAG_PLANE_TOUCHED 16
+#define SLIDEMOVEFLAG_WALL_BLOCKED 8
+#define SLIDEMOVEFLAG_TRAPPED 4
+#define SLIDEMOVEFLAG_BLOCKED 2 // it was blocked at some point, doesn't mean it didn't slide along the blocking object
+#define SLIDEMOVEFLAG_MOVED 1
 
 #define MAX_CLIP_PLANES 5
 bool CMomentumGameMovement::DFSlideMove(bool inAir)
@@ -214,6 +220,134 @@ bool CMomentumGameMovement::DFSlideMove(bool inAir)
     return (bumpCount != 0);
 }
 
+int CMomentumGameMovement::DFCPMSlideMove()
+{
+    Vector end, dir;
+    Vector oldVel, lastValidOrigin;
+    float value;
+    Vector planes[MAX_CLIP_PLANES];
+    int numplanes = 0;
+    trace_t trace;
+    int moves, i, j, k;
+    int maxmoves = 4;
+    float remainingTime = gpGlobals->frametime;
+    int blockedMask = 0;
+
+    VectorCopy(mv->m_vecVelocity, oldVel);
+    VectorCopy(mv->GetAbsOrigin(), lastValidOrigin);
+
+    if (player->GetGroundEntity() != nullptr)
+    {
+        if (mv->m_vecGroundNormal[2] == 1.0f && mv->m_vecVelocity[2] < 0.0f)
+        {
+            mv->m_vecVelocity[2] = 0.0f;
+        }
+    }
+    
+    for (moves = 0; moves < maxmoves; moves++)
+    {
+        VectorMA(mv->GetAbsOrigin(), remainingTime, mv->m_vecVelocity, end);
+        TracePlayerBBox(mv->m_vecAbsOrigin, end, MASK_PLAYERSOLID, COLLISION_GROUP_PLAYER_MOVEMENT, trace);
+        if (trace.allsolid)
+        {
+            VectorCopy(lastValidOrigin, mv->m_vecAbsOrigin);
+            return SLIDEMOVEFLAG_TRAPPED;
+        }
+
+        if (trace.fraction > 0)
+        {
+            VectorCopy(trace.endpos, mv->m_vecAbsOrigin);
+            VectorCopy(trace.endpos, lastValidOrigin);
+        }
+
+        if (trace.fraction == 1)
+        {
+            break;
+        }
+
+        blockedMask |= SLIDEMOVEFLAG_WALL_BLOCKED;
+        if (trace.plane.normal[2] < SLIDEMOVE_PLANEINTERACT_EPSILON)
+        {
+            blockedMask |= SLIDEMOVEFLAG_WALL_BLOCKED;
+        }
+
+        remainingTime -= (trace.fraction * remainingTime);
+
+        for (i = 0; i < numplanes; i++)
+        {
+            if (DotProduct(trace.plane.normal, planes[i]) > (1.0f - SLIDEMOVE_PLANEINTERACT_EPSILON))
+            {
+                VectorAdd(trace.plane.normal, mv->m_vecVelocity, mv->m_vecVelocity);
+                break;
+            }
+        }
+
+        if (i < numplanes)
+        {
+            continue;
+        }
+
+        if (numplanes > MAX_CLIP_PLANES)
+        {
+            VectorClear(mv->m_vecVelocity);
+            return SLIDEMOVEFLAG_TRAPPED;
+        }
+
+        VectorCopy(trace.plane.normal, planes[numplanes]);
+        numplanes++;
+
+        for (i = 0; i < numplanes; i++)
+        {
+            if (DotProduct(mv->m_vecVelocity, planes[i]) >= SLIDEMOVE_PLANEINTERACT_EPSILON)
+            {
+                continue;
+            }
+
+            DFClipVelocity(mv->m_vecVelocity, planes[i], mv->m_vecVelocity, 1.001f);
+
+            for (j = 0; j < numplanes; j++)
+            {
+                if (j == i)
+                {
+                    continue;
+                }
+                if (DotProduct(mv->m_vecVelocity, planes[i]) >= SLIDEMOVE_PLANEINTERACT_EPSILON)
+                {
+                    continue;
+                }
+
+                DFClipVelocity(mv->m_vecVelocity, planes[i], mv->m_vecVelocity, 1.001f);
+                if (DotProduct(mv->m_vecVelocity, planes[i]) >= SLIDEMOVE_PLANEINTERACT_EPSILON)
+                {
+                    continue;
+                }
+
+                CrossProduct(planes[i], planes[j], dir);
+                VectorNormalize(dir);
+                value = DotProduct(dir, mv->m_vecVelocity);
+                VectorScale(dir, value, mv->m_vecVelocity);
+
+                for (k = 0; k < numplanes; k++)
+                {
+                    if (j == k || i == k)
+                    {
+                        continue;
+                    }
+                    if (DotProduct(mv->m_vecVelocity, planes[i]) >= SLIDEMOVE_PLANEINTERACT_EPSILON)
+                    {
+                        continue;
+                    }
+
+                    VectorClear(mv->m_vecVelocity);
+                    break;
+                }
+            }
+        }
+    }
+
+    return blockedMask;
+}
+
 void CMomentumGameMovement::DFStepSlideMove(bool inAir)
 {
     Vector startOrigin, startVel;
@@ -221,28 +355,23 @@ void CMomentumGameMovement::DFStepSlideMove(bool inAir)
     trace_t trace;
     Vector up, down;
     float stepSize;
-    bool blocked;
-
-    VectorCopy(mv->m_vecAbsOrigin, startOrigin);
-    VectorCopy(mv->m_vecVelocity, startVel);
-
-    // can we move without having to step?
-    blocked = DFSlideMove(inAir);
-
-    if (!blocked && !sv_cpm_physics.GetBool())
-    {
-        return;
-    }
+    int blocked;
 
     if (sv_cpm_physics.GetBool())
     {
-        VectorCopy(startOrigin, mv->m_vecAbsOrigin);
-        VectorCopy(startVel, mv->m_vecVelocity);
+        VectorCopy(mv->m_vecAbsOrigin, startOrigin);
+        VectorCopy(mv->m_vecVelocity, startVel);
+
+        blocked = DFCPMSlideMove();
+        if (!blocked)
+        {
+            return;
+        }
 
         VectorCopy(mv->m_vecAbsOrigin, downOrigin);
         VectorCopy(mv->m_vecVelocity, downVel);
-        VectorCopy(startOrigin, up);
 
+        VectorCopy(startOrigin, up);
         up[2] += sv_stepsize.GetFloat();
 
         TracePlayerBBox(up, up, MASK_PLAYERSOLID, COLLISION_GROUP_PLAYER_MOVEMENT, trace);
@@ -255,7 +384,7 @@ void CMomentumGameMovement::DFStepSlideMove(bool inAir)
         VectorCopy(up, mv->m_vecAbsOrigin);
         VectorCopy(startVel, mv->m_vecVelocity);
 
-        DFSlideMove(inAir);
+        DFCPMSlideMove();
 
         // push down the final amount
         VectorCopy(mv->m_vecAbsOrigin, down);
@@ -266,24 +395,25 @@ void CMomentumGameMovement::DFStepSlideMove(bool inAir)
             VectorCopy(trace.endpos, mv->m_vecAbsOrigin);
         }
 
-        float downDist = (downOrigin[0] - startOrigin[0]) * (downOrigin[0] - startOrigin[0]) *
-                         (downOrigin[0] - startOrigin[1]) * (downOrigin[1] - startOrigin[1]);
-        float upDist = (up[0] - startOrigin[0]) * (up[0] - startOrigin[0]) *
-                       (up[0] - startOrigin[1]) * (up[1] - startOrigin[1]);
-
-        if (downDist >= upDist)
-        {
-        //    VectorCopy(downOrigin, mv->m_vecAbsOrigin);
-        //    VectorCopy(downVel, mv->m_vecVelocity);
-        }
+        VectorCopy(mv->m_vecAbsOrigin, up);
 
         if (trace.fraction < 1.0)
         {
             DFClipVelocity(mv->m_vecVelocity, trace.plane.normal, mv->m_vecVelocity, 1.001f);
         }
+        
     }
     else
     {
+        VectorCopy(mv->m_vecAbsOrigin, startOrigin);
+        VectorCopy(mv->m_vecVelocity, startVel);
+
+        // can we move without having to step?
+        if (!DFSlideMove(inAir))
+        {
+            return;
+        }
+
         VectorCopy(startOrigin, down);
         down[2] -= sv_stepsize.GetFloat();
 

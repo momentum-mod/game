@@ -168,6 +168,7 @@ public:
 
     // mom_df_slidemove.cpp
     bool DFSlideMove(bool inAir);
+    int DFCPMSlideMove();
     void DFStepSlideMove(bool inAir);
 
 private:
