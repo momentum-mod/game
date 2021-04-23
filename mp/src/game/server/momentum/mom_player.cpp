@@ -2195,7 +2195,6 @@ void CMomentumPlayer::DFApplyPushFromDamage(const CTakeDamageInfo &info)
 
         knockback *= (DotProduct(dist, flat) * 0.2) + 1;
     }
-    Msg("Knockback is: %f\n", knockback);
 
     if (knockback > 200)
     {
