@@ -141,7 +141,8 @@ void CMomentumGameMovement::DFWalkMove()
         return;
      }
 
-    if (m_pPlayer->m_CurrentSlideTrigger == nullptr && m_pPlayer->m_flKnockbackTime )
+    if (m_pPlayer->m_CurrentSlideTrigger == nullptr &&
+        m_pPlayer->m_flKnockbackTime < gpGlobals->curtime)
     {
          DFFriction();
     }
