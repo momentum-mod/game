@@ -763,6 +763,8 @@ public:
 		}
 	}
 
+	float m_flKnockbackTime;
+
 private:
 	// How much of a movement time buffer can we process from this user?
 	float				m_flMovementTimeForUserCmdProcessingRemaining;

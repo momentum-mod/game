@@ -2196,6 +2196,15 @@ void CMomentumPlayer::DFApplyPushFromDamage(const CTakeDamageInfo &info)
 
     ApplyAbsVelocityImpulse(kvel);
 
+    float t;
+    t = knockback * 2;
+
+    t = clamp(t, 50, 200);
+
+    m_flKnockbackTime = gpGlobals->curtime + t / 1000;
+    
+    gpGlobals->curtime;
+
     if (GetFlags() & FL_ONGROUND)
     {
         UpdateLastAction(SurfInt::ACTION_KNOCKBACK);

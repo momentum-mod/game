@@ -388,7 +388,9 @@ public:
 	bool					HasFiredWeapon( void ) { return m_bFiredWeapon; }
 	void					SetFiredWeapon( bool bFlag ) { m_bFiredWeapon = bFlag; }
 
-	virtual bool			CanUseFirstPersonCommand( void ){ return true; }
+	virtual bool CanUseFirstPersonCommand(void) { return true; }
+
+    float m_flKnockbackTime;
 	
 protected:
 	fogparams_t				m_CurrentFog;
