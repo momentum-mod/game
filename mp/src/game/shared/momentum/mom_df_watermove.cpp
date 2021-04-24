@@ -60,7 +60,7 @@ bool CMomentumGameMovement::DFCheckWaterJump()
         return false;
     }
 
-    VectorScale(forward, 200, mv->m_vecVelocity);
+    VectorScale(forward, 50, mv->m_vecVelocity);
     mv->m_vecVelocity[2] = 350;
 
     player->m_flWaterJumpTime = gpGlobals->curtime;
@@ -70,7 +70,16 @@ bool CMomentumGameMovement::DFCheckWaterJump()
 
 void CMomentumGameMovement::DFWaterJumpMove()
 {
+    Vector oldVel;
+    VectorCopy(mv->m_vecVelocity, oldVel);
+
     DFStepSlideMove(true);
+
+    if (oldVel.Length2D() > mv->m_vecVelocity.Length2D())
+    {
+        mv->m_vecVelocity[0] = oldVel[0];
+        mv->m_vecVelocity[1] = oldVel[1];
+    }
 
     mv->m_vecVelocity[2] -= sv_gravity.GetFloat() * gpGlobals->frametime;
     if (mv->m_vecVelocity[2] < 0)
@@ -93,7 +102,7 @@ void CMomentumGameMovement::DFWaterMove()
 
     if (DFCheckWaterJump())
     {
-        DFWaterMove();
+        DFWaterJumpMove();
         return;
     }
 
