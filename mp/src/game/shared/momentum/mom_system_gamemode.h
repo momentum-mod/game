@@ -248,7 +248,7 @@ public:
     float GetViewScale() override { return 1.0f; }
     bool CanBhop() override { return true; }
 
-    float GetIntervalPerTick() override { return 0.01f; }
+    float GetIntervalPerTick() override { return 0.008f; }
 
     void SetGameModeVars() override;
     bool PlayerHasAutoBhop() override { return true; }

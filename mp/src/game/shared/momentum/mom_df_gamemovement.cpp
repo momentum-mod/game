@@ -239,10 +239,10 @@ void CMomentumGameMovement::DFFullWalkMove()
     }
     else
     {
-        DFAirMove();
-
         StartGravity();
         FinishGravity();
+
+        DFAirMove();
     }
 }
 
@@ -254,6 +254,8 @@ void CMomentumGameMovement::DFPlayerMove()
     // clear output applied velocity
     mv->m_outWishVel.Init();
     mv->m_outJumpVel.Init();
+
+    VectorCopy(mv->m_vecVelocity, mv->m_vecPreviousVelocity);
 
     MoveHelper()->ResetTouchList();
 
@@ -301,6 +303,8 @@ void CMomentumGameMovement::DFPlayerMove()
             DevMsg(1, "Bogus pmove player movetype %i on (%i) 0=cl 1=sv\n", player->GetMoveType(), player->IsServer());
             break;
     }
+
+    DFGroundTrace();
 
     if (sv_snapvelocity.GetBool())
         DFSnapVector(mv->m_vecVelocity);
@@ -362,7 +366,7 @@ void CMomentumGameMovement::DFGroundTrace()
     trace_t trace;
 
     VectorCopy(mv->m_vecAbsOrigin, point);
-    point[2] -= 0.1f;
+    point[2] -= 0.25f;
 
     TracePlayerBBox(mv->m_vecAbsOrigin, point, MASK_PLAYERSOLID, COLLISION_GROUP_PLAYER_MOVEMENT, trace);
 

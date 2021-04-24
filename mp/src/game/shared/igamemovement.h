@@ -44,6 +44,7 @@ public:
 	bool			m_bCanCPMDoubleJump : 1;
     float			m_flJumpHoldTime;
 	float			m_flJumpTime;
+	Vector			m_vecPreviousVelocity;
 
 	float			m_flWallClipTime;
 
