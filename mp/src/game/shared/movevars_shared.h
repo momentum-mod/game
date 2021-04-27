@@ -34,6 +34,7 @@ extern ConVar sv_airaccelerate;
 extern ConVar sv_maxairstrafespeed;
 extern ConVar sv_airstrafeaccelerate;
 extern ConVar sv_differentialstrafing;
+extern ConVar sv_differential_aircontrol;
 
 extern ConVar sv_cpm_physics;
 extern ConVar sv_snapvelocity;

@@ -94,6 +94,7 @@ ConVar	sv_airaccelerate(  "sv_airaccelerate", "150", FCVAR_NOTIFY | FCVAR_REPLIC
 ConVar	sv_maxairstrafespeed(  "sv_maxairstrafespeed", "30", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_MAPPING );
 ConVar	sv_airstrafeaccelerate(  "sv_airstrafeaccelerate", "10", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_MAPPING );
 ConVar	sv_differentialstrafing(  "sv_differentialstrafing", "0", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_MAPPING );
+ConVar	sv_differential_aircontrol("sv_differential_aircontrol", "0", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_MAPPING );
 
 ConVar  sv_aircontrol("sv_aircontrol", "150", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_MAPPING);
 ConVar  sv_aircontrolpower("sv_aircontrolpower", "2", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_MAPPING);

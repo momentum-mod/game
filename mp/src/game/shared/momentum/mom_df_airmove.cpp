@@ -108,6 +108,7 @@ void CMomentumGameMovement::DFAirMove()
     float realAcceleration;
     float realMaxSpeed;
     float realWishspeed;
+    bool doAircontrol = false;
 
     float oldSpeed;
     Vector oldVel;
@@ -147,9 +148,16 @@ void CMomentumGameMovement::DFAirMove()
         double angle = acos(DotProduct(wishdir, vel2D) / (wishdir.Length() * vel2D.Length2D()));
         angle *= (180 / 3.14159265);
         double minQWAngle = acos(sv_maxairstrafespeed.GetFloat() / mv->m_vecVelocity.Length2D());
+        double minQ3Angle = acos(sv_maxairspeed.GetFloat() / mv->m_vecVelocity.Length2D());
         minQWAngle *= (180 / 3.14159265);
+        minQ3Angle *= (180 / 3.14159265);
 
-        if (angle <= minQWAngle)
+        if (sv_differential_aircontrol.GetBool() && angle < minQ3Angle)
+        {
+            doAircontrol = true;
+        }
+        
+        if (angle < minQWAngle)
         {
             realAcceleration = sv_airaccelerate.GetFloat();
             realMaxSpeed = sv_maxairspeed.GetFloat();
@@ -176,6 +184,12 @@ void CMomentumGameMovement::DFAirMove()
             realMaxSpeed = sv_maxairspeed.GetFloat();
             realWishspeed = clampedWishspeed * DFScale(realMaxSpeed);
         }
+
+        
+        if (!(smove > 0.1 || smove < -0.1) && (fmove > 0.1 || fmove < -0.1))
+        {
+            doAircontrol = true;
+        }
     }
     else
     {
@@ -186,12 +200,9 @@ void CMomentumGameMovement::DFAirMove()
 
     DFAirAccelerate(wishdir, realWishspeed, realAcceleration, realMaxSpeed);
 
-    if (sv_cpm_physics.GetBool() && !sv_differentialstrafing.GetBool())
+    if (doAircontrol)
     {
-        if (!(smove > 0.1 || smove < -0.1) && (fmove > 0.1 || fmove < -0.1))
-        {
-            DFAirControl(wishdir, realWishspeed);
-        }
+        DFAirControl(wishdir, realWishspeed);
     }
 
     // figure in gravity
