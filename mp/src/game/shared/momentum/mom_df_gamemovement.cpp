@@ -239,9 +239,6 @@ void CMomentumGameMovement::DFFullWalkMove()
     }
     else
     {
-        StartGravity();
-        FinishGravity();
-
         DFAirMove();
     }
 }
@@ -249,7 +246,7 @@ void CMomentumGameMovement::DFFullWalkMove()
 void CMomentumGameMovement::DFPlayerMove()
 {
 
-	CheckParameters();
+    CheckParameters();
 
     // clear output applied velocity
     mv->m_outWishVel.Init();
@@ -269,48 +266,50 @@ void CMomentumGameMovement::DFPlayerMove()
 
     switch (player->GetMoveType())
     {
-        case MOVETYPE_NONE:
-            break;
+    case MOVETYPE_NONE:
+        break;
 
-        case MOVETYPE_NOCLIP:
-            FullNoClipMove(sv_noclipspeed.GetFloat(), sv_noclipaccelerate.GetFloat());
-            break;
+    case MOVETYPE_NOCLIP:
+        FullNoClipMove(sv_noclipspeed.GetFloat(), sv_noclipaccelerate.GetFloat());
+        break;
 
-        case MOVETYPE_FLY:
-        case MOVETYPE_FLYGRAVITY:
-            FullTossMove();
-            break;
+    case MOVETYPE_FLY:
+    case MOVETYPE_FLYGRAVITY:
+        FullTossMove();
+        break;
 
-        case MOVETYPE_LADDER:
-            FullLadderMove();
-            break;
+    case MOVETYPE_LADDER:
+        FullLadderMove();
+        break;
 
-        case MOVETYPE_WALK:
-            DFFullWalkMove();
-            break;
+    case MOVETYPE_WALK:
+        DFFullWalkMove();
+        break;
 
-        case MOVETYPE_ISOMETRIC:
-            // IsometricMove();
-            // Could also try:  FullTossMove();
-            DFFullWalkMove();
-            break;
+    case MOVETYPE_ISOMETRIC:
+        // IsometricMove();
+        // Could also try:  FullTossMove();
+        DFFullWalkMove();
+        break;
 
-        case MOVETYPE_OBSERVER:
-            FullObserverMove(); // clips against world&players
-            break;
+    case MOVETYPE_OBSERVER:
+        FullObserverMove(); // clips against world&players
+        break;
 
-        default:
-            DevMsg(1, "Bogus pmove player movetype %i on (%i) 0=cl 1=sv\n", player->GetMoveType(), player->IsServer());
-            break;
+    default:
+        DevMsg(1, "Bogus pmove player movetype %i on (%i) 0=cl 1=sv\n", player->GetMoveType(), player->IsServer());
+        break;
     }
 
     DFGroundTrace();
 
     if (sv_snapvelocity.GetBool())
+    {
         DFSnapVector(mv->m_vecVelocity);
+    }
 }
 
-void CMomentumGameMovement::DFSetGroundEntity(const trace_t *pm)
+void CMomentumGameMovement::DFSetGroundEntity(trace_t *pm)
 {
     CBaseEntity *newGround = pm ? pm->m_pEnt : nullptr;
     CBaseEntity *oldGround = player->GetGroundEntity();
@@ -332,7 +331,8 @@ void CMomentumGameMovement::DFSetGroundEntity(const trace_t *pm)
         // its alright to set it to zero.
         if (!sv_cpm_physics.GetBool() || mv->m_vecVelocity.Length2D() < 2)
         {
-            mv->m_vecVelocity.z = 0;
+            //mv->m_vecVelocity.z = 0;
+            //DFClipVelocity(mv->m_vecVelocity, pm->plane.normal, mv->m_vecVelocity, 2);
         }
     }
     else if (oldGround && !newGround)

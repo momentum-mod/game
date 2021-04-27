@@ -194,6 +194,9 @@ void CMomentumGameMovement::DFAirMove()
         }
     }
 
+    // figure in gravity
+    mv->m_vecVelocity[2] -= sv_gravity.GetFloat() * gpGlobals->frametime;
+
     oldSpeed = mv->m_vecVelocity.Length2D();
     VectorCopy(mv->m_vecVelocity, oldVel);
 

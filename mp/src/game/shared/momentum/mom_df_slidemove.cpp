@@ -394,14 +394,10 @@ void CMomentumGameMovement::DFStepSlideMove(bool inAir)
         {
             VectorCopy(trace.endpos, mv->m_vecAbsOrigin);
         }
-
-        VectorCopy(mv->m_vecAbsOrigin, up);
-
         if (trace.fraction < 1.0)
         {
             DFClipVelocity(mv->m_vecVelocity, trace.plane.normal, mv->m_vecVelocity, 1.001f);
         }
-        
     }
     else
     {

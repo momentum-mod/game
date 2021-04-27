@@ -147,7 +147,7 @@ public:
     void DFFriction();
     void DFFullWalkMove();
     void DFPlayerMove();
-    void DFSetGroundEntity(const trace_t *pm);
+    void DFSetGroundEntity(trace_t *pm);
     void DFGroundTrace();
     void DFSnapVector(Vector &v);
     float DFScale(float maxspeed);
