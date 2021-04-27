@@ -42,6 +42,7 @@ public:
 	bool			m_bGameCodeMovedPlayer : 1;
 	bool			m_bJumpReleased : 1;
 	bool			m_bCanCPMDoubleJump : 1;
+	bool			m_bRampSliding : 1;
     float			m_flJumpHoldTime;
 	float			m_flJumpTime;
 	Vector			m_vecPreviousVelocity;

@@ -152,6 +152,11 @@ void CMomentumGameMovement::DFAirMove()
         minQWAngle *= (180 / 3.14159265);
         minQ3Angle *= (180 / 3.14159265);
 
+        if (mv->m_bRampSliding)
+        {
+            DFCheckJumpButton();
+        }
+
         if (sv_differential_aircontrol.GetBool() && angle < minQ3Angle)
         {
             doAircontrol = true;
@@ -206,7 +211,10 @@ void CMomentumGameMovement::DFAirMove()
     }
 
     // figure in gravity
-    mv->m_vecVelocity[2] -= sv_gravity.GetFloat() * gpGlobals->frametime;
+    if (!(mv->m_bRampSliding && !sv_rampslide_gravity.GetBool()))
+    {
+        mv->m_vecVelocity[2] -= sv_gravity.GetFloat() * gpGlobals->frametime;
+    }
 
     oldSpeed = mv->m_vecVelocity.Length2D();
     VectorCopy(mv->m_vecVelocity, oldVel);

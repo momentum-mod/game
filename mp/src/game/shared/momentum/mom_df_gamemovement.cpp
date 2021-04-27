@@ -365,6 +365,7 @@ void CMomentumGameMovement::DFGroundTrace()
     Vector point;
     trace_t trace;
 
+    mv->m_bRampSliding = false;
     VectorCopy(mv->m_vecAbsOrigin, point);
     point[2] -= 0.25f;
 
@@ -388,8 +389,24 @@ void CMomentumGameMovement::DFGroundTrace()
         return;
     }
 
-    DFSetGroundEntity(&trace);
     VectorCopy(trace.plane.normal, mv->m_vecGroundNormal);
+
+    // if we got this far then we would be standing on the ground
+    if (sv_rampslide.GetBool() && mv->m_vecVelocity[2] >= sv_rampslide_speed.GetFloat())
+    {
+        mv->m_bRampSliding = true;
+
+        float spd = mv->m_vecVelocity.Length();
+        DFClipVelocity(mv->m_vecVelocity, mv->m_vecGroundNormal, mv->m_vecVelocity, 1.001f);
+
+        VectorNormalize(mv->m_vecVelocity);
+        VectorScale(mv->m_vecVelocity, spd, mv->m_vecVelocity);
+
+        DFSetGroundEntity(nullptr);
+        return;
+    }
+
+    DFSetGroundEntity(&trace);
 }
 
 void CMomentumGameMovement::DFSnapVector(Vector& v)
