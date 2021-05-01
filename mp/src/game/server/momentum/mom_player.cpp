@@ -2215,8 +2215,6 @@ void CMomentumPlayer::DFApplyPushFromDamage(const CTakeDamageInfo &info)
     t = clamp(t, 50, 200);
 
     m_flKnockbackTime = gpGlobals->curtime + t / 1000;
-    
-    gpGlobals->curtime;
 
     if (GetFlags() & FL_ONGROUND)
     {

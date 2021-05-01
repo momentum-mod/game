@@ -187,12 +187,20 @@ void CMomDFRocket::DFRadiusDamage(const CTakeDamageInfo &info, const Vector &vec
         for (int i = 0; i < 3; i++)
         {
             if (vecSrc[i] < otherMins[i])
+            {
                 dist[i] = otherMins[i] - vecSrc[i];
-            if (vecSrc[i] > otherMaxs[i])
+            }
+            else if (vecSrc[i] > otherMaxs[i])
+            {
                 dist[i] = vecSrc[i] - otherMaxs[i];
+            }
             else
+            {
                 dist[i] = 0;
+            }
         }
+
+        Msg("dist is: %f\n", dist.Length());
 
         if (dist.Length() > flRadius)
         {

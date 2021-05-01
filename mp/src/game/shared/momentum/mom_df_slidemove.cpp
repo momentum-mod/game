@@ -354,7 +354,6 @@ void CMomentumGameMovement::DFStepSlideMove(bool inAir)
     trace_t trace;
     Vector up, down;
     float stepSize;
-    //int blocked;
 
     if (sv_cpm_physics.GetBool())
     {
