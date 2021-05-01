@@ -369,7 +369,7 @@ void CGameMode_Defrag::SetGameModeVars()
     sv_accelerate.SetValue(10);
     sv_friction.SetValue(6);
     sv_wateraccelerate.SetValue(4);
-    sv_stepsize.SetValue(17);
+    sv_stepsize.SetValue(18);
 
     sv_airaccelerate.SetValue(1);
 }

@@ -351,44 +351,45 @@ int CMomentumGameMovement::DFCPMSlideMove()
 void CMomentumGameMovement::DFStepSlideMove(bool inAir)
 {
     Vector startOrigin, startVel;
-    Vector downOrigin, downVel;
     trace_t trace;
     Vector up, down;
     float stepSize;
-    int blocked;
+    //int blocked;
 
     if (sv_cpm_physics.GetBool())
     {
         VectorCopy(mv->m_vecAbsOrigin, startOrigin);
         VectorCopy(mv->m_vecVelocity, startVel);
-
-        blocked = DFCPMSlideMove();
-        if (!blocked)
+        
+        if (!DFSlideMove(inAir))
         {
             return;
         }
 
-        VectorCopy(mv->m_vecAbsOrigin, downOrigin);
-        VectorCopy(mv->m_vecVelocity, downVel);
+        VectorCopy(startOrigin, mv->m_vecAbsOrigin);
+        VectorCopy(startVel, mv->m_vecVelocity);
 
         VectorCopy(startOrigin, up);
-        up[2] += sv_stepsize.GetFloat();
+        up[2] += sv_stepsize.GetFloat() + (inAir ? 1 : 0);
 
         TracePlayerBBox(up, up, MASK_PLAYERSOLID, COLLISION_GROUP_PLAYER_MOVEMENT, trace);
         if (trace.allsolid)
         {
+            DFSlideMove(inAir);
             return;
         }
 
+        stepSize = trace.endpos[2] - startOrigin[2];
+
         // try sliding above
-        VectorCopy(up, mv->m_vecAbsOrigin);
+        VectorCopy(trace.endpos, mv->m_vecAbsOrigin);
         VectorCopy(startVel, mv->m_vecVelocity);
 
-        DFCPMSlideMove();
+        DFSlideMove(inAir);
 
         // push down the final amount
         VectorCopy(mv->m_vecAbsOrigin, down);
-        down[2] -= sv_stepsize.GetFloat();
+        down[2] -= stepSize;
         TracePlayerBBox(mv->m_vecAbsOrigin, down, MASK_PLAYERSOLID, COLLISION_GROUP_PLAYER_MOVEMENT, trace);
         if (!trace.allsolid)
         {
@@ -411,25 +412,23 @@ void CMomentumGameMovement::DFStepSlideMove(bool inAir)
         }
 
         VectorCopy(startOrigin, down);
-        down[2] -= sv_stepsize.GetFloat();
+        down[2] -= sv_stepsize.GetFloat() - (inAir ? 1 : 0);
 
         TracePlayerBBox(startOrigin, down, MASK_PLAYERSOLID, COLLISION_GROUP_PLAYER_MOVEMENT, trace);
-
+        up[0] = 0;
+        up[1] = 0;
+        up[2] = 1;
         // never step up when you still have velocity
         if (mv->m_vecVelocity[2] > 0 && (trace.fraction == 1.0 || DotProduct(trace.plane.normal, up) < 0.7))
         {
             return;
         }
 
-        VectorCopy(mv->m_vecAbsOrigin, downOrigin);
-        VectorCopy(mv->m_vecVelocity, downVel);
-
         VectorCopy(startOrigin, up);
-        up[2] += sv_stepsize.GetFloat();
+        up[2] += sv_stepsize.GetFloat() + (inAir ? 1 : 0);
 
         // test the player position if they were a stepheight higher
         TracePlayerBBox(startOrigin, up, MASK_PLAYERSOLID, COLLISION_GROUP_PLAYER_MOVEMENT, trace);
-
         if (trace.allsolid)
         {
             return;
