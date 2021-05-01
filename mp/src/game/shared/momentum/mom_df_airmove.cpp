@@ -157,7 +157,7 @@ void CMomentumGameMovement::DFAirMove()
             DFCheckJumpButton();
         }
 
-        if (sv_differential_aircontrol.GetBool() && angle < minQ3Angle)
+        if (sv_differential_aircontrol.GetBool() && !(smove > 0.1 || smove < -0.1) && (fmove > 0.1 || fmove < -0.1))
         {
             doAircontrol = true;
         }
