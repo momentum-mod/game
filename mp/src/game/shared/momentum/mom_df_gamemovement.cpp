@@ -245,7 +245,6 @@ void CMomentumGameMovement::DFFullWalkMove()
 
 void CMomentumGameMovement::DFPlayerMove()
 {
-
     CheckParameters();
 
     // clear output applied velocity

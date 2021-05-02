@@ -2601,3 +2601,52 @@ void CTeleportDestination::Precache()
     BaseClass::Precache();
     PrecacheMaterial(MOM_ZONE_DRAW_MATERIAL);
 }
+
+//--------- CTriggerOverbounce -------------------------------------------------------------------
+
+LINK_ENTITY_TO_CLASS(trigger_momentum_overbounce, CTriggerOverbounce);
+
+BEGIN_DATADESC(CTriggerOverbounce)
+END_DATADESC()
+
+IMPLEMENT_SERVERCLASS_ST(CTriggerOverbounce, DT_TriggerOverbounce)
+END_SEND_TABLE();
+
+void CTriggerOverbounce::OnStartTouch(CBaseEntity *pOther)
+{
+    BaseClass::OnStartTouch(pOther);
+
+    if (pOther->IsPlayer())
+    {
+        const auto pPlayer = ToCMOMPlayer(pOther);
+        if (pPlayer)
+        {
+            pPlayer->m_vecOverbounceTriggers.AddToHead(this);
+            pPlayer->m_CurrentOverbounceTrigger = this;
+        }
+    }
+}
+
+void CTriggerOverbounce::OnEndTouch(CBaseEntity *pOther)
+{
+    BaseClass::OnEndTouch(pOther);
+
+    if (pOther->IsPlayer())
+    {
+        const auto pPlayer = ToCMOMPlayer(pOther);
+        if (pPlayer)
+        {
+            pPlayer->m_vecOverbounceTriggers.FindAndRemove(this);
+
+            if (pPlayer->m_CurrentOverbounceTrigger.Get() == this)
+            {
+                if (!pPlayer->m_vecOverbounceTriggers.IsEmpty())
+                    pPlayer->m_CurrentOverbounceTrigger = pPlayer->m_vecOverbounceTriggers[0];
+                else
+                    pPlayer->m_CurrentOverbounceTrigger = nullptr;
+            }
+        }
+    }
+}
+
+//-----------------------------------------------------------------------------------------------

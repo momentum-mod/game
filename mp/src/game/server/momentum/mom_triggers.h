@@ -956,3 +956,18 @@ public:
     // always send to all clients
     int UpdateTransmitState() override { return SetTransmitState(FL_EDICT_ALWAYS); }
 };
+
+class CTriggerOverbounce : public CBaseMomentumTrigger
+{
+    DECLARE_CLASS(CTriggerOverbounce, CBaseMomentumTrigger);
+    DECLARE_NETWORKCLASS();
+    DECLARE_DATADESC();
+
+  public:
+    void OnStartTouch(CBaseEntity *pOther) override;
+    void OnEndTouch(CBaseEntity *pOther) override;
+    int UpdateTransmitState() // always send to all clients
+    {
+        return SetTransmitState(FL_EDICT_ALWAYS);
+    }
+};

@@ -345,6 +345,10 @@
     DisableGravity(integer) : "Disable Gravity" : 0 : "Disable entirely the gravity code while sliding. (useful when you don't want to lose speed while going up or increase speed while going down)"
 ]
 
+@SolidClass base(MomentumTrigger) = trigger_momentum_overbounce : "Trigger for overbounce zones." 
+[
+]
+
 @SolidClass base(MomentumTrigger) = trigger_momentum_reversespeed : "Trigger for reversing the speed of the momentum player." 
 [
     ReverseHorizontal(integer) : "Reverse horizontal speed" : 1 : "Reverse accordingly the velocity based on x/y axis."

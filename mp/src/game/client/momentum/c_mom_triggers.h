@@ -134,3 +134,10 @@ class C_TeleportDestination : public C_BaseEntity
     void Precache() override;
     void GetRenderBounds(Vector &mins, Vector &maxs) override;
 };
+
+class C_TriggerOverbounce : public C_BaseMomZoneTrigger
+{
+  public:
+    DECLARE_CLASS(C_TriggerOverbounce, C_BaseMomZoneTrigger);
+    DECLARE_CLIENTCLASS();
+};

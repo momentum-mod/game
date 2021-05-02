@@ -8,6 +8,7 @@ class CBaseMomentumTrigger;
 class CTriggerOnehop;
 class CTriggerProgress;
 class CTriggerSlide;
+class CTriggerOverbounce;
 class CMomentumGhostBaseEntity;
 
 class CMomentumPlayerCollectibles
@@ -113,8 +114,10 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
 
     IMPLEMENT_NETWORK_VAR_FOR_DERIVED(m_afButtonDisabled);
     CNetworkHandle(CTriggerSlide, m_CurrentSlideTrigger);
+    CNetworkHandle(CTriggerOverbounce, m_CurrentOverbounceTrigger);
 
     CUtlVector<CTriggerSlide*> m_vecSlideTriggers;
+    CUtlVector<CTriggerOverbounce*> m_vecOverbounceTriggers;
 
     // Run entity stuff
     virtual RUN_ENT_TYPE GetEntType() OVERRIDE { return RUN_ENT_PLAYER; }

@@ -597,3 +597,11 @@ void C_TeleportDestination::GetRenderBounds(Vector &mins, Vector &maxs)
     mins.Init(-dim, -dim, 0);
     maxs.Init(dim, dim, 0);
 }
+
+// ======================================
+LINK_ENTITY_TO_CLASS(trigger_momentum_overbounce, C_TriggerOverbounce);
+
+IMPLEMENT_CLIENTCLASS_DT(C_TriggerOverbounce, DT_TriggerOverbounce, CTriggerOverbounce)
+END_RECV_TABLE();
+
+// ======================================
