@@ -20,6 +20,7 @@ RecvPropInt(RECVINFO(m_iDirection), SPROP_UNSIGNED),
 RecvPropInt(RECVINFO(m_iLastZoomFOV), SPROP_UNSIGNED),
 RecvPropInt(RECVINFO(m_afButtonDisabled)),
 RecvPropEHandle(RECVINFO(m_CurrentSlideTrigger)),
+RecvPropEHandle(RECVINFO(m_CurrentOverbounceTrigger)),
 RecvPropBool(RECVINFO(m_bAutoBhop)),
 RecvPropFloat(RECVINFO(m_fDuckTimer)),
 RecvPropBool(RECVINFO(m_bSurfing)),
@@ -63,6 +64,7 @@ C_MomentumPlayer::C_MomentumPlayer(): m_pSpecTarget(nullptr)
     m_bIsWalking = false;
     m_bAutoBhop = true;
     m_CurrentSlideTrigger = nullptr;
+    m_CurrentOverbounceTrigger = nullptr;
     m_RunStats.Init();
     m_fDuckTimer = 0.0f;
 

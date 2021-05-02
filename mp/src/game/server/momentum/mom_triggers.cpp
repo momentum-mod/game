@@ -2607,14 +2607,18 @@ void CTeleportDestination::Precache()
 LINK_ENTITY_TO_CLASS(trigger_momentum_overbounce, CTriggerOverbounce);
 
 BEGIN_DATADESC(CTriggerOverbounce)
+    DEFINE_KEYFIELD(m_flMinSpeed, FIELD_BOOLEAN, "MinSpeed"),
 END_DATADESC()
 
 IMPLEMENT_SERVERCLASS_ST(CTriggerOverbounce, DT_TriggerOverbounce)
+SendPropFloat(SENDINFO(m_flMinSpeed)),
 END_SEND_TABLE();
 
 void CTriggerOverbounce::OnStartTouch(CBaseEntity *pOther)
 {
     BaseClass::OnStartTouch(pOther);
+
+    Msg("My minspeed is: %f\n", m_flMinSpeed);
 
     if (pOther->IsPlayer())
     {

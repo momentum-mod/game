@@ -602,6 +602,7 @@ void C_TeleportDestination::GetRenderBounds(Vector &mins, Vector &maxs)
 LINK_ENTITY_TO_CLASS(trigger_momentum_overbounce, C_TriggerOverbounce);
 
 IMPLEMENT_CLIENTCLASS_DT(C_TriggerOverbounce, DT_TriggerOverbounce, CTriggerOverbounce)
+RecvPropFloat(RECVINFO(m_flMinSpeed)),
 END_RECV_TABLE();
 
 // ======================================

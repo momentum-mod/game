@@ -970,4 +970,7 @@ class CTriggerOverbounce : public CBaseMomentumTrigger
     {
         return SetTransmitState(FL_EDICT_ALWAYS);
     }
+
+  public:
+    CNetworkVar(float, m_flMinSpeed);
 };

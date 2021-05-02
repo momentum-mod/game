@@ -140,4 +140,7 @@ class C_TriggerOverbounce : public C_BaseMomZoneTrigger
   public:
     DECLARE_CLASS(C_TriggerOverbounce, C_BaseMomZoneTrigger);
     DECLARE_CLIENTCLASS();
+
+  public:
+    CNetworkVar(float, m_flMinSpeed);
 };
