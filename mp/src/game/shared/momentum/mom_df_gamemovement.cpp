@@ -325,6 +325,10 @@ void CMomentumGameMovement::DFSetGroundEntity(trace_t *pm)
         {
             VectorCopy(mv->m_vecPreviousVelocity, mv->m_vecVelocity);
         }
+        else
+        {
+            DFClipVelocity(mv->m_vecVelocity, pm->plane.normal, mv->m_vecVelocity, 1.001f);
+        }
     }
     else if (oldGround && !newGround)
     {
