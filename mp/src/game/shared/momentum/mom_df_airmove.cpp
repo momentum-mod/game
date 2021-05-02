@@ -219,6 +219,7 @@ void CMomentumGameMovement::DFAirMove()
     oldSpeed = mv->m_vecVelocity.Length2D();
     VectorCopy(mv->m_vecVelocity, oldVel);
 
+    VectorCopy(mv->m_vecVelocity, mv->m_vecPreviousVelocity);
     DFStepSlideMove(true);
 
     if (gpGlobals->curtime - mv->m_flWallClipTime < sv_wallcliptime.GetFloat() &&

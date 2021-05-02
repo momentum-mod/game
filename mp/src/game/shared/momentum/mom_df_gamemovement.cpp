@@ -251,8 +251,6 @@ void CMomentumGameMovement::DFPlayerMove()
     mv->m_outWishVel.Init();
     mv->m_outJumpVel.Init();
 
-    VectorCopy(mv->m_vecVelocity, mv->m_vecPreviousVelocity);
-
     MoveHelper()->ResetTouchList();
 
     ReduceTimers();
@@ -313,6 +311,7 @@ void CMomentumGameMovement::DFSetGroundEntity(trace_t *pm)
     CBaseEntity *newGround = pm ? pm->m_pEnt : nullptr;
     CBaseEntity *oldGround = player->GetGroundEntity();
     Vector vecBaseVelocity = player->GetBaseVelocity();
+    const auto pOverbounceTrigger = m_pPlayer->m_CurrentOverbounceTrigger.Get();
 
     if (!oldGround && newGround)
     {
@@ -322,16 +321,10 @@ void CMomentumGameMovement::DFSetGroundEntity(trace_t *pm)
         vecBaseVelocity -= newGround->GetAbsVelocity();
         vecBaseVelocity.z = newGround->GetAbsVelocity().z;
 
-        // if this is on, then trimping isn't possible in CPM
-        // however, turning it off means there is a weird visual glitch where
-        // your vertical velocity will oscillate quickly until you move.
-        // the glitch only happens when landing on the ground with very little
-        // horizontal velocity. you would hardly trimp anyway with that much speed so
-        // its alright to set it to zero.
-        if (!sv_cpm_physics.GetBool() || mv->m_vecVelocity.Length2D() < 2)
+        if (pOverbounceTrigger && abs(mv->m_vecPreviousVelocity.z) >= pOverbounceTrigger->m_flMinSpeed)
         {
-            //mv->m_vecVelocity.z = 0;
-            //DFClipVelocity(mv->m_vecVelocity, pm->plane.normal, mv->m_vecVelocity, 2);
+            Msg("minspeed = %f\n", pOverbounceTrigger->m_flMinSpeed);
+            VectorCopy(mv->m_vecPreviousVelocity, mv->m_vecVelocity);
         }
     }
     else if (oldGround && !newGround)
