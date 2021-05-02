@@ -2618,8 +2618,6 @@ void CTriggerOverbounce::OnStartTouch(CBaseEntity *pOther)
 {
     BaseClass::OnStartTouch(pOther);
 
-    Msg("My minspeed is: %f\n", m_flMinSpeed);
-
     if (pOther->IsPlayer())
     {
         const auto pPlayer = ToCMOMPlayer(pOther);

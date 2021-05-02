@@ -323,7 +323,6 @@ void CMomentumGameMovement::DFSetGroundEntity(trace_t *pm)
 
         if (pOverbounceTrigger && abs(mv->m_vecPreviousVelocity.z) >= pOverbounceTrigger->m_flMinSpeed)
         {
-            Msg("minspeed = %f\n", pOverbounceTrigger->m_flMinSpeed);
             VectorCopy(mv->m_vecPreviousVelocity, mv->m_vecVelocity);
         }
     }
