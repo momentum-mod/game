@@ -200,8 +200,6 @@ void CMomDFRocket::DFRadiusDamage(const CTakeDamageInfo &info, const Vector &vec
             }
         }
 
-        Msg("dist is: %f\n", dist.Length());
-
         if (dist.Length() > flRadius)
         {
             continue;
