@@ -143,4 +143,5 @@ class C_TriggerOverbounce : public C_BaseMomZoneTrigger
 
   public:
     CNetworkVar(float, m_flMinSpeed);
+    CNetworkVar(float, m_flMaxSpeed);
 };

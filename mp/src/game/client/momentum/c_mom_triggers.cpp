@@ -603,6 +603,7 @@ LINK_ENTITY_TO_CLASS(trigger_momentum_overbounce, C_TriggerOverbounce);
 
 IMPLEMENT_CLIENTCLASS_DT(C_TriggerOverbounce, DT_TriggerOverbounce, CTriggerOverbounce)
 RecvPropFloat(RECVINFO(m_flMinSpeed)),
+RecvPropFloat(RECVINFO(m_flMaxSpeed)),
 END_RECV_TABLE();
 
 // ======================================

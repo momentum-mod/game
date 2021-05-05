@@ -2607,11 +2607,13 @@ void CTeleportDestination::Precache()
 LINK_ENTITY_TO_CLASS(trigger_momentum_overbounce, CTriggerOverbounce);
 
 BEGIN_DATADESC(CTriggerOverbounce)
-    DEFINE_KEYFIELD(m_flMinSpeed, FIELD_BOOLEAN, "MinSpeed"),
+    DEFINE_KEYFIELD(m_flMinSpeed, FIELD_FLOAT, "MinSpeed"),
+    DEFINE_KEYFIELD(m_flMaxSpeed, FIELD_FLOAT, "MaxSpeed"),
 END_DATADESC()
 
 IMPLEMENT_SERVERCLASS_ST(CTriggerOverbounce, DT_TriggerOverbounce)
 SendPropFloat(SENDINFO(m_flMinSpeed)),
+SendPropFloat(SENDINFO(m_flMaxSpeed)),
 END_SEND_TABLE();
 
 void CTriggerOverbounce::OnStartTouch(CBaseEntity *pOther)

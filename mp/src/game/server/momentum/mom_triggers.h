@@ -973,4 +973,5 @@ class CTriggerOverbounce : public CBaseMomentumTrigger
 
   public:
     CNetworkVar(float, m_flMinSpeed);
+    CNetworkVar(float, m_flMaxSpeed);
 };
