@@ -113,6 +113,11 @@ void CMomentumGameMovement::DFAirMove()
     float oldSpeed;
     Vector oldVel;
 
+    if (mv->m_bRampSliding)
+    {
+        DFCheckJumpButton();
+    }
+
     AngleVectors(mv->m_vecViewAngles, &forward, &right, &up); // Determine movement angles
 
     // Copy movement amounts
@@ -151,11 +156,6 @@ void CMomentumGameMovement::DFAirMove()
         double minQ3Angle = acos(sv_maxairspeed.GetFloat() / mv->m_vecVelocity.Length2D());
         minQWAngle *= (180 / 3.14159265);
         minQ3Angle *= (180 / 3.14159265);
-
-        if (mv->m_bRampSliding)
-        {
-            DFCheckJumpButton();
-        }
 
         if (sv_differential_aircontrol.GetBool() && !(smove > 0.1 || smove < -0.1) && (fmove > 0.1 || fmove < -0.1))
         {
