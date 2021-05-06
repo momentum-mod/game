@@ -257,6 +257,7 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
 
     void DFApplyPushFromDamage(const CTakeDamageInfo &info);
     void ApplyPushFromDamage(const CTakeDamageInfo &info, Vector &vecDir);
+    void DropWeapon(const char* weapon);
 
     // Ladder stuff
     float GetGrabbableLadderTime() const { return m_flGrabbableLadderTime; }

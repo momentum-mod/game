@@ -2229,6 +2229,41 @@ void CMomentumPlayer::DFApplyPushFromDamage(const CTakeDamageInfo &info)
     }
 }
 
+void CMomentumPlayer::DropWeapon(const char* weapon)
+{
+    bool wasActiveWeapon = false;
+
+    for (int i = 0; i < WEAPON_MAX; i++)
+    {
+        if (m_hMyWeapons[i])
+        {
+            if (strcmp(m_hMyWeapons[i]->GetClassname(), weapon) == 0)
+            {
+                if (m_hMyWeapons[i] == GetActiveWeapon())
+                {
+                    wasActiveWeapon = true;
+                    m_hMyWeapons[i]->SendWeaponAnim(ACT_VM_IDLE);
+                }
+
+                m_hMyWeapons[i]->Delete();
+                m_hMyWeapons.Set(i, nullptr);
+
+                if (wasActiveWeapon)
+                {
+                    if (!SwitchToNextBestWeapon(NULL))
+                    {
+                        CBaseViewModel *vm = GetViewModel();
+                        if (vm)
+                        {
+                            vm->AddEffects(EF_NODRAW);
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
 // Apply TF2-like knockback when damaging self with rockets
 // https://github.com/danielmm8888/TF2Classic/blob/master/src/game/server/tf/tf_player.cpp#L4108
 void CMomentumPlayer::ApplyPushFromDamage(const CTakeDamageInfo &info, Vector &vecDir)
