@@ -607,3 +607,10 @@ RecvPropFloat(RECVINFO(m_flMaxSpeed)),
 END_RECV_TABLE();
 
 // ======================================
+LINK_ENTITY_TO_CLASS(trigger_momentum_weaponstrip, C_TriggerWeaponstrip);
+
+IMPLEMENT_CLIENTCLASS_DT(C_TriggerWeaponstrip, DT_TriggerWeaponstrip, CTriggerWeaponstrip)
+	RecvPropString( RECVINFO(m_szWeaponName) ),
+END_RECV_TABLE();
+
+// ======================================

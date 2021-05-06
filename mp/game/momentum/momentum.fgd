@@ -351,6 +351,11 @@
     MaxSpeed(float) : "Maximum speed" : -1 : "The player must not have more than this much z speed to overbounce. Set to a negative value to not have a maximum speed."
 ]
 
+@SolidClass base(MomentumTrigger) = trigger_momentum_weaponstrip : "Removes the specified player weapon, if the player has it."
+[
+    WeaponName(string) : "Weapon Name" : "" : "This is the weapon to remove from the player"
+]
+
 @SolidClass base(MomentumTrigger) = trigger_momentum_reversespeed : "Trigger for reversing the speed of the momentum player." 
 [
     ReverseHorizontal(integer) : "Reverse horizontal speed" : 1 : "Reverse accordingly the velocity based on x/y axis."

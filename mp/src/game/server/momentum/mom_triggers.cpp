@@ -2654,3 +2654,46 @@ void CTriggerOverbounce::OnEndTouch(CBaseEntity *pOther)
 }
 
 //-----------------------------------------------------------------------------------------------
+
+//--------- CTriggerWeaponstrip -------------------------------------------------------------------
+
+LINK_ENTITY_TO_CLASS(trigger_momentum_weaponstrip, CTriggerWeaponstrip);
+
+BEGIN_DATADESC(CTriggerWeaponstrip)
+    DEFINE_AUTO_ARRAY_KEYFIELD( m_szWeaponName, FIELD_CHARACTER, "WeaponName" ),
+END_DATADESC()
+
+IMPLEMENT_SERVERCLASS_ST(CTriggerWeaponstrip, DT_TriggerWeaponstrip)
+	SendPropString( SENDINFO(m_szWeaponName) ),
+END_SEND_TABLE();
+
+CTriggerWeaponstrip::CTriggerWeaponstrip()
+{
+	m_szWeaponName.GetForModify()[0] = 0;
+}
+
+void CTriggerWeaponstrip::OnStartTouch(CBaseEntity *pOther)
+{
+    BaseClass::OnStartTouch(pOther);
+
+    if (pOther->IsPlayer())
+    {
+        const auto pPlayer = ToCMOMPlayer(pOther);
+        if (pPlayer)
+        {
+            pPlayer->DropWeapon(m_szWeaponName.Get());
+        }
+    }
+}
+
+bool CTriggerWeaponstrip::KeyValue(const char *szKeyName, const char *szValue)
+{
+    if (FStrEq(szKeyName, "WeaponName"))
+    {
+        Q_strncpy(m_szWeaponName.GetForModify(), szValue, MAX_WEAPON_STRING);
+        return true;
+    }
+
+    return BaseClass::KeyValue(szKeyName, szValue);
+}
+//-----------------------------------------------------------------------------------------------

@@ -975,3 +975,23 @@ class CTriggerOverbounce : public CBaseMomentumTrigger
     CNetworkVar(float, m_flMinSpeed);
     CNetworkVar(float, m_flMaxSpeed);
 };
+
+class CTriggerWeaponstrip : public CBaseMomentumTrigger
+{
+    DECLARE_CLASS(CTriggerWeaponstrip, CBaseMomentumTrigger);
+    DECLARE_NETWORKCLASS();
+    DECLARE_DATADESC();
+
+  public:
+    CTriggerWeaponstrip();
+    void OnStartTouch(CBaseEntity *pOther) override;
+    bool KeyValue(const char *szKeyName, const char *szValue) override;
+    int UpdateTransmitState() // always send to all clients
+    {
+        return SetTransmitState(FL_EDICT_ALWAYS);
+    }
+
+  public:
+    CNetworkString(m_szWeaponName, MAX_WEAPON_STRING);
+    //char m_szWeaponName[MAX_WEAPON_STRING];
+};

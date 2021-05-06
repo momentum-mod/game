@@ -145,3 +145,14 @@ class C_TriggerOverbounce : public C_BaseMomZoneTrigger
     CNetworkVar(float, m_flMinSpeed);
     CNetworkVar(float, m_flMaxSpeed);
 };
+
+class C_TriggerWeaponstrip : public C_BaseMomZoneTrigger
+{
+  public:
+    DECLARE_CLASS(C_TriggerWeaponstrip, C_BaseMomZoneTrigger);
+    DECLARE_CLIENTCLASS();
+
+  public:
+    //CNetworkString(m_szWeaponName, MAX_WEAPON_STRING);
+    char m_szWeaponName[MAX_WEAPON_STRING];
+};
