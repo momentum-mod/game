@@ -92,7 +92,7 @@ ConVar	sv_maxairspeed(  "sv_maxairspeed", "320", FCVAR_NOTIFY | FCVAR_REPLICATED
 ConVar	sv_airaccelerate(  "sv_airaccelerate", "150", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_MAPPING );
 
 ConVar	sv_maxairstrafespeed(  "sv_maxairstrafespeed", "30", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_MAPPING );
-ConVar	sv_airstrafeaccelerate(  "sv_airstrafeaccelerate", "10", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_MAPPING );
+ConVar	sv_airstrafeaccelerate(  "sv_airstrafeaccelerate", "6.7", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_MAPPING );
 ConVar	sv_differentialstrafing(  "sv_differentialstrafing", "0", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_MAPPING );
 ConVar	sv_differential_aircontrol("sv_differential_aircontrol", "0", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_MAPPING );
 ConVar	sv_rampslide ("sv_rampslide", "0", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_MAPPING );
@@ -100,7 +100,7 @@ ConVar	sv_rampslide_gravity ("sv_rampslide_gravity", "1", FCVAR_NOTIFY | FCVAR_R
 ConVar	sv_rampslide_speed ("sv_rampslide_speed", "180", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_MAPPING );
 
 ConVar  sv_aircontrol("sv_aircontrol", "150", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_MAPPING);
-ConVar  sv_aircontrolpower("sv_aircontrolpower", "2", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_MAPPING);
+ConVar  sv_aircontrolpower("sv_aircontrolpower", "2.5", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_MAPPING);
 
 ConVar	sv_wadescale	( "sv_wadescale", "0.7",  FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_MAPPING);
 ConVar	sv_swimscale	( "sv_swimscale", "0.5",  FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_MAPPING);
