@@ -220,134 +220,6 @@ bool CMomentumGameMovement::DFSlideMove(bool inAir)
     return (bumpCount != 0);
 }
 
-int CMomentumGameMovement::DFCPMSlideMove()
-{
-    Vector end, dir;
-    Vector oldVel, lastValidOrigin;
-    float value;
-    Vector planes[MAX_CLIP_PLANES];
-    int numplanes = 0;
-    trace_t trace;
-    int moves, i, j, k;
-    int maxmoves = 4;
-    float remainingTime = gpGlobals->frametime;
-    int blockedMask = 0;
-
-    VectorCopy(mv->m_vecVelocity, oldVel);
-    VectorCopy(mv->GetAbsOrigin(), lastValidOrigin);
-
-    if (player->GetGroundEntity() != nullptr)
-    {
-        if (mv->m_vecGroundNormal[2] == 1.0f && mv->m_vecVelocity[2] < 0.0f)
-        {
-            mv->m_vecVelocity[2] = 0.0f;
-        }
-    }
-    
-    for (moves = 0; moves < maxmoves; moves++)
-    {
-        VectorMA(mv->GetAbsOrigin(), remainingTime, mv->m_vecVelocity, end);
-        TracePlayerBBox(mv->m_vecAbsOrigin, end, MASK_PLAYERSOLID, COLLISION_GROUP_PLAYER_MOVEMENT, trace);
-        if (trace.allsolid)
-        {
-            VectorCopy(lastValidOrigin, mv->m_vecAbsOrigin);
-            return SLIDEMOVEFLAG_TRAPPED;
-        }
-
-        if (trace.fraction > 0)
-        {
-            VectorCopy(trace.endpos, mv->m_vecAbsOrigin);
-            VectorCopy(trace.endpos, lastValidOrigin);
-        }
-
-        if (trace.fraction == 1)
-        {
-            break;
-        }
-
-        blockedMask |= SLIDEMOVEFLAG_WALL_BLOCKED;
-        if (trace.plane.normal[2] < SLIDEMOVE_PLANEINTERACT_EPSILON)
-        {
-            blockedMask |= SLIDEMOVEFLAG_WALL_BLOCKED;
-        }
-
-        remainingTime -= (trace.fraction * remainingTime);
-
-        for (i = 0; i < numplanes; i++)
-        {
-            if (DotProduct(trace.plane.normal, planes[i]) > (1.0f - SLIDEMOVE_PLANEINTERACT_EPSILON))
-            {
-                VectorAdd(trace.plane.normal, mv->m_vecVelocity, mv->m_vecVelocity);
-                break;
-            }
-        }
-
-        if (i < numplanes)
-        {
-            continue;
-        }
-
-        if (numplanes > MAX_CLIP_PLANES)
-        {
-            VectorClear(mv->m_vecVelocity);
-            return SLIDEMOVEFLAG_TRAPPED;
-        }
-
-        VectorCopy(trace.plane.normal, planes[numplanes]);
-        numplanes++;
-
-        for (i = 0; i < numplanes; i++)
-        {
-            if (DotProduct(mv->m_vecVelocity, planes[i]) >= SLIDEMOVE_PLANEINTERACT_EPSILON)
-            {
-                continue;
-            }
-
-            DFClipVelocity(mv->m_vecVelocity, planes[i], mv->m_vecVelocity, 1.001f);
-
-            for (j = 0; j < numplanes; j++)
-            {
-                if (j == i)
-                {
-                    continue;
-                }
-                if (DotProduct(mv->m_vecVelocity, planes[i]) >= SLIDEMOVE_PLANEINTERACT_EPSILON)
-                {
-                    continue;
-                }
-
-                DFClipVelocity(mv->m_vecVelocity, planes[i], mv->m_vecVelocity, 1.001f);
-                if (DotProduct(mv->m_vecVelocity, planes[i]) >= SLIDEMOVE_PLANEINTERACT_EPSILON)
-                {
-                    continue;
-                }
-
-                CrossProduct(planes[i], planes[j], dir);
-                VectorNormalize(dir);
-                value = DotProduct(dir, mv->m_vecVelocity);
-                VectorScale(dir, value, mv->m_vecVelocity);
-
-                for (k = 0; k < numplanes; k++)
-                {
-                    if (j == k || i == k)
-                    {
-                        continue;
-                    }
-                    if (DotProduct(mv->m_vecVelocity, planes[i]) >= SLIDEMOVE_PLANEINTERACT_EPSILON)
-                    {
-                        continue;
-                    }
-
-                    VectorClear(mv->m_vecVelocity);
-                    break;
-                }
-            }
-        }
-    }
-
-    return blockedMask;
-}
-
 void CMomentumGameMovement::DFStepSlideMove(bool inAir)
 {
     Vector startOrigin, startVel;
@@ -355,7 +227,7 @@ void CMomentumGameMovement::DFStepSlideMove(bool inAir)
     Vector up, down;
     float stepSize;
 
-    if (sv_cpm_physics.GetBool())
+    if (sv_slidestyle.GetBool())
     {
         VectorCopy(mv->m_vecAbsOrigin, startOrigin);
         VectorCopy(mv->m_vecVelocity, startVel);
