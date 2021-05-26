@@ -23,6 +23,7 @@ bool CMomentumGameMovement::DFCheckJumpButton()
 {
     trace_t pm;
     float add;
+    int jumpStyle = sv_jumpstyle.GetInt();
 
     // Avoid nullptr access, return false if somehow we don't have a player
     if (!player)
@@ -67,30 +68,55 @@ bool CMomentumGameMovement::DFCheckJumpButton()
 #endif
     }
 
-    if (gpGlobals->curtime - m_pPlayer->m_Data.m_flLastJumpTime < 0.4 &&
-        mv->m_bCanCPMDoubleJump && sv_cpm_physics.GetBool())
-    {
-        add = 370;
-        mv->m_bCanCPMDoubleJump = false;
-    }
-    else
+    if (jumpStyle > 0)
     {
         add = 270;
-        mv->m_bCanCPMDoubleJump = true;
-    }
 
-    if (sv_cpm_physics.GetBool())
-    {
-        mv->m_vecVelocity[2] += add;
+        if (gpGlobals->curtime - m_pPlayer->m_Data.m_flLastJumpTime < 0.4 &&
+            mv->m_bCanCPMDoubleJump && jumpStyle == 2)
+        {
+            add = 370;
+            mv->m_bCanCPMDoubleJump = false;
+        }
+        else
+        {
+            mv->m_bCanCPMDoubleJump = true;
+        }
+
+        // QW jumping
+        if (jumpStyle == 1)
+        {
+            mv->m_vecVelocity.z += add;
+        }
+        // CPM jumping
+        else if (jumpStyle == 2)
+        {
+            mv->m_vecVelocity.z += add;
+            if (mv->m_vecVelocity.z < 270)
+            {
+                mv->m_vecVelocity.z = 270;
+            }
+        }
+        // Q2 jumping
+        else
+        {
+            if (mv->m_vecVelocity.z > mv->m_vecPreviousVelocity.z)
+            {
+                mv->m_vecVelocity.z += add;
+            }
+            else
+            {
+                mv->m_vecVelocity.z = mv->m_vecPreviousVelocity.z + add;
+            }
+            if (mv->m_vecVelocity.z < 270)
+            {
+                mv->m_vecVelocity.z = 270;
+            }
+        }
     }
     else
     {
-        mv->m_vecVelocity[2] = add;
-    }
-
-    if (mv->m_vecVelocity[2] < 270)
-    {
-        mv->m_vecVelocity[2] = 270;
+        mv->m_vecVelocity.z = 270;
     }
 
     m_pPlayer->m_Data.m_flLastJumpTime = gpGlobals->curtime;
