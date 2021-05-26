@@ -170,16 +170,19 @@ void CMomentumGameMovement::DFWalkMove()
         return;
      }
 
+    // if we have no slide trigger and no knockback, do friction
     if (m_pPlayer->m_CurrentSlideTrigger == nullptr &&
         m_pPlayer->m_flKnockbackTime < gpGlobals->curtime)
     {
          DFFriction();
     }
-    else if (!sv_cpm_physics.GetBool())
+    // otherwise do airmovement if our slickstyle is 0
+    else if (sv_slickstyle.GetInt() == 0)
     {
         DFAirMove();
         return;
     }
+    // if slickstyle isn't zero, do ground movement without friction
 
     // Copy movement amounts
     fmove = mv->m_flForwardMove;

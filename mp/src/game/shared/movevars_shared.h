@@ -41,6 +41,7 @@ extern ConVar sv_cpm_physics;
 extern ConVar sv_jumpstyle;
 extern ConVar sv_strafestyle;
 extern ConVar sv_slidestyle;
+extern ConVar sv_slickstyle;
 extern ConVar sv_snapvelocity;
 extern ConVar sv_scalecmd_fix;
 extern ConVar sv_autojump;
