@@ -33,19 +33,21 @@ extern ConVar sv_airaccelerate;
 
 extern ConVar sv_maxairstrafespeed;
 extern ConVar sv_airstrafeaccelerate;
-extern ConVar sv_differentialstrafing;
-extern ConVar sv_differential_aircontrol;
+//extern ConVar sv_differentialstrafing;
+//extern ConVar sv_differential_aircontrol;
 extern ConVar sv_rampslide;
 extern ConVar sv_rampslide_gravity;
 extern ConVar sv_rampslide_speed;
 
 extern ConVar sv_cpm_physics;
 extern ConVar sv_jumpstyle;
+extern ConVar sv_strafestyle;
 extern ConVar sv_snapvelocity;
 extern ConVar sv_scalecmd_fix;
 extern ConVar sv_cpm_accelmult;
 extern ConVar sv_autojump;
 extern ConVar sv_wallcliptime;
+extern ConVar sv_aircontrol_enable;
 extern ConVar sv_aircontrol;
 extern ConVar sv_aircontrolpower;
 

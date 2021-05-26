@@ -93,12 +93,13 @@ ConVar	sv_airaccelerate(  "sv_airaccelerate", "150", FCVAR_NOTIFY | FCVAR_REPLIC
 
 ConVar	sv_maxairstrafespeed(  "sv_maxairstrafespeed", "30", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_MAPPING );
 ConVar	sv_airstrafeaccelerate(  "sv_airstrafeaccelerate", "6.7", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_MAPPING );
-ConVar	sv_differentialstrafing(  "sv_differentialstrafing", "0", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_MAPPING );
-ConVar	sv_differential_aircontrol("sv_differential_aircontrol", "0", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_MAPPING );
+//ConVar	sv_differentialstrafing(  "sv_differentialstrafing", "0", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_MAPPING );
+//ConVar	sv_differential_aircontrol("sv_differential_aircontrol", "0", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_MAPPING );
 ConVar	sv_rampslide ("sv_rampslide", "0", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_MAPPING );
 ConVar	sv_rampslide_gravity ("sv_rampslide_gravity", "1", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_MAPPING );
 ConVar	sv_rampslide_speed ("sv_rampslide_speed", "180", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_MAPPING );
 
+ConVar  sv_aircontrol_enable("sv_aircontrol_enable", "0", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_MAPPING);
 ConVar  sv_aircontrol("sv_aircontrol", "150", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_MAPPING);
 ConVar  sv_aircontrolpower("sv_aircontrolpower", "2.5", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_MAPPING);
 
@@ -107,6 +108,7 @@ ConVar	sv_swimscale	( "sv_swimscale", "0.5",  FCVAR_NOTIFY | FCVAR_REPLICATED | 
 
 ConVar	sv_cpm_physics  ("sv_cpm_physics", "0", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_MAPPING);
 ConVar	sv_jumpstyle    ("sv_jumpstyle", "0", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_MAPPING);
+ConVar	sv_strafestyle  ("sv_strafestyle", "0", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_MAPPING);
 ConVar	sv_snapvelocity ("sv_snapvelocity", "1", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_MAPPING);
 ConVar	sv_scalecmd_fix ("sv_scalecmd_fix", "0", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_MAPPING);
 ConVar	sv_cpm_accelmult("sv_cpm_accelmult", "1.5", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_MAPPING);
