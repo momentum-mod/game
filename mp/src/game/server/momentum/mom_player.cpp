@@ -2182,7 +2182,7 @@ void CMomentumPlayer::DFApplyPushFromDamage(const CTakeDamageInfo &info)
     dir[2] += 24;
 
     knockback = info.GetDamage();
-    if (sv_cpm_physics.GetBool() && info.GetMaxDamage() > 50)
+    if (info.GetMaxDamage() > 50)
     {
         Vector flat, dist, start;
         VectorCopy(GetAbsOrigin(), start);
@@ -2193,7 +2193,7 @@ void CMomentumPlayer::DFApplyPushFromDamage(const CTakeDamageInfo &info)
         VectorNormalize(dist);
         VectorNormalize(flat);
 
-        knockback *= (DotProduct(dist, flat) * 0.2) + 1;
+        knockback *= (DotProduct(dist, flat) * sv_flatknockback.GetFloat()) + 1;
     }
 
     if (knockback > 200)

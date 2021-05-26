@@ -106,11 +106,12 @@ ConVar  sv_aircontrolpower("sv_aircontrolpower", "2.5", FCVAR_NOTIFY | FCVAR_REP
 ConVar	sv_wadescale	( "sv_wadescale", "0.7",  FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_MAPPING);
 ConVar	sv_swimscale	( "sv_swimscale", "0.5",  FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_MAPPING);
 
-ConVar	sv_cpm_physics  ("sv_cpm_physics", "0", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_MAPPING);
 ConVar	sv_jumpstyle    ("sv_jumpstyle", "0", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_MAPPING);
 ConVar	sv_strafestyle  ("sv_strafestyle", "0", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_MAPPING);
 ConVar	sv_slidestyle   ("sv_slidestyle", "0", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_MAPPING);
 ConVar	sv_slickstyle   ("sv_slickstyle", "0", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_MAPPING);
+ConVar	sv_flatknockback("sv_flatknockback", "0", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_MAPPING);
+ConVar	sv_df_rocket_addspeed("sv_df_rocket_addspeed", "0", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_MAPPING);
 ConVar	sv_snapvelocity ("sv_snapvelocity", "1", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_MAPPING);
 ConVar	sv_scalecmd_fix ("sv_scalecmd_fix", "0", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_MAPPING);
 ConVar	sv_autojump     ("sv_autojump", "0", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_MAPPING);
