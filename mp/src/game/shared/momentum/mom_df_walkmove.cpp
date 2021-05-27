@@ -53,6 +53,12 @@ bool CMomentumGameMovement::DFCheckJumpButton()
         return false;
     }
 
+    if (mv->m_bRampSliding && sv_rampslide.GetInt() == 2)
+    {
+        mv->m_vecVelocity.z = 0;
+        DFClipVelocity(mv->m_vecVelocity, mv->m_vecGroundNormal, mv->m_vecVelocity, 1.001f);
+    }
+
     // In the air now.
     DFSetGroundEntity(nullptr);
     mv->m_bJumpReleased = false;
@@ -227,11 +233,6 @@ void CMomentumGameMovement::DFWalkMove()
     oldSpeed = mv->m_vecVelocity.Length2D();
     VectorCopy(mv->m_vecVelocity, oldVel);
 
+    VectorCopy(mv->m_vecVelocity, mv->m_vecPreviousVelocity);
     DFStepSlideMove(false);
-
-    if (gpGlobals->curtime - mv->m_flWallClipTime < sv_wallcliptime.GetFloat() &&
-        oldSpeed > mv->m_vecVelocity.Length2D())
-    {
-        VectorCopy(oldVel, mv->m_vecVelocity);
-    }
 }

@@ -113,7 +113,7 @@ void CMomentumGameMovement::DFAirMove()
     float oldSpeed;
     Vector oldVel;
 
-    if (mv->m_bRampSliding)
+    if (mv->m_bRampSliding && sv_rampslide_jumps.GetBool())
     {
         DFCheckJumpButton();
     }
@@ -221,10 +221,4 @@ void CMomentumGameMovement::DFAirMove()
 
     VectorCopy(mv->m_vecVelocity, mv->m_vecPreviousVelocity);
     DFStepSlideMove(true);
-
-    if (gpGlobals->curtime - mv->m_flWallClipTime < sv_wallcliptime.GetFloat() &&
-        oldSpeed > mv->m_vecVelocity.Length2D())
-    {
-        VectorCopy(oldVel, mv->m_vecVelocity);
-    }
 }

@@ -36,6 +36,7 @@ extern ConVar sv_airstrafeaccelerate;
 extern ConVar sv_rampslide;
 extern ConVar sv_rampslide_gravity;
 extern ConVar sv_rampslide_speed;
+extern ConVar sv_rampslide_jumps;
 
 extern ConVar sv_jumpstyle;
 extern ConVar sv_strafestyle;

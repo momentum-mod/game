@@ -395,11 +395,14 @@ void CMomentumGameMovement::DFGroundTrace()
     {
         mv->m_bRampSliding = true;
 
-        float spd = mv->m_vecVelocity.Length();
-        DFClipVelocity(mv->m_vecVelocity, mv->m_vecGroundNormal, mv->m_vecVelocity, 1.001f);
+        if (sv_rampslide.GetInt() == 1)
+        {
+            float spd = mv->m_vecVelocity.Length();
+            DFClipVelocity(mv->m_vecVelocity, mv->m_vecGroundNormal, mv->m_vecVelocity, 1.001f);
 
-        VectorNormalize(mv->m_vecVelocity);
-        VectorScale(mv->m_vecVelocity, spd, mv->m_vecVelocity);
+            VectorNormalize(mv->m_vecVelocity);
+            VectorScale(mv->m_vecVelocity, spd, mv->m_vecVelocity);
+        }
 
         DFSetGroundEntity(nullptr);
         return;
