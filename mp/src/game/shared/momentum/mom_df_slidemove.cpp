@@ -227,7 +227,7 @@ void CMomentumGameMovement::DFStepSlideMove(bool inAir)
     Vector up, down;
     float stepSize;
 
-    if (sv_slidestyle.GetInt() == 2)
+    if (sv_slidestyle.GetInt() == 1)
     {
         VectorCopy(mv->m_vecAbsOrigin, startOrigin);
         VectorCopy(mv->m_vecVelocity, startVel);
