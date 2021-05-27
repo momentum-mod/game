@@ -53,7 +53,7 @@ bool CMomentumGameMovement::DFCheckJumpButton()
         return false;
     }
 
-    if (mv->m_bRampSliding && sv_rampslide.GetInt() == 2)
+    if (mv->m_bRampSliding && sv_rampslide.GetInt() == 2 && sv_rampslide_jumps.GetInt() == 1)
     {
         mv->m_vecVelocity.z = 0;
         DFClipVelocity(mv->m_vecVelocity, mv->m_vecGroundNormal, mv->m_vecVelocity, 1.001f);
@@ -185,6 +185,7 @@ void CMomentumGameMovement::DFWalkMove()
     // otherwise do airmovement if our slickstyle is 0
     else if (sv_slickstyle.GetInt() == 0)
     {
+        DFClipVelocity(mv->m_vecVelocity, mv->m_vecGroundNormal, mv->m_vecVelocity, 1.001f);
         DFAirMove();
         return;
     }
