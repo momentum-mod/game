@@ -84,7 +84,7 @@ ConVar	sv_specnoclip	( "sv_specnoclip", "1", FCVAR_ARCHIVE | FCVAR_NOTIFY | FCVA
 
 ConVar	sv_jumpsound	( "sv_jumpsound", "0",  FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_MAPPING);
 
-ConVar	sv_maxspeed		( "sv_maxspeed", "320",  FCVAR_REPLICATED | FCVAR_DEVELOPMENTONLY);
+ConVar	sv_maxspeed		( "sv_maxspeed", "320",  FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_MAPPING);
 ConVar	sv_accelerate	( "sv_accelerate", "5", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_MAPPING);
 ConVar	sv_duckscale	( "sv_duckscale", "0.25",  FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_MAPPING);
 
@@ -94,8 +94,6 @@ ConVar	sv_airdecelerate(  "sv_airdecelerate", "10", FCVAR_NOTIFY | FCVAR_REPLICA
 
 ConVar	sv_maxairstrafespeed(  "sv_maxairstrafespeed", "30", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_MAPPING );
 ConVar	sv_airstrafeaccelerate(  "sv_airstrafeaccelerate", "6.7", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_MAPPING );
-//ConVar	sv_differentialstrafing(  "sv_differentialstrafing", "0", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_MAPPING );
-//ConVar	sv_differential_aircontrol("sv_differential_aircontrol", "0", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_MAPPING );
 ConVar	sv_rampslide ("sv_rampslide", "0", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_MAPPING );
 ConVar	sv_rampslide_gravity ("sv_rampslide_gravity", "1", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_MAPPING );
 ConVar	sv_rampslide_speed ("sv_rampslide_speed", "180", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_MAPPING );
