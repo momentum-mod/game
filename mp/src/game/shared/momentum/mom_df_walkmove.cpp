@@ -61,7 +61,6 @@ bool CMomentumGameMovement::DFCheckJumpButton()
 
     // In the air now.
     DFSetGroundEntity(nullptr);
-    mv->m_bJumpReleased = false;
 
     if (gpGlobals->curtime - m_pPlayer->m_Data.m_flLastJumpTime >= 0.075)
     {
@@ -74,7 +73,7 @@ bool CMomentumGameMovement::DFCheckJumpButton()
 #endif
     }
 
-    if (jumpStyle > 0)
+    if (jumpStyle > 0 && (!sv_autojump_boost.GetBool() || mv->m_bJumpReleased))
     {
         add = 270;
 
@@ -125,6 +124,7 @@ bool CMomentumGameMovement::DFCheckJumpButton()
         mv->m_vecVelocity.z = 270;
     }
 
+    mv->m_bJumpReleased = false;
     m_pPlayer->m_Data.m_flLastJumpTime = gpGlobals->curtime;
 
 #ifndef CLIENT_DLL
