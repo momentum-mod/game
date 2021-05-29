@@ -156,11 +156,11 @@ void CMomentumGameMovement::DFAirMove()
         VectorCopy(mv->m_vecVelocity, vel2D);
         vel2D[2] = 0;
         double angle = acos(DotProduct(wishdir, vel2D) / (wishdir.Length() * vel2D.Length2D()));
-        angle *= (180 / 3.14159265);
+        angle *= (180 / M_PI);
         double minQWAngle = acos(sv_maxairstrafespeed.GetFloat() / mv->m_vecVelocity.Length2D());
         double minQ3Angle = acos(sv_maxairspeed.GetFloat() / mv->m_vecVelocity.Length2D());
-        minQWAngle *= (180 / 3.14159265);
-        minQ3Angle *= (180 / 3.14159265);
+        minQWAngle *= (180 / M_PI);
+        minQ3Angle *= (180 / M_PI);
         
         if (angle < minQWAngle)
         {

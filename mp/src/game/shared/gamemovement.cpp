@@ -1797,8 +1797,31 @@ void CGameMovement::AirMove( void )
 		VectorScale (wishvel, mv->m_flMaxSpeed/wishspeed, wishvel);
 		wishspeed = mv->m_flMaxSpeed;
 	}
+
+	float realAccelerate = sv_airaccelerate.GetFloat();
+
+	if (g_pGameModeSystem->GameModeIs(GAMEMODE_CONC))
+    {
+		// get our velocity but flat
+        Vector vel2D;
+        VectorCopy(mv->m_vecVelocity, vel2D);
+        vel2D[2] = 0;
+
+		// calculate angle of wishdir to velocity
+        double angle = 0;
+        if (vel2D.Length2D() > 0)
+        {
+            angle = acos(DotProduct(wishdir, vel2D) / (wishdir.Length() * vel2D.Length2D()));
+        }
+        angle *= (180 / M_PI);
+
+		if (angle > 120.0f)
+        {
+			realAccelerate = sv_airdecelerate.GetFloat();
+		}
+    }
 	
-	AirAccelerate( wishdir, wishspeed, sv_airaccelerate.GetFloat() );
+	AirAccelerate( wishdir, wishspeed, realAccelerate );
 
 	// Add in any base velocity to the current velocity.
 	VectorAdd(mv->m_vecVelocity, player->GetBaseVelocity(), mv->m_vecVelocity );
