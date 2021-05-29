@@ -57,6 +57,7 @@ bool CMomentumGameMovement::DFCheckJumpButton()
     {
         mv->m_vecVelocity.z = 0;
         DFClipVelocity(mv->m_vecVelocity, mv->m_vecGroundNormal, mv->m_vecVelocity, 1.001f);
+        mv->m_vecPreviousVelocity.z = mv->m_vecVelocity.z;
     }
 
     // In the air now.
@@ -73,7 +74,7 @@ bool CMomentumGameMovement::DFCheckJumpButton()
 #endif
     }
 
-    if (jumpStyle > 0 && (!sv_autojump_boost.GetBool() || mv->m_bJumpReleased))
+    if (jumpStyle > 0 && (sv_autojump_boost.GetBool() || mv->m_bJumpReleased))
     {
         add = 270;
 
