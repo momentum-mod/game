@@ -70,12 +70,10 @@ void CMomentumGameMovement::DFAirAccelerate(Vector wishdir, float wishspeed, flo
     if (wishspd > maxspeed)
         wishspd = maxspeed;
 
-#ifdef GAME_DLL
     if (m_pPlayer->m_flRemainingHaste < 0 || m_pPlayer->m_flRemainingHaste > gpGlobals->curtime)
     {
         wishspeed *= 1.3;
     }
-#endif
 
     // Determine veer amount
     currentspeed = mv->m_vecVelocity.Dot(wishdir);

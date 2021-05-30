@@ -144,12 +144,10 @@ void CMomentumGameMovement::DFAccelerate(Vector& wishdir, float wishspeed, float
     int i;
     float addspeed, accelspeed, currentspeed;
 
-#ifdef GAME_DLL
     if (m_pPlayer->m_flRemainingHaste < 0 || m_pPlayer->m_flRemainingHaste > gpGlobals->curtime)
     {
         wishspeed *= 1.3;
     }
-#endif
 
     currentspeed = DotProduct(mv->m_vecVelocity, wishdir);
     addspeed = wishspeed - currentspeed;

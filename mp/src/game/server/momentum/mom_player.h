@@ -350,8 +350,8 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
 
     void InputAddHaste(inputdata_t &inputdata);
     void InputAddQuadDamage(inputdata_t &inputdata);
-    float m_flRemainingHaste;
-    float m_flRemainingQuadDamage;
+    CNetworkVar(float, m_flRemainingHaste);
+    CNetworkVar(float, m_flRemainingQuadDamage);
 
     float m_flKnockbackTime;
 

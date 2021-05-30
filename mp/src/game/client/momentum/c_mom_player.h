@@ -110,6 +110,9 @@ public:
 
     float m_flKnockbackTime;
 
+    float m_flRemainingHaste;
+    float m_flRemainingQuadDamage;
+
   private:
     // Mobility mod (parkour)
     bool m_bWasSprinting;
