@@ -25,7 +25,7 @@ PRECACHE_WEAPON_REGISTER(weapon_momentum_df_plasmagun);
 CMomentumDFPlasmaGun::CMomentumDFPlasmaGun()
 {
     m_flIdleInterval = 20.0f;
-    m_flTimeToIdleAfterFire = 0.092f;
+    m_flTimeToIdleAfterFire = 0.1f;
 }
 
 void CMomentumDFPlasmaGun::Precache()
@@ -44,7 +44,15 @@ void CMomentumDFPlasmaGun::PrimaryAttack()
     if (!pPlayer)
         return;
 
-    m_flNextPrimaryAttack = m_flNextSecondaryAttack = gpGlobals->curtime + 0.092f;
+    if (pPlayer->m_flRemainingHaste < 0 || pPlayer->m_flRemainingHaste > gpGlobals->curtime)
+    {
+        m_flNextPrimaryAttack = m_flNextSecondaryAttack = gpGlobals->curtime + (0.1f / 1.3);
+    }
+    else
+    {
+        m_flNextPrimaryAttack = m_flNextSecondaryAttack = gpGlobals->curtime + 0.1f;
+    }
+
     SetWeaponIdleTime(gpGlobals->curtime + m_flTimeToIdleAfterFire);
     pPlayer->m_iShotsFired++;
 

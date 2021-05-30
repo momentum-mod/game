@@ -44,7 +44,15 @@ void CMomentumDFGrenadeLauncher::PrimaryAttack()
     if (!pPlayer)
         return;
 
-    m_flNextPrimaryAttack = m_flNextSecondaryAttack = gpGlobals->curtime + 0.8f;
+    if (pPlayer->m_flRemainingHaste < 0 || pPlayer->m_flRemainingHaste > gpGlobals->curtime)
+    {
+        m_flNextPrimaryAttack = m_flNextSecondaryAttack = gpGlobals->curtime + (0.8f / 1.3);
+    }
+    else
+    {
+        m_flNextPrimaryAttack = m_flNextSecondaryAttack = gpGlobals->curtime + 0.8f;
+    }
+
     SetWeaponIdleTime(gpGlobals->curtime + m_flTimeToIdleAfterFire);
     pPlayer->m_iShotsFired++;
 
