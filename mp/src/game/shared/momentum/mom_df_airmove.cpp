@@ -72,7 +72,7 @@ void CMomentumGameMovement::DFAirAccelerate(Vector wishdir, float wishspeed, flo
 
     if (m_pPlayer->m_flRemainingHaste < 0 || m_pPlayer->m_flRemainingHaste > gpGlobals->curtime)
     {
-        wishspeed *= 1.3;
+        wishspd *= 1.3;
     }
 
     // Determine veer amount
