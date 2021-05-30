@@ -166,6 +166,8 @@ BEGIN_DATADESC(CMomentumPlayer)
     /*DEFINE_THINKFUNC(LimitSpeedInStartZone),*/
     DEFINE_INPUTFUNC(FIELD_STRING, "AddCollectible", InputAddCollectible),
     DEFINE_INPUTFUNC(FIELD_VOID, "ClearCollectibles", InputClearCollectibles),
+    DEFINE_INPUTFUNC(FIELD_FLOAT, "AddHaste", InputAddHaste),
+    DEFINE_INPUTFUNC(FIELD_FLOAT, "AddQuadDamage", InputAddQuadDamage),
 END_DATADESC();
 
 LINK_ENTITY_TO_CLASS(player, CMomentumPlayer);
@@ -259,6 +261,9 @@ CMomentumPlayer::CMomentumPlayer()
     m_nWallRunState = WALLRUN_NOT;
 
     m_nButtonsToggled = 0;
+
+    m_flRemainingHaste = 0.0f;
+    m_flRemainingHaste = 0.0f;
 }
 
 CMomentumPlayer::~CMomentumPlayer()
@@ -2525,5 +2530,31 @@ void CMomentumPlayerCollectibles::LoadFromKeyValues(KeyValues *kv)
         m_CollectibleList.Tail() = pKvSub->GetString("targetname");
 
         pKvSub = pKvSub->GetNextKey();
+    }
+}
+
+void CMomentumPlayer::InputAddHaste(inputdata_t &inputdata)
+{
+    float time = inputdata.value.Float();
+    if (time < 0)
+    {
+        m_flRemainingHaste = -1;
+    }
+    else
+    {
+        m_flRemainingHaste = gpGlobals->curtime + inputdata.value.Float();
+    }
+}
+
+void CMomentumPlayer::InputAddQuadDamage(inputdata_t &inputdata)
+{
+    float time = inputdata.value.Float();
+    if (time < 0)
+    {
+        m_flRemainingQuadDamage = -1;
+    }
+    else
+    {
+        m_flRemainingQuadDamage = gpGlobals->curtime + inputdata.value.Float();
     }
 }

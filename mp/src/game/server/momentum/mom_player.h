@@ -348,6 +348,11 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
 
     CMomentumPlayerCollectibles m_Collectibles;
 
+    void InputAddHaste(inputdata_t &inputdata);
+    void InputAddQuadDamage(inputdata_t &inputdata);
+    float m_flRemainingHaste;
+    float m_flRemainingQuadDamage;
+
     float m_flKnockbackTime;
 
   private:
