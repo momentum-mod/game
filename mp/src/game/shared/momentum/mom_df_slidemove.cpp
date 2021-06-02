@@ -90,6 +90,11 @@ bool CMomentumGameMovement::DFSlideMove(bool inAir)
         // see if we can move there
         TracePlayerBBox(mv->m_vecAbsOrigin, end, MASK_PLAYERSOLID, COLLISION_GROUP_PLAYER_MOVEMENT, trace);
 
+        if (!trace.DidHitWorld())
+        {
+            MoveHelper()->AddToTouched(trace, mv->m_vecVelocity);
+        }
+
         if (trace.allsolid)
         {
             // entity is completely trapped in a solid
