@@ -513,6 +513,12 @@
     WeaponName(string) : "Weapon Name" : "" : "This is the weapon to give the player"
 ]
 
+@PointClass base(Angles, Parentname) studio("models/pickups/pickup_powerup_haste.mdl") = mom_powerup_haste : "Haste Powerup"
+[
+    HasteTime(float) : "Haste duration" : "30" : "This is how long the haste powerup will last. -1 means infinite time."
+    DisappearTime(float) : "Disappear time" : "30" : "How long to disappear and be disabled after being picked up."
+]
+
 
 //-------------------------------------------------------------------------
 //
