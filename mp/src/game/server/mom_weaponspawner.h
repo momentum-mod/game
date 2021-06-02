@@ -2,6 +2,8 @@
 
 #include "cbase.h"
 
+#define WEAPONSPAWNER_MODEL "models/gibs/airboat_broken_engine.mdl"
+
 class CMomWeaponspawner : public CBaseAnimating
 {
 public:
@@ -11,6 +13,7 @@ public:
     CMomWeaponspawner();
 
     void Spawn();
+    void Think();
     void Precache(const char *weaponModel);
     void Touch(CBaseEntity *pOther);
     bool KeyValue(const char *szKeyName, const char *szValue);
