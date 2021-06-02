@@ -135,3 +135,5 @@ mp/src/materialsystem/stdshaders/makefile.momentum_dx9_30
 mp/src/materialsystem/stdshaders/makefile.momentum_dx9_30.copy
 *.backup
 *.zip
+*.vmf
+*.bsp
