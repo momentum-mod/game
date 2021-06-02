@@ -507,6 +507,11 @@
 @PointClass base(Weapon) studio("models/weapons/mom_stickylauncher/w_mom_stickylauncher.mdl") = weapon_momentum_df_grenadelauncher : "DF Grenade Launcher" []
 @PointClass base(Weapon) studio("models/weapons/v_smg_old.mdl") = weapon_momentum_df_plasmagun : "DF Plasma Gun" []
 
+@PointClass base(Weapon) studio("models/gibs/airboat_broken_engine.mdl") = mom_weaponspawner : "Weapon Spawner"
+[
+    WeaponName(string) : "Weapon Name" : "" : "This is the weapon to give the player"
+]
+
 
 //-------------------------------------------------------------------------
 //
