@@ -21,17 +21,6 @@ void CMomWeaponspawner::Spawn()
     UTIL_SetSize(this, Vector(-30, -30, -30), Vector(30, 30, 30));
 }
 
-void CMomWeaponspawner::Think()
-{
-    QAngle angle;
-    angle = GetAbsAngles();
-    angle.x++;
-    Msg("%f %f %f\n", angle.x, angle.y, angle.z);
-    
-    SetAbsAngles(angle);
-    SetNextThink(gpGlobals->curtime + 1);
-}
-
 void CMomWeaponspawner::Precache(const char *weaponModel)
 {
     PrecacheModel(weaponModel);
