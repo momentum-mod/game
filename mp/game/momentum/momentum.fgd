@@ -519,6 +519,12 @@
     DisappearTime(float) : "Disappear time" : "30" : "How long to disappear and be disabled after being picked up."
 ]
 
+@PointClass base(Angles, Parentname) studio("models/pickups/pickup_powerup_crit.mdl") = mom_powerup_damageboost : "Damage Boost Powerup"
+[
+    DamageTime(float) : "Damage boost duration" : "30" : "This is how long the damage powerup will last. -1 means infinite time."
+    DisappearTime(float) : "Disappear time" : "30" : "How long to disappear and be disabled after being picked up."
+]
+
 
 //-------------------------------------------------------------------------
 //

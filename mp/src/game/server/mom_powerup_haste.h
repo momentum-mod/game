@@ -21,4 +21,3 @@ class CMomPowerupHaste : public CBaseAnimating
     float m_flDisappearTime;
     bool m_bVisible;
 };
-#pragma once
