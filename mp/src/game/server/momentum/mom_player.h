@@ -349,9 +349,9 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
     CMomentumPlayerCollectibles m_Collectibles;
 
     void InputAddHaste(inputdata_t &inputdata);
-    void InputAddQuadDamage(inputdata_t &inputdata);
+    void InputAddDamageBoost(inputdata_t &inputdata);
     CNetworkVar(float, m_flRemainingHaste);
-    CNetworkVar(float, m_flRemainingQuadDamage);
+    CNetworkVar(float, m_flRemainingDamageBoost);
 
     float m_flKnockbackTime;
 

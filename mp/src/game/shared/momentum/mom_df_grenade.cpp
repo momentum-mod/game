@@ -76,7 +76,8 @@ void CMomDFGrenade::PostDataUpdate(DataUpdateType_t type)
 
 #else
 
-CMomDFGrenade *CMomDFGrenade::Create(const Vector &position, const QAngle &angles, const Vector &velocity, const AngularImpulse &angVelocity, CBaseEntity *pOwner)
+CMomDFGrenade *CMomDFGrenade::Create(const Vector &position, const QAngle &angles, const Vector &velocity,
+    const AngularImpulse &angVelocity, CBaseEntity *pOwner, float damageFactor)
 {
     const auto pGrenade = dynamic_cast<CMomDFGrenade *>(CreateNoSpawn("momentum_df_grenade", position, angles, pOwner));
     DispatchSpawn(pGrenade);
@@ -89,6 +90,7 @@ CMomDFGrenade *CMomDFGrenade::Create(const Vector &position, const QAngle &angle
     pGrenade->SetGravity(DF_GRENADE_GRAVITY);
     pGrenade->SetFriction(DF_GRENADE_FRICTION);
     pGrenade->SetElasticity(DF_GRENADE_ELASTICITY);
+    pGrenade->m_flDamageFactor = damageFactor;
 
     if (pOwner->IsPlayer())
     {
@@ -419,7 +421,7 @@ void CMomDFGrenade::Explode(trace_t *pTrace)
 		(char) pdata->game.material );
 
     // Damage
-    const CTakeDamageInfo info(this, GetOwnerEntity(), vec3_origin, vecOrigin, 100, GetDamageType());
+    const CTakeDamageInfo info(this, GetOwnerEntity(), vec3_origin, vecOrigin, 100 * m_flDamageFactor, GetDamageType());
     DFRadiusDamage(info, vecOrigin, 150, CLASS_NONE, nullptr);
 
     UTIL_Remove(this);

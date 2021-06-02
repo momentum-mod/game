@@ -72,6 +72,12 @@ void CMomentumDFRocketLauncher::PrimaryAttack()
     float scale;
     trace_t trace;
     const int MASK_RADIUS_DAMAGE = MASK_SHOT & (~CONTENTS_HITBOX);
+    float damageFactor = 1;
+
+    if (pPlayer->m_flRemainingDamageBoost > gpGlobals->curtime || pPlayer->m_flRemainingDamageBoost < 0)
+    {
+        damageFactor = 3;
+    }
 
     pPlayer->EyeVectors(&vForward, &vRight, &vUp);
 
@@ -88,7 +94,7 @@ void CMomentumDFRocketLauncher::PrimaryAttack()
 
     VectorAngles(vForward, angForward);
 
-    CMomDFRocket::EmitRocket(muzzle, angForward, pPlayer, DF_ROCKET);
+    CMomDFRocket::EmitRocket(muzzle, angForward, pPlayer, DF_ROCKET, damageFactor);
 
     DecalPacket rocket = DecalPacket::Rocket(muzzle, angForward);
     g_pMomentumGhostClient->SendDecalPacket(&rocket);

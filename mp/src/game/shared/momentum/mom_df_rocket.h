@@ -22,7 +22,7 @@ class CMomDFRocket : public CMomExplosive
     DECLARE_CLASS(CMomDFRocket, CMomExplosive);
     DECLARE_NETWORKCLASS();
 
-    void Spawn() override;
+    void Spawn();
 
 #ifdef CLIENT_DLL
     float GetDrawDelayTime() override;
@@ -41,8 +41,9 @@ class CMomDFRocket : public CMomExplosive
                         CBaseEntity *pEntityIgnore);
 
     static CMomDFRocket *EmitRocket(const Vector &vecOrigin, const QAngle &vecAngles, CBaseEntity *pOwner,
-                                    DFProjectileType_t projType);
+                                    DFProjectileType_t projType, float damageFactor);
     DFProjectileType_t type;
+    float m_flDamageFactor;
 
   private:
     void StopTrailSound();

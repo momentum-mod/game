@@ -151,7 +151,7 @@ SendPropEHandle(SENDINFO(m_CurrentSlideTrigger)),
 SendPropBool(SENDINFO(m_bAutoBhop)),
 SendPropFloat(SENDINFO(m_fDuckTimer)),
 SendPropFloat(SENDINFO(m_flRemainingHaste)),
-SendPropFloat(SENDINFO(m_flRemainingQuadDamage)),
+SendPropFloat(SENDINFO(m_flRemainingDamageBoost)),
 SendPropBool(SENDINFO(m_bSurfing)),
 SendPropInt(SENDINFO(m_nButtonsToggled)),
 SendPropVector(SENDINFO(m_vecRampBoardVel)),
@@ -169,7 +169,7 @@ BEGIN_DATADESC(CMomentumPlayer)
     DEFINE_INPUTFUNC(FIELD_STRING, "AddCollectible", InputAddCollectible),
     DEFINE_INPUTFUNC(FIELD_VOID, "ClearCollectibles", InputClearCollectibles),
     DEFINE_INPUTFUNC(FIELD_FLOAT, "AddHaste", InputAddHaste),
-    DEFINE_INPUTFUNC(FIELD_FLOAT, "AddQuadDamage", InputAddQuadDamage),
+    DEFINE_INPUTFUNC(FIELD_FLOAT, "AddDamageBoost", InputAddDamageBoost),
 END_DATADESC();
 
 LINK_ENTITY_TO_CLASS(player, CMomentumPlayer);
@@ -2548,15 +2548,15 @@ void CMomentumPlayer::InputAddHaste(inputdata_t &inputdata)
     }
 }
 
-void CMomentumPlayer::InputAddQuadDamage(inputdata_t &inputdata)
+void CMomentumPlayer::InputAddDamageBoost(inputdata_t &inputdata)
 {
     float time = inputdata.value.Float();
     if (time < 0)
     {
-        m_flRemainingQuadDamage = -1;
+        m_flRemainingDamageBoost = -1;
     }
     else
     {
-        m_flRemainingQuadDamage = gpGlobals->curtime + inputdata.value.Float();
+        m_flRemainingDamageBoost = gpGlobals->curtime + inputdata.value.Float();
     }
 }

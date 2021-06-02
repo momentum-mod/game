@@ -111,7 +111,7 @@ public:
     float m_flKnockbackTime;
 
     float m_flRemainingHaste;
-    float m_flRemainingQuadDamage;
+    float m_flRemainingDamageBoost;
 
   private:
     // Mobility mod (parkour)

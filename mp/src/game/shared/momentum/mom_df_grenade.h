@@ -22,7 +22,8 @@ class CMomDFGrenade : public CBaseGrenade
     virtual void PostDataUpdate(DataUpdateType_t type) OVERRIDE;
 #else
 
-    static CMomDFGrenade *Create(const Vector &position, const QAngle &angles, const Vector &velocity, const AngularImpulse &angVelocity, CBaseEntity *pOwner);
+    static CMomDFGrenade *Create(const Vector &position, const QAngle &angles, const Vector &velocity,
+        const AngularImpulse &angVelocity, CBaseEntity *pOwner, float damageFactor);
 
     // Think function to emit danger sounds for the AI
     void DetonateThink();
@@ -39,6 +40,8 @@ class CMomDFGrenade : public CBaseGrenade
     bool DFCanDamage(const CTakeDamageInfo &info, CBaseEntity *other, const Vector &origin);
     void DFRadiusDamage(const CTakeDamageInfo &info, const Vector &vecSrcIn, float flRadius, int iClassIgnore,
                         CBaseEntity *pEntityIgnore);
+
+    float m_flDamageFactor;
 
   protected:
     // Set the time to detonate ( now + timer )

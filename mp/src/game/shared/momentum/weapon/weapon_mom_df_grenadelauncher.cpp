@@ -70,6 +70,13 @@ void CMomentumDFGrenadeLauncher::PrimaryAttack()
     Vector muzzle;
     trace_t trace;
     const int MASK_RADIUS_DAMAGE = MASK_SHOT & (~CONTENTS_HITBOX);
+    float damageFactor = 1;
+
+    if (pPlayer->m_flRemainingDamageBoost > gpGlobals->curtime || pPlayer->m_flRemainingDamageBoost < 0)
+    {
+        damageFactor = 3;
+    }
+
 
     pPlayer->EyeVectors(&vForward, &vRight, &vUp);
 
@@ -86,7 +93,7 @@ void CMomentumDFGrenadeLauncher::PrimaryAttack()
     
     VectorScale(vForward, 700, vForward);
     
-    CMomDFGrenade::Create(muzzle, angForward, vForward, angImpulse, pPlayer);
+    CMomDFGrenade::Create(muzzle, angForward, vForward, angImpulse, pPlayer, damageFactor);
 
     DecalPacket rocket = DecalPacket::Rocket(muzzle, angForward);
     g_pMomentumGhostClient->SendDecalPacket(&rocket);

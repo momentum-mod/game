@@ -75,7 +75,7 @@ void CMomDFRocket::StopTrailSound()
 
 float CMomDFRocket::GetDamageAmount()
 {
-    return damage[type];
+    return damage[type] * m_flDamageFactor;
 }
 
 void CMomDFRocket::Destroy()
@@ -280,7 +280,7 @@ void CMomDFRocket::RocketTouch(CBaseEntity *pOther)
 }
 
 CMomDFRocket *CMomDFRocket::EmitRocket(const Vector &vecOrigin, const QAngle &vecAngles, CBaseEntity *pOwner,
-                                       DFProjectileType_t projType)
+                                       DFProjectileType_t projType, float damageFactor)
 {
     const auto pRocket = dynamic_cast<CMomDFRocket *>(CreateNoSpawn("momentum_df_rocket", vecOrigin, vecAngles, pOwner));
     if (!pRocket)
@@ -289,6 +289,7 @@ CMomDFRocket *CMomDFRocket::EmitRocket(const Vector &vecOrigin, const QAngle &ve
     }
 
     pRocket->type = projType;
+    pRocket->m_flDamageFactor = damageFactor;
 
     DispatchSpawn(pRocket);
 
