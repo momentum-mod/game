@@ -269,8 +269,8 @@ bool CMomDFGrenade::DFCanDamage(const CTakeDamageInfo &info, CBaseEntity *other,
     Vector otherMins, otherMaxs;
     trace_t trace;
 
-    otherMins = other->GetAbsOrigin() + other->WorldAlignMins();
-    otherMaxs = other->GetAbsOrigin() + other->WorldAlignMaxs();
+    otherMins = other->GetAbsOrigin() + other->CollisionProp()->OBBMins();
+    otherMaxs = other->GetAbsOrigin() + other->CollisionProp()->OBBMaxs();
 
     VectorAdd(otherMins, otherMaxs, midpoint);
     VectorScale(midpoint, 0.5f, midpoint);
@@ -348,8 +348,8 @@ void CMomDFGrenade::DFRadiusDamage(const CTakeDamageInfo &info, const Vector &ve
         if (pEntity->m_takedamage == DAMAGE_NO)
             continue;
 
-        otherMins = pEntity->GetAbsOrigin() + pEntity->WorldAlignMins();
-        otherMaxs = pEntity->GetAbsOrigin() + pEntity->WorldAlignMaxs();
+        otherMins = pEntity->GetAbsOrigin() + pEntity->CollisionProp()->OBBMins();
+        otherMaxs = pEntity->GetAbsOrigin() + pEntity->CollisionProp()->OBBMaxs();
 
         // find the distance to the edge of the bounding box
         for (int i = 0; i < 3; i++)

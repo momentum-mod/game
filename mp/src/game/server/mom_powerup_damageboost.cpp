@@ -42,7 +42,7 @@ void CMomPowerupDamageBoost::Touch(CBaseEntity *pOther)
 {
     const auto pPlayer = ToCMOMPlayer(pOther);
 
-    if (!m_bVisible)
+    if (!m_bVisible || !pPlayer)
     {
         BaseClass::Touch(pOther);
         return;
