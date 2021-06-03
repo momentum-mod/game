@@ -35,7 +35,7 @@ bool CMomentumGameMovement::DFCheckJumpButton()
         return false;
     }
 
-    if (mv->m_nButtons & IN_DUCK)
+    if (mv->m_nButtons & IN_DUCK && !sv_crouchjump.GetBool())
     {
         return false;
     }
@@ -53,7 +53,8 @@ bool CMomentumGameMovement::DFCheckJumpButton()
         return false;
     }
 
-    if (mv->m_bRampSliding && sv_rampslide.GetInt() == 2 && sv_rampslide_jumps.GetInt() == 1)
+    if (mv->m_bRampSliding && sv_rampslide.GetInt() == 2 && sv_rampslide_jumps.GetInt() == 1 &&
+        !(mv->m_nButtons & IN_DUCK))
     {
         mv->m_vecVelocity.z = 0;
         DFClipVelocity(mv->m_vecVelocity, mv->m_vecGroundNormal, mv->m_vecVelocity, 1.001f);
@@ -74,7 +75,18 @@ bool CMomentumGameMovement::DFCheckJumpButton()
 #endif
     }
 
-    if (jumpStyle > 0 && (sv_autojump_boost.GetBool() || mv->m_bJumpReleased))
+    if (mv->m_nButtons & IN_DUCK && sv_crouchjump.GetBool())
+    {
+        add = 270;
+
+        mv->m_vecVelocity.z += add;
+        
+        if (mv->m_vecVelocity.z > add)
+        {
+            mv->m_vecVelocity.z = add;
+        }
+    }
+    else if (jumpStyle > 0 && (sv_autojump_boost.GetBool() || mv->m_bJumpReleased))
     {
         add = 270;
 

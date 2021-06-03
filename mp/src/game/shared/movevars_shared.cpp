@@ -116,6 +116,7 @@ ConVar	sv_snapvelocity ("sv_snapvelocity", "1", FCVAR_NOTIFY | FCVAR_REPLICATED 
 ConVar	sv_scalecmd_fix ("sv_scalecmd_fix", "0", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_MAPPING);
 ConVar	sv_autojump     ("sv_autojump", "0", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_MAPPING);
 ConVar	sv_autojump_boost("sv_autojump_boost", "0", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_MAPPING);
+ConVar	sv_crouchjump   ("sv_crouchjump", "0", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_MAPPING);
 
 ConVar  sv_wallcliptime("sv_wallcliptime", "0.25", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_MAPPING);
 

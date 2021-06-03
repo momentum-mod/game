@@ -49,6 +49,7 @@ extern ConVar sv_snapvelocity;
 extern ConVar sv_scalecmd_fix;
 extern ConVar sv_autojump;
 extern ConVar sv_autojump_boost;
+extern ConVar sv_crouchjump;
 extern ConVar sv_wallcliptime;
 extern ConVar sv_aircontrol_enable;
 extern ConVar sv_aircontrol;
