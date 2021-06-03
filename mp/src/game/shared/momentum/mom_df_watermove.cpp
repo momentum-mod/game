@@ -106,7 +106,7 @@ void CMomentumGameMovement::DFWaterMove()
         return;
     }
 
-    DFFriction();
+    DFFriction(false);
 
     AngleVectors(mv->m_vecViewAngles, &forward, &right, &up); // Determine movement angles
 

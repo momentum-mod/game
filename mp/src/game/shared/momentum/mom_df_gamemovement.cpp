@@ -170,11 +170,12 @@ void CMomentumGameMovement::DFAccelerate(Vector& wishdir, float wishspeed, float
     }
 }
 
-void CMomentumGameMovement::DFFriction()
+void CMomentumGameMovement::DFFriction(bool isCrouchsliding)
 {
     Vector vel;
     float speed, newspeed, control;
     float drop;
+    float friction;
 
     VectorCopy(mv->m_vecVelocity, vel);
 
@@ -191,12 +192,21 @@ void CMomentumGameMovement::DFFriction()
 
     drop = 0;
 
+    if (isCrouchsliding)
+    {
+        friction = sv_crouchfriction.GetFloat();
+    }
+    else
+    {
+        friction = sv_friction.GetFloat();
+    }
+    
     if (player->GetWaterLevel() <= 1)
     {
         if (!(m_pPlayer->m_flKnockbackTime > gpGlobals->curtime))
         {
             control = speed < sv_stopspeed.GetFloat() ? sv_stopspeed.GetFloat() : speed;
-            drop += control * sv_friction.GetFloat() * gpGlobals->frametime;
+            drop += control * friction * gpGlobals->frametime;
         }
     }
     else

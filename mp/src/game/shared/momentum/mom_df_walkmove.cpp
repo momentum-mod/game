@@ -161,12 +161,15 @@ void CMomentumGameMovement::DFWalkMove()
     float fmove, smove;
     Vector wishdir;
     float wishspeed;
+    float realAccelerate;
 
     Vector dest;
     Vector forward, right, up;
 
     float oldSpeed;
     Vector oldVel;
+
+    bool isCrouchsliding = false;
 
     AngleVectors(mv->m_vecViewAngles, &forward, &right, &up); // Determine movement angles
 
@@ -189,11 +192,17 @@ void CMomentumGameMovement::DFWalkMove()
         return;
      }
 
+    if (sv_crouchslide.GetBool() && player->GetFlags() & FL_DUCKING &&
+        mv->m_vecVelocity.Length2D() > sv_maxspeed.GetFloat())
+    {
+        isCrouchsliding = true;
+    }
+
     // if we have no slide trigger and no knockback, do friction
     if (m_pPlayer->m_CurrentSlideTrigger == nullptr &&
         m_pPlayer->m_flKnockbackTime < gpGlobals->curtime)
     {
-         DFFriction();
+         DFFriction(isCrouchsliding);
     }
     // otherwise do airmovement if our slickstyle is 0
     else if (sv_slickstyle.GetInt() == 0)
@@ -234,7 +243,15 @@ void CMomentumGameMovement::DFWalkMove()
     }
 
     // Set pmove velocity
-    DFAccelerate(wishdir, wishspeed, sv_accelerate.GetFloat());
+    if (isCrouchsliding)
+    {
+        realAccelerate = sv_accelerate.GetFloat() * 2;
+    }
+    else
+    {
+        realAccelerate = sv_accelerate.GetFloat();
+    }
+    DFAccelerate(wishdir, wishspeed, realAccelerate);
 
     // this is the part that causes overbounces   
     spd = mv->m_vecVelocity.Length();

@@ -144,7 +144,7 @@ public:
     bool DFCanUnDuck();
     void DFDuck();
     void DFAccelerate(Vector &wishdir, float wishspeed, float accel);
-    void DFFriction();
+    void DFFriction(bool isCrouchsliding);
     void DFFullWalkMove();
     void DFPlayerMove();
     void DFSetGroundEntity(trace_t *pm);

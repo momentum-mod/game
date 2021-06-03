@@ -117,6 +117,7 @@ ConVar	sv_scalecmd_fix ("sv_scalecmd_fix", "0", FCVAR_NOTIFY | FCVAR_REPLICATED 
 ConVar	sv_autojump     ("sv_autojump", "0", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_MAPPING);
 ConVar	sv_autojump_boost("sv_autojump_boost", "0", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_MAPPING);
 ConVar	sv_crouchjump   ("sv_crouchjump", "0", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_MAPPING);
+ConVar	sv_crouchslide  ("sv_crouchslide", "0", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_MAPPING);
 
 ConVar  sv_wallcliptime("sv_wallcliptime", "0.25", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_MAPPING);
 
@@ -129,6 +130,7 @@ ConVar	sv_rollangle	( "sv_rollangle", "0", FCVAR_NOTIFY | FCVAR_REPLICATED | FCV
 ConVar sv_swimsound("sv_swimsound", "1", FCVAR_NOTIFY | FCVAR_REPLICATED, "Play swim sound for players");
 
 ConVar	sv_friction		( "sv_friction","4", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_MAPPING, "World friction." );
+ConVar	sv_crouchfriction( "sv_crouchfriction","0.5", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_MAPPING);
 
 #if defined( CSTRIKE_DLL ) || defined( HL1MP_DLL )
 ConVar	sv_bounce		( "sv_bounce","0", FCVAR_NOTIFY | FCVAR_REPLICATED, "Bounce multiplier for when physically simulated objects collide with other objects." );
