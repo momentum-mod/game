@@ -86,11 +86,15 @@ bool CMomentumGameMovement::DFCanUnDuck()
 {
     trace_t trace;
     Vector point;
+    bool oldDucked = player->m_Local.m_bDucked;
 
     VectorCopy(mv->m_vecAbsOrigin, point);
     point[2] += 0.01;
 
+    // set this to false so tracebox uses standing bbox
+    player->m_Local.m_bDucked = false;
     TracePlayerBBox(mv->m_vecAbsOrigin, point, MASK_PLAYERSOLID, COLLISION_GROUP_PLAYER_MOVEMENT, trace);
+    player->m_Local.m_bDucked = oldDucked;
 
     return !(trace.fraction < 1.0);
 }
@@ -118,9 +122,6 @@ void CMomentumGameMovement::DFDuck()
     }
     else
     {
-        // set this to false so tracebox uses standing bbox
-        player->m_Local.m_bDucked = false;
-
         if (!DFCanUnDuck())
         {
             player->AddFlag(FL_DUCKING);
