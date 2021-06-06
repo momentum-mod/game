@@ -265,7 +265,7 @@ CMomentumPlayer::CMomentumPlayer()
     m_nButtonsToggled = 0;
 
     m_flRemainingHaste = 0.0f;
-    m_flRemainingHaste = 0.0f;
+    m_flRemainingDamageBoost = 0.0f;
 }
 
 CMomentumPlayer::~CMomentumPlayer()
