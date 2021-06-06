@@ -1,6 +1,6 @@
 #pragma once
 
-#include "cbase.h"
+#include "baseanimating.h"
 
 #define HASTE_MODEL "models/pickups/pickup_powerup_haste.mdl"
 

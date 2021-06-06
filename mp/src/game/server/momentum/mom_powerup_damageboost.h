@@ -1,6 +1,6 @@
 #pragma once
 
-#include "cbase.h"
+#include "baseanimating.h"
 
 #define DAMAGEBOOST_MODEL "models/pickups/pickup_powerup_crit.mdl"
 
