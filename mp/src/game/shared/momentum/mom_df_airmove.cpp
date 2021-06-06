@@ -215,8 +215,8 @@ void CMomentumGameMovement::DFAirMove()
         DFAirControl(wishdir, realWishspeed);
     }
 
-    // figure in gravity
-    if (!(mv->m_bRampSliding && !sv_rampslide_gravity.GetBool()))
+    // figure in gravity but only if not rampsliding w/o gravity, and not slick
+    if (!(mv->m_bRampSliding && !sv_rampslide_gravity.GetBool()) && m_pPlayer->GetGroundEntity() == nullptr)
     {
         mv->m_vecVelocity[2] -= sv_gravity.GetFloat() * gpGlobals->frametime;
     }

@@ -207,7 +207,6 @@ void CMomentumGameMovement::DFWalkMove()
     // otherwise do airmovement if our slickstyle is 0
     else if (sv_slickstyle.GetInt() == 0)
     {
-        DFClipVelocity(mv->m_vecVelocity, mv->m_vecGroundNormal, mv->m_vecVelocity, 1.001f);
         DFAirMove();
         return;
     }
