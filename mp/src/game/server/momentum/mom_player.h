@@ -275,6 +275,21 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
 
     SavedState_t *GetSavedRunState() { return &m_SavedRunState; }
 
+    // KZ stuff
+
+    QAngle m_qangOldEyeAngles;
+    bool m_bPSTurningLeft;
+    float m_flPSBonusSpeed;
+    float m_flPSTurnRate;
+    float m_flPSVelMod;
+    float m_flPSVelModLanding;
+    Vector m_vecOldVelocity;
+    int m_iTicksSinceIncrement;
+    Vector m_vecLandingVelocity;
+
+    void SetOldEyeAngles(const QAngle &ang) { m_qangOldEyeAngles = ang; }
+    const QAngle &OldEyeAngles() const { return m_qangOldEyeAngles; }
+
     // Ahop stuff
     CNetworkVar(bool, m_bIsSprinting);
     CNetworkVar(bool, m_bIsWalking);
@@ -384,7 +399,7 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
     QAngle m_qangLastAngle;
 
     // used by CMomentumGameMovement
-    float m_flStamina;
+    // float m_flStamina;
 
     bool m_bAllowUserTeleports;
 
