@@ -273,7 +273,23 @@ void CMomentumGameMovement::DFStepSlideMove(bool inAir)
         }
         if (trace.fraction < 1.0)
         {
-            DFClipVelocity(mv->m_vecVelocity, trace.plane.normal, mv->m_vecVelocity, 1.001f);
+            if (trace.endpos.z > startOrigin.z + (startVel.z * gpGlobals->frametime)
+                && startVel.z > 0 && !mv->m_bRampSliding && !(mv->m_nButtons & IN_JUMP))
+            {
+                if ((sv_jumpstyle.GetFloat() == 2 || sv_jumpstyle.GetFloat() == 4) &&
+                    gpGlobals->curtime - m_pPlayer->m_Data.m_flLastJumpTime < sv_jump_buffertime.GetFloat())
+                {
+                    DFClipVelocity(mv->m_vecVelocity, trace.plane.normal, mv->m_vecVelocity, 1.001f);
+                }
+                else
+                {
+                    VectorCopy(startVel, mv->m_vecVelocity);
+                }
+            }
+            else
+            {
+                DFClipVelocity(mv->m_vecVelocity, trace.plane.normal, mv->m_vecVelocity, 1.001f);
+            }
         }
     }
     else
