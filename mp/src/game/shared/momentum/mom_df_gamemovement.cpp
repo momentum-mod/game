@@ -337,6 +337,8 @@ void CMomentumGameMovement::DFSetGroundEntity(trace_t *pm)
         vecBaseVelocity -= newGround->GetAbsVelocity();
         vecBaseVelocity.z = newGround->GetAbsVelocity().z;
 
+        mv->m_flLandingSpeed = mv->m_vecPreviousVelocity.z;
+
         if (pOverbounceTrigger && abs(mv->m_vecPreviousVelocity.z) >= pOverbounceTrigger->m_flMinSpeed)
         {
             if (pOverbounceTrigger->m_flMaxSpeed < 0 || (pOverbounceTrigger->m_flMaxSpeed >= 0 &&

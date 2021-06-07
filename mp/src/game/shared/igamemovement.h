@@ -45,6 +45,7 @@ public:
 	bool			m_bRampSliding : 1;
     float			m_flJumpHoldTime;
 	float			m_flJumpTime;
+	float			m_flLandingSpeed;
 	Vector			m_vecPreviousVelocity;
 
 	float			m_flWallClipTime;

@@ -23,6 +23,7 @@ bool CMomentumGameMovement::DFCheckJumpButton()
 {
     trace_t pm;
     float add;
+    float maxSpeed;
     int jumpStyle = sv_jumpstyle.GetInt();
 
     // Avoid nullptr access, return false if somehow we don't have a player
@@ -90,17 +91,6 @@ bool CMomentumGameMovement::DFCheckJumpButton()
     {
         add = 270;
 
-        if (gpGlobals->curtime - m_pPlayer->m_Data.m_flLastJumpTime < 0.4 &&
-            mv->m_bCanCPMDoubleJump && jumpStyle == 2)
-        {
-            add = 370;
-            mv->m_bCanCPMDoubleJump = false;
-        }
-        else
-        {
-            mv->m_bCanCPMDoubleJump = true;
-        }
-
         // QW jumping
         if (jumpStyle == 1)
         {
@@ -109,6 +99,16 @@ bool CMomentumGameMovement::DFCheckJumpButton()
         // CPM jumping
         else if (jumpStyle == 2)
         {
+            if (gpGlobals->curtime - m_pPlayer->m_Data.m_flLastJumpTime < 0.4)
+            {
+                add = 370;
+                mv->m_bCanCPMDoubleJump = false;
+            }
+            else
+            {
+                mv->m_bCanCPMDoubleJump = true;
+            }
+
             mv->m_vecVelocity.z += add;
             if (mv->m_vecVelocity.z < 270)
             {
@@ -116,15 +116,29 @@ bool CMomentumGameMovement::DFCheckJumpButton()
             }
         }
         // Q2 jumping
+        else if (jumpStyle == 3)
+        {
+            maxSpeed = max(mv->m_vecVelocity.z, mv->m_vecPreviousVelocity.z);
+            mv->m_vecVelocity.z = maxSpeed + add;
+            if (mv->m_vecVelocity.z < 270)
+            {
+                mv->m_vecVelocity.z = 270;
+            }
+        }
+        // buffered Q2 jumping
         else
         {
-            if (mv->m_vecVelocity.z > mv->m_vecPreviousVelocity.z)
+            if (gpGlobals->curtime - m_pPlayer->m_Data.m_flLastJumpTime < 0.4 &&
+                mv->m_flLandingSpeed > mv->m_vecVelocity.z)
             {
-                mv->m_vecVelocity.z += add;
+                maxSpeed = max(mv->m_flLandingSpeed, mv->m_vecVelocity.z);
+                maxSpeed = max(maxSpeed, mv->m_vecPreviousVelocity.z);
+                mv->m_vecVelocity.z = maxSpeed + add;
             }
             else
             {
-                mv->m_vecVelocity.z = mv->m_vecPreviousVelocity.z + add;
+                maxSpeed = max(mv->m_vecVelocity.z, mv->m_vecPreviousVelocity.z);
+                mv->m_vecVelocity.z = maxSpeed + add;
             }
             if (mv->m_vecVelocity.z < 270)
             {
