@@ -99,7 +99,7 @@ bool CMomentumGameMovement::DFCheckJumpButton()
         // CPM jumping
         else if (jumpStyle == 2)
         {
-            if (gpGlobals->curtime - m_pPlayer->m_Data.m_flLastJumpTime < 0.4)
+            if (gpGlobals->curtime - m_pPlayer->m_Data.m_flLastJumpTime < sv_jump_buffertime.GetFloat())
             {
                 add = 370;
                 mv->m_bCanCPMDoubleJump = false;
@@ -128,8 +128,7 @@ bool CMomentumGameMovement::DFCheckJumpButton()
         // buffered Q2 jumping
         else
         {
-            if (gpGlobals->curtime - m_pPlayer->m_Data.m_flLastJumpTime < 0.4 &&
-                mv->m_flLandingSpeed > mv->m_vecVelocity.z)
+            if (gpGlobals->curtime - m_pPlayer->m_Data.m_flLastJumpTime < sv_jump_buffertime.GetFloat())
             {
                 maxSpeed = max(mv->m_flLandingSpeed, mv->m_vecVelocity.z);
                 maxSpeed = max(maxSpeed, mv->m_vecPreviousVelocity.z);

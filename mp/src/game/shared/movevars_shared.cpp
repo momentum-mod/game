@@ -110,6 +110,7 @@ ConVar	sv_jumpstyle    ("sv_jumpstyle", "0", FCVAR_NOTIFY | FCVAR_REPLICATED | F
 ConVar	sv_strafestyle  ("sv_strafestyle", "0", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_MAPPING);
 ConVar	sv_slidestyle   ("sv_slidestyle", "0", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_MAPPING);
 ConVar	sv_slickstyle   ("sv_slickstyle", "0", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_MAPPING);
+ConVar	sv_jump_buffertime("sv_jump_buffertime", "0.4", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_MAPPING);
 ConVar	sv_flatknockback("sv_flatknockback", "0", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_MAPPING);
 ConVar	sv_df_rocket_addspeed("sv_df_rocket_addspeed", "0", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_MAPPING);
 ConVar	sv_snapvelocity ("sv_snapvelocity", "1", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_MAPPING);

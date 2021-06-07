@@ -43,6 +43,7 @@ extern ConVar sv_jumpstyle;
 extern ConVar sv_strafestyle;
 extern ConVar sv_slidestyle;
 extern ConVar sv_slickstyle;
+extern ConVar sv_jump_buffertime;
 extern ConVar sv_flatknockback;
 extern ConVar sv_df_rocket_addspeed;
 extern ConVar sv_snapvelocity;
