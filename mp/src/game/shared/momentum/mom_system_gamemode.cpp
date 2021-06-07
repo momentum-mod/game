@@ -366,7 +366,7 @@ void CGameMode_Defrag::SetGameModeVars()
     sv_maxvelocity.SetValue(100000);
 
     sv_maxspeed.SetValue(320);
-    sv_accelerate.SetValue(10);
+    sv_accelerate.SetValue(15);
     sv_friction.SetValue(6);
     sv_wateraccelerate.SetValue(4);
     sv_stepsize.SetValue(18);
