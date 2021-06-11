@@ -26,6 +26,7 @@ class CMomentumBazooka : public CWeaponBaseGun
     float DeployTime() const OVERRIDE { return 0.5f; }
 
     void WeaponIdle();
+    void EmitRocket();
 
   private:
     bool DualFire() OVERRIDE { return true; }

@@ -114,7 +114,57 @@ void CMomentumBazooka::PrimaryAttack()
     if (!pPlayer)
         return;
 
-    m_flNextPrimaryAttack = m_flNextSecondaryAttack = gpGlobals->curtime + 0.8f;
+    if (m_bSpewing)
+        return;
+
+    if (m_iLoaded == 0)
+    {
+        m_flNextPrimaryAttack = m_flNextSecondaryAttack = gpGlobals->curtime + 1.196f;
+    }
+    else
+    {
+        m_flNextPrimaryAttack = m_flNextSecondaryAttack = gpGlobals->curtime + 1.04f;
+    }
+
+    if (mom_bb_sound_shoot_enable.GetBool())
+    {
+        WeaponSound(GetWeaponSound("load"));
+    }
+
+    SendWeaponAnim(ACT_VM_PRIMARYATTACK);
+
+    pPlayer->SetAnimation(PLAYER_ATTACK1);
+
+    m_iLoaded++;
+}
+
+void CMomentumBazooka::WeaponIdle()
+{
+    if (m_iLoaded > 0 && gpGlobals->curtime >= m_flNextPrimaryAttack)
+    {
+        m_bSpewing = true;
+    }
+
+    if (m_bSpewing && gpGlobals->curtime >= m_flNextPrimaryAttack)
+    {
+        if (m_iLoaded == 0)
+        {
+            m_bSpewing = false;
+            return;
+        }
+        EmitRocket();
+        m_flNextPrimaryAttack = gpGlobals->curtime + 0.24f;
+        m_iLoaded--;
+    }
+}
+
+void CMomentumBazooka::EmitRocket()
+{
+    CMomentumPlayer *pPlayer = GetPlayerOwner();
+
+    if (!pPlayer)
+        return;
+
     SetWeaponIdleTime(gpGlobals->curtime + m_flTimeToIdleAfterFire);
     pPlayer->m_iShotsFired++;
 
@@ -155,5 +205,3 @@ void CMomentumBazooka::PrimaryAttack()
     g_pMomentumGhostClient->SendDecalPacket(&rocket);
 #endif
 }
-
-void CMomentumBazooka::WeaponIdle() { Msg("idling\n"); }

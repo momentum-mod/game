@@ -29,6 +29,7 @@ WeaponData
     SoundData
     {
         "single_shot"       "Weapon_RL.Single"
+        "load"              "ConcussionGrenade.Fizzle"
         "explosion"         "Weapon_RL.Explosion"
         "RocketTrail"       "Rocket.Trail"
     }
