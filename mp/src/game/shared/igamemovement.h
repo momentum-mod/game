@@ -77,7 +77,8 @@ public:
 
     //no longer private so we can have late reflect :)
 	Vector			m_vecAbsOrigin;		// edict::origin 
-    
+
+	Vector			m_vecGroundPosition;
 };
 
 inline const Vector &CMoveData::GetAbsOrigin() const

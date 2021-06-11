@@ -309,38 +309,65 @@ void CPlayerMove::RunPostThink( CBasePlayer *player )
 
 void CommentarySystem_PePlayerRunCommand( CBasePlayer *player, CUserCmd *ucmd );
 
-void CPlayerMove::PreventBounce(CBasePlayer *player, IMoveHelper *moveHelper, bool jumpbug)
+void CPlayerMove::PreventJumpBug(CBasePlayer *player, IMoveHelper *moveHelper)
 {
-	Vector mins = player->CollisionProp()->OBBMins();
-	Vector maxs = player->CollisionProp()->OBBMaxs();
+    Vector mins = player->CollisionProp()->OBBMins();
+    Vector maxs = player->CollisionProp()->OBBMaxs();
 
-	Vector offset(0.0f, 0.0f, sv_considered_on_ground.GetFloat());
+    Vector origin;
+    VectorCopy(player->GetAbsOrigin(), origin);
 
-	if (jumpbug)
-	{
-		Vector hullSizeNormal = VEC_HULL_MAX - VEC_HULL_MIN;
-		Vector hullSizeCrouch = VEC_DUCK_HULL_MAX - VEC_DUCK_HULL_MIN;
-		offset.z += g_pGameModeSystem->GetGameMode()->GetViewScale() * (hullSizeNormal - hullSizeCrouch).z;
-	}
+    // CMomentumGameMovement::CanUnduck
+    // (excluding on-ground logic)
+    trace_t trace;
+    Vector newOrigin;
 
-	// CGameMovement::TryTouchGround
-	trace_t pm;
-	Ray_t ray;
-	ray.Init(player->GetAbsOrigin(), player->GetAbsOrigin() - offset, mins, maxs);
-	UTIL_TraceRay(ray, MASK_PLAYERSOLID, player, COLLISION_GROUP_PLAYER_MOVEMENT, &pm);
+    VectorCopy(player->GetAbsOrigin(), newOrigin);
 
-	if (pm.DidHit() && pm.plane.normal[2] >= 0.7f &&
-		(pm.startpos - pm.endpos).z >= offset.z - sv_considered_on_ground.GetFloat())
-	{
-		// Extend collision to ground
-		offset.z = player->GetAbsOrigin().z - pm.endpos.z;
-		player->SetCollisionBounds(mins - offset, maxs);
+    // If in air and letting go of crouch, make sure we can offset origin to make
+    //  up for uncrouching
+    Vector hullSizeNormal = VEC_HULL_MAX - VEC_HULL_MIN;
+    Vector hullSizeCrouch = VEC_DUCK_HULL_MAX - VEC_DUCK_HULL_MIN;
 
-		moveHelper->ProcessImpacts();
+    newOrigin += -g_pGameModeSystem->GetGameMode()->GetViewScale() * (hullSizeNormal - hullSizeCrouch);
 
-		// Reset collision
-		player->SetCollisionBounds(mins, maxs);
-	}
+    UTIL_TraceHull(origin, newOrigin, VEC_HULL_MIN, VEC_HULL_MAX, MASK_PLAYERSOLID, player,
+                    COLLISION_GROUP_PLAYER_MOVEMENT, &trace);
+
+    if (trace.startsolid || (trace.fraction != 1.0f))
+    {
+        // Can't unduck now, no fix needed
+        return;
+    }
+
+    // Pretend we unducked now
+    VectorCopy(newOrigin, origin);
+    VectorCopy(VEC_HULL_MIN, mins);
+    VectorCopy(VEC_HULL_MAX, maxs);
+
+    Vector offset(0.0f, 0.0f, sv_considered_on_ground.GetFloat());
+
+    // CGameMovement::TryTouchGround
+    trace_t pm;
+    Ray_t ray;
+    ray.Init(origin, origin - offset, mins, maxs);
+    UTIL_TraceRay(ray, MASK_PLAYERSOLID, player, COLLISION_GROUP_PLAYER_MOVEMENT, &pm);
+
+    // Don't worry about CGameMovement::TryTouchGroundInQuadrants to keep this fix from duplicating too much code that will probably not matter.
+    if (pm.DidHit() && pm.plane.normal[2] >= 0.7f)
+    {
+        // Extend collision to ground
+        Vector newMins(mins.x, mins.y, mins.z - (player->GetAbsOrigin().z - pm.endpos.z));
+
+        //Msg("[%i] PreventBounce extending mins (%.6f)\n", gpGlobals->tickcount, (newMins - mins).z);
+
+        player->SetCollisionBounds(newMins, maxs);
+
+        moveHelper->ProcessImpacts();
+                
+        // Restore normal bounds
+        player->SetCollisionBounds(mins, maxs);
+    }
 }
 
 //-----------------------------------------------------------------------------
@@ -469,7 +496,7 @@ void CPlayerMove::RunCommand ( CBasePlayer *player, CUserCmd *ucmd, IMoveHelper 
 		player->GetFlags() & FL_DUCKING && player->m_afButtonReleased & IN_DUCK &&                            // Tries to unduck
 		(player->m_afButtonPressed & IN_JUMP || (pMomPlayer->HasAutoBhop() && player->m_nButtons & IN_JUMP))) // Tries to jump
 	{
-		PreventBounce(player, moveHelper, true);
+		PreventJumpBug(player, moveHelper);
 	}
 
 	// Setup input.
@@ -492,10 +519,25 @@ void CPlayerMove::RunCommand ( CBasePlayer *player, CUserCmd *ucmd, IMoveHelper 
 	// If the player is grounded, there is the possibility that they are bit above the ground and therefore might be
 	// above a trigger. The player could avoid this trigger by doing a jump, so to prevent this we extend the player
 	// collision by how much they are above the ground when checking for triggers
-	if (sv_ground_trigger_fix.GetBool() && player->GetGroundEntity() != nullptr)
-	{
-		PreventBounce(player, moveHelper, false);
-	}
+    Vector mins = player->CollisionProp()->OBBMins();
+    Vector maxs = player->CollisionProp()->OBBMaxs();
+
+    if (sv_ground_trigger_fix.GetBool() && player->GetGroundEntity() != nullptr &&
+        (g_pMoveData->m_vecGroundPosition - player->GetAbsOrigin()).z < mins.z)
+    {
+        Vector newMins(mins.x, mins.y, (g_pMoveData->m_vecGroundPosition - player->GetAbsOrigin()).z);
+
+        //Msg("[%i] Trigger Fix: setting min z to %.6f (player z: %.6f, ground z: %.6f)\n", gpGlobals->tickcount,
+        //    newMins.z, player->GetAbsOrigin().z, g_pMoveData->m_vecGroundPosition.z);
+
+        player->SetCollisionBounds(newMins, maxs);
+        
+        VPROF_SCOPE_BEGIN("moveHelper->ProcessImpacts");
+        moveHelper->ProcessImpacts();
+        VPROF_SCOPE_END();
+
+        player->SetCollisionBounds(mins, maxs);
+    }
 	else
 	{
 		// Let server invoke any needed impact functions
