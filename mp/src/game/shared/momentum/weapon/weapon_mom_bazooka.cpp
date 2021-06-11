@@ -3,6 +3,7 @@
 #include "mom_player_shared.h"
 #include "mom_system_gamemode.h"
 #include "weapon_mom_bazooka.h"
+#include "in_buttons.h"
 
 #ifdef GAME_DLL
 #include "momentum/ghost_client.h"
@@ -151,13 +152,19 @@ void CMomentumBazooka::PrimaryAttack()
 
 void CMomentumBazooka::WeaponIdle()
 {
-    if (m_iLoaded > 0 && gpGlobals->curtime >= m_flNextPrimaryAttack)
+    CMomentumPlayer *pPlayer = GetPlayerOwner();
+
+    if (!pPlayer)
+        return;
+
+    if (m_iLoaded > 0 && !(pPlayer->m_nButtons & IN_ATTACK) && !m_bSpewing)
     {
         m_bSpewing = true;
         if (m_iLoaded > 3)
         {
             m_iLoaded = 6 - m_iLoaded;
         }
+        m_flNextPrimaryAttack = gpGlobals->curtime;
     }
 
     if (m_bSpewing && gpGlobals->curtime >= m_flNextPrimaryAttack)
