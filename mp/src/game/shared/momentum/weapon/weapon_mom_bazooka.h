@@ -32,5 +32,7 @@ class CMomentumBazooka : public CWeaponBaseGun
     bool DualFire() OVERRIDE { return true; }
 
     bool m_bSpewing;
+    bool m_bFirstLoad;
     int m_iLoaded;
+    float m_flFirstAttackTime;
 };

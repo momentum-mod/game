@@ -46,6 +46,7 @@ CMomentumBazooka::CMomentumBazooka()
     m_flIdleInterval = 20.0f;
     m_iLoaded = 0;
     m_bSpewing = false;
+    m_flFirstAttackTime = 0;
 }
 
 void CMomentumBazooka::Precache()
@@ -116,11 +117,16 @@ void CMomentumBazooka::PrimaryAttack()
         return;
 
     if (m_bSpewing)
+    {
+        WeaponIdle();
         return;
+    }
 
-    if (m_iLoaded == 0)
+    if (m_bFirstLoad)
     {
         m_flNextPrimaryAttack = m_flNextSecondaryAttack = gpGlobals->curtime + 1.196f;
+        m_flFirstAttackTime = gpGlobals->curtime + 1.04f;
+        m_bFirstLoad = false;
     }
     else
     {
@@ -157,7 +163,12 @@ void CMomentumBazooka::WeaponIdle()
     if (!pPlayer)
         return;
 
-    if (m_iLoaded > 0 && !(pPlayer->m_nButtons & IN_ATTACK) && !m_bSpewing)
+    if (!(pPlayer->m_nButtons & IN_ATTACK))
+    {
+        m_bFirstLoad = true;
+    }
+
+    if (m_iLoaded > 0 && !(pPlayer->m_nButtons & IN_ATTACK) && !m_bSpewing && gpGlobals->curtime >= m_flFirstAttackTime)
     {
         m_bSpewing = true;
         if (m_iLoaded > 3)
