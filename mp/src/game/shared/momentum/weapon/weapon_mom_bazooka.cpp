@@ -125,7 +125,7 @@ void CMomentumBazooka::PrimaryAttack()
     if (m_bFirstLoad)
     {
         m_flNextPrimaryAttack = m_flNextSecondaryAttack = gpGlobals->curtime + 1.196f;
-        m_flFirstAttackTime = gpGlobals->curtime + 1.04f;
+        m_flFirstAttackTime = gpGlobals->curtime + 0.7f;
         m_bFirstLoad = false;
     }
     else
@@ -168,14 +168,21 @@ void CMomentumBazooka::WeaponIdle()
         m_bFirstLoad = true;
     }
 
-    if (m_iLoaded > 0 && !(pPlayer->m_nButtons & IN_ATTACK) && !m_bSpewing && gpGlobals->curtime >= m_flFirstAttackTime)
+    if (m_iLoaded > 0 && !(pPlayer->m_nButtons & IN_ATTACK) && !m_bSpewing)
     {
         m_bSpewing = true;
         if (m_iLoaded > 3)
         {
             m_iLoaded = 6 - m_iLoaded;
         }
-        m_flNextPrimaryAttack = gpGlobals->curtime;
+        if (gpGlobals->curtime < m_flFirstAttackTime)
+        {
+            m_flNextPrimaryAttack = m_flFirstAttackTime;
+        }
+        else
+        {
+            m_flNextPrimaryAttack = gpGlobals->curtime;
+        }
     }
 
     if (m_bSpewing && gpGlobals->curtime >= m_flNextPrimaryAttack)
