@@ -367,6 +367,13 @@ void CPlayerMove::PreventJumpBug(CBasePlayer *player, IMoveHelper *moveHelper)
                 
         // Restore normal bounds
         player->SetCollisionBounds(mins, maxs);
+
+        // ProcessImpacts causes trigger Touch() functions to fire no matter what.
+        // We still need to call ProcessImpacts() at the end of this tick, which means some Touch() functions may fire twice in one tick.
+        // The basevelocity system assumes sources of basevelocity -- like trigger_push Touch() functions -- are accumulated only once per tick.
+        // Removing this flag before we run ProcessImpacts() again will keep from double counting sources of basevelocity this tick.
+        // Without doing this, the player would usually just get a double boost for 1 tick, but if timed very precisely it can produce a permanent double boost.
+        player->RemoveFlag(FL_BASEVELOCITY);
     }
 }
 
