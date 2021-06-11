@@ -3059,6 +3059,11 @@ void CMomentumGameMovement::SetGroundEntity(const trace_t *pm)
 
     BaseClass::SetGroundEntity(pm);
 
+    if (pm && pm->m_pEnt)
+    {
+         VectorCopy(pm->endpos, mv->m_vecGroundPosition);
+    }
+
     // Doing this after the BaseClass call in case OnLand wants to use the new ground stuffs
     if (bLanded)
     {

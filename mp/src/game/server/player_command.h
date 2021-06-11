@@ -53,7 +53,7 @@ protected:
 	void			RunThink (CBasePlayer *ent, double frametime );
 	void			RunPostThink( CBasePlayer *player );
 
-	void			PreventBounce(CBasePlayer *player, IMoveHelper *moveHelper, bool jumpbug);
+	void			PreventJumpBug(CBasePlayer *player, IMoveHelper *moveHelper);
 };
 
 
