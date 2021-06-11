@@ -136,6 +136,17 @@ void CMomentumBazooka::PrimaryAttack()
     pPlayer->SetAnimation(PLAYER_ATTACK1);
 
     m_iLoaded++;
+#ifdef GAME_DLL
+    if (m_iLoaded > 3)
+    {
+        CMomRocket *pRocket = EmitRocket();
+        trace_t trace;
+        CTraceFilterSimple traceFilter(this, COLLISION_GROUP_NONE);
+        UTIL_TraceLine(pPlayer->EyePosition(), pRocket->GetAbsOrigin(), MASK_SOLID_BRUSHONLY, &traceFilter, &trace);
+        pRocket->Explode(&trace, pPlayer);
+    }
+#endif
+    m_iLoaded = m_iLoaded % 6;
 }
 
 void CMomentumBazooka::WeaponIdle()
@@ -143,6 +154,10 @@ void CMomentumBazooka::WeaponIdle()
     if (m_iLoaded > 0 && gpGlobals->curtime >= m_flNextPrimaryAttack)
     {
         m_bSpewing = true;
+        if (m_iLoaded > 3)
+        {
+            m_iLoaded = 6 - m_iLoaded;
+        }
     }
 
     if (m_bSpewing && gpGlobals->curtime >= m_flNextPrimaryAttack)
@@ -158,12 +173,12 @@ void CMomentumBazooka::WeaponIdle()
     }
 }
 
-void CMomentumBazooka::EmitRocket()
+CMomRocket *CMomentumBazooka::EmitRocket()
 {
     CMomentumPlayer *pPlayer = GetPlayerOwner();
 
     if (!pPlayer)
-        return;
+        return nullptr;
 
     SetWeaponIdleTime(gpGlobals->curtime + m_flTimeToIdleAfterFire);
     pPlayer->m_iShotsFired++;
@@ -199,9 +214,12 @@ void CMomentumBazooka::EmitRocket()
     CTraceFilterSimple traceFilter(this, COLLISION_GROUP_NONE);
     UTIL_TraceLine(pPlayer->EyePosition(), vecSrc, MASK_SOLID_BRUSHONLY, &traceFilter, &trace);
 
-    CMomRocket::EmitRocket(trace.endpos, angForward, pPlayer);
+    CMomRocket *pRocket = CMomRocket::EmitRocket(trace.endpos, angForward, pPlayer);
 
     DecalPacket rocket = DecalPacket::Rocket(trace.endpos, angForward);
     g_pMomentumGhostClient->SendDecalPacket(&rocket);
+    return pRocket;
+#else
+    return nullptr;
 #endif
 }
