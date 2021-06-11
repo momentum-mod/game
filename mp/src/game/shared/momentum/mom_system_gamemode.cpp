@@ -180,15 +180,16 @@ void CGameMode_RJ::OnPlayerSpawn(CMomentumPlayer *pPlayer)
     CGameModeBase::OnPlayerSpawn(pPlayer);
 
 #ifdef GAME_DLL
-    pPlayer->GiveWeapon(WEAPON_ROCKETLAUNCHER);
+    pPlayer->GiveWeapon(WEAPON_BAZOOKA);
     pPlayer->GiveWeapon(WEAPON_SHOTGUN);
 #endif
 }
 
 bool CGameMode_RJ::WeaponIsAllowed(WeaponID_t weapon)
 {
-    // RJ only allows 3 weapons:
+    // RJ only allows 4 weapons:
     return weapon == WEAPON_ROCKETLAUNCHER ||
+           weapon == WEAPON_BAZOOKA        ||
            weapon == WEAPON_SHOTGUN        ||
            weapon == WEAPON_KNIFE;
 }
