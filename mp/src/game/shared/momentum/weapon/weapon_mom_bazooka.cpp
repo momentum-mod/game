@@ -233,6 +233,7 @@ CMomRocket *CMomentumBazooka::EmitRocket()
     UTIL_TraceLine(pPlayer->EyePosition(), vecSrc, MASK_SOLID_BRUSHONLY, &traceFilter, &trace);
 
     CMomRocket *pRocket = CMomRocket::EmitRocket(trace.endpos, angForward, pPlayer);
+    pRocket->m_bBazookaRocket = true;
 
     DecalPacket rocket = DecalPacket::Rocket(trace.endpos, angForward);
     g_pMomentumGhostClient->SendDecalPacket(&rocket);

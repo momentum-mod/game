@@ -8,6 +8,7 @@
 #include "movevars_shared.h"
 #include "mom_system_gamemode.h"
 #include "run/mom_run_safeguards.h"
+#include "mom_rocket.h"
 
 #ifdef CLIENT_DLL
 #include "MessageboxPanel.h"
@@ -453,7 +454,14 @@ void CMomentumGameRules::RadiusDamage(const CTakeDamageInfo &info, const Vector 
         {
             if (g_pGameModeSystem->GameModeIs(GAMEMODE_RJ))
             {
-                flRadius = 121.0f; // Rocket self-damage radius is 121.0f
+                if (dynamic_cast<CMomRocket *>(pInflictor)->m_bBazookaRocket)
+                {
+                    flRadius = 97;
+                }
+                else
+                {
+                    flRadius = 121.0f; // Rocket self-damage radius is 121.0f
+                }
             }
             else if (g_pGameModeSystem->GameModeIs(GAMEMODE_DEFRAG))
             {
