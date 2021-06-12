@@ -300,6 +300,8 @@ $Project "Client (Momentum)"
 
             $Folder "Weapons"
             {
+                $File "$SRCDIR\game\shared\momentum\weapon\weapon_mom_bazooka.cpp"
+                $File "$SRCDIR\game\shared\momentum\weapon\weapon_mom_bazooka.h"
                 $File "$SRCDIR\game\shared\momentum\weapon\weapon_mom_pistol.cpp"
                 $File "$SRCDIR\game\shared\momentum\weapon\weapon_mom_pistol.h"
                 $File "$SRCDIR\game\shared\momentum\weapon\weapon_mom_rocketlauncher.h"
