@@ -130,6 +130,7 @@ void CMomentumBazooka::PrimaryAttack()
         trace_t trace;
         CTraceFilterSimple traceFilter(this, COLLISION_GROUP_NONE);
         UTIL_TraceLine(pPlayer->EyePosition(), pRocket->GetAbsOrigin(), MASK_SOLID_BRUSHONLY, &traceFilter, &trace);
+        pRocket->m_bOverloadRocket = true;
         pRocket->Explode(&trace, pPlayer);
     }
 #endif

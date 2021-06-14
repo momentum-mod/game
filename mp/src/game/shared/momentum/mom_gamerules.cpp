@@ -462,6 +462,10 @@ void CMomentumGameRules::RadiusDamage(const CTakeDamageInfo &info, const Vector 
                 {
                     flRadius = 121.0f; // Rocket self-damage radius is 121.0f
                 }
+                if (dynamic_cast<CMomRocket *>(pInflictor)->m_bOverloadRocket)
+                {
+                    flFalloff = 1;
+                }
             }
             else if (g_pGameModeSystem->GameModeIs(GAMEMODE_DEFRAG))
             {

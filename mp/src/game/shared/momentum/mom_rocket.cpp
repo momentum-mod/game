@@ -52,6 +52,7 @@ void CMomRocket::Spawn()
     SpawnRocketSurprise();
 
     m_bBazookaRocket = false;
+    m_bOverloadRocket = false;
 #endif
 }
 
