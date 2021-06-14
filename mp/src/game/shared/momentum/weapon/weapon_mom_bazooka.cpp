@@ -25,21 +25,6 @@ PRECACHE_WEAPON_REGISTER(weapon_momentum_bazooka);
 
 MAKE_TOGGLE_CONVAR(mom_bb_sound_shoot_enable, "1", FCVAR_ARCHIVE | FCVAR_REPLICATED, "Toggles the rocket shooting sound on or off. 0 = OFF, 1 = ON\n");
 
-#ifdef GAME_DLL
-static MAKE_TOGGLE_CONVAR_CV(mom_bb_center_fire, "1", FCVAR_ARCHIVE, "If enabled, all rockets will be fired from the center of the screen. 0 = OFF, 1 = ON\n", nullptr,
-    [](IConVar *pVar, const char *pNewVal)
-    {
-        if (g_pMomentumTimer->IsRunning())
-        {
-            Warning("Cannot change rocket firing mode while in a run! Stop your timer to be able to change it.\n");
-            return false;
-        }
-
-        return true;
-    }
-);
-#endif
-
 CMomentumBazooka::CMomentumBazooka()
 {
     m_flTimeToIdleAfterFire = 0.8f;
@@ -67,14 +52,9 @@ void CMomentumBazooka::GetProjectileFireSetup(CMomentumPlayer *pPlayer, Vector v
     static ConVarRef cl_righthand("cl_righthand");
 #else
     extern ConVar_Validated cl_righthand;
-    static ConVarRef mom_bb_center_fire("mom_bb_center_fire");
 #endif
 
-    if (mom_bb_center_fire.GetBool())
-    {
-        vecOffset.y = 0.0f;
-    }
-    else if (!cl_righthand.GetBool())
+    if (!cl_righthand.GetBool())
     {
         vecOffset.y *= -1.0f;
     }
