@@ -206,7 +206,7 @@ void CMomentumGameMovement::DFWalkMove()
      }
 
     if (sv_crouchslide.GetBool() && player->GetFlags() & FL_DUCKING &&
-        mv->m_vecVelocity.Length2D() > sv_maxspeed.GetFloat())
+        mv->m_vecVelocity.Length() > sv_crouchslide_threshold.GetFloat())
     {
         isCrouchsliding = true;
     }
@@ -257,7 +257,8 @@ void CMomentumGameMovement::DFWalkMove()
     // Set pmove velocity
     if (isCrouchsliding)
     {
-        realAccelerate = sv_accelerate.GetFloat() * 2;
+        realAccelerate = sv_crouchslide_accelerate.GetFloat();
+        wishspeed *= sv_crouchslide_speedmult.GetFloat();
     }
     else
     {
