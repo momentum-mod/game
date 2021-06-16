@@ -21,9 +21,10 @@ A clear and concise description of what is expected to happen.
 **Screenshots**
 If applicable, add screenshots to help explain your problem.
 
-**Desktop/Branch (please complete the following information):**
+**Desktop (*please complete the following information*):**
  - OS: [Windows / Linux]
- - Branch: [Steam version / Latest develop branch]
+ - Renderer: [DX9 (Default) / DX11 (with -dx11 launch parameter)]
+ - UI: [VGUI (Default) / Panorama]
 
 **Additional context**
 Add any other context about the problem here.
