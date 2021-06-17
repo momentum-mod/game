@@ -320,6 +320,10 @@ void CMomentumGameMovement::DFPlayerMove()
     {
         DFSnapVector(mv->m_vecVelocity);
     }
+    else
+    {
+        mv->m_vecVelocity.z = roundf(mv->m_vecVelocity.z);
+    }
 }
 
 void CMomentumGameMovement::DFSetGroundEntity(trace_t *pm)
