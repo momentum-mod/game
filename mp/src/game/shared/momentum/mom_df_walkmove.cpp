@@ -36,7 +36,7 @@ bool CMomentumGameMovement::DFCheckJumpButton()
         return false;
     }
 
-    if ((mv->m_nButtons & IN_DUCK) && !sv_crouchjump.GetBool() || (player->GetFlags() & FL_DUCKING))
+    if (((mv->m_nButtons & IN_DUCK) && !sv_crouchjump.GetBool()) || (player->GetFlags() & FL_DUCKING))
     {
         return false;
     }
@@ -76,18 +76,7 @@ bool CMomentumGameMovement::DFCheckJumpButton()
 #endif
     }
 
-    if (mv->m_nButtons & IN_DUCK && sv_crouchjump.GetBool())
-    {
-        add = 270;
-
-        mv->m_vecVelocity.z += add;
-        
-        if (mv->m_vecVelocity.z > add)
-        {
-            mv->m_vecVelocity.z = add;
-        }
-    }
-    else if (jumpStyle > 0 && (sv_autojump_boost.GetBool() || mv->m_bJumpReleased))
+    if (jumpStyle > 0 && (sv_autojump_boost.GetBool() || mv->m_bJumpReleased))
     {
         add = 270;
 
