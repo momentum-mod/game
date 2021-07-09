@@ -24,6 +24,7 @@
 #include "mom_system_tricks.h"
 #include "run/mom_run_safeguards.h"
 #include "movevars_shared.h"
+#include "mom_df_rocket.h"
 
 #include "tier0/memdbgon.h"
 
@@ -2180,7 +2181,7 @@ void CMomentumPlayer::DFApplyPushFromDamage(const CTakeDamageInfo &info)
         return;
 
     CBaseEntity *pAttacker = info.GetAttacker();
-    CBaseEntity *pInflictor = info.GetInflictor();
+    CMomDFRocket *pInflictor = static_cast<CMomDFRocket*>(info.GetInflictor());
 
     if (!pInflictor || GetMoveType() != MOVETYPE_WALK || pAttacker->IsSolidFlagSet(FSOLID_TRIGGER))
         return;
@@ -2189,7 +2190,7 @@ void CMomentumPlayer::DFApplyPushFromDamage(const CTakeDamageInfo &info)
     dir[2] += 24;
 
     knockback = info.GetDamage();
-    if (info.GetMaxDamage() > 50)
+    if (pInflictor->type == DF_ROCKET)
     {
         Vector flat, dist, start;
         VectorCopy(GetAbsOrigin(), start);
@@ -2216,12 +2217,10 @@ void CMomentumPlayer::DFApplyPushFromDamage(const CTakeDamageInfo &info)
 
     ApplyAbsVelocityImpulse(kvel);
 
-    float t;
-    t = knockback * 2;
-
-    t = clamp(t, 50, 200);
-
-    m_flKnockbackTime = gpGlobals->curtime + t / 1000;
+    if (pInflictor->type != DF_PLASMA || (pInflictor->type == DF_PLASMA && !(GetFlags() & FL_ONGROUND)))
+    {
+        m_flKnockbackTime = gpGlobals->curtime + 0.2;
+    }
 
     if (GetFlags() & FL_ONGROUND)
     {
