@@ -50,6 +50,11 @@ void CMomentumGameMovement::DFAirControl(Vector &wishdir, float wishspeed)
     mv->m_vecVelocity.x *= speed;
     mv->m_vecVelocity.y *= speed;
     mv->m_vecVelocity.z = zVel;
+
+    Vector forwardAccel;
+    VectorScale(wishdir, sv_forwardaccelerate.GetFloat() * gpGlobals->frametime, forwardAccel);
+
+    VectorAdd(mv->m_vecVelocity, forwardAccel, mv->m_vecVelocity);
 }
 
 void CMomentumGameMovement::DFAirAccelerate(Vector wishdir, float wishspeed, float accel, float maxspeed)

@@ -102,6 +102,7 @@ ConVar	sv_rampslide_jumps ("sv_rampslide_jumps", "0", FCVAR_NOTIFY | FCVAR_REPLI
 ConVar  sv_aircontrol_enable("sv_aircontrol_enable", "0", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_MAPPING);
 ConVar  sv_aircontrol("sv_aircontrol", "150", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_MAPPING);
 ConVar  sv_aircontrolpower("sv_aircontrolpower", "2.5", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_MAPPING);
+ConVar  sv_forwardaccelerate("sv_forwardaccelerate", "0", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_MAPPING);
 
 ConVar	sv_wadescale	( "sv_wadescale", "0.7",  FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_MAPPING);
 ConVar	sv_swimscale	( "sv_swimscale", "0.5",  FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_MAPPING);

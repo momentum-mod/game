@@ -59,6 +59,7 @@ extern ConVar sv_wallcliptime;
 extern ConVar sv_aircontrol_enable;
 extern ConVar sv_aircontrol;
 extern ConVar sv_aircontrolpower;
+extern ConVar sv_forwardaccelerate;
 
 extern ConVar sv_wadescale;
 extern ConVar sv_swimscale;
