@@ -41,6 +41,8 @@ class CMomDFGrenade : public CBaseGrenade
     void DFRadiusDamage(const CTakeDamageInfo &info, const Vector &vecSrcIn, float flRadius, int iClassIgnore,
                         CBaseEntity *pEntityIgnore);
 
+    void Touch(CBaseEntity *pOther) override;
+
     float m_flDamageFactor;
 
   protected:

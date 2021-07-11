@@ -479,4 +479,20 @@ void CMomDFGrenade::Splash()
 
     DispatchEffect("gunshotsplash", data);
 }
+
+void CMomDFGrenade::Touch(CBaseEntity *pOther)
+{
+    trace_t trace;
+
+    if (pOther->IsSolidFlagSet(FSOLID_TRIGGER | FSOLID_VOLUME_CONTENTS))
+    {
+        return;
+    }
+    if (pOther->m_takedamage != DAMAGE_NO)
+    {
+        UTIL_TraceLine(GetAbsOrigin(), pOther->GetAbsOrigin(), MASK_PLAYERSOLID, NULL, COLLISION_GROUP_NONE, &trace);
+        Explode(&trace);
+    }
+}
+
 #endif
