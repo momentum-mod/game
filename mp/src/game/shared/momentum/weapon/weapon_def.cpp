@@ -196,9 +196,10 @@ void CWeaponDef::LoadWeaponDefinitions()
     m_vecWeaponDefs[WEAPON_ROCKETLAUNCHER]  = ParseWeaponScript(g_szWeaponNames[WEAPON_ROCKETLAUNCHER]);
     m_vecWeaponDefs[WEAPON_STICKYLAUNCHER]  = ParseWeaponScript(g_szWeaponNames[WEAPON_STICKYLAUNCHER]);
     m_vecWeaponDefs[WEAPON_DF_ROCKETLAUNCHER] = ParseWeaponScript(g_szWeaponNames[WEAPON_DF_ROCKETLAUNCHER]);
-    m_vecWeaponDefs[WEAPON_DF_PLASMAGUN] = ParseWeaponScript(g_szWeaponNames[WEAPON_DF_PLASMAGUN]);
+    m_vecWeaponDefs[WEAPON_DF_PLASMAGUN]    = ParseWeaponScript(g_szWeaponNames[WEAPON_DF_PLASMAGUN]);
     m_vecWeaponDefs[WEAPON_DF_GRENADELAUNCHER] = ParseWeaponScript(g_szWeaponNames[WEAPON_DF_GRENADELAUNCHER]);
-    m_vecWeaponDefs[WEAPON_BAZOOKA] = ParseWeaponScript(g_szWeaponNames[WEAPON_BAZOOKA]);
+    m_vecWeaponDefs[WEAPON_DF_BFG]          = ParseWeaponScript(g_szWeaponNames[WEAPON_DF_BFG]);
+    m_vecWeaponDefs[WEAPON_BAZOOKA]         = ParseWeaponScript(g_szWeaponNames[WEAPON_BAZOOKA]);
 }
 
 void CWeaponDef::ReloadWeaponDefinitions()

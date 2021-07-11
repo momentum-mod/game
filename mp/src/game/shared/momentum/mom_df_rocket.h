@@ -9,7 +9,8 @@
 enum DFProjectileType_t
 {
     DF_ROCKET = 0,
-    DF_PLASMA
+    DF_PLASMA,
+    DF_BFG
 };
 
 const float damage[] = {100, 15};

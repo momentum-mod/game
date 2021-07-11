@@ -23,12 +23,13 @@ enum WeaponID_t
     WEAPON_DF_ROCKETLAUNCHER,
     WEAPON_DF_PLASMAGUN,
     WEAPON_DF_GRENADELAUNCHER,
+    WEAPON_DF_BFG,
     WEAPON_BAZOOKA,
 
     WEAPON_MAX, // number of weapons weapon index
 
     WEAPON_FIRST = WEAPON_PISTOL,
-    WEAPON_LAST = WEAPON_DF_PLASMAGUN,
+    WEAPON_LAST = WEAPON_BAZOOKA,
 };
 
 static const char *const g_szWeaponNames[WEAPON_MAX] = 
@@ -46,6 +47,7 @@ static const char *const g_szWeaponNames[WEAPON_MAX] =
     "weapon_momentum_df_rocketlauncher",
     "weapon_momentum_df_plasmagun",
     "weapon_momentum_df_grenadelauncher",
+    "weapon_momentum_df_bfg",
     "weapon_momentum_bazooka"
 };
 
