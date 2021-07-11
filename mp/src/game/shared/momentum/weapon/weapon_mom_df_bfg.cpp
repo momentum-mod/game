@@ -83,6 +83,7 @@ void CMomentumDFBFG::PrimaryAttack()
 
     VectorCopy(pPlayer->GetAbsOrigin(), muzzle);
     muzzle[2] += pPlayer->GetViewOffset()[2];
+    VectorMA(muzzle, 14, vForward, muzzle);
     scale = 0.050 * speed[DF_BFG];
     VectorMA(muzzle, scale, vForward, dest);
 

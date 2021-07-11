@@ -82,6 +82,7 @@ void CMomentumDFGrenadeLauncher::PrimaryAttack()
 
     VectorCopy(pPlayer->GetAbsOrigin(), muzzle);
     muzzle[2] += pPlayer->GetViewOffset()[2];
+    VectorMA(muzzle, 14, vForward, muzzle);
 
     VectorAngles(vForward, angForward);
 

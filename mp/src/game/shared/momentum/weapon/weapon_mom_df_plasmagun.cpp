@@ -83,6 +83,7 @@ void CMomentumDFPlasmaGun::PrimaryAttack()
 
     VectorCopy(pPlayer->GetAbsOrigin(), muzzle);
     muzzle[2] += pPlayer->GetViewOffset()[2];
+    VectorMA(muzzle, 14, vForward, muzzle);
     scale = 0.050 * speed[DF_PLASMA];
     VectorMA(muzzle, scale, vForward, dest);
 
