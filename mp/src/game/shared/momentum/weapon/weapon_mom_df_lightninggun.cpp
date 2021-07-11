@@ -46,11 +46,11 @@ void CMomentumDFLightningGun::PrimaryAttack()
 
     if (pPlayer->m_flRemainingHaste < 0 || pPlayer->m_flRemainingHaste > gpGlobals->curtime)
     {
-        m_flNextPrimaryAttack = m_flNextSecondaryAttack = gpGlobals->curtime + (0.1f / 1.3);
+        m_flNextPrimaryAttack = m_flNextSecondaryAttack = gpGlobals->curtime + (0.05f / 1.3);
     }
     else
     {
-        m_flNextPrimaryAttack = m_flNextSecondaryAttack = gpGlobals->curtime + 0.1f;
+        m_flNextPrimaryAttack = m_flNextSecondaryAttack = gpGlobals->curtime + 0.05f;
     }
 
     SetWeaponIdleTime(gpGlobals->curtime + m_flTimeToIdleAfterFire);
@@ -69,7 +69,6 @@ void CMomentumDFLightningGun::PrimaryAttack()
     QAngle angForward;
     Vector muzzle;
     Vector dest;
-    float scale;
     trace_t trace;
     const int MASK_RADIUS_DAMAGE = MASK_SHOT & (~CONTENTS_HITBOX);
     float damageFactor = 1;
@@ -83,20 +82,16 @@ void CMomentumDFLightningGun::PrimaryAttack()
 
     VectorCopy(pPlayer->GetAbsOrigin(), muzzle);
     muzzle[2] += pPlayer->GetViewOffset()[2];
-    scale = 0.050 * speed[DF_PLASMA];
-    VectorMA(muzzle, scale, vForward, dest);
+    VectorMA(muzzle, LIGHTNING_RANGE + 14, vForward, dest);
 
     UTIL_TraceLine(muzzle, dest, MASK_RADIUS_DAMAGE, pPlayer, COLLISION_GROUP_NONE, &trace);
     if (trace.fraction < 0.99)
     {
         VectorCopy(trace.endpos, muzzle);
+        VectorAngles(vForward, angForward);
+        CMomDFRocket::EmitRocket(muzzle, angForward, pPlayer, DF_LIGHTNING, damageFactor);
+        DecalPacket rocket = DecalPacket::Rocket(muzzle, angForward);
+        g_pMomentumGhostClient->SendDecalPacket(&rocket);
     }
-
-    VectorAngles(vForward, angForward);
-
-    CMomDFRocket::EmitRocket(muzzle, angForward, pPlayer, DF_PLASMA, damageFactor);
-
-    DecalPacket rocket = DecalPacket::Rocket(muzzle, angForward);
-    g_pMomentumGhostClient->SendDecalPacket(&rocket);
 #endif
 }

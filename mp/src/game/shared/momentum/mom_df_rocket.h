@@ -14,8 +14,8 @@ enum DFProjectileType_t
     DF_LIGHTNING
 };
 
-const float damage[] = {100, 15, 100, 15};
-const float splashRadius[] = {120, 20, 120, 20};
+const float damage[] = {100, 15, 100, 30};
+const float splashRadius[] = {120, 20, 120, 120};
 const float speed[] = {900, 2000, 2000, 2000};
 
 class CMomDFRocket : public CMomExplosive

@@ -7,6 +7,8 @@
 #define CMomentumDFLightningGun C_MomentumDFLightningGun
 #endif
 
+#define LIGHTNING_RANGE 768
+
 class CMomentumDFLightningGun : public CWeaponBaseGun
 {
   public:
