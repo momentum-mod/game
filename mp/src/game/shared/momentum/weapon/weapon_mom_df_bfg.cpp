@@ -46,11 +46,11 @@ void CMomentumDFBFG::PrimaryAttack()
 
     if (pPlayer->m_flRemainingHaste < 0 || pPlayer->m_flRemainingHaste > gpGlobals->curtime)
     {
-        m_flNextPrimaryAttack = m_flNextSecondaryAttack = gpGlobals->curtime + (0.8f / 1.3);
+        m_flNextPrimaryAttack = m_flNextSecondaryAttack = gpGlobals->curtime + (0.2f / 1.3);
     }
     else
     {
-        m_flNextPrimaryAttack = m_flNextSecondaryAttack = gpGlobals->curtime + 0.8f;
+        m_flNextPrimaryAttack = m_flNextSecondaryAttack = gpGlobals->curtime + 0.2f;
     }
 
     SetWeaponIdleTime(gpGlobals->curtime + m_flTimeToIdleAfterFire);
@@ -83,7 +83,7 @@ void CMomentumDFBFG::PrimaryAttack()
 
     VectorCopy(pPlayer->GetAbsOrigin(), muzzle);
     muzzle[2] += pPlayer->GetViewOffset()[2];
-    scale = 14 + gpGlobals->frametime * 900 * 8;
+    scale = 0.050 * speed[DF_BFG];
     VectorMA(muzzle, scale, vForward, dest);
 
     UTIL_TraceLine(muzzle, dest, MASK_RADIUS_DAMAGE, pPlayer, COLLISION_GROUP_NONE, &trace);
@@ -94,7 +94,7 @@ void CMomentumDFBFG::PrimaryAttack()
 
     VectorAngles(vForward, angForward);
 
-    CMomDFRocket::EmitRocket(muzzle, angForward, pPlayer, DF_ROCKET, damageFactor);
+    CMomDFRocket::EmitRocket(muzzle, angForward, pPlayer, DF_BFG, damageFactor);
 
     DecalPacket rocket = DecalPacket::Rocket(muzzle, angForward);
     g_pMomentumGhostClient->SendDecalPacket(&rocket);

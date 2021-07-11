@@ -297,7 +297,16 @@ CMomDFRocket *CMomDFRocket::EmitRocket(const Vector &vecOrigin, const QAngle &ve
     AngleVectors(vecAngles, &vecForward);
     VectorNormalize(vecForward);
 
-    Vector velocity = vecForward * (speed[projType] + sv_df_rocket_addspeed.GetFloat());
+    Vector velocity;
+
+    if (projType == DF_ROCKET)
+    {
+        VectorScale(vecForward, speed[projType] + sv_df_rocket_addspeed.GetFloat(), velocity);
+    }
+    else
+    {
+        VectorScale(vecForward, speed[projType], velocity);
+    }
 
     QAngle angles;
     VectorAngles(velocity, angles);
