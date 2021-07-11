@@ -3,6 +3,7 @@
 #include "mom_player_shared.h"
 #include "mom_system_gamemode.h"
 #include "weapon_mom_df_rocketlauncher.h"
+#include "movevars_shared.h"
 
 #ifdef GAME_DLL
 #include "momentum/ghost_client.h"
@@ -83,7 +84,7 @@ void CMomentumDFRocketLauncher::PrimaryAttack()
 
     VectorCopy(pPlayer->GetAbsOrigin(), muzzle);
     muzzle[2] += pPlayer->GetViewOffset()[2];
-    scale = 14 + gpGlobals->frametime * 900 * 8;
+    scale = 0.050 * (speed[DF_ROCKET] + sv_df_rocket_addspeed.GetFloat());
     VectorMA(muzzle, scale, vForward, dest);
 
     UTIL_TraceLine(muzzle, dest, MASK_RADIUS_DAMAGE, pPlayer, COLLISION_GROUP_NONE, &trace);

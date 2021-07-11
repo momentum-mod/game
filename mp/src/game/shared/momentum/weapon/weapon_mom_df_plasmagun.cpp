@@ -83,7 +83,7 @@ void CMomentumDFPlasmaGun::PrimaryAttack()
 
     VectorCopy(pPlayer->GetAbsOrigin(), muzzle);
     muzzle[2] += pPlayer->GetViewOffset()[2];
-    scale = 14 + gpGlobals->frametime * 2000 * 8;
+    scale = 0.050 * speed[DF_PLASMA];
     VectorMA(muzzle, scale, vForward, dest);
 
     UTIL_TraceLine(muzzle, dest, MASK_RADIUS_DAMAGE, pPlayer, COLLISION_GROUP_NONE, &trace);
