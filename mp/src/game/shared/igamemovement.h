@@ -47,6 +47,7 @@ public:
 	float			m_flJumpTime;
 	float			m_flLandingSpeed;
 	Vector			m_vecPreviousVelocity;
+	Vector			m_vecGroundNormal;
 
 	float			m_flWallClipTime;
 
