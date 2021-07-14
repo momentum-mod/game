@@ -2581,7 +2581,9 @@ int CMomentumGameMovement::TryPlayerMove(Vector *pFirstDest, trace_t *pFirstTrac
                 {
                     bool bValidHit = !pm.allsolid && pm.fraction < 1.0f;
 
-                    bool bCouldStandHere = pm.plane.normal.z >= 0.7f && mv->m_vecVelocity.z <= NON_JUMP_VELOCITY;
+                    bool bCouldStandHere = pm.plane.normal.z >= 0.7f && 
+                                           mv->m_vecVelocity.z <= NON_JUMP_VELOCITY &&
+                                           m_pPlayer->m_CurrentSlideTrigger == nullptr;
 
                     bool bMovingIntoPlane2D = (pm.plane.normal.x * mv->m_vecVelocity.x) + (pm.plane.normal.y * mv->m_vecVelocity.y) < 0.0f;
 
