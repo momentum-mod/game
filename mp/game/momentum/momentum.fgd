@@ -66,13 +66,14 @@
     
     velocityscale(vector) : "Velocity Scale Factor (X Y Z)" : "1 1 1" : "Scale the player's velocity per-axis"
     
-    mode(choices) : "Teleport mode" : 1 = 
+    mode(choices) : "Teleport mode" : 0 = 
     [
         0 : "Default (do nothing)"
         1 : "Reset velocity"
         2 : "Keep negative Z (downwards) velocity only"
         3 : "Redirect velocity to destination angles"
         4 : "Landmark teleport"
+        5 : "Defrag mode (reorient with 400 ups speed)"
     ]
 	
 	reorient_landmark(choices) : "Reorient Landmark" : 0 : "(Landmark mode only) Reorient origin, angles and velocity from the landmark's local space to the destination's. This means the destination room does not have to face the same way." =

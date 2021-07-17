@@ -837,6 +837,17 @@ bool MomTeleportEntity(CBaseEntity* pTeleportTo,
 
             return true;
         }
+        case TELEPORT_DEFRAG:
+        {
+            AngleVectors(*pAngles, pVelocity);
+            VectorScale(*pVelocity, 400, *pVelocity);
+            CMomentumPlayer *player = ToCMOMPlayer(pEntToTeleport);
+            if (player)
+            {
+                player->m_flKnockbackTime = gpGlobals->curtime + 0.16;
+            }
+            break;
+        }
         default:
         {
             // vphysics objects get stopped if pVelocity is null

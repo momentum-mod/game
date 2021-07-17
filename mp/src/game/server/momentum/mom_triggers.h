@@ -389,6 +389,7 @@ enum TeleportMode_t
     TELEPORT_SNAP_TO_DESTINATION,       // Redirect the teleported object's angles and velocity to the destinaton's angles
     TELEPORT_LANDMARK,                  // Offset the teleported object from the destination by their offset from the landmark, 
                                         // optionally taking the landmark and destination's angles into account
+    TELEPORT_DEFRAG,                    // Quake-3 style behaviour where the player gets 400ups in the direction of the teleport location
 
     TELEPORT_COUNT
 };
