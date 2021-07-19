@@ -725,9 +725,12 @@
         "MOM_Tip_General_15" "Tip: Being comfortable with your keybinds and posture helps avoid gaming-related injuries." // hex
         "MOM_Tip_General_16" "Tip: Some game modes may be daunting at first, but don't let this stop you from learning them!" // amp
         "MOM_Tip_General_17" "Tip: In the air, don't hold your forward key to go forwards. Let your momentum take care of that - control your movement with strafe keys." // porkie
-        "MOM_Tip_General_18" "Tip: Playing maps outside of your comfort zone aids improvement." // change name
+        "MOM_Tip_General_18" "Tip: Playing maps outside of your comfort zone aids improvement." // Imbellis
         "MOM_Tip_General_19" "Tip: If a map is too dark, you may increase the brightness in the settings (while in Fullscreen mode only)." //nevier
-"MOM_Tip_General_20" "Tip: Map teleports can be ignored in practice mode by holding jump." // Hellbent
+        "MOM_Tip_General_20" "Tip: Map teleporters can be ignored in practice mode by holding your jump key." // Hellbent
+        "MOM_Tip_General_21" "Tip: You can use saved locations (default bind 'Z') to complete a map in segments. Segmented runs can help you optimise your route for realtime runs." // fleurily
+        "MOM_Tip_General_22" "Tip: You can use the console to give an action more than one bind." //fleurily
+        "MOM_Tip_General_23" "Tip: Been playing for over an hour? Take a 5-10 minute break." // fleurily
 
         // General meme/alt tips
         "MOM_Tip_General_Alt_1" "Posture check." // roger
@@ -735,6 +738,7 @@
         "MOM_Tip_General_Alt_3" "Tip: Go fast to get a good run." // matter
         "MOM_Tip_General_Alt_4" "Tip: If you’re having too much trouble with a map, try another one."
         "MOM_Tip_General_Alt_5" "Tip: Stay hydrated!"
+        "MOM_Tip_General_Alt_6" "No run is worth harming yourself over. Play responsibly, take frequent breaks and stretch your hands." // fleurily
 
         // Bhop
         "MOM_Tip_Bhop_1" "Tip: The better sync you maintain throughout a run, the more speed you'll have."
@@ -748,10 +752,15 @@
         "MOM_Tip_Bhop_9" "Tip: Adding multiple strafes per jump is faster, when done right." // roger
         "MOM_Tip_Bhop_10" "Tip: Turn binds are great for maintaining speed in tight locations." // amp
         "MOM_Tip_Bhop_11" "Tip: When in the air, pressing a movement key opposite to the direction of movement will rapidly decrease your speed." // Block57
+        "MOM_Tip_Bhop_12" "Tip: Turning too sharply while going quickly can drastically reduce your speed, take wider turns to preserve your momentum." // fleurily
+        "MOM_Tip_Bhop_13" "Tip: To gain speed efficiently, start with wide and fast strafes. As your speed increases, gradually reduce the width of your strafes." // fleurily
+
+        // Bhop meme/alt tips
+        "MOM_Tip_Bhop_Alt_1" "Tip: Try doing runs in other styles such as Half-Sideways, Sideways and W-Only as they teach you how to maintain speed through tricky telehops."
 
         // Surf
         "MOM_Tip_Surf_1" "Tip: The lower you go on a surf ramp, the more velocity you'll gain."
-        "MOM_Tip_Surf_2" "Tip: The smoother your mouse movement, the better your momentum."
+        "MOM_Tip_Surf_2" "Tip: The smoother your mouse movements are, the better your momentum will be."
         "MOM_Tip_Surf_3" "Tip: The faster you’re going, the slower you need to turn in order to preserve speed."
         "MOM_Tip_Surf_4" "Tip: Avoid crouching, especially at high speeds, as it can negatively affect your ability to air strafe."
         "MOM_Tip_Surf_5" "Tip: Having trouble completing spins? Try assigning keys to turn left/right in the Settings menu." // Pyrt
@@ -762,14 +771,22 @@
         "MOM_Tip_Surf_10" "Tip: If your turn bind speed is set too high, you'll lose speed when using it." // nevier
         "MOM_Tip_Surf_11" "Tip: If you have trouble boarding a ramp, use the paint tool to mark the spine or beginning of the ramp." //nevier
 
-        // Surf meme tips
+        // Surf meme/alt tips
         "MOM_Tip_Surf_Alt_1" "Tip: Be smooth. B)" // maz
         "MOM_Tip_Surf_Alt_2" "Tip: Angle surfing is a good way to challenge yourself on a familiar map. Momentum supports Half-Sideways, Sideways and Backwards surfing. Give it a try!" // nevier
 
         // Climb
-        "MOM_Tip_KZ_1" "Tip: When starting out, use ‘saveloc’s to save your place in case you fall."
-        
-        // Climb meme tips
+        "MOM_Tip_KZ_1" "Tip: You can use saved locations (default bind 'Z') to save your place in case you fall."
+        "MOM_Tip_KZ_2" "Tip: Prestrafing correctly is key to jumping long distances." 
+        "MOM_Tip_KZ_3" "Tip: If a big gap is causing you difficulty, try to clear it with a well timed bhop." 
+        "MOM_Tip_KZ_4" "Tip: Strafing while in the air can help you cover further distances." 
+        "MOM_Tip_KZ_5" "Tip: You can pre-strafe up to a speed of 288 units per second, the extra speed can help you jump further." 
+        "MOM_Tip_KZ_6" "Tip: If you are struggling to hit bhops, try using your scroll wheel to jump."
+        "MOM_Tip_KZ_7" "Tip: Crouching while you jump will allow you to reach blocks you can't get to with just a normal jump."
+        "MOM_Tip_KZ_8" "Tip: To perform a ladder jump, you need to strafe off as you come to the top of the ladder."                                                           
+        "MOM_Tip_KZ_9" "Tip: Learn to climb ladders quickly using two directional keys, it is key to mastering ladder jumps."
+
+        // Climb meme/alt tips
         "MOM_Tip_KZ_Alt_1" "Tip: If you stumble and fall, just get right back up." // Aux
 
         // Rocket Jump
@@ -790,6 +807,8 @@
         "MOM_Tip_SJ_3" "Tip: Crouching without jumping before detonating a stickybomb will allow a more horizontal boost."
         "MOM_Tip_SJ_4" "Tip: Shooting stickies as early as possible is essential to improving your course times." // hex
         "MOM_Tip_SJ_5" "Tip: The Stickybomb Launcher fires when the attack button is released, instead of when it is pressed." // Hellbent
+        "MOM_Tip_SJ_6" "Tip: Stickybombs have a short delay after firing which prevents them from being detonated instantly."
+        "MOM_Tip_SJ_7" "Tip: Although you can only have 3 stickybombs at one time, this does not prevent you from using more than 3 in one jump."
         
         // Ahop
         "MOM_Tip_Ahop_1" "Tip: Hold sprint while airborne to gain maximum air control."
