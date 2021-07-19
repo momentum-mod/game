@@ -199,7 +199,7 @@ void CWeaponDef::LoadWeaponDefinitions()
     m_vecWeaponDefs[WEAPON_DF_PLASMAGUN]    = ParseWeaponScript(g_szWeaponNames[WEAPON_DF_PLASMAGUN]);
     m_vecWeaponDefs[WEAPON_DF_GRENADELAUNCHER] = ParseWeaponScript(g_szWeaponNames[WEAPON_DF_GRENADELAUNCHER]);
     m_vecWeaponDefs[WEAPON_DF_BFG]          = ParseWeaponScript(g_szWeaponNames[WEAPON_DF_BFG]);
-    m_vecWeaponDefs[WEAPON_DF_LIGHTNINGGUN] = ParseWeaponScript(g_szWeaponNames[WEAPON_DF_BFG]);
+    m_vecWeaponDefs[WEAPON_DF_LIGHTNINGGUN] = ParseWeaponScript(g_szWeaponNames[WEAPON_DF_LIGHTNINGGUN]);
     m_vecWeaponDefs[WEAPON_BAZOOKA]         = ParseWeaponScript(g_szWeaponNames[WEAPON_BAZOOKA]);
 }
 

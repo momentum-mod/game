@@ -21,5 +21,5 @@ class CMomentumDFLightningGun : public CWeaponBaseGun
     void PrimaryAttack() OVERRIDE;
     void Precache() OVERRIDE;
 
-    WeaponID_t GetWeaponID(void) const OVERRIDE { return WEAPON_DF_PLASMAGUN; }
+    WeaponID_t GetWeaponID(void) const OVERRIDE { return WEAPON_DF_LIGHTNINGGUN; }
 };
