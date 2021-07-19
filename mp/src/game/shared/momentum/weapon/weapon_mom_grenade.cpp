@@ -101,6 +101,16 @@ void CMomentumGrenade::PrimaryAttack()
     if (!pPlayer || pPlayer->GetAmmoCount(m_iPrimaryAmmoType) <= 0)
         return;
 
+    int ammo = pPlayer->m_iMomAmmo.Get(GetWeaponID());
+    if (ammo == 0)
+    {
+        return;
+    }
+    else if (ammo != -1)
+    {
+        pPlayer->m_iMomAmmo.Set(GetWeaponID(), ammo - 1);
+    }
+
     // The pull pin animation has to finish, then we wait until they aren't holding the primary
     // attack button, then throw the grenade.
     SendWeaponAnim(ACT_VM_PULLPIN);

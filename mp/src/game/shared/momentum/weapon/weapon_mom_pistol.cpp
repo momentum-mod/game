@@ -132,6 +132,16 @@ void CMomentumPistol::PrimaryAttack()
     if (!pPlayer)
         return;
 
+    int ammo = pPlayer->m_iMomAmmo.Get(GetWeaponID());
+    if (ammo == 0)
+    {
+        return;
+    }
+    else if (ammo != -1)
+    {
+        pPlayer->m_iMomAmmo.Set(GetWeaponID(), ammo - 1);
+    }
+
     float flCycleTime = 0.15f;
 
     if (m_bBurstMode)

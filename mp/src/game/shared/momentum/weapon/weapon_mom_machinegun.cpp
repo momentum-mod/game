@@ -45,6 +45,16 @@ void CMomentumMachinegun::PrimaryAttack()
     if (!pPlayer)
         return;
 
+    int ammo = pPlayer->m_iMomAmmo.Get(GetWeaponID());
+    if (ammo == 0)
+    {
+        return;
+    }
+    else if (ammo != -1)
+    {
+        pPlayer->m_iMomAmmo.Set(GetWeaponID(), ammo - 1);
+    }
+
     if (!BaseGunFire(0.0f, 0.07f, true))
         return;
 
