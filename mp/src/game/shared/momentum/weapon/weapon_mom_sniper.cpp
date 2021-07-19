@@ -80,6 +80,16 @@ void CMomentumSniper::PrimaryAttack()
     if (!pPlayer)
         return;
 
+    int ammo = pPlayer->m_iMomAmmo.Get(GetWeaponID());
+    if (ammo == 0)
+    {
+        return;
+    }
+    else if (ammo != -1)
+    {
+        pPlayer->m_iMomAmmo.Set(GetWeaponID(), ammo - 1);
+    }
+
     if (pPlayer->GetFOV() != pPlayer->GetDefaultFOV())
     {
         pPlayer->m_bResumeZoom = true;

@@ -16,6 +16,7 @@ class CMomentumMachinegun : public CWeaponBaseGun
     CMomentumMachinegun();
 
     void PrimaryAttack() OVERRIDE;
+    int GetSlot(void) const;
 
     WeaponID_t GetWeaponID(void) const OVERRIDE { return WEAPON_MACHINEGUN; }
 };

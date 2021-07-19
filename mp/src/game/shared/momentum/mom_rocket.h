@@ -28,6 +28,9 @@ class CMomRocket : public CMomExplosive
 
     static CMomRocket *EmitRocket(const Vector &vecOrigin, const QAngle &vecAngles, CBaseEntity *pOwner);
 
+    bool m_bBazookaRocket;
+    bool m_bOverloadRocket;
+
   private:
     void SpawnRocketSurprise();
     void StopTrailSound();

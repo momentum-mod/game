@@ -35,6 +35,16 @@ void CMomentumShotgun::PrimaryAttack()
     if (!pPlayer)
         return;
 
+    int ammo = pPlayer->m_iMomAmmo.Get(GetWeaponID());
+    if (ammo == 0)
+    {
+        return;
+    }
+    else if (ammo != -1)
+    {
+        pPlayer->m_iMomAmmo.Set(GetWeaponID(), ammo - 1);
+    }
+
     // don't fire underwater for non-RJ modes
     if (!g_pGameModeSystem->GameModeIs(GAMEMODE_RJ) && pPlayer->GetWaterLevel() == 3)
     {

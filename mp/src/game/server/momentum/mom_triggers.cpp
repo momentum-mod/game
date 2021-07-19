@@ -837,6 +837,17 @@ bool MomTeleportEntity(CBaseEntity* pTeleportTo,
 
             return true;
         }
+        case TELEPORT_DEFRAG:
+        {
+            AngleVectors(*pAngles, pVelocity);
+            VectorScale(*pVelocity, 400, *pVelocity);
+            CMomentumPlayer *player = ToCMOMPlayer(pEntToTeleport);
+            if (player)
+            {
+                player->m_flKnockbackTime = gpGlobals->curtime + 0.16;
+            }
+            break;
+        }
         default:
         {
             // vphysics objects get stopped if pVelocity is null
@@ -2601,3 +2612,99 @@ void CTeleportDestination::Precache()
     BaseClass::Precache();
     PrecacheMaterial(MOM_ZONE_DRAW_MATERIAL);
 }
+
+//--------- CTriggerOverbounce -------------------------------------------------------------------
+
+LINK_ENTITY_TO_CLASS(trigger_momentum_overbounce, CTriggerOverbounce);
+
+BEGIN_DATADESC(CTriggerOverbounce)
+    DEFINE_KEYFIELD(m_flMinSpeed, FIELD_FLOAT, "MinSpeed"),
+    DEFINE_KEYFIELD(m_flMaxSpeed, FIELD_FLOAT, "MaxSpeed"),
+END_DATADESC()
+
+IMPLEMENT_SERVERCLASS_ST(CTriggerOverbounce, DT_TriggerOverbounce)
+SendPropFloat(SENDINFO(m_flMinSpeed)),
+SendPropFloat(SENDINFO(m_flMaxSpeed)),
+END_SEND_TABLE();
+
+void CTriggerOverbounce::OnStartTouch(CBaseEntity *pOther)
+{
+    BaseClass::OnStartTouch(pOther);
+
+    if (pOther->IsPlayer())
+    {
+        const auto pPlayer = ToCMOMPlayer(pOther);
+        if (pPlayer)
+        {
+            pPlayer->m_vecOverbounceTriggers.AddToHead(this);
+            pPlayer->m_CurrentOverbounceTrigger = this;
+        }
+    }
+}
+
+void CTriggerOverbounce::OnEndTouch(CBaseEntity *pOther)
+{
+    BaseClass::OnEndTouch(pOther);
+
+    if (pOther->IsPlayer())
+    {
+        const auto pPlayer = ToCMOMPlayer(pOther);
+        if (pPlayer)
+        {
+            pPlayer->m_vecOverbounceTriggers.FindAndRemove(this);
+
+            if (pPlayer->m_CurrentOverbounceTrigger.Get() == this)
+            {
+                if (!pPlayer->m_vecOverbounceTriggers.IsEmpty())
+                    pPlayer->m_CurrentOverbounceTrigger = pPlayer->m_vecOverbounceTriggers[0];
+                else
+                    pPlayer->m_CurrentOverbounceTrigger = nullptr;
+            }
+        }
+    }
+}
+
+//-----------------------------------------------------------------------------------------------
+
+//--------- CTriggerWeaponstrip -------------------------------------------------------------------
+
+LINK_ENTITY_TO_CLASS(trigger_momentum_weaponstrip, CTriggerWeaponstrip);
+
+BEGIN_DATADESC(CTriggerWeaponstrip)
+    DEFINE_AUTO_ARRAY_KEYFIELD( m_szWeaponName, FIELD_CHARACTER, "WeaponName" ),
+END_DATADESC()
+
+IMPLEMENT_SERVERCLASS_ST(CTriggerWeaponstrip, DT_TriggerWeaponstrip)
+	SendPropString( SENDINFO(m_szWeaponName) ),
+END_SEND_TABLE();
+
+CTriggerWeaponstrip::CTriggerWeaponstrip()
+{
+	m_szWeaponName.GetForModify()[0] = 0;
+}
+
+void CTriggerWeaponstrip::OnStartTouch(CBaseEntity *pOther)
+{
+    BaseClass::OnStartTouch(pOther);
+
+    if (pOther->IsPlayer())
+    {
+        const auto pPlayer = ToCMOMPlayer(pOther);
+        if (pPlayer)
+        {
+            pPlayer->DropWeapon(m_szWeaponName.Get());
+        }
+    }
+}
+
+bool CTriggerWeaponstrip::KeyValue(const char *szKeyName, const char *szValue)
+{
+    if (FStrEq(szKeyName, "WeaponName"))
+    {
+        Q_strncpy(m_szWeaponName.GetForModify(), szValue, MAX_WEAPON_STRING);
+        return true;
+    }
+
+    return BaseClass::KeyValue(szKeyName, szValue);
+}
+//-----------------------------------------------------------------------------------------------

@@ -8,6 +8,7 @@
 #include "movevars_shared.h"
 #include "mom_system_gamemode.h"
 #include "run/mom_run_safeguards.h"
+#include "mom_rocket.h"
 
 #ifdef CLIENT_DLL
 #include "MessageboxPanel.h"
@@ -101,12 +102,26 @@ static CViewVectors g_ViewVectorsConc(Vector(0, 0, 64),      // eye position
                                       Vector(0, 0, 14)       // dead view height
 );
 
+static CViewVectors g_ViewVectorsDefrag(Vector(0, 0, 26),    // eye position
+                                        Vector(-15, -15, -24), // hull min
+                                        Vector(15, 15, 32),  // hull max
+
+                                        Vector(-15, -15, -24), // duck hull min
+                                        Vector(15, 15, 16),  // duck hull max
+                                        Vector(0, 0, 12),    // duck view
+      
+                                        Vector(-10, -10, -10), // observer hull min
+                                        Vector(10, 10, 10),    // observer hull max
+      
+                                        Vector(0, 0, 14) // dead view height
+);
+
 const CViewVectors *CMomentumGameRules::GetViewVectors() const
 {
     if (g_pGameModeSystem->IsTF2BasedMode())
         return &g_ViewVectorsTF2;
 
-    if(g_pGameModeSystem->GameModeIs(GAMEMODE_CONC))
+    if (g_pGameModeSystem->GameModeIs(GAMEMODE_CONC))
         return &g_ViewVectorsConc;
 
     if (g_pGameModeSystem->GameModeIs(GAMEMODE_AHOP))
@@ -114,6 +129,9 @@ const CViewVectors *CMomentumGameRules::GetViewVectors() const
 
     if (g_pGameModeSystem->GameModeIs(GAMEMODE_PARKOUR))
         return &g_ViewVectorsParkour;
+
+    if (g_pGameModeSystem->GameModeIs(GAMEMODE_DEFRAG))
+        return &g_ViewVectorsDefrag;
 
     return &g_ViewVectorsMom;
 }
@@ -384,7 +402,9 @@ bool CMomentumGameRules::AllowDamage(CBaseEntity *pVictim, const CTakeDamageInfo
     if (pVictim == info.GetAttacker() && (FClassnameIs(info.GetInflictor(), "momentum_rocket") ||
                                           FClassnameIs(info.GetInflictor(), "momentum_generic_bomb") ||
                                           FClassnameIs(info.GetInflictor(), "momentum_stickybomb") ||
-                                          FClassnameIs(info.GetInflictor(), "momentum_concgrenade")))
+                                          FClassnameIs(info.GetInflictor(), "momentum_concgrenade") ||
+                                          FClassnameIs(info.GetInflictor(), "momentum_df_rocket") ||
+                                          FClassnameIs(info.GetInflictor(), "momentum_df_grenade")))
         return true;
 
     return !pVictim->IsPlayer();
@@ -434,7 +454,18 @@ void CMomentumGameRules::RadiusDamage(const CTakeDamageInfo &info, const Vector 
         {
             if (g_pGameModeSystem->GameModeIs(GAMEMODE_RJ))
             {
-                flRadius = 121.0f; // Rocket self-damage radius is 121.0f
+                if (dynamic_cast<CMomRocket *>(pInflictor)->m_bBazookaRocket)
+                {
+                    flRadius = 97;
+                }
+                else
+                {
+                    flRadius = 121.0f; // Rocket self-damage radius is 121.0f
+                }
+                if (dynamic_cast<CMomRocket *>(pInflictor)->m_bOverloadRocket)
+                {
+                    flFalloff = 1;
+                }
             }
             else if (g_pGameModeSystem->GameModeIs(GAMEMODE_DEFRAG))
             {

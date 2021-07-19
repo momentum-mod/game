@@ -72,7 +72,7 @@ bool CMomentumGrenade::Deploy()
 bool CMomentumGrenade::Holster(CBaseCombatWeapon *pSwitchingTo)
 {
     m_bRedraw = false;
-    m_bPinPulled = false; // when this is holstered make sure the pin isn’t pulled.
+    m_bPinPulled = false; // when this is holstered make sure the pin isnï¿½t pulled.
     m_fThrowTime = 0;
 
 #ifndef CLIENT_DLL
@@ -100,6 +100,16 @@ void CMomentumGrenade::PrimaryAttack()
     CMomentumPlayer *pPlayer = GetPlayerOwner();
     if (!pPlayer || pPlayer->GetAmmoCount(m_iPrimaryAmmoType) <= 0)
         return;
+
+    int ammo = pPlayer->m_iMomAmmo.Get(GetWeaponID());
+    if (ammo == 0)
+    {
+        return;
+    }
+    else if (ammo != -1)
+    {
+        pPlayer->m_iMomAmmo.Set(GetWeaponID(), ammo - 1);
+    }
 
     // The pull pin animation has to finish, then we wait until they aren't holding the primary
     // attack button, then throw the grenade.

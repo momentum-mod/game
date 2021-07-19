@@ -180,15 +180,16 @@ void CGameMode_RJ::OnPlayerSpawn(CMomentumPlayer *pPlayer)
     CGameModeBase::OnPlayerSpawn(pPlayer);
 
 #ifdef GAME_DLL
-    pPlayer->GiveWeapon(WEAPON_ROCKETLAUNCHER);
+    pPlayer->GiveWeapon(WEAPON_BAZOOKA);
     pPlayer->GiveWeapon(WEAPON_SHOTGUN);
 #endif
 }
 
 bool CGameMode_RJ::WeaponIsAllowed(WeaponID_t weapon)
 {
-    // RJ only allows 3 weapons:
+    // RJ only allows 4 weapons:
     return weapon == WEAPON_ROCKETLAUNCHER ||
+           weapon == WEAPON_BAZOOKA        ||
            weapon == WEAPON_SHOTGUN        ||
            weapon == WEAPON_KNIFE;
 }
@@ -364,18 +365,20 @@ void CGameMode_Defrag::SetGameModeVars()
     CGameModeBase::SetGameModeVars();
 
     sv_maxvelocity.SetValue(100000);
-    sv_airaccelerate.SetValue(1000);
-    sv_accelerate.SetValue(10);
+
+    sv_maxspeed.SetValue(320);
+    sv_accelerate.SetValue(15);
+    sv_friction.SetValue(6);
+    sv_wateraccelerate.SetValue(4);
+    sv_stepsize.SetValue(18);
+    sv_ground_trigger_fix.SetValue(0);
+
+    sv_airaccelerate.SetValue(1);
 }
 
 void CGameMode_Defrag::OnPlayerSpawn(CMomentumPlayer *pPlayer)
 {
     CGameModeBase::OnPlayerSpawn(pPlayer);
-
-#ifdef GAME_DLL
-    pPlayer->GiveWeapon(WEAPON_ROCKETLAUNCHER);
-    pPlayer->GiveWeapon(WEAPON_MACHINEGUN);
-#endif
 }
 
 bool CGameMode_Defrag::HasCapability(GameModeHUDCapability_t capability)
@@ -385,9 +388,7 @@ bool CGameMode_Defrag::HasCapability(GameModeHUDCapability_t capability)
 
 bool CGameMode_Defrag::WeaponIsAllowed(WeaponID_t weapon)
 {
-    return weapon == WEAPON_ROCKETLAUNCHER ||
-           weapon == WEAPON_MACHINEGUN ||
-           weapon == WEAPON_KNIFE;
+    return true;
 }
 
 CGameModeSystem::CGameModeSystem() : CAutoGameSystem("CGameModeSystem")
