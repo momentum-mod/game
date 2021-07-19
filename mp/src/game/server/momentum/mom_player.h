@@ -353,6 +353,12 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
     CNetworkVar(float, m_flRemainingHaste);
     CNetworkVar(float, m_flRemainingDamageBoost);
 
+    void InputAddAmmo(inputdata_t &inputdata);
+    void InputSetAmmo(inputdata_t &inputdata);
+    void InputSetAmmoType(inputdata_t &inputdata);
+    CNetworkArray(int, m_iMomAmmo, WEAPON_MAX);
+    int m_iMomAmmoType;
+
     float m_flKnockbackTime;
 
   private:

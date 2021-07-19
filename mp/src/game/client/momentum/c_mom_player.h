@@ -112,6 +112,7 @@ public:
 
     float m_flRemainingHaste;
     float m_flRemainingDamageBoost;
+    CNetworkArray(int, m_iMomAmmo, WEAPON_MAX);
 
   private:
     // Mobility mod (parkour)

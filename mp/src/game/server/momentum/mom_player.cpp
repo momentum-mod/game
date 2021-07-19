@@ -157,6 +157,7 @@ SendPropBool(SENDINFO(m_bSurfing)),
 SendPropInt(SENDINFO(m_nButtonsToggled)),
 SendPropVector(SENDINFO(m_vecRampBoardVel)),
 SendPropVector(SENDINFO(m_vecRampLeaveVel)),
+SendPropArray3(SENDINFO_ARRAY3(m_iMomAmmo), SendPropInt(SENDINFO_ARRAY(m_iMomAmmo), -1, 0)),
 SendPropArray3(SENDINFO_ARRAY3(m_iZoneCount), SendPropInt(SENDINFO_ARRAY(m_iZoneCount), 7, SPROP_UNSIGNED)),
 SendPropArray3(SENDINFO_ARRAY3(m_iLinearTracks), SendPropInt(SENDINFO_ARRAY(m_iLinearTracks), 1, SPROP_UNSIGNED)),
 SendPropDataTable(SENDINFO_DT(m_Data), &REFERENCE_SEND_TABLE(DT_MomRunEntityData)),
@@ -171,6 +172,9 @@ BEGIN_DATADESC(CMomentumPlayer)
     DEFINE_INPUTFUNC(FIELD_VOID, "ClearCollectibles", InputClearCollectibles),
     DEFINE_INPUTFUNC(FIELD_FLOAT, "AddHaste", InputAddHaste),
     DEFINE_INPUTFUNC(FIELD_FLOAT, "AddDamageBoost", InputAddDamageBoost),
+    DEFINE_INPUTFUNC(FIELD_INTEGER, "AddAmmo", InputAddAmmo),
+    DEFINE_INPUTFUNC(FIELD_INTEGER, "SetAmmo", InputSetAmmo),
+    DEFINE_INPUTFUNC(FIELD_INTEGER, "SetAmmoType", InputSetAmmoType),
 END_DATADESC();
 
 LINK_ENTITY_TO_CLASS(player, CMomentumPlayer);
@@ -267,6 +271,12 @@ CMomentumPlayer::CMomentumPlayer()
 
     m_flRemainingHaste = 0.0f;
     m_flRemainingDamageBoost = 0.0f;
+    m_iMomAmmoType = -1;
+
+    for (int i = 0; i < WEAPON_MAX; i++)
+    {
+        m_iMomAmmo.Set(i, -1);
+    }
 }
 
 CMomentumPlayer::~CMomentumPlayer()
@@ -2558,4 +2568,52 @@ void CMomentumPlayer::InputAddDamageBoost(inputdata_t &inputdata)
     {
         m_flRemainingDamageBoost = gpGlobals->curtime + inputdata.value.Float();
     }
+}
+
+void CMomentumPlayer::InputAddAmmo(inputdata_t &inputdata)
+{
+    int ammo = inputdata.value.Int();
+
+    if (m_iMomAmmoType == -1)
+    {
+        for (int i = 0; i < WEAPON_MAX; i++)
+        {
+            m_iMomAmmo.Set(i, m_iMomAmmo.Get(i) + ammo);
+        }
+        return;
+    }
+    else if (m_iMomAmmoType < 0 || m_iMomAmmoType >= WEAPON_MAX)
+    {
+        DevWarning("Invalid Ammo Type!\n");
+        return;
+    }
+
+    m_iMomAmmo.Set(m_iMomAmmoType, m_iMomAmmo.Get(m_iMomAmmoType) + ammo);
+}
+
+void CMomentumPlayer::InputSetAmmo(inputdata_t &inputdata)
+{
+    int ammo = inputdata.value.Int();
+
+    if (m_iMomAmmoType == -1)
+    {
+        for (int i = 0; i < WEAPON_MAX; i++)
+        {
+            m_iMomAmmo.Set(i, ammo);
+        }
+        return;
+    }
+    else if (m_iMomAmmoType < 0 || m_iMomAmmoType >= WEAPON_MAX)
+    {
+        DevWarning("Invalid Ammo Type!\n");
+        return;
+    }
+
+    m_iMomAmmo.Set(m_iMomAmmoType, ammo);
+}
+
+void CMomentumPlayer::InputSetAmmoType(inputdata_t &inputdata)
+{
+    int type = inputdata.value.Int();
+    m_iMomAmmoType = type;
 }
