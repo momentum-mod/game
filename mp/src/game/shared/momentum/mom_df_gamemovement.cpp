@@ -419,7 +419,7 @@ void CMomentumGameMovement::DFGroundTrace()
     {
         mv->m_bRampSliding = true;
 
-        if (sv_rampslide.GetInt() == 1)
+        if (sv_rampslide.GetInt() == 1 && m_pPlayer->m_CurrentSlideTrigger == nullptr)
         {
             float spd = mv->m_vecVelocity.Length();
             DFClipVelocity(mv->m_vecVelocity, mv->m_vecGroundNormal, mv->m_vecVelocity, 1.001f);

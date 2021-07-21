@@ -354,7 +354,8 @@ void CMomentumGameMovement::DFStepSlideMove(bool inAir)
         VectorCopy(startVel, mv->m_vecVelocity);
     }
 
-    if (trace.plane.normal[2] >= 0.7 && sv_rampslide.GetInt() == 2 && oldSpeed > mv->m_vecVelocity.Length2D())
+    if (trace.plane.normal[2] >= 0.7 && (sv_rampslide.GetInt() == 2 || (sv_rampslide.GetInt() == 1 && m_pPlayer->m_CurrentSlideTrigger != nullptr))
+        && oldSpeed > mv->m_vecVelocity.Length2D())
     {
         float oldZVel = mv->m_vecVelocity.z;
         VectorCopy(startVel, mv->m_vecVelocity);
