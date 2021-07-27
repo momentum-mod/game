@@ -253,7 +253,7 @@ void CMomentumGameMovement::DFWalkMove()
     {
         realAccelerate = sv_accelerate.GetFloat();
     }
-    DFAccelerate(wishdir, wishspeed, realAccelerate);
+    DFAccelerate(wishdir, wishspeed, realAccelerate, sv_maxspeed.GetFloat());
 
     // this is the part that causes overbounces   
     spd = mv->m_vecVelocity.Length();

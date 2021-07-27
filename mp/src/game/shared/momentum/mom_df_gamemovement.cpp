@@ -19,7 +19,7 @@
 
 #include "tier0/memdbgon.h"
 
-void CMomentumGameMovement::DFClipVelocity(Vector in, Vector &normal, Vector &out, float overbounce)
+void CMomentumGameMovement::DFClipVelocity(const Vector &in, const Vector &normal, Vector &out, float overbounce)
 {
     float backoff;
     float change;
@@ -140,6 +140,57 @@ void CMomentumGameMovement::DFDuck()
     return;
 }
 
+void CMomentumGameMovement::DFAccelerate(const Vector &wishdir, float wishspeed, float accel, float maxspeed)
+{
+    int i;
+    float addspeed, accelspeed, currentspeed;
+    float clampedWishspeed;
+
+    clampedWishspeed = wishspeed;
+
+    if (player->pl.deadflag)
+        return;
+
+    if (player->m_flWaterJumpTime)
+        return;
+
+    // Cap speed
+    if (clampedWishspeed > maxspeed)
+        clampedWishspeed = maxspeed;
+
+    if (m_pPlayer->m_flRemainingHaste < 0 || m_pPlayer->m_flRemainingHaste > gpGlobals->curtime)
+    {
+        clampedWishspeed *= 1.3;
+    }
+
+    // Determine veer amount
+    currentspeed = DotProduct(mv->m_vecVelocity, wishdir);
+
+    // See how much to add
+    addspeed = clampedWishspeed - currentspeed;
+
+    // If not adding any, done.
+    if (addspeed <= 0)
+    {
+        return;
+    }
+
+    // Determine acceleration speed after acceleration
+    accelspeed = accel * wishspeed * gpGlobals->frametime * player->m_surfaceFriction;
+
+    // Cap it
+    if (accelspeed > addspeed)
+        accelspeed = addspeed;
+
+    // Adjust pmove vel.
+    for (i = 0; i < 3; i++)
+    {
+        mv->m_vecVelocity[i] += accelspeed * wishdir[i];
+        mv->m_outWishVel[i] += accelspeed * wishdir[i];
+    }
+}
+
+#if 0
 void CMomentumGameMovement::DFAccelerate(Vector& wishdir, float wishspeed, float accel)
 {
     int i;
@@ -170,6 +221,7 @@ void CMomentumGameMovement::DFAccelerate(Vector& wishdir, float wishspeed, float
         mv->m_vecVelocity[i] += accelspeed * wishdir[i];
     }
 }
+#endif
 
 void CMomentumGameMovement::DFFriction(bool isCrouchsliding)
 {

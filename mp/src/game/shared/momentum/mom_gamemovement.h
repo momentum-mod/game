@@ -139,11 +139,11 @@ public:
     // Defrag movement functions
 
     // mom_df_gamemovement.cpp
-    void DFClipVelocity(Vector in, Vector &normal, Vector &out, float overbounce);
+    void DFClipVelocity(const Vector &in, const Vector &normal, Vector &out, float overbounce);
     void DFSetWaterLevel();
     bool DFCanUnDuck();
     void DFDuck();
-    void DFAccelerate(Vector &wishdir, float wishspeed, float accel);
+    void DFAccelerate(const Vector &wishdir, float wishspeed, float accel, float maxspeed);
     void DFFriction(bool isCrouchsliding);
     void DFFullWalkMove();
     void DFPlayerMove();
@@ -157,8 +157,7 @@ public:
     void DFWalkMove();
 
     // mom_df_airmove.cpp
-    void DFAirControl(Vector &wishdir, float wishspeed);
-    void DFAirAccelerate(Vector wishdir, float wishspeed, float accel, float maxspeed);
+    void DFAirControl(const Vector &wishdir, float wishspeed);
     void DFAirMove();
 
     // mom_df_watermove.cpp

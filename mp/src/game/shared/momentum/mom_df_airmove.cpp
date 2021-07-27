@@ -21,7 +21,7 @@
 
 #define VectorMAM(scale1, b1, scale2, b2, c)                                                                           \
     (c.x = scale1 * b1.x + scale2 * b2.x, c.y = scale1 * b1.y + scale2 * b2.y, c.z = scale1 * b1.z + scale2 * b2.z)
-void CMomentumGameMovement::DFAirControl(Vector &wishdir, float wishspeed)
+void CMomentumGameMovement::DFAirControl(const Vector &wishdir, float wishspeed)
 {
     float k = 32;
     float kMult = wishspeed / sv_maxairspeed.GetFloat();
@@ -34,9 +34,9 @@ void CMomentumGameMovement::DFAirControl(Vector &wishdir, float wishspeed)
     kMult = clamp(kMult, 0, 1);
     k *= kMult;
 
-    speed = mv->m_vecVelocity.Length();
-    mv->m_vecVelocity = mv->m_vecVelocity.Normalized();
-    dot = mv->m_vecVelocity.Dot(wishdir);
+    speed = VectorLength(mv->m_vecVelocity);
+    VectorNormalize(mv->m_vecVelocity);
+    dot = DotProduct(mv->m_vecVelocity, wishdir);
 
     if (dot > 0)
     {
@@ -50,59 +50,10 @@ void CMomentumGameMovement::DFAirControl(Vector &wishdir, float wishspeed)
     mv->m_vecVelocity.x *= speed;
     mv->m_vecVelocity.y *= speed;
     mv->m_vecVelocity.z = zVel;
-
+    
     Vector forwardAccel;
     VectorScale(wishdir, sv_forwardaccelerate.GetFloat() * gpGlobals->frametime, forwardAccel);
-
     VectorAdd(mv->m_vecVelocity, forwardAccel, mv->m_vecVelocity);
-}
-
-void CMomentumGameMovement::DFAirAccelerate(Vector wishdir, float wishspeed, float accel, float maxspeed)
-{
-    int i;
-    float addspeed, accelspeed, currentspeed;
-    float wishspd;
-
-    wishspd = wishspeed;
-
-    if (player->pl.deadflag)
-        return;
-
-    if (player->m_flWaterJumpTime)
-        return;
-
-    // Cap speed
-    if (wishspd > maxspeed)
-        wishspd = maxspeed;
-
-    if (m_pPlayer->m_flRemainingHaste < 0 || m_pPlayer->m_flRemainingHaste > gpGlobals->curtime)
-    {
-        wishspd *= 1.3;
-    }
-
-    // Determine veer amount
-    currentspeed = mv->m_vecVelocity.Dot(wishdir);
-
-    // See how much to add
-    addspeed = wishspd - currentspeed;
-
-    // If not adding any, done.
-    if (addspeed <= 0)
-        return;
-
-    // Determine acceleration speed after acceleration
-    accelspeed = accel * wishspeed * gpGlobals->frametime * player->m_surfaceFriction;
-
-    // Cap it
-    if (accelspeed > addspeed)
-        accelspeed = addspeed;
-
-    // Adjust pmove vel.
-    for (i = 0; i < 3; i++)
-    {
-        mv->m_vecVelocity[i] += accelspeed * wishdir[i];
-        mv->m_outWishVel[i] += accelspeed * wishdir[i];
-    }
 }
 
 void CMomentumGameMovement::DFAirMove()
@@ -213,7 +164,7 @@ void CMomentumGameMovement::DFAirMove()
         realWishspeed = clampedWishspeed * DFScale(realMaxSpeed);
     }
 
-    DFAirAccelerate(wishdir, realWishspeed, realAcceleration, realMaxSpeed);
+    DFAccelerate(wishdir, realWishspeed, realAcceleration, realMaxSpeed);
 
     if (doAircontrol)
     {
