@@ -103,6 +103,7 @@ public:
     float GetIntervalPerTick() override { return 0.0078125f; }
     void SetGameModeVars() override;
     bool PlayerHasAutoBhop() override { return false; }
+    void OnPlayerSpawn(CMomentumPlayer *pPlayer) override;
     bool WeaponIsAllowed(WeaponID_t weapon) override;
     bool HasCapability(GameModeHUDCapability_t capability) override;
 };

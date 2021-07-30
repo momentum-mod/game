@@ -145,10 +145,19 @@ void CGameMode_KZ::SetGameModeVars()
 
 bool CGameMode_KZ::WeaponIsAllowed(WeaponID_t weapon)
 {
-    // KZ only blacklists weapons
     return weapon != WEAPON_ROCKETLAUNCHER &&
            weapon != WEAPON_STICKYLAUNCHER &&
            weapon != WEAPON_CONCGRENADE;
+}
+
+void CGameMode_KZ::OnPlayerSpawn(CMomentumPlayer *pPlayer)
+{
+    CGameModeBase::OnPlayerSpawn(pPlayer);
+
+#ifdef GAME_DLL
+    pPlayer->GiveWeapon(WEAPON_PISTOL);
+    pPlayer->GiveWeapon(WEAPON_KNIFE);
+#endif
 }
 
 bool CGameMode_KZ::HasCapability(GameModeHUDCapability_t capability)
