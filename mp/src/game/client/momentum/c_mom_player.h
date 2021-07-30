@@ -122,7 +122,8 @@ private:
     int m_iTicksSinceIncrement;
     QAngle m_qangOldEyeAngles;    
     Vector m_vecLandingVelocity;
-        
+    int m_iLastJumpButtonTick;
+    
     // Mobility mod (parkour)
     bool m_bWasSprinting;
     bool m_bIsPowerSliding;

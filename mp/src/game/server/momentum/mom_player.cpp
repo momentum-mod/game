@@ -262,7 +262,8 @@ CMomentumPlayer::CMomentumPlayer()
     m_vecOldVelocity.Init();
     m_iTicksSinceIncrement = 0;
     m_vecLandingVelocity.Init();
-
+    m_iLastJumpButtonTick = 0;
+    
     m_bIsPowerSliding = false;
     m_nWallRunState = WALLRUN_NOT;
 

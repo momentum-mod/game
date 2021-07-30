@@ -286,6 +286,7 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
     Vector m_vecOldVelocity;
     int m_iTicksSinceIncrement;
     Vector m_vecLandingVelocity;
+    int m_iLastJumpButtonTick;
 
     void SetOldEyeAngles(const QAngle &ang) { m_qangOldEyeAngles = ang; }
     const QAngle &OldEyeAngles() const { return m_qangOldEyeAngles; }

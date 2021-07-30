@@ -1337,14 +1337,15 @@ void CMomentumGameMovement::PlayerMove()
 void CMomentumGameMovement::PreventBunnyHopping()
 {
     float fraction = 1.0f;
-    float speed = mv->m_vecVelocity.Length();;
-
+    float speed = mv->m_vecVelocity.Length();
     if (g_pGameModeSystem->GameModeIs(GAMEMODE_KZ))
     {
         // SKZ formula
         float landingspeed = m_pPlayer->m_vecLandingVelocity.Length2D();
         int cmdsSinceLanding = (gpGlobals->tickcount - m_pPlayer->m_iLandTick);
-        if (cmdsSinceLanding <= PERF_TICKS)
+        // Original formula uses cmdnum instead of tickcount. They should both behave similarly to each other in Momentum.
+        bool hitTweakedPerf = ((cmdsSinceLanding == 1) || (cmdsSinceLanding <= 3 && gpGlobals->tickcount - m_pPlayer->m_iLastJumpButtonTick <= 3));
+        if (hitTweakedPerf)
         {
             if (cmdsSinceLanding > 1)
             {
@@ -1427,6 +1428,9 @@ bool CMomentumGameMovement::CheckJumpButton()
     // Avoid nullptr access, return false if somehow we don't have a player
     if (!player)
         return false;
+    
+    // SimpleKZ stuff. Track the last jump input from the player.
+    m_pPlayer->m_iLastJumpButtonTick = gpGlobals->tickcount;
 
     if (player->pl.deadflag)
     {
