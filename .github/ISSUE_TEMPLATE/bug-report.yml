@@ -1,0 +1,52 @@
+name: Bug Report
+description: Create a report to help us improve the game
+labels: ["Type: Bug"]
+body:
+- type: textarea
+  attributes:
+    label: Describe the bug
+    description: A clear and concise description of what the bug is. If you have a video of it happening, you may post it here.
+  validations:
+    required: true
+
+- type: textarea
+  attributes:
+    label: How To Reproduce
+    description: Steps to reproduce the behavior. If you have a video with the steps to recreate the bug, please post it here.
+    placeholder: |
+      1. Open ...
+      2. Do ...
+      3. See bug
+  validations:
+    required: true
+
+- type: textarea
+  attributes:
+    label: Expected Behavior
+    description: A clear and concise description of what is expected to happen.
+    placeholder: When I do X then Z should happen.
+  validations:
+    required: true
+
+- type: input
+  attributes:
+    label: Operating System
+    description: Windows version, Linux distro, etc.
+  validations:
+    required: true
+- type: dropdown
+  attributes:
+    label: Renderer
+    options:
+      - DX9 (default)
+      - DX11
+  validations:
+    required: true
+- type: dropdown
+  attributes:
+    label: UI Framework
+    options:
+      - VGUI (default)
+      - Panorama
+  validations:
+    required: true
