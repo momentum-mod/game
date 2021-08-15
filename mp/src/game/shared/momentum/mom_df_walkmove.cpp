@@ -36,7 +36,7 @@ bool CMomentumGameMovement::DFCheckJumpButton()
         return false;
     }
 
-    if (((mv->m_nButtons & IN_DUCK) && !sv_crouchjump.GetBool()) || (player->GetFlags() & FL_DUCKING))
+    if ((mv->m_nButtons & IN_DUCK) && !sv_crouchjump.GetBool())
     {
         return false;
     }

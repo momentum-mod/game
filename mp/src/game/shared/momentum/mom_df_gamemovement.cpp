@@ -105,7 +105,7 @@ void CMomentumGameMovement::DFDuck()
     {
         // we want to stand while ducking, but we don't want to actually "unduck", since
         // we can't jump while doing this
-        if (mv->m_nButtons & IN_JUMP && DFCanUnDuck())
+        if (mv->m_nButtons & IN_JUMP && DFCanUnDuck() && !sv_crouchjump.GetBool())
         {
             player->RemoveFlag(FL_DUCKING);
             player->m_Local.m_bDucked = false;
