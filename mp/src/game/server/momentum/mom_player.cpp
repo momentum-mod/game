@@ -2229,7 +2229,7 @@ void CMomentumPlayer::DFApplyPushFromDamage(const CTakeDamageInfo &info)
 
     if (pInflictor->type != DF_PLASMA || (pInflictor->type == DF_PLASMA && !(GetFlags() & FL_ONGROUND)))
     {
-        m_flKnockbackTime = gpGlobals->curtime + 0.2;
+        m_flKnockbackTime = gpGlobals->curtime + sv_df_groundboost_time.GetFloat();
     }
 
     if (GetFlags() & FL_ONGROUND)
