@@ -46,6 +46,7 @@ extern ConVar sv_slickstyle;
 extern ConVar sv_jump_buffertime;
 extern ConVar sv_flatknockback;
 extern ConVar sv_df_rocket_addspeed;
+extern ConVar sv_df_weapon_scan;
 extern ConVar sv_snapvelocity;
 extern ConVar sv_scalecmd_fix;
 extern ConVar sv_autojump;

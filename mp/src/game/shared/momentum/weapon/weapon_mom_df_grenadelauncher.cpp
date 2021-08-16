@@ -3,6 +3,7 @@
 #include "mom_player_shared.h"
 #include "mom_system_gamemode.h"
 #include "weapon_mom_df_grenadelauncher.h"
+#include "movevars_shared.h"
 
 #ifdef GAME_DLL
 #include "momentum/ghost_client.h"
@@ -92,7 +93,7 @@ void CMomentumDFGrenadeLauncher::PrimaryAttack()
 
     VectorCopy(pPlayer->GetAbsOrigin(), muzzle);
     muzzle[2] += pPlayer->GetViewOffset()[2];
-    VectorMA(muzzle, 14, vForward, muzzle);
+    VectorMA(muzzle, sv_df_weapon_scan.GetFloat(), vForward, muzzle);
 
     VectorAngles(vForward, angForward);
 

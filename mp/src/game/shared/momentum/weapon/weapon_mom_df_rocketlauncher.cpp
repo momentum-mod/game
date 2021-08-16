@@ -94,7 +94,7 @@ void CMomentumDFRocketLauncher::PrimaryAttack()
 
     VectorCopy(pPlayer->GetAbsOrigin(), muzzle);
     muzzle[2] += pPlayer->GetViewOffset()[2];
-    VectorMA(muzzle, 14, vForward, muzzle);
+    VectorMA(muzzle, sv_df_weapon_scan.GetFloat(), vForward, muzzle);
     scale = 0.050 * (speed[DF_ROCKET] + sv_df_rocket_addspeed.GetFloat());
     VectorMA(muzzle, scale, vForward, dest);
 
@@ -106,9 +106,13 @@ void CMomentumDFRocketLauncher::PrimaryAttack()
 
     VectorAngles(vForward, angForward);
 
-    CMomDFRocket::EmitRocket(muzzle, angForward, pPlayer, DF_ROCKET, damageFactor);
+    CMomDFRocket *rocket = CMomDFRocket::EmitRocket(muzzle, angForward, pPlayer, DF_ROCKET, damageFactor);
+    if (trace.fraction < 0.99)
+    {
+        rocket->Explode(&trace, trace.m_pEnt);
+    }
 
-    DecalPacket rocket = DecalPacket::Rocket(muzzle, angForward);
-    g_pMomentumGhostClient->SendDecalPacket(&rocket);
+    DecalPacket rocketPacket = DecalPacket::Rocket(muzzle, angForward);
+    g_pMomentumGhostClient->SendDecalPacket(&rocketPacket);
 #endif
 }

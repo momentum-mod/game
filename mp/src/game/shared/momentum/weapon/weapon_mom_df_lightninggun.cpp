@@ -3,6 +3,7 @@
 #include "mom_player_shared.h"
 #include "mom_system_gamemode.h"
 #include "weapon_mom_df_lightninggun.h"
+#include "movevars_shared.h"
 
 #ifdef GAME_DLL
 #include "momentum/ghost_client.h"
@@ -92,16 +93,17 @@ void CMomentumDFLightningGun::PrimaryAttack()
 
     VectorCopy(pPlayer->GetAbsOrigin(), muzzle);
     muzzle[2] += pPlayer->GetViewOffset()[2];
-    VectorMA(muzzle, LIGHTNING_RANGE + 14, vForward, dest);
+    VectorMA(muzzle, LIGHTNING_RANGE + sv_df_weapon_scan.GetFloat(), vForward, dest);
 
     UTIL_TraceLine(muzzle, dest, MASK_RADIUS_DAMAGE, pPlayer, COLLISION_GROUP_NONE, &trace);
     if (trace.fraction < 0.99)
     {
         VectorCopy(trace.endpos, muzzle);
         VectorAngles(vForward, angForward);
-        CMomDFRocket::EmitRocket(muzzle, angForward, pPlayer, DF_LIGHTNING, damageFactor);
-        DecalPacket rocket = DecalPacket::Rocket(muzzle, angForward);
-        g_pMomentumGhostClient->SendDecalPacket(&rocket);
+        CMomDFRocket *rocket = CMomDFRocket::EmitRocket(muzzle, angForward, pPlayer, DF_LIGHTNING, damageFactor);
+        rocket->Explode(&trace, trace.m_pEnt);
+        DecalPacket rocketPacket = DecalPacket::Rocket(muzzle, angForward);
+        g_pMomentumGhostClient->SendDecalPacket(&rocketPacket);
     }
 #endif
 }
