@@ -1286,7 +1286,11 @@ int CBasePlayer::OnTakeDamage( const CTakeDamageInfo &inputInfo )
 			flPunch = RandomFloat( -5, -7 );
 	}
 
-	m_Local.m_vecPunchAngle.SetX( flPunch );
+    CBaseEntity *pInflictor = info.GetInflictor();
+    if (!(FClassnameIs(pInflictor, "momentum_df_rocket") || FClassnameIs(pInflictor, "momentum_df_grenade")))
+    {
+        m_Local.m_vecPunchAngle.SetX(flPunch);
+    }
 
 	if (fTookDamage && !ftrivial && fmajor && flHealthPrev >= 75) 
 	{
