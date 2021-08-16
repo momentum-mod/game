@@ -489,7 +489,7 @@ public:
 	CBaseEntity				*HasNamedPlayerItem( const char *pszItemName );
 	bool 					HasWeapons( void );// do I have ANY weapons?
 	virtual void			SelectLastItem(void);
-	virtual void 			SelectItem( const char *pstr, int iSubType = 0 );
+	virtual bool			SelectItem( const char *pstr, int iSubType = 0 );
 	void					ItemPreFrame( void );
 	virtual void			ItemPostFrame( void );
 	virtual CBaseEntity		*GiveNamedItem( const char *szName, int iSubType = 0 );
@@ -1166,6 +1166,9 @@ public:
 public:
 
     Vector m_vecOldOrigin;
+
+	int m_iQueuedWeapons;
+	int m_iQueuedWeaponSubtype;
 
 };
 

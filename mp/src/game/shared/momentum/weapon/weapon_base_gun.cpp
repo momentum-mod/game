@@ -2,6 +2,7 @@
 #include "fx_mom_shared.h"
 #include "mom_player_shared.h"
 #include "weapon_base_gun.h"
+#include "movevars_shared.h"
 
 #include "tier0/memdbgon.h"
 
@@ -34,6 +35,7 @@ void CWeaponBaseGun::Spawn()
 
 bool CWeaponBaseGun::Deploy()
 {
+    bool returnValue;
     CMomentumPlayer *pPlayer = GetPlayerOwner();
     if (!pPlayer)
         return false;
@@ -43,7 +45,34 @@ bool CWeaponBaseGun::Deploy()
     m_bDelayFire = false;
     m_zoomFullyActiveTime = -1.0f;
 
-    return BaseClass::Deploy();
+    returnValue = BaseClass::Deploy();
+
+    if (!sv_df_weapon_deploy_time.GetBool())
+    {
+        m_flNextPrimaryAttack = gpGlobals->curtime;
+        m_flNextSecondaryAttack = gpGlobals->curtime;
+        pPlayer->SetNextAttack(gpGlobals->curtime);
+    }
+
+    return returnValue;
+}
+
+bool CWeaponBaseGun::CanDeploy()
+{
+    CMomentumPlayer *pPlayer = GetPlayerOwner();
+
+    CBaseCombatWeapon *curWeapon = pPlayer->GetActiveWeapon();
+
+    if (curWeapon != nullptr)
+    {
+        float nextFire = curWeapon->m_flNextPrimaryAttack - gpGlobals->curtime;
+        if (nextFire > 0)
+        {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 void CWeaponBaseGun::ItemPostFrame()

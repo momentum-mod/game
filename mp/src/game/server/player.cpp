@@ -3587,6 +3587,20 @@ void CBasePlayer::PlayerRunCommand(CUserCmd *ucmd, IMoveHelper *moveHelper)
 		ucmd->impulse = 0;
 		VectorCopy ( pl.v_angle.Get(), ucmd->viewangles );
 	}
+
+	if (sv_weapon_queue.GetBool() && m_iQueuedWeapons != 0)
+    {
+		CBaseCombatWeapon *weapon = dynamic_cast<CBaseCombatWeapon *>(CBaseEntity::Instance(m_iQueuedWeapons));
+        if (weapon)
+        {
+            VPROF("SelectItem()");
+            if (SelectItem(weapon->GetName(), m_iQueuedWeaponSubtype))
+            {
+                m_iQueuedWeapons = 0;
+                m_iQueuedWeaponSubtype = 0;
+            }
+        }
+    }
 	
 	PlayerMove()->RunCommand(this, ucmd, moveHelper);
 }

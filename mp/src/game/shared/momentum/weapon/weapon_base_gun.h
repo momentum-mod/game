@@ -19,6 +19,7 @@ class CWeaponBaseGun : public CWeaponBase
     virtual void PrimaryAttack();
     virtual void Spawn();
     virtual bool Deploy();
+    virtual bool CanDeploy();
 #ifdef WEAPONS_USE_AMMO
     virtual bool Reload();
 #endif

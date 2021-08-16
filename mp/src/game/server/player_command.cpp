@@ -454,7 +454,17 @@ void CPlayerMove::RunCommand ( CBasePlayer *player, CUserCmd *ucmd, IMoveHelper 
 		if ( weapon )
 		{
 			VPROF( "player->SelectItem()" );
-			player->SelectItem( weapon->GetName(), ucmd->weaponsubtype );
+			bool equipped = player->SelectItem( weapon->GetName(), ucmd->weaponsubtype );
+            if (!equipped)
+            {
+                player->m_iQueuedWeapons = ucmd->weaponselect;
+                player->m_iQueuedWeaponSubtype = ucmd->weaponsubtype;
+			}
+            else
+            {
+                player->m_iQueuedWeapons = 0;
+                player->m_iQueuedWeaponSubtype = 0;
+			}
 		}
 	}
 
