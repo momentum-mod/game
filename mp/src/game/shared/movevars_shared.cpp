@@ -117,7 +117,7 @@ ConVar	sv_df_rocket_addspeed("sv_df_rocket_addspeed", "0", FCVAR_NOTIFY | FCVAR_
 ConVar	sv_df_weapon_scan("sv_df_weapon_scan", "14", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_MAPPING);
 ConVar	sv_df_groundboost_time("sv_df_groundboost_time", "0.25", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_MAPPING);
 ConVar	sv_weapon_queue("sv_weapon_queue", "0", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_MAPPING);
-ConVar	sv_df_weapon_deploy_time("sv_df_weapon_deploy_time", "1", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_MAPPING);
+ConVar	sv_weapon_deploy_time("sv_weapon_deploy_time", "-1", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_MAPPING);
 ConVar	sv_snapvelocity ("sv_snapvelocity", "1", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_MAPPING);
 ConVar	sv_scalecmd_fix ("sv_scalecmd_fix", "0", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_MAPPING);
 ConVar	sv_autojump     ("sv_autojump", "0", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_MAPPING);

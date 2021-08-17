@@ -372,6 +372,7 @@ void CGameMode_Defrag::SetGameModeVars()
     sv_wateraccelerate.SetValue(4);
     sv_stepsize.SetValue(18);
     sv_ground_trigger_fix.SetValue(0);
+    sv_weapon_queue.SetValue(1);
 
     sv_airaccelerate.SetValue(1);
 }

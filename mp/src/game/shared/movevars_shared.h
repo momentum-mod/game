@@ -49,7 +49,7 @@ extern ConVar sv_df_rocket_addspeed;
 extern ConVar sv_df_weapon_scan;
 extern ConVar sv_df_groundboost_time;
 extern ConVar sv_weapon_queue;
-extern ConVar sv_df_weapon_deploy_time;
+extern ConVar sv_weapon_deploy_time;
 extern ConVar sv_snapvelocity;
 extern ConVar sv_scalecmd_fix;
 extern ConVar sv_autojump;

@@ -47,11 +47,12 @@ bool CWeaponBaseGun::Deploy()
 
     returnValue = BaseClass::Deploy();
 
-    if (!sv_df_weapon_deploy_time.GetBool())
+    float deployTime = sv_weapon_deploy_time.GetFloat();
+    if (deployTime >= 0.0f)
     {
-        m_flNextPrimaryAttack = gpGlobals->curtime;
-        m_flNextSecondaryAttack = gpGlobals->curtime;
-        pPlayer->SetNextAttack(gpGlobals->curtime);
+        m_flNextPrimaryAttack = gpGlobals->curtime + deployTime;
+        m_flNextSecondaryAttack = gpGlobals->curtime + deployTime;
+        pPlayer->SetNextAttack(gpGlobals->curtime + deployTime);
     }
 
     return returnValue;
