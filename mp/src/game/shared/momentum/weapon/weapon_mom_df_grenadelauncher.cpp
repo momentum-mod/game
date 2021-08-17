@@ -79,6 +79,7 @@ void CMomentumDFGrenadeLauncher::PrimaryAttack()
     Vector vForward, vRight, vUp;
     QAngle angForward;
     Vector muzzle;
+    Vector start;
     trace_t trace;
     const int MASK_RADIUS_DAMAGE = MASK_SHOT & (~CONTENTS_HITBOX);
     float damageFactor = 1;
@@ -93,6 +94,7 @@ void CMomentumDFGrenadeLauncher::PrimaryAttack()
 
     VectorCopy(pPlayer->GetAbsOrigin(), muzzle);
     muzzle[2] += pPlayer->GetViewOffset()[2];
+    VectorCopy(muzzle, start);
     VectorMA(muzzle, sv_df_weapon_scan.GetFloat(), vForward, muzzle);
 
     VectorAngles(vForward, angForward);
@@ -104,8 +106,10 @@ void CMomentumDFGrenadeLauncher::PrimaryAttack()
     VectorNormalize(vForward);
     
     VectorScale(vForward, 700, vForward);
+
+    UTIL_TraceLine(start, muzzle, MASK_RADIUS_DAMAGE, pPlayer, COLLISION_GROUP_NONE, &trace);
     
-    CMomDFGrenade::Create(muzzle, angForward, vForward, angImpulse, pPlayer, damageFactor);
+    CMomDFGrenade::Create(trace.endpos, angForward, vForward, angImpulse, pPlayer, damageFactor);
 
     DecalPacket rocket = DecalPacket::Rocket(muzzle, angForward);
     g_pMomentumGhostClient->SendDecalPacket(&rocket);

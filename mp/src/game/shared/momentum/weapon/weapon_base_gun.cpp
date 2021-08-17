@@ -215,3 +215,25 @@ void CWeaponBaseGun::WeaponIdle()
         SendWeaponAnim(ACT_VM_IDLE);
     }
 }
+
+void CWeaponBaseGun::CalculateMuzzlePoint(trace_t &trace, float speed, Vector& out)
+{
+    CMomentumPlayer *pPlayer = GetPlayerOwner();
+    Vector muzzle;
+    Vector start;
+    Vector vForward, vRight, vUp;
+    QAngle angForward;
+    const int MASK_RADIUS_DAMAGE = MASK_SHOT & (~CONTENTS_HITBOX);
+    float scale;
+    pPlayer->EyeVectors(&vForward, &vRight, &vUp);
+
+    VectorCopy(pPlayer->GetAbsOrigin(), muzzle);
+    muzzle[2] += pPlayer->GetViewOffset()[2];
+    VectorCopy(muzzle, start);
+    VectorMA(muzzle, sv_df_weapon_scan.GetFloat(), vForward, muzzle);
+    scale = 0.050 * (speed + sv_df_rocket_addspeed.GetFloat());
+    VectorMA(muzzle, scale, vForward, muzzle);
+
+    UTIL_TraceLine(start, muzzle, MASK_RADIUS_DAMAGE, pPlayer, COLLISION_GROUP_NONE, &trace);
+    VectorCopy(trace.endpos, out);
+}

@@ -80,7 +80,6 @@ void CMomentumDFPlasmaGun::PrimaryAttack()
     QAngle angForward;
     Vector muzzle;
     Vector dest;
-    float scale;
     trace_t trace;
     const int MASK_RADIUS_DAMAGE = MASK_SHOT & (~CONTENTS_HITBOX);
     float damageFactor = 1;
@@ -91,20 +90,9 @@ void CMomentumDFPlasmaGun::PrimaryAttack()
     }
 
     pPlayer->EyeVectors(&vForward, &vRight, &vUp);
-
-    VectorCopy(pPlayer->GetAbsOrigin(), muzzle);
-    muzzle[2] += pPlayer->GetViewOffset()[2];
-    VectorMA(muzzle, sv_df_weapon_scan.GetFloat(), vForward, muzzle);
-    scale = 0.050 * speed[DF_PLASMA];
-    VectorMA(muzzle, scale, vForward, dest);
-
-    UTIL_TraceLine(muzzle, dest, MASK_RADIUS_DAMAGE, pPlayer, COLLISION_GROUP_NONE, &trace);
-    if (trace.fraction < 0.99)
-    {
-        VectorCopy(trace.endpos, muzzle);
-    }
-
     VectorAngles(vForward, angForward);
+
+    CalculateMuzzlePoint(trace, speed[DF_PLASMA], muzzle);
 
     CMomDFRocket *rocket = CMomDFRocket::EmitRocket(muzzle, angForward, pPlayer, DF_PLASMA, damageFactor);
     if (trace.fraction < 0.99)
