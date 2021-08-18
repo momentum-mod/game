@@ -1169,7 +1169,7 @@ public:
 
 	int m_iQueuedWeapons;
 	int m_iQueuedWeaponSubtype;
-
+	int m_iQueuedWeaponID;
 };
 
 typedef CHandle<CBasePlayer> CBasePlayerHandle;

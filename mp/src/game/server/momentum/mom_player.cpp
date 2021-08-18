@@ -388,6 +388,8 @@ void CMomentumPlayer::ItemPostFrame()
 //-----------------------------------------------------------------------------
 bool CMomentumPlayer::BumpWeapon(CBaseCombatWeapon *pWeapon)
 {
+    bool switched;
+
     // Get the weapon that we currently have at that slot
     const auto pCurrWeapon = Weapon_GetSlotAndPosition(pWeapon->GetSlot(), pWeapon->GetPosition());
     if (pCurrWeapon)
@@ -397,8 +399,19 @@ bool CMomentumPlayer::BumpWeapon(CBaseCombatWeapon *pWeapon)
         UTIL_Remove(pWeapon);
         return false;
     }
+
     // Otherwise we can try to pick up that weapon
-    return BaseClass::BumpWeapon(pWeapon);
+    switched = BaseClass::BumpWeapon(pWeapon);
+
+    if (pWeapon && switched && (GetActiveWeapon() != pWeapon))
+    {
+        if (!Weapon_Switch(pWeapon))
+        {
+            m_iQueuedWeaponID = pWeapon->GetWeaponID();
+        }
+    }
+
+    return switched;
 }
 
 bool CMomentumPlayer::Weapon_CanUse(CBaseCombatWeapon *pWeapon)

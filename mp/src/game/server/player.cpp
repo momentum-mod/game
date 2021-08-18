@@ -580,6 +580,10 @@ CBasePlayer::CBasePlayer( )
 	m_bDrawPlayerModelExternally = false;
 
 	m_hPostProcessCtrl.Set(NULL);
+
+	m_iQueuedWeapons = 0;
+	m_iQueuedWeaponSubtype = 0;
+	m_iQueuedWeaponID = WEAPON_NONE;
 }
 
 CBasePlayer::~CBasePlayer( )
@@ -3598,6 +3602,18 @@ void CBasePlayer::PlayerRunCommand(CUserCmd *ucmd, IMoveHelper *moveHelper)
             {
                 m_iQueuedWeapons = 0;
                 m_iQueuedWeaponSubtype = 0;
+            }
+        }
+    }
+    else if (sv_weapon_queue.GetBool() && m_iQueuedWeaponID != WEAPON_NONE)
+    {
+        CBaseCombatWeapon *weapon = GetWeapon(m_iQueuedWeaponID);
+        if (weapon)
+        {
+            VPROF("SelectItem()");
+            if (SelectItem(weapon->GetName(), m_iQueuedWeaponSubtype))
+            {
+                m_iQueuedWeaponID = WEAPON_NONE;
             }
         }
     }
