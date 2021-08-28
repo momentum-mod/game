@@ -346,44 +346,60 @@ void CMomDFGrenade::DFRadiusDamage(const CTakeDamageInfo &info, const Vector &ve
     for (CEntitySphereQuery sphere(vecSrc, flRadius); (pEntity = sphere.GetCurrentEntity()) != NULL;
          sphere.NextEntity())
     {
-        if (pEntity == pEntityIgnore)
-            continue;
-
-        if (pEntity->m_takedamage == DAMAGE_NO)
-            continue;
-
-        otherMins = pEntity->GetAbsOrigin() + pEntity->CollisionProp()->OBBMins();
-        otherMaxs = pEntity->GetAbsOrigin() + pEntity->CollisionProp()->OBBMaxs();
-
-        // find the distance to the edge of the bounding box
-        for (int i = 0; i < 3; i++)
-        {
-            if (vecSrc[i] < otherMins[i])
-            {
-                dist[i] = otherMins[i] - vecSrc[i];
-            }
-            else if (vecSrc[i] > otherMaxs[i])
-            {
-                dist[i] = vecSrc[i] - otherMaxs[i];
-            }
-            else
-            {
-                dist[i] = 0;
-            }
-        }
-
-        if (dist.Length() > flRadius)
+        if (pEntity == pEntityIgnore || pEntity->m_takedamage == DAMAGE_NO)
         {
             continue;
         }
 
-        flAdjustedDamage = info.GetDamage() * (1.0 - (dist.Length() / flRadius));
-
-        if (DFCanDamage(info, pEntity, vecSrc))
+        if (!pEntity->IsPlayer())
         {
+            Vector nearestPoint;
+            float initialRadiusSqr = flRadius * flRadius;
+            pEntity->CollisionProp()->CalcNearestPoint(vecSrc, &nearestPoint);
+            if ((vecSrc - nearestPoint).LengthSqr() > initialRadiusSqr)
+            {
+                continue;
+            }
+
             CTakeDamageInfo adjustedInfo = info;
-            adjustedInfo.SetDamage(flAdjustedDamage);
+            adjustedInfo.SetDamage(info.GetDamage());
             pEntity->TakeDamage(adjustedInfo);
+        }
+        else
+        {
+            otherMins = pEntity->GetAbsOrigin() + pEntity->CollisionProp()->OBBMins();
+            otherMaxs = pEntity->GetAbsOrigin() + pEntity->CollisionProp()->OBBMaxs();
+
+            // find the distance to the edge of the bounding box
+            for (int i = 0; i < 3; i++)
+            {
+                if (vecSrc[i] < otherMins[i])
+                {
+                    dist[i] = otherMins[i] - vecSrc[i];
+                }
+                else if (vecSrc[i] > otherMaxs[i])
+                {
+                    dist[i] = vecSrc[i] - otherMaxs[i];
+                }
+                else
+                {
+                    dist[i] = 0;
+                }
+            }
+
+            if (dist.Length() > flRadius)
+            {
+                continue;
+            }
+
+            flAdjustedDamage = info.GetDamage() * (1.0 - (dist.Length() / flRadius));
+
+            if (DFCanDamage(info, pEntity, vecSrc))
+            {
+                CTakeDamageInfo adjustedInfo = info;
+                adjustedInfo.SetDamage(flAdjustedDamage);
+                pEntity->TakeDamage(adjustedInfo);
+            }
         }
     }
 }
