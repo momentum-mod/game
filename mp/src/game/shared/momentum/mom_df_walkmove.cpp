@@ -212,7 +212,12 @@ void CMomentumGameMovement::DFWalkMove()
         DFAirMove();
         return;
     }
-    // if slickstyle isn't zero, do ground movement without friction
+
+    if (m_pPlayer->m_CurrentSlideTrigger != nullptr || 
+        m_pPlayer->m_flKnockbackTime >= gpGlobals->curtime)
+    {
+        mv->m_vecVelocity[2] -= sv_gravity.GetFloat() * gpGlobals->frametime;
+    }
 
     // Copy movement amounts
     fmove = mv->m_flForwardMove;
