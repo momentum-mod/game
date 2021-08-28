@@ -93,7 +93,7 @@ void CMomentumDFRocketLauncher::PrimaryAttack()
     pPlayer->EyeVectors(&vForward, &vRight, &vUp);
     VectorAngles(vForward, angForward);
 
-    CalculateMuzzlePoint(trace, speed[DF_ROCKET], muzzle);
+    CalculateMuzzlePoint(trace, speed[DF_ROCKET], muzzle, sv_df_rocket_addspeed.GetFloat());
 
     CMomDFRocket *rocket = CMomDFRocket::EmitRocket(muzzle, angForward, pPlayer, DF_ROCKET, damageFactor);
     if (trace.fraction < 0.99)

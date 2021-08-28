@@ -25,7 +25,7 @@ class CWeaponBaseGun : public CWeaponBase
 #endif
     virtual void WeaponIdle();
 
-    virtual void CalculateMuzzlePoint(trace_t &trace, float speed, Vector &out);
+    virtual void CalculateMuzzlePoint(trace_t &trace, float speed, Vector &out, float addspeed = 0);
 
     // Derived classes call this to fire a bullet.
     bool BaseGunFire(float flSpread, float flCycleTime, bool bPrimaryMode);
