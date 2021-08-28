@@ -31,7 +31,7 @@ static MAKE_TOGGLE_CONVAR(mom_df_sound_fizzle_enable, "1", FCVAR_ARCHIVE | FCVAR
 static MAKE_TOGGLE_CONVAR(mom_df_decals_enable, "1", FCVAR_ARCHIVE, "Toggles creating decals on rocket explosion. 0 = OFF, 1 = ON\n");
 #else
 static MAKE_TOGGLE_CONVAR(mom_df_particle_trail_enable, "1", FCVAR_ARCHIVE, "Toggles the rocket trail particle. 0 = OFF, 1 = ON\n");
-static MAKE_CONVAR(mom_df_rocket_drawdelay, "0.2", FCVAR_ARCHIVE, "Determines how long it takes for rockets to start being drawn after spawning.\n", 0, 1);
+static MAKE_CONVAR(mom_df_rocket_drawdelay, "0", FCVAR_ARCHIVE, "Determines how long it takes for rockets to start being drawn after spawning.\n", 0, 1);
 #endif
 
 void CMomDFRocket::Spawn()
