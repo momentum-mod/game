@@ -224,6 +224,14 @@ void CMomDFRocket::Explode(trace_t *pTrace, CBaseEntity *pOther)
         return;
     }
 
+    if (pTrace->surface.flags & SURF_SKY)
+    {
+        StopTrailSound();
+
+        UTIL_Remove(this);
+        return;
+    }
+
     // Make invisible
     SetModelName(NULL_STRING);
     SetSolid(SOLID_NONE);
