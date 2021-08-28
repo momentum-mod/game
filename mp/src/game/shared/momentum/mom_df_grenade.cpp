@@ -335,9 +335,13 @@ void CMomDFGrenade::DFRadiusDamage(const CTakeDamageInfo &info, const Vector &ve
     vecSrc.z += 1;
 
     if (flRadius)
+    {
         falloff = info.GetDamage() / flRadius;
+    }
     else
+    {
         falloff = 1.0;
+    }
 
     for (CEntitySphereQuery sphere(vecSrc, flRadius); (pEntity = sphere.GetCurrentEntity()) != NULL;
          sphere.NextEntity())
@@ -355,11 +359,17 @@ void CMomDFGrenade::DFRadiusDamage(const CTakeDamageInfo &info, const Vector &ve
         for (int i = 0; i < 3; i++)
         {
             if (vecSrc[i] < otherMins[i])
+            {
                 dist[i] = otherMins[i] - vecSrc[i];
-            if (vecSrc[i] > otherMaxs[i])
+            }
+            else if (vecSrc[i] > otherMaxs[i])
+            {
                 dist[i] = vecSrc[i] - otherMaxs[i];
+            }
             else
+            {
                 dist[i] = 0;
+            }
         }
 
         if (dist.Length() > flRadius)
