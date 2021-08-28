@@ -387,7 +387,11 @@ void CMomentumGameMovement::DFSetGroundEntity(trace_t *pm)
 
     if (!oldGround && newGround)
     {
-        mv->m_flWallClipTime = gpGlobals->curtime;
+        mv->m_flWallClipTime = gpGlobals->curtime + sv_wallcliptime.GetFloat();
+        if (m_pPlayer->m_flKnockbackTime > gpGlobals->curtime)
+        {
+            m_pPlayer->m_flKnockbackTime = gpGlobals->curtime + sv_wallcliptime.GetFloat();
+        }
 
         // Subtract ground velocity at instant we hit ground jumping
         vecBaseVelocity -= newGround->GetAbsVelocity();

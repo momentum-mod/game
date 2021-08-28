@@ -2240,10 +2240,9 @@ void CMomentumPlayer::DFApplyPushFromDamage(const CTakeDamageInfo &info)
 
     ApplyAbsVelocityImpulse(kvel);
 
-    if (pInflictor->type != DF_PLASMA || (pInflictor->type == DF_PLASMA && !(GetFlags() & FL_ONGROUND)))
-    {
-        m_flKnockbackTime = gpGlobals->curtime + sv_df_groundboost_time.GetFloat();
-    }
+    float t = knockback * 2;
+    t = clamp(t, 50, 200);
+    m_flKnockbackTime = gpGlobals->curtime + (t / 1000);
 
     if (GetFlags() & FL_ONGROUND)
     {
