@@ -2279,6 +2279,7 @@ void CMomentumPlayer::DropWeapon(const char* weapon)
 
                 if (wasActiveWeapon)
                 {
+                    SetActiveWeapon(nullptr);
                     if (!SwitchToNextBestWeapon(NULL))
                     {
                         CBaseViewModel *vm = GetViewModel();
