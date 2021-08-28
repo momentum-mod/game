@@ -176,7 +176,7 @@ void CMomentumGameMovement::DFAccelerate(const Vector &wishdir, float wishspeed,
     }
 
     // Determine acceleration speed after acceleration
-    accelspeed = accel * wishspeed * gpGlobals->frametime * player->m_surfaceFriction;
+    accelspeed = accel * wishspeed * gpGlobals->frametime;
 
     // Cap it
     if (accelspeed > addspeed)
