@@ -7,6 +7,8 @@
 #include "weapon/weapon_shareddefs.h"
 #include "movevars_shared.h"
 
+#include "mom_player_shared.h"
+
 #ifndef CLIENT_DLL
 #include "momentum/fx_mom_shared.h"
 #include "momentum/mom_triggers.h"
@@ -231,6 +233,15 @@ void CMomDFRocket::DFRadiusDamage(const CTakeDamageInfo &info, const Vector &vec
                 CTakeDamageInfo adjustedInfo = info;
                 adjustedInfo.SetDamage(flAdjustedDamage);
                 pEntity->TakeDamage(adjustedInfo);
+                
+                CMomentumPlayer *pPlayer = ToCMOMPlayer(pEntity);
+                CSingleUserRecipientFilter user(pPlayer);
+                user.MakeReliable();
+                UserMessageBegin(user, "DamageIndicator");
+                WRITE_BYTE((int)adjustedInfo.GetDamage());
+                WRITE_VEC3COORD(vecSrc);
+                MessageEnd();
+
             }
         }
     }
