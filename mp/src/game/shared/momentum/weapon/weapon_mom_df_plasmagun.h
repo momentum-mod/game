@@ -20,4 +20,6 @@ class CMomentumDFPlasmaGun : public CWeaponBaseGun
     void Precache() OVERRIDE;
 
     WeaponID_t GetWeaponID(void) const OVERRIDE { return WEAPON_DF_PLASMAGUN; }
+
+    int shotsFired;
 };

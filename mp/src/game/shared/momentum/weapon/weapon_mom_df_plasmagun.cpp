@@ -27,6 +27,7 @@ CMomentumDFPlasmaGun::CMomentumDFPlasmaGun()
 {
     m_flIdleInterval = 20.0f;
     m_flTimeToIdleAfterFire = 0.1f;
+    shotsFired = 0;
 }
 
 void CMomentumDFPlasmaGun::Precache()
@@ -61,7 +62,7 @@ void CMomentumDFPlasmaGun::PrimaryAttack()
     }
     else
     {
-        m_flNextPrimaryAttack = m_flNextSecondaryAttack = gpGlobals->curtime + 0.1f;
+        m_flNextPrimaryAttack = m_flNextSecondaryAttack = gpGlobals->curtime + 0.1f - (shotsFired % 2 == 0 ? 0.006f : 0.005f);
     }
 
     SetWeaponIdleTime(gpGlobals->curtime + m_flTimeToIdleAfterFire);
@@ -74,6 +75,8 @@ void CMomentumDFPlasmaGun::PrimaryAttack()
     SendWeaponAnim(ACT_VM_PRIMARYATTACK);
 
     pPlayer->SetAnimation(PLAYER_ATTACK1);
+
+    shotsFired += 1;
 
 #ifdef GAME_DLL
     Vector vForward, vRight, vUp;
@@ -97,6 +100,7 @@ void CMomentumDFPlasmaGun::PrimaryAttack()
     CMomDFRocket *rocket = CMomDFRocket::EmitRocket(muzzle, angForward, pPlayer, DF_PLASMA, damageFactor);
     if (trace.fraction < 0.99)
     {
+        trace.fraction = 1.0;
         rocket->Explode(&trace, trace.m_pEnt);
     }
 
