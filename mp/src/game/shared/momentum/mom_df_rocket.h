@@ -44,6 +44,8 @@ class CMomDFRocket : public CMomExplosive
 
     static CMomDFRocket *EmitRocket(const Vector &vecOrigin, const QAngle &vecAngles, CBaseEntity *pOwner,
                                     DFProjectileType_t projType, float damageFactor);
+
+    void SnapVectorTowards(Vector &v, const Vector &to);
     DFProjectileType_t type;
     float m_flDamageFactor;
 

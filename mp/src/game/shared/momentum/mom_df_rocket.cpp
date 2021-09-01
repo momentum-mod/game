@@ -269,10 +269,8 @@ void CMomDFRocket::Explode(trace_t *pTrace, CBaseEntity *pOther)
     m_takedamage = DAMAGE_NO;
 
     // Pull out a bit
-    if (!CloseEnough(pTrace->fraction, 1.0f))
-    {
-        SetAbsOrigin(pTrace->endpos + (pTrace->plane.normal * 1.0f));
-    }
+    SnapVectorTowards(pTrace->endpos, GetAbsOrigin());
+    SetAbsOrigin(pTrace->endpos);
 
     const auto vecOrigin = GetAbsOrigin();
 
@@ -358,5 +356,22 @@ CMomDFRocket *CMomDFRocket::EmitRocket(const Vector &vecOrigin, const QAngle &ve
     }
 
     return pRocket;
+}
+
+void CMomDFRocket::SnapVectorTowards(Vector &v, const Vector &to)
+{
+    int i;
+
+    for (i = 0; i < 3; i++)
+    {
+        if (to[i] <= v[i])
+        {
+            v[i] = (int)v[i];
+        }
+        else
+        {
+            v[i] = (int)v[i] + 1;
+        }
+    }
 }
 #endif

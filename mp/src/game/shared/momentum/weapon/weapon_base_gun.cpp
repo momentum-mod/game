@@ -236,9 +236,24 @@ void CWeaponBaseGun::CalculateMuzzlePoint(trace_t &trace, float speed, Vector& o
 
     UTIL_TraceLine(start, muzzle, MASK_RADIUS_DAMAGE, pPlayer, COLLISION_GROUP_NONE, &trace);
 
-    trace.endpos.x = roundf(trace.endpos.x);
-    trace.endpos.y = roundf(trace.endpos.y);
-    trace.endpos.z = roundf(trace.endpos.z);
-
     VectorCopy(trace.endpos, out);
+
+    SnapVectorTowards(out, pPlayer->GetAbsOrigin());
+}
+
+void CWeaponBaseGun::SnapVectorTowards(Vector &v, const Vector &to)
+{
+    int i;
+
+    for (i = 0; i < 3; i++)
+    {
+        if (to[i] <= v[i])
+        {
+            v[i] = (int)v[i];
+        }
+        else
+        {
+            v[i] = (int)v[i] + 1;
+        }
+    }
 }

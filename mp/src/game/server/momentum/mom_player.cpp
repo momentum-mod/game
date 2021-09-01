@@ -2197,8 +2197,6 @@ int CMomentumPlayer::OnTakeDamage_Alive(const CTakeDamageInfo &info)
 
 void CMomentumPlayer::DFApplyPushFromDamage(const CTakeDamageInfo &info)
 {
-    Vector dir;
-    float knockback;
 
     if (info.GetDamageType() & DMG_PREVENT_PHYSICS_FORCE)
         return;
@@ -2209,9 +2207,7 @@ void CMomentumPlayer::DFApplyPushFromDamage(const CTakeDamageInfo &info)
     if (!pInflictor || GetMoveType() != MOVETYPE_WALK || pAttacker->IsSolidFlagSet(FSOLID_TRIGGER))
         return;
 
-    VectorSubtract(GetAbsOrigin(), info.GetInflictor()->WorldSpaceCenter(), dir);
-    dir[2] += 24;
-
+    float knockback;
     knockback = info.GetDamage();
     if (pInflictor->type == DF_ROCKET)
     {
@@ -2235,6 +2231,9 @@ void CMomentumPlayer::DFApplyPushFromDamage(const CTakeDamageInfo &info)
     Vector kvel;
     float mass = 200;
 
+    Vector dir;
+    VectorSubtract(GetAbsOrigin(), info.GetInflictor()->GetAbsOrigin(), dir);
+    dir[2] += 24;
     VectorNormalize(dir);
     VectorScale(dir, 1000 * knockback / mass, kvel);
 
