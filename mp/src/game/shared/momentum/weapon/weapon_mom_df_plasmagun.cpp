@@ -28,6 +28,7 @@ CMomentumDFPlasmaGun::CMomentumDFPlasmaGun()
     m_flIdleInterval = 20.0f;
     m_flTimeToIdleAfterFire = 0.1f;
     shotsFired = 0;
+    tickWait = 0;
 }
 
 void CMomentumDFPlasmaGun::Precache()
@@ -46,6 +47,11 @@ void CMomentumDFPlasmaGun::PrimaryAttack()
     if (!pPlayer)
         return;
 
+    if (tickWait > gpGlobals->tickcount)
+    {
+        return;
+    }
+
     int ammo = pPlayer->m_iMomAmmo.Get(GetWeaponID());
     if (ammo == 0)
     {
@@ -56,13 +62,14 @@ void CMomentumDFPlasmaGun::PrimaryAttack()
         pPlayer->m_iMomAmmo.Set(GetWeaponID(), ammo - 1);
     }
 
+    m_flNextPrimaryAttack = m_flNextSecondaryAttack = 0;
     if (pPlayer->m_flRemainingHaste < 0 || pPlayer->m_flRemainingHaste > gpGlobals->curtime)
     {
-        m_flNextPrimaryAttack = m_flNextSecondaryAttack = gpGlobals->curtime + (0.1f / 1.3);
+        tickWait = gpGlobals->tickcount + (shotsFired % 2 == 0 ? 9 : 10);
     }
     else
     {
-        m_flNextPrimaryAttack = m_flNextSecondaryAttack = gpGlobals->curtime + 0.1f - (shotsFired % 2 == 0 ? 0.006f : 0.005f);
+        tickWait = gpGlobals->tickcount + (shotsFired % 2 == 0 ? 12 : 13);
     }
 
     SetWeaponIdleTime(gpGlobals->curtime + m_flTimeToIdleAfterFire);
@@ -100,7 +107,6 @@ void CMomentumDFPlasmaGun::PrimaryAttack()
     CMomDFRocket *rocket = CMomDFRocket::EmitRocket(muzzle, angForward, pPlayer, DF_PLASMA, damageFactor);
     if (trace.fraction < 0.99)
     {
-        trace.fraction = 1.0;
         rocket->Explode(&trace, trace.m_pEnt);
     }
 
