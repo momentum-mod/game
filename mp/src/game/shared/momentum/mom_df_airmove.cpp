@@ -65,6 +65,8 @@ void CMomentumGameMovement::DFAirMove()
     Vector wishdir;
     float wishspeed, clampedWishspeed;
     Vector forward, right, up;
+    Vector vel2D;
+    double angle;
 
     float realAcceleration;
     float realMaxSpeed;
@@ -113,10 +115,9 @@ void CMomentumGameMovement::DFAirMove()
 
     if (sv_strafestyle.GetInt() == 3 && wishdir.Length() > 0.1)
     {
-        Vector vel2D;
         VectorCopy(mv->m_vecVelocity, vel2D);
         vel2D[2] = 0;
-        double angle = acos(DotProduct(wishdir, vel2D) / (wishdir.Length() * vel2D.Length2D()));
+        angle = acos(DotProduct(wishdir, vel2D) / (wishdir.Length() * vel2D.Length2D()));
         angle *= (180 / M_PI);
         double minQWAngle = acos(sv_maxairstrafespeed.GetFloat() / mv->m_vecVelocity.Length2D());
         double minQ3Angle = acos(sv_maxairspeed.GetFloat() / mv->m_vecVelocity.Length2D());
@@ -160,6 +161,16 @@ void CMomentumGameMovement::DFAirMove()
             {
                 realWishspeed *= 1.3;
                 realMaxSpeed *= 1.3;
+            }
+
+            VectorCopy(mv->m_vecVelocity, vel2D);
+            vel2D[2] = 0;
+            angle = acos(DotProduct(wishdir, vel2D) / (wishdir.Length() * vel2D.Length2D()));
+            angle *= (180 / M_PI);
+
+            if (angle > 100.0f)
+            {
+                realAcceleration *= 2;
             }
         }
     }
