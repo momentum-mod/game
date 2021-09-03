@@ -128,6 +128,12 @@ void CMomentumGameMovement::DFAirMove()
             realAcceleration = sv_airaccelerate.GetFloat();
             realMaxSpeed = sv_maxairspeed.GetFloat();
             realWishspeed = clampedWishspeed * DFScale(realMaxSpeed);
+
+            if (m_pPlayer->m_flRemainingHaste < 0 || m_pPlayer->m_flRemainingHaste > gpGlobals->curtime)
+            {
+                realWishspeed *= 1.3;
+                realMaxSpeed *= 1.3;
+            }
         }
         else
         {
@@ -149,6 +155,12 @@ void CMomentumGameMovement::DFAirMove()
             realAcceleration = sv_airaccelerate.GetFloat();
             realMaxSpeed = sv_maxairspeed.GetFloat();
             realWishspeed = clampedWishspeed * DFScale(realMaxSpeed);
+
+            if (m_pPlayer->m_flRemainingHaste < 0 || m_pPlayer->m_flRemainingHaste > gpGlobals->curtime)
+            {
+                realWishspeed *= 1.3;
+                realMaxSpeed *= 1.3;
+            }
         }
     }
     else if (sv_strafestyle.GetInt() == 1)
@@ -156,12 +168,24 @@ void CMomentumGameMovement::DFAirMove()
         realAcceleration = sv_airstrafeaccelerate.GetFloat();
         realMaxSpeed = sv_maxairstrafespeed.GetFloat();
         realWishspeed = wishspeed;
+
+        if (m_pPlayer->m_flRemainingHaste < 0 || m_pPlayer->m_flRemainingHaste > gpGlobals->curtime)
+        {
+            realAcceleration *= 1.3;
+        }
     }
     else
     {
         realAcceleration = sv_airaccelerate.GetFloat();
         realMaxSpeed = sv_maxairspeed.GetFloat();
         realWishspeed = clampedWishspeed * DFScale(realMaxSpeed);
+
+        if (m_pPlayer->m_flRemainingHaste < 0 || m_pPlayer->m_flRemainingHaste > gpGlobals->curtime)
+        {
+            realWishspeed *= 1.3;
+            realMaxSpeed *= 1.3;
+            realAcceleration *= 1.3;
+        }
     }
 
     DFAccelerate(wishdir, realWishspeed, realAcceleration, realMaxSpeed);

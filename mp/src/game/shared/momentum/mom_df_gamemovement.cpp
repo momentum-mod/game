@@ -158,11 +158,6 @@ void CMomentumGameMovement::DFAccelerate(const Vector &wishdir, float wishspeed,
     if (clampedWishspeed > maxspeed)
         clampedWishspeed = maxspeed;
 
-    if (m_pPlayer->m_flRemainingHaste < 0 || m_pPlayer->m_flRemainingHaste > gpGlobals->curtime)
-    {
-        clampedWishspeed *= 1.3;
-    }
-
     // Determine veer amount
     currentspeed = DotProduct(mv->m_vecVelocity, wishdir);
 

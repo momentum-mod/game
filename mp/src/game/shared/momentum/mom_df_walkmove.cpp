@@ -164,6 +164,7 @@ void CMomentumGameMovement::DFWalkMove()
     Vector wishdir;
     float wishspeed;
     float realAccelerate;
+    float realMaxspeed = sv_maxspeed.GetFloat();
 
     Vector dest;
     Vector forward, right, up;
@@ -258,7 +259,13 @@ void CMomentumGameMovement::DFWalkMove()
     {
         realAccelerate = sv_accelerate.GetFloat();
     }
-    DFAccelerate(wishdir, wishspeed, realAccelerate, sv_maxspeed.GetFloat());
+    if (m_pPlayer->m_flRemainingHaste < 0 || m_pPlayer->m_flRemainingHaste > gpGlobals->curtime)
+    {
+        wishspeed *= 1.3;
+        realMaxspeed *= 1.3;
+    //    realAccelerate *= 1.3;
+    }
+    DFAccelerate(wishdir, wishspeed, realAccelerate, realMaxspeed);
 
     // this is the part that causes overbounces   
     spd = mv->m_vecVelocity.Length();
