@@ -34,19 +34,12 @@ body:
     description: Windows version, Linux distro, etc.
   validations:
     required: true
+
 - type: dropdown
   attributes:
     label: Renderer
     options:
       - DX9 (default)
       - DX11
-  validations:
-    required: true
-- type: dropdown
-  attributes:
-    label: UI Framework
-    options:
-      - VGUI (default)
-      - Panorama
   validations:
     required: true
