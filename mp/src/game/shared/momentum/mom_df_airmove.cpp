@@ -170,7 +170,7 @@ void CMomentumGameMovement::DFAirMove()
 
             if (angle > 100.0f)
             {
-                realAcceleration *= 2;
+                realAcceleration *= sv_airdecelerate.GetFloat();
             }
         }
     }
