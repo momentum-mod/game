@@ -413,14 +413,14 @@ void CGameMode_Trimp::OnPlayerSpawn(CMomentumPlayer *pPlayer)
     CGameModeBase::OnPlayerSpawn(pPlayer);
 
 #ifdef GAME_DLL
-    pPlayer->GiveWeapon(WEAPON_STICKYLAUNCHER);
+    pPlayer->GiveWeapon(WEAPON_SHIELD);
     pPlayer->GiveWeapon(WEAPON_PISTOL);
 #endif
 }
 
 bool CGameMode_Trimp::WeaponIsAllowed(WeaponID_t weapon)
 {
-    return weapon == WEAPON_STICKYLAUNCHER || weapon == WEAPON_PISTOL || weapon == WEAPON_KNIFE;
+    return weapon == WEAPON_SHIELD || weapon == WEAPON_PISTOL || weapon == WEAPON_KNIFE;
 }
 
 bool CGameMode_Trimp::HasCapability(GameModeHUDCapability_t capability)

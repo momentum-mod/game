@@ -26,6 +26,7 @@ enum WeaponID_t
     WEAPON_DF_BFG,
     WEAPON_DF_LIGHTNINGGUN,
     WEAPON_BAZOOKA,
+    WEAPON_SHIELD,
 
     WEAPON_MAX, // number of weapons weapon index
 
@@ -50,7 +51,8 @@ static const char *const g_szWeaponNames[WEAPON_MAX] =
     "weapon_momentum_df_grenadelauncher",
     "weapon_momentum_df_bfg",
     "weapon_momentum_df_lightninggun",
-    "weapon_momentum_bazooka"
+    "weapon_momentum_bazooka",
+    "weapon_momentum_shield"
 };
 
 enum WeaponHudResource_t

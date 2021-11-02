@@ -201,6 +201,7 @@ void CWeaponDef::LoadWeaponDefinitions()
     m_vecWeaponDefs[WEAPON_DF_BFG]          = ParseWeaponScript(g_szWeaponNames[WEAPON_DF_BFG]);
     m_vecWeaponDefs[WEAPON_DF_LIGHTNINGGUN] = ParseWeaponScript(g_szWeaponNames[WEAPON_DF_LIGHTNINGGUN]);
     m_vecWeaponDefs[WEAPON_BAZOOKA]         = ParseWeaponScript(g_szWeaponNames[WEAPON_BAZOOKA]);
+    m_vecWeaponDefs[WEAPON_SHIELD]          = ParseWeaponScript(g_szWeaponNames[WEAPON_SHIELD]);
 }
 
 void CWeaponDef::ReloadWeaponDefinitions()
