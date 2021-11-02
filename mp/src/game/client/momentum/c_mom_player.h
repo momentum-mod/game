@@ -114,6 +114,8 @@ public:
     float m_flRemainingDamageBoost;
     CNetworkArray(int, m_iMomAmmo, WEAPON_MAX);
 
+    float m_flChargeTime;
+
   private:
     // Mobility mod (parkour)
     bool m_bWasSprinting;

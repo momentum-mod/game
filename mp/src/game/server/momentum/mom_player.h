@@ -361,6 +361,8 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
 
     float m_flKnockbackTime;
 
+    CNetworkVar(float, m_flChargeTime);
+
   private:
     // Replace wishdir to escape if we are stuck in a small corner 
     Vector m_vecCornerEscapeVel;

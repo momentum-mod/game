@@ -153,6 +153,7 @@ SendPropBool(SENDINFO(m_bAutoBhop)),
 SendPropFloat(SENDINFO(m_fDuckTimer)),
 SendPropFloat(SENDINFO(m_flRemainingHaste)),
 SendPropFloat(SENDINFO(m_flRemainingDamageBoost)),
+SendPropFloat(SENDINFO(m_flChargeTime)),
 SendPropBool(SENDINFO(m_bSurfing)),
 SendPropInt(SENDINFO(m_nButtonsToggled)),
 SendPropVector(SENDINFO(m_vecRampBoardVel)),
@@ -273,10 +274,13 @@ CMomentumPlayer::CMomentumPlayer()
     m_flRemainingDamageBoost = 0.0f;
     m_iMomAmmoType = -1;
 
+
     for (int i = 0; i < WEAPON_MAX; i++)
     {
         m_iMomAmmo.Set(i, -1);
     }
+
+    m_flChargeTime = 0.0f;
 }
 
 CMomentumPlayer::~CMomentumPlayer()
