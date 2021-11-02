@@ -260,7 +260,7 @@ public:
 class CGameMode_Trimp : public CGameModeBase
 {
   public:
-    GameMode_t GetType() override { return GAMEMODE_SJ; }
+    GameMode_t GetType() override { return GAMEMODE_TRIMP; }
     const char *GetStatusString() override { return "Trimping"; }
     const char *GetDiscordIcon() override { return "mom_icon_sj"; }
     const char *GetMapPrefix() override { return "trimp_"; }
@@ -295,8 +295,8 @@ public:
     /// Checks if the game mode is the given one.
     /// (convenience method; functionally equivalent to `GetGameMode()->GetType() == eCheck`)
     bool GameModeIs(GameMode_t eCheck) const { return m_pCurrentGameMode->GetType() == eCheck; }
-    /// Another convenience method to check if the current game mode is a TF2-based one (RJ || SJ)
-    bool IsTF2BasedMode() const { return GameModeIs(GAMEMODE_RJ) || GameModeIs(GAMEMODE_SJ); }
+    /// Another convenience method to check if the current game mode is a TF2-based one (RJ || SJ || TRIMP)
+    bool IsTF2BasedMode() const { return GameModeIs(GAMEMODE_RJ) || GameModeIs(GAMEMODE_SJ) || GameModeIs(GAMEMODE_TRIMP); }
     /// Another convenience method to check if the current game mode is a CS-based one (Surf || Bhop || KZ || Unknown)
     bool IsCSBasedMode() const { return GameModeIs(GAMEMODE_SURF) || GameModeIs(GAMEMODE_BHOP) ||
                                         GameModeIs(GAMEMODE_KZ) || GameModeIs(GAMEMODE_UNKNOWN); }
