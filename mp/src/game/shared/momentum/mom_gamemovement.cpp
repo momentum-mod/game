@@ -1353,6 +1353,12 @@ bool CMomentumGameMovement::CheckJumpButton()
         return false;
     }
 
+    // if we are charging, can't jump
+    if (m_pPlayer->m_flChargeTime > gpGlobals->curtime)
+    {
+        return false;
+    }
+
     const bool bJustJumped = ((mv->m_nButtons & IN_JUMP) && !(mv->m_nOldButtons & IN_JUMP));
 
     const bool bCoyoteJump = (gpGlobals->curtime <= m_pPlayer->m_flCoyoteTime);
