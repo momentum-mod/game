@@ -16,21 +16,11 @@ class CMomentumShield : public CWeaponBaseGun
     CMomentumShield();
 
     void PrimaryAttack() OVERRIDE;
-#ifdef WEAPONS_USE_AMMO
-    bool Reload() OVERRIDE;
-#endif
     void WeaponIdle() OVERRIDE;
 
     WeaponID_t GetWeaponID(void) const OVERRIDE { return WEAPON_SHIELD; }
 
     float DeployTime() const OVERRIDE { return 0.5f; }
-    float PrimaryFireTime() const { return 0.625f; }
-    float PumpTime() const { return 0.5f; }
+    float PrimaryFireTime() const { return 1.5f; }
     float IdleTime() const { return 2.5f; }
-
-  private:
-    CMomentumShield(const CMomentumShield &);
-
-    float m_flPumpTime;
-    CNetworkVar(int, m_fInSpecialReload);
 };
