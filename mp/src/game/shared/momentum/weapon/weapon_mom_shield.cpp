@@ -37,6 +37,7 @@ void CMomentumShield::PrimaryAttack()
         pPlayer->m_iMomAmmo.Set(GetWeaponID(), ammo - 1);
     }
 
+    pPlayer->m_flChargeTime = gpGlobals->curtime + 1.5;
 
     SendWeaponAnim(ACT_VM_PRIMARYATTACK);
 

@@ -12,6 +12,7 @@
 #include "coordsize.h"
 #include "mom_system_gamemode.h"
 #include "filesystem.h"
+#include "mom_player_shared.h"
 
 #if defined(HL2_DLL) || defined(HL2_CLIENT_DLL)
 	#include "hl_movedata.h"
@@ -1730,8 +1731,14 @@ void CGameMovement::AirAccelerate( Vector& wishdir, float wishspeed, float accel
 		return;
 
 	// Cap speed
-	if ( wishspd > GetAirSpeedCap() )
-		wishspd = GetAirSpeedCap();
+
+	CMomentumPlayer *m_pPlayer = ToCMOMPlayer(player);
+
+	if (m_pPlayer->m_flChargeTime <= gpGlobals->curtime)
+    {
+        if (wishspd > GetAirSpeedCap())
+            wishspd = GetAirSpeedCap();
+    }
 
 	// Determine veer amount
 	currentspeed = mv->m_vecVelocity.Dot(wishdir);
@@ -1782,8 +1789,18 @@ void CGameMovement::AirMove( void )
 	VectorNormalize(forward);  // Normalize remainder of vectors
 	VectorNormalize(right);    // 
 
-	for (i=0 ; i<2 ; i++)       // Determine x and y parts of velocity
-		wishvel[i] = forward[i]*fmove + right[i]*smove;
+	CMomentumPlayer *m_pPlayer = ToCMOMPlayer(player);
+
+	if (m_pPlayer->m_flChargeTime <= gpGlobals->curtime)
+    {
+        for (i = 0; i < 2; i++) // Determine x and y parts of velocity
+            wishvel[i] = forward[i] * fmove + right[i] * smove;
+    }
+    else
+    {
+        for (i = 0; i < 2; i++) // Determine x and y parts of velocity
+            wishvel[i] = forward[i] * 750;
+    }
 	wishvel[2] = 0;             // Zero out z part of velocity
 
 	VectorCopy (wishvel, wishdir);   // Determine magnitude of speed of move
@@ -1792,10 +1809,17 @@ void CGameMovement::AirMove( void )
 	//
 	// clamp to server defined max speed
 	//
-	if ( wishspeed != 0 && (wishspeed > mv->m_flMaxSpeed))
+
+    float maxSpeed = mv->m_flMaxSpeed;
+    if (m_pPlayer->m_flChargeTime > gpGlobals->curtime)
+    {
+        maxSpeed = 750;
+    }
+
+	if ( wishspeed != 0 && (wishspeed > maxSpeed))
 	{
-		VectorScale (wishvel, mv->m_flMaxSpeed/wishspeed, wishvel);
-		wishspeed = mv->m_flMaxSpeed;
+		VectorScale (wishvel, maxSpeed/wishspeed, wishvel);
+		wishspeed = maxSpeed;
 	}
 
 	float realAccelerate = sv_airaccelerate.GetFloat();
