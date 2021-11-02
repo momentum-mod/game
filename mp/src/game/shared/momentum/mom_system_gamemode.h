@@ -257,6 +257,25 @@ public:
     bool HasCapability(GameModeHUDCapability_t capability) override;
 };
 
+class CGameMode_Trimp : public CGameModeBase
+{
+  public:
+    GameMode_t GetType() override { return GAMEMODE_SJ; }
+    const char *GetStatusString() override { return "Trimping"; }
+    const char *GetDiscordIcon() override { return "mom_icon_sj"; }
+    const char *GetMapPrefix() override { return "trimp_"; }
+    const char *GetGameModeCfg() override { return "trimp.cfg"; }
+    float GetViewScale() override { return 1.0f; }
+    float GetJumpFactor() override;
+    bool CanBhop() override { return false; }
+    bool HasCapability(GameModeHUDCapability_t capability) override;
+
+    void SetGameModeVars() override;
+    bool PlayerHasAutoBhop() override { return false; }
+    void OnPlayerSpawn(CMomentumPlayer *pPlayer) override;
+    bool WeaponIsAllowed(WeaponID_t weapon) override;
+};
+
 class CGameModeSystem : public CAutoGameSystem
 {
 public:

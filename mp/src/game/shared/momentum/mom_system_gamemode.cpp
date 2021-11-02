@@ -392,6 +392,42 @@ bool CGameMode_Defrag::WeaponIsAllowed(WeaponID_t weapon)
     return true;
 }
 
+void CGameMode_Trimp::SetGameModeVars()
+{
+    CGameModeBase::SetGameModeVars();
+
+    // Trimp-specific
+    sv_airaccelerate.SetValue(10);
+    sv_accelerate.SetValue(10);
+    sv_maxspeed.SetValue(280);
+    sv_stopspeed.SetValue(100);
+    sv_considered_on_ground.SetValue(2);
+    sv_duck_collision_fix.SetValue(false);
+    sv_ground_trigger_fix.SetValue(false); // MOM_TODO Remove when bounce triggers have been implemented
+}
+
+float CGameMode_Trimp::GetJumpFactor() { return 289.0f; }
+
+void CGameMode_Trimp::OnPlayerSpawn(CMomentumPlayer *pPlayer)
+{
+    CGameModeBase::OnPlayerSpawn(pPlayer);
+
+#ifdef GAME_DLL
+    pPlayer->GiveWeapon(WEAPON_STICKYLAUNCHER);
+    pPlayer->GiveWeapon(WEAPON_PISTOL);
+#endif
+}
+
+bool CGameMode_Trimp::WeaponIsAllowed(WeaponID_t weapon)
+{
+    return weapon == WEAPON_STICKYLAUNCHER || weapon == WEAPON_PISTOL || weapon == WEAPON_KNIFE;
+}
+
+bool CGameMode_Trimp::HasCapability(GameModeHUDCapability_t capability)
+{
+    return capability == GameModeHUDCapability_t::CAP_HUD_KEYPRESS_ATTACK;
+}
+
 CGameModeSystem::CGameModeSystem() : CAutoGameSystem("CGameModeSystem")
 {
     m_pCurrentGameMode = new CGameModeBase; // Unknown game mode
@@ -406,6 +442,7 @@ CGameModeSystem::CGameModeSystem() : CAutoGameSystem("CGameModeSystem")
     m_vecGameModes.AddToTail(new CGameMode_Parkour);
     m_vecGameModes.AddToTail(new CGameMode_Conc);
     m_vecGameModes.AddToTail(new CGameMode_Defrag);
+    m_vecGameModes.AddToTail(new CGameMode_Trimp);
 }
 
 CGameModeSystem::~CGameModeSystem()
