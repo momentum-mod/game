@@ -21,6 +21,6 @@ class CMomentumShield : public CWeaponBaseGun
     WeaponID_t GetWeaponID(void) const OVERRIDE { return WEAPON_SHIELD; }
 
     float DeployTime() const OVERRIDE { return 0.5f; }
-    float PrimaryFireTime() const { return 1.5f; }
+    float PrimaryFireTime() const { return 1.4f; }
     float IdleTime() const { return 2.5f; }
 };

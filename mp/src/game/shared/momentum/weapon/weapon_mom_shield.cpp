@@ -39,10 +39,11 @@ void CMomentumShield::PrimaryAttack()
 
     pPlayer->m_flChargeTime = gpGlobals->curtime + 1.5;
 
-    SendWeaponAnim(ACT_VM_PRIMARYATTACK);
+    SendWeaponAnim(ACT_VM_SWINGMISS);
 
     // player "shoot" animation
     pPlayer->SetAnimation(PLAYER_ATTACK1);
+    WeaponSound(GetWeaponSound("single_shot"));
 
     m_flNextPrimaryAttack = gpGlobals->curtime + PrimaryFireTime();
     m_flNextSecondaryAttack = gpGlobals->curtime + PrimaryFireTime();
