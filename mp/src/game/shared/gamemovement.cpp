@@ -1436,10 +1436,22 @@ void CGameMovement::WaterMove( void )
 	//
 	// user intentions
 	//
-	for (i=0 ; i<3 ; i++)
-	{
-		wishvel[i] = forward[i]*mv->m_flForwardMove + right[i]*mv->m_flSideMove;
-	}
+    CMomentumPlayer *m_pPlayer = ToCMOMPlayer(player);
+
+    if (m_pPlayer->m_flChargeTime <= gpGlobals->curtime)
+    {
+        for (i = 0; i < 3; i++)
+        {
+            wishvel[i] = forward[i] * mv->m_flForwardMove + right[i] * mv->m_flSideMove;
+        }
+    }
+    else
+    {
+        for (i = 0; i < 3; i++)
+        {
+            wishvel[i] = forward[i] * 750;
+        }
+    }
 
 	CalculateWaterWishVelocityZ(wishvel, forward);
 
@@ -1448,11 +1460,19 @@ void CGameMovement::WaterMove( void )
 	wishspeed = VectorNormalize(wishdir);
 
 	// Cap speed.
-	if (wishspeed > mv->m_flMaxSpeed)
-	{
-		VectorScale (wishvel, mv->m_flMaxSpeed/wishspeed, wishvel);
-		wishspeed = mv->m_flMaxSpeed;
-	}
+
+	if (m_pPlayer->m_flChargeTime <= gpGlobals->curtime)
+    {
+        if (wishspeed > mv->m_flMaxSpeed)
+        {
+            VectorScale(wishvel, mv->m_flMaxSpeed / wishspeed, wishvel);
+            wishspeed = mv->m_flMaxSpeed;
+        }
+    }
+    else
+    {
+        wishspeed = 750;
+    }
 
 	// Slow us down a bit.
 	wishspeed *= 0.8;
