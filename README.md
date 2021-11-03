@@ -6,6 +6,8 @@
 
 This is my modification of Momentum Mod 0.8.7 to include more accurate Quake 3 / CPM movement. It uses a completely rewritten player movement code based on the original Quake 3 GPL source. More information can be found at the forum post here: [Lumia's Defrag Mod General Thread](https://forum.momentum-mod.org/d/71-lumias-defrag-mod-general-thread)
 
+This mod also includes some extra neat things, including a recreation of the Beggar's Bazooka and demoman shield charging ("trimping.") See the end of the included README for more information.
+
 ## Installation
 
 First, download the latest public release of Momentum Mod 0.8.7 here: [0.8.7 Public Evaluation Build](https://github.com/momentum-mod/game/releases/tag/0.8.7-public-eval)
