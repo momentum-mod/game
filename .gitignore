@@ -137,3 +137,4 @@ mp/src/materialsystem/stdshaders/makefile.momentum_dx9_30.copy
 *.zip
 *.vmf
 *.bsp
+mp/game/momentum/gameinfo.txt
