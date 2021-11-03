@@ -1938,6 +1938,12 @@ void CMomentumGameMovement::FullWalkMove()
         StartGravity();
     }
 
+    if (m_pPlayer->m_flChargeTime > gpGlobals->curtime && m_pPlayer->m_flChargeTime < gpGlobals->curtime + 1.3 &&
+        VectorLength(mv->m_vecVelocity) < 300)
+    {
+        m_pPlayer->m_flChargeTime = 0;
+    }
+
     // If we are leaping out of the water, just update the counters.
     if (player->m_flWaterJumpTime > 0.0f)
     {
