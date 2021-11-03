@@ -193,20 +193,34 @@ void CMomentumGameMovement::WalkMove()
     smove = mv->m_flSideMove;
 
     // Zero out z components of movement vectors
-    if (forward[2] != 0)
+    if (m_pPlayer->m_flChargeTime <= gpGlobals->curtime)
     {
-        forward[2] = 0;
-        VectorNormalize(forward);
-    }
+        if (forward[2] != 0)
+        {
+            forward[2] = 0;
+            VectorNormalize(forward);
+        }
 
-    if (right[2] != 0)
+        if (right[2] != 0)
+        {
+            right[2] = 0;
+            VectorNormalize(right);
+        }
+
+        for (i = 0; i < 2; i++) // Determine x and y parts of velocity
+            wishvel[i] = forward[i] * fmove + right[i] * smove;
+    }
+    else
     {
-        right[2] = 0;
-        VectorNormalize(right);
-    }
+        if (forward[2] != 0)
+        {
+            forward[2] = 0;
+            VectorNormalize(forward);
+        }
 
-    for (i = 0; i < 2; i++) // Determine x and y parts of velocity
-        wishvel[i] = forward[i] * fmove + right[i] * smove;
+        for (i = 0; i < 2; i++) // Determine x and y parts of velocity
+            wishvel[i] = forward[i] * 750;
+    }
 
     wishvel[2] = 0.0f; // Zero out z part of velocity
 
@@ -244,13 +258,18 @@ void CMomentumGameMovement::WalkMove()
 
     wishspeed = VectorNormalize(wishdir);
 
+    float maxSpeed = mv->m_flMaxSpeed;
+    if (m_pPlayer->m_flChargeTime > gpGlobals->curtime)
+    {
+        maxSpeed = 750;
+    }
     //
     // Clamp to server defined max speed
     //
-    if ((wishspeed != 0.0f) && (wishspeed > mv->m_flMaxSpeed))
+    if ((wishspeed != 0.0f) && (wishspeed >maxSpeed))
     {
-        VectorScale(wishvel, mv->m_flMaxSpeed / wishspeed, wishvel);
-        wishspeed = mv->m_flMaxSpeed;
+        VectorScale(wishvel, maxSpeed / wishspeed, wishvel);
+        wishspeed = maxSpeed;
     }
 
     float oldspeed = mv->m_vecVelocity.Length2D();
@@ -274,9 +293,9 @@ void CMomentumGameMovement::WalkMove()
     if (g_pGameModeSystem->IsTF2BasedMode())
     {
         float flNewSpeed = VectorLength(mv->m_vecVelocity);
-        if (flNewSpeed > mv->m_flMaxSpeed)
+        if (flNewSpeed > maxSpeed)
         {
-            float flScale = (mv->m_flMaxSpeed / flNewSpeed);
+            float flScale = (maxSpeed / flNewSpeed);
             mv->m_vecVelocity.x *= flScale;
             mv->m_vecVelocity.y *= flScale;
         }
@@ -294,7 +313,7 @@ void CMomentumGameMovement::WalkMove()
 
                 // clamp the back move vector if it is faster than max
                 float flBackSpeed = VectorLength(vecBackMove);
-                float flMaxBackSpeed = (mv->m_flMaxSpeed * 0.9f);
+                float flMaxBackSpeed = (maxSpeed * 0.9f);
 
                 if (flBackSpeed > flMaxBackSpeed)
                 {
@@ -305,9 +324,9 @@ void CMomentumGameMovement::WalkMove()
                 mv->m_vecVelocity = vecBackMove + vecRightMove;
 
                 flNewSpeed = VectorLength(mv->m_vecVelocity);
-                if (flNewSpeed > mv->m_flMaxSpeed)
+                if (flNewSpeed > maxSpeed)
                 {
-                    float flScale = (mv->m_flMaxSpeed / flNewSpeed);
+                    float flScale = (maxSpeed / flNewSpeed);
                     mv->m_vecVelocity.x *= flScale;
                     mv->m_vecVelocity.y *= flScale;
                 }
@@ -1156,7 +1175,15 @@ void CMomentumGameMovement::FinishDuck()
 
 void CMomentumGameMovement::PlayerMove()
 {
-    BaseClass::PlayerMove();
+    if (g_pGameModeSystem->GameModeIs(GAMEMODE_DEFRAG))
+    {
+        DFPlayerMove();
+        return;
+    }
+    else
+    {
+        BaseClass::PlayerMove();
+    }
 
     if (player->IsAlive())
     {
@@ -1322,6 +1349,12 @@ bool CMomentumGameMovement::CheckJumpButton()
 
     // Cannot jump while ducked in TF2
     if (g_pGameModeSystem->IsTF2BasedMode() && player->GetFlags() & FL_DUCKING)
+    {
+        return false;
+    }
+
+    // if we are charging, can't jump
+    if (m_pPlayer->m_flChargeTime > gpGlobals->curtime)
     {
         return false;
     }
@@ -1903,6 +1936,12 @@ void CMomentumGameMovement::FullWalkMove()
         player->m_flWaterJumpTime <= 0.0f)
     {
         StartGravity();
+    }
+
+    if (m_pPlayer->m_flChargeTime > gpGlobals->curtime && m_pPlayer->m_flChargeTime < gpGlobals->curtime + 1.3 &&
+        VectorLength(mv->m_vecVelocity) < 300)
+    {
+        m_pPlayer->m_flChargeTime = 0;
     }
 
     // If we are leaping out of the water, just update the counters.

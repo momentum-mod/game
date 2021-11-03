@@ -389,6 +389,7 @@ enum TeleportMode_t
     TELEPORT_SNAP_TO_DESTINATION,       // Redirect the teleported object's angles and velocity to the destinaton's angles
     TELEPORT_LANDMARK,                  // Offset the teleported object from the destination by their offset from the landmark, 
                                         // optionally taking the landmark and destination's angles into account
+    TELEPORT_DEFRAG,                    // Quake-3 style behaviour where the player gets 400ups in the direction of the teleport location
 
     TELEPORT_COUNT
 };
@@ -955,4 +956,43 @@ public:
 
     // always send to all clients
     int UpdateTransmitState() override { return SetTransmitState(FL_EDICT_ALWAYS); }
+};
+
+class CTriggerOverbounce : public CBaseMomentumTrigger
+{
+    DECLARE_CLASS(CTriggerOverbounce, CBaseMomentumTrigger);
+    DECLARE_NETWORKCLASS();
+    DECLARE_DATADESC();
+
+  public:
+    void OnStartTouch(CBaseEntity *pOther) override;
+    void OnEndTouch(CBaseEntity *pOther) override;
+    int UpdateTransmitState() // always send to all clients
+    {
+        return SetTransmitState(FL_EDICT_ALWAYS);
+    }
+
+  public:
+    CNetworkVar(float, m_flMinSpeed);
+    CNetworkVar(float, m_flMaxSpeed);
+};
+
+class CTriggerWeaponstrip : public CBaseMomentumTrigger
+{
+    DECLARE_CLASS(CTriggerWeaponstrip, CBaseMomentumTrigger);
+    DECLARE_NETWORKCLASS();
+    DECLARE_DATADESC();
+
+  public:
+    CTriggerWeaponstrip();
+    void OnStartTouch(CBaseEntity *pOther) override;
+    bool KeyValue(const char *szKeyName, const char *szValue) override;
+    int UpdateTransmitState() // always send to all clients
+    {
+        return SetTransmitState(FL_EDICT_ALWAYS);
+    }
+
+  public:
+    CNetworkString(m_szWeaponName, MAX_WEAPON_STRING);
+    //char m_szWeaponName[MAX_WEAPON_STRING];
 };

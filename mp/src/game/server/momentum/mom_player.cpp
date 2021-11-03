@@ -24,6 +24,7 @@
 #include "mom_system_tricks.h"
 #include "run/mom_run_safeguards.h"
 #include "movevars_shared.h"
+#include "mom_df_rocket.h"
 
 #include "tier0/memdbgon.h"
 
@@ -150,10 +151,14 @@ SendPropInt(SENDINFO(m_afButtonDisabled)),
 SendPropEHandle(SENDINFO(m_CurrentSlideTrigger)),
 SendPropBool(SENDINFO(m_bAutoBhop)),
 SendPropFloat(SENDINFO(m_fDuckTimer)),
+SendPropFloat(SENDINFO(m_flRemainingHaste)),
+SendPropFloat(SENDINFO(m_flRemainingDamageBoost)),
+SendPropFloat(SENDINFO(m_flChargeTime)),
 SendPropBool(SENDINFO(m_bSurfing)),
 SendPropInt(SENDINFO(m_nButtonsToggled)),
 SendPropVector(SENDINFO(m_vecRampBoardVel)),
 SendPropVector(SENDINFO(m_vecRampLeaveVel)),
+SendPropArray3(SENDINFO_ARRAY3(m_iMomAmmo), SendPropInt(SENDINFO_ARRAY(m_iMomAmmo), -1, 0)),
 SendPropArray3(SENDINFO_ARRAY3(m_iZoneCount), SendPropInt(SENDINFO_ARRAY(m_iZoneCount), 7, SPROP_UNSIGNED)),
 SendPropArray3(SENDINFO_ARRAY3(m_iLinearTracks), SendPropInt(SENDINFO_ARRAY(m_iLinearTracks), 1, SPROP_UNSIGNED)),
 SendPropDataTable(SENDINFO_DT(m_Data), &REFERENCE_SEND_TABLE(DT_MomRunEntityData)),
@@ -166,6 +171,11 @@ BEGIN_DATADESC(CMomentumPlayer)
     /*DEFINE_THINKFUNC(LimitSpeedInStartZone),*/
     DEFINE_INPUTFUNC(FIELD_STRING, "AddCollectible", InputAddCollectible),
     DEFINE_INPUTFUNC(FIELD_VOID, "ClearCollectibles", InputClearCollectibles),
+    DEFINE_INPUTFUNC(FIELD_FLOAT, "AddHaste", InputAddHaste),
+    DEFINE_INPUTFUNC(FIELD_FLOAT, "AddDamageBoost", InputAddDamageBoost),
+    DEFINE_INPUTFUNC(FIELD_INTEGER, "AddAmmo", InputAddAmmo),
+    DEFINE_INPUTFUNC(FIELD_INTEGER, "SetAmmo", InputSetAmmo),
+    DEFINE_INPUTFUNC(FIELD_INTEGER, "SetAmmoType", InputSetAmmoType),
 END_DATADESC();
 
 LINK_ENTITY_TO_CLASS(player, CMomentumPlayer);
@@ -259,6 +269,18 @@ CMomentumPlayer::CMomentumPlayer()
     m_nWallRunState = WALLRUN_NOT;
 
     m_nButtonsToggled = 0;
+
+    m_flRemainingHaste = 0.0f;
+    m_flRemainingDamageBoost = 0.0f;
+    m_iMomAmmoType = -1;
+
+
+    for (int i = 0; i < WEAPON_MAX; i++)
+    {
+        m_iMomAmmo.Set(i, -1);
+    }
+
+    m_flChargeTime = 0.0f;
 }
 
 CMomentumPlayer::~CMomentumPlayer()
@@ -370,6 +392,8 @@ void CMomentumPlayer::ItemPostFrame()
 //-----------------------------------------------------------------------------
 bool CMomentumPlayer::BumpWeapon(CBaseCombatWeapon *pWeapon)
 {
+    bool switched;
+
     // Get the weapon that we currently have at that slot
     const auto pCurrWeapon = Weapon_GetSlotAndPosition(pWeapon->GetSlot(), pWeapon->GetPosition());
     if (pCurrWeapon)
@@ -379,8 +403,19 @@ bool CMomentumPlayer::BumpWeapon(CBaseCombatWeapon *pWeapon)
         UTIL_Remove(pWeapon);
         return false;
     }
+
     // Otherwise we can try to pick up that weapon
-    return BaseClass::BumpWeapon(pWeapon);
+    switched = BaseClass::BumpWeapon(pWeapon);
+
+    if (pWeapon && switched && (GetActiveWeapon() != pWeapon))
+    {
+        if (!Weapon_Switch(pWeapon))
+        {
+            m_iQueuedWeaponID = pWeapon->GetWeaponID();
+        }
+    }
+
+    return switched;
 }
 
 bool CMomentumPlayer::Weapon_CanUse(CBaseCombatWeapon *pWeapon)
@@ -2154,8 +2189,111 @@ int CMomentumPlayer::OnTakeDamage_Alive(const CTakeDamageInfo &info)
         // Done
         return 1;
     }
+    else if (pAttacker == GetLocalPlayer() &&
+        (FClassnameIs(pInflictor, "momentum_df_rocket") || FClassnameIs(pInflictor, "momentum_df_grenade")))
+    {
+        DFApplyPushFromDamage(info);
+        return 1;
+    }
 
     return BaseClass::OnTakeDamage_Alive(info);
+}
+
+void CMomentumPlayer::DFApplyPushFromDamage(const CTakeDamageInfo &info)
+{
+
+    if (info.GetDamageType() & DMG_PREVENT_PHYSICS_FORCE)
+        return;
+
+    CBaseEntity *pAttacker = info.GetAttacker();
+    CMomDFRocket *pInflictor = static_cast<CMomDFRocket*>(info.GetInflictor());
+
+    if (!pInflictor || GetMoveType() != MOVETYPE_WALK || pAttacker->IsSolidFlagSet(FSOLID_TRIGGER))
+        return;
+
+    float knockback;
+    knockback = info.GetDamage();
+    if (pInflictor->type == DF_ROCKET)
+    {
+        Vector flat, dist, start;
+        VectorCopy(GetAbsOrigin(), start);
+        start[2] += GetViewOffset()[2];
+        VectorSubtract(start, info.GetInflictor()->WorldSpaceCenter(), dist);
+        VectorCopy(dist, flat);
+        flat[2] = 0;
+        VectorNormalize(dist);
+        VectorNormalize(flat);
+
+        knockback *= (DotProduct(dist, flat) * sv_flatknockback.GetFloat()) + 1;
+    }
+
+    if (knockback > 200)
+    {
+        knockback = 200;
+    }
+
+    Vector kvel;
+    float mass = 200;
+
+    Vector dir;
+    VectorSubtract(GetAbsOrigin(), info.GetInflictor()->GetAbsOrigin(), dir);
+    dir[2] += 24;
+    VectorNormalize(dir);
+    VectorScale(dir, 1000 * knockback / mass, kvel);
+
+    ApplyAbsVelocityImpulse(kvel);
+
+    float t = knockback * 2;
+    t = clamp(t, 50, 200);
+    m_flKnockbackTime = gpGlobals->curtime + (t / 1000);
+
+    if (GetFlags() & FL_ONGROUND)
+    {
+        UpdateLastAction(SurfInt::ACTION_KNOCKBACK);
+    }
+
+    IGameEvent *pEvent = gameeventmanager->CreateEvent("player_explosive_hit");
+    if (pEvent)
+    {
+        pEvent->SetFloat("speed", GetAbsVelocity().Length());
+        gameeventmanager->FireEvent(pEvent);
+    }
+}
+
+void CMomentumPlayer::DropWeapon(const char* weapon)
+{
+    bool wasActiveWeapon = false;
+
+    for (int i = 0; i < WEAPON_MAX; i++)
+    {
+        if (m_hMyWeapons[i])
+        {
+            if (strcmp(m_hMyWeapons[i]->GetClassname(), weapon) == 0)
+            {
+                if (m_hMyWeapons[i] == GetActiveWeapon())
+                {
+                    wasActiveWeapon = true;
+                    m_hMyWeapons[i]->SendWeaponAnim(ACT_VM_IDLE);
+                }
+
+                m_hMyWeapons[i]->Delete();
+                m_hMyWeapons.Set(i, nullptr);
+
+                if (wasActiveWeapon)
+                {
+                    SetActiveWeapon(nullptr);
+                    if (!SwitchToNextBestWeapon(NULL))
+                    {
+                        CBaseViewModel *vm = GetViewModel();
+                        if (vm)
+                        {
+                            vm->AddEffects(EF_NODRAW);
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 
 // Apply TF2-like knockback when damaging self with rockets
@@ -2420,4 +2558,78 @@ void CMomentumPlayerCollectibles::LoadFromKeyValues(KeyValues *kv)
 
         pKvSub = pKvSub->GetNextKey();
     }
+}
+
+void CMomentumPlayer::InputAddHaste(inputdata_t &inputdata)
+{
+    float time = inputdata.value.Float();
+    if (time < 0)
+    {
+        m_flRemainingHaste = -1;
+    }
+    else
+    {
+        m_flRemainingHaste = gpGlobals->curtime + inputdata.value.Float();
+    }
+}
+
+void CMomentumPlayer::InputAddDamageBoost(inputdata_t &inputdata)
+{
+    float time = inputdata.value.Float();
+    if (time < 0)
+    {
+        m_flRemainingDamageBoost = -1;
+    }
+    else
+    {
+        m_flRemainingDamageBoost = gpGlobals->curtime + inputdata.value.Float();
+    }
+}
+
+void CMomentumPlayer::InputAddAmmo(inputdata_t &inputdata)
+{
+    int ammo = inputdata.value.Int();
+
+    if (m_iMomAmmoType == -1)
+    {
+        for (int i = 0; i < WEAPON_MAX; i++)
+        {
+            m_iMomAmmo.Set(i, m_iMomAmmo.Get(i) + ammo);
+        }
+        return;
+    }
+    else if (m_iMomAmmoType < 0 || m_iMomAmmoType >= WEAPON_MAX)
+    {
+        DevWarning("Invalid Ammo Type!\n");
+        return;
+    }
+
+    m_iMomAmmo.Set(m_iMomAmmoType, m_iMomAmmo.Get(m_iMomAmmoType) + ammo);
+}
+
+void CMomentumPlayer::InputSetAmmo(inputdata_t &inputdata)
+{
+    int ammo = inputdata.value.Int();
+
+    if (m_iMomAmmoType == -1)
+    {
+        for (int i = 0; i < WEAPON_MAX; i++)
+        {
+            m_iMomAmmo.Set(i, ammo);
+        }
+        return;
+    }
+    else if (m_iMomAmmoType < 0 || m_iMomAmmoType >= WEAPON_MAX)
+    {
+        DevWarning("Invalid Ammo Type!\n");
+        return;
+    }
+
+    m_iMomAmmo.Set(m_iMomAmmoType, ammo);
+}
+
+void CMomentumPlayer::InputSetAmmoType(inputdata_t &inputdata)
+{
+    int type = inputdata.value.Int();
+    m_iMomAmmoType = type;
 }

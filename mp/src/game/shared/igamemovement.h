@@ -40,6 +40,16 @@ class CMoveData
 public:
 	bool			m_bFirstRunOfFunctions : 1;
 	bool			m_bGameCodeMovedPlayer : 1;
+	bool			m_bJumpReleased : 1;
+	bool			m_bCanCPMDoubleJump : 1;
+	bool			m_bRampSliding : 1;
+    float			m_flJumpHoldTime;
+	float			m_flJumpTime;
+	float			m_flLandingSpeed;
+	Vector			m_vecPreviousVelocity;
+	Vector			m_vecGroundNormal;
+
+	float			m_flWallClipTime;
 
 	EntityHandle_t	m_nPlayerHandle;	// edict index on server, client entity handle on client
 

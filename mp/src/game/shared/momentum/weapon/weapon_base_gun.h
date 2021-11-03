@@ -19,10 +19,14 @@ class CWeaponBaseGun : public CWeaponBase
     virtual void PrimaryAttack();
     virtual void Spawn();
     virtual bool Deploy();
+    virtual bool CanDeploy();
 #ifdef WEAPONS_USE_AMMO
     virtual bool Reload();
 #endif
     virtual void WeaponIdle();
+
+    void CalculateMuzzlePoint(trace_t &trace, float speed, Vector &out, float addspeed = 0);
+    void SnapVectorTowards(Vector &v, const Vector &to);
 
     // Derived classes call this to fire a bullet.
     bool BaseGunFire(float flSpread, float flCycleTime, bool bPrimaryMode);

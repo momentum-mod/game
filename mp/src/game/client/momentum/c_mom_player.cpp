@@ -20,12 +20,17 @@ RecvPropInt(RECVINFO(m_iDirection), SPROP_UNSIGNED),
 RecvPropInt(RECVINFO(m_iLastZoomFOV), SPROP_UNSIGNED),
 RecvPropInt(RECVINFO(m_afButtonDisabled)),
 RecvPropEHandle(RECVINFO(m_CurrentSlideTrigger)),
+RecvPropEHandle(RECVINFO(m_CurrentOverbounceTrigger)),
 RecvPropBool(RECVINFO(m_bAutoBhop)),
 RecvPropFloat(RECVINFO(m_fDuckTimer)),
+RecvPropFloat(RECVINFO(m_flRemainingHaste)),
+RecvPropFloat(RECVINFO(m_flRemainingDamageBoost)),
+RecvPropFloat(RECVINFO(m_flChargeTime)),
 RecvPropBool(RECVINFO(m_bSurfing)),
 RecvPropInt(RECVINFO(m_nButtonsToggled)),
 RecvPropVector(RECVINFO(m_vecRampBoardVel)),
 RecvPropVector(RECVINFO(m_vecRampLeaveVel)),
+RecvPropArray3(RECVINFO_ARRAY(m_iMomAmmo), RecvPropInt(RECVINFO(m_iMomAmmo[0]), SPROP_UNSIGNED)),
 RecvPropArray3(RECVINFO_ARRAY(m_iZoneCount), RecvPropInt(RECVINFO(m_iZoneCount[0]), SPROP_UNSIGNED)),
 RecvPropArray3(RECVINFO_ARRAY(m_iLinearTracks), RecvPropInt(RECVINFO(m_iLinearTracks[0]), SPROP_UNSIGNED)),
 RecvPropDataTable(RECVINFO_DT(m_Data), SPROP_PROXY_ALWAYS_YES | SPROP_CHANGES_OFTEN, &REFERENCE_RECV_TABLE(DT_MomRunEntityData)),
@@ -63,6 +68,7 @@ C_MomentumPlayer::C_MomentumPlayer(): m_pSpecTarget(nullptr)
     m_bIsWalking = false;
     m_bAutoBhop = true;
     m_CurrentSlideTrigger = nullptr;
+    m_CurrentOverbounceTrigger = nullptr;
     m_RunStats.Init();
     m_fDuckTimer = 0.0f;
 

@@ -8,6 +8,7 @@ class CBaseMomentumTrigger;
 class CTriggerOnehop;
 class CTriggerProgress;
 class CTriggerSlide;
+class CTriggerOverbounce;
 class CMomentumGhostBaseEntity;
 
 class CMomentumPlayerCollectibles
@@ -113,8 +114,10 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
 
     IMPLEMENT_NETWORK_VAR_FOR_DERIVED(m_afButtonDisabled);
     CNetworkHandle(CTriggerSlide, m_CurrentSlideTrigger);
+    CNetworkHandle(CTriggerOverbounce, m_CurrentOverbounceTrigger);
 
     CUtlVector<CTriggerSlide*> m_vecSlideTriggers;
+    CUtlVector<CTriggerOverbounce*> m_vecOverbounceTriggers;
 
     // Run entity stuff
     virtual RUN_ENT_TYPE GetEntType() OVERRIDE { return RUN_ENT_PLAYER; }
@@ -252,7 +255,9 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
 
     int OnTakeDamage_Alive(const CTakeDamageInfo &info) OVERRIDE;
 
+    void DFApplyPushFromDamage(const CTakeDamageInfo &info);
     void ApplyPushFromDamage(const CTakeDamageInfo &info, Vector &vecDir);
+    void DropWeapon(const char* weapon);
 
     // Ladder stuff
     float GetGrabbableLadderTime() const { return m_flGrabbableLadderTime; }
@@ -342,6 +347,21 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
     void InputClearCollectibles(inputdata_t &inputdata);
 
     CMomentumPlayerCollectibles m_Collectibles;
+
+    void InputAddHaste(inputdata_t &inputdata);
+    void InputAddDamageBoost(inputdata_t &inputdata);
+    CNetworkVar(float, m_flRemainingHaste);
+    CNetworkVar(float, m_flRemainingDamageBoost);
+
+    void InputAddAmmo(inputdata_t &inputdata);
+    void InputSetAmmo(inputdata_t &inputdata);
+    void InputSetAmmoType(inputdata_t &inputdata);
+    CNetworkArray(int, m_iMomAmmo, WEAPON_MAX);
+    int m_iMomAmmoType;
+
+    float m_flKnockbackTime;
+
+    CNetworkVar(float, m_flChargeTime);
 
   private:
     // Replace wishdir to escape if we are stuck in a small corner 

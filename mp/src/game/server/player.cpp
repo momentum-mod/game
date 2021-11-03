@@ -580,6 +580,10 @@ CBasePlayer::CBasePlayer( )
 	m_bDrawPlayerModelExternally = false;
 
 	m_hPostProcessCtrl.Set(NULL);
+
+	m_iQueuedWeapons = 0;
+	m_iQueuedWeaponSubtype = 0;
+	m_iQueuedWeaponID = WEAPON_NONE;
 }
 
 CBasePlayer::~CBasePlayer( )
@@ -1286,7 +1290,11 @@ int CBasePlayer::OnTakeDamage( const CTakeDamageInfo &inputInfo )
 			flPunch = RandomFloat( -5, -7 );
 	}
 
-	m_Local.m_vecPunchAngle.SetX( flPunch );
+    CBaseEntity *pInflictor = info.GetInflictor();
+    if (!(FClassnameIs(pInflictor, "momentum_df_rocket") || FClassnameIs(pInflictor, "momentum_df_grenade")))
+    {
+        m_Local.m_vecPunchAngle.SetX(flPunch);
+    }
 
 	if (fTookDamage && !ftrivial && fmajor && flHealthPrev >= 75) 
 	{
@@ -3583,6 +3591,32 @@ void CBasePlayer::PlayerRunCommand(CUserCmd *ucmd, IMoveHelper *moveHelper)
 		ucmd->impulse = 0;
 		VectorCopy ( pl.v_angle.Get(), ucmd->viewangles );
 	}
+
+	if (sv_weapon_queue.GetBool() && m_iQueuedWeapons != 0)
+    {
+		CBaseCombatWeapon *weapon = dynamic_cast<CBaseCombatWeapon *>(CBaseEntity::Instance(m_iQueuedWeapons));
+        if (weapon)
+        {
+            VPROF("SelectItem()");
+            if (SelectItem(weapon->GetName(), m_iQueuedWeaponSubtype))
+            {
+                m_iQueuedWeapons = 0;
+                m_iQueuedWeaponSubtype = 0;
+            }
+        }
+    }
+    else if (sv_weapon_queue.GetBool() && m_iQueuedWeaponID != WEAPON_NONE)
+    {
+        CBaseCombatWeapon *weapon = GetWeapon(m_iQueuedWeaponID);
+        if (weapon)
+        {
+            VPROF("SelectItem()");
+            if (SelectItem(weapon->GetName(), m_iQueuedWeaponSubtype))
+            {
+                m_iQueuedWeaponID = WEAPON_NONE;
+            }
+        }
+    }
 	
 	PlayerMove()->RunCommand(this, ucmd, moveHelper);
 }

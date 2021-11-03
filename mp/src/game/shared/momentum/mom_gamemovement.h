@@ -136,6 +136,39 @@ public:
 
     void PerformLurchChecks();
 
+    // Defrag movement functions
+
+    // mom_df_gamemovement.cpp
+    void DFClipVelocity(const Vector &in, const Vector &normal, Vector &out, float overbounce);
+    void DFSetWaterLevel();
+    bool DFCanUnDuck();
+    void DFDuck();
+    void DFAccelerate(const Vector &wishdir, float wishspeed, float accel, float maxspeed);
+    void DFFriction(bool isCrouchsliding);
+    void DFFullWalkMove();
+    void DFPlayerMove();
+    void DFSetGroundEntity(trace_t *pm);
+    void DFGroundTrace();
+    void DFSnapVector(Vector &v);
+    float DFScale(float maxspeed);
+
+    // mom_df_walkmove.cpp
+    bool DFCheckJumpButton();
+    void DFWalkMove();
+
+    // mom_df_airmove.cpp
+    void DFAirControl(const Vector &wishdir, float wishspeed);
+    void DFAirMove();
+
+    // mom_df_watermove.cpp
+    bool DFCheckWaterJump();
+    void DFWaterJumpMove();
+    void DFWaterMove();
+
+    // mom_df_slidemove.cpp
+    bool DFSlideMove(bool inAir);
+    void DFStepSlideMove(bool inAir);
+
 private:
     CMomentumPlayer *m_pPlayer;
 

@@ -20,11 +20,18 @@ enum WeaponID_t
     WEAPON_KNIFE,
     WEAPON_ROCKETLAUNCHER,
     WEAPON_STICKYLAUNCHER,
+    WEAPON_DF_ROCKETLAUNCHER,
+    WEAPON_DF_PLASMAGUN,
+    WEAPON_DF_GRENADELAUNCHER,
+    WEAPON_DF_BFG,
+    WEAPON_DF_LIGHTNINGGUN,
+    WEAPON_BAZOOKA,
+    WEAPON_SHIELD,
 
     WEAPON_MAX, // number of weapons weapon index
 
     WEAPON_FIRST = WEAPON_PISTOL,
-    WEAPON_LAST = WEAPON_STICKYLAUNCHER,
+    WEAPON_LAST = WEAPON_SHIELD,
 };
 
 static const char *const g_szWeaponNames[WEAPON_MAX] = 
@@ -38,7 +45,14 @@ static const char *const g_szWeaponNames[WEAPON_MAX] =
     "weapon_momentum_concgrenade",
     "weapon_knife",
     "weapon_momentum_rocketlauncher",
-    "weapon_momentum_stickylauncher"
+    "weapon_momentum_stickylauncher",
+    "weapon_momentum_df_rocketlauncher",
+    "weapon_momentum_df_plasmagun",
+    "weapon_momentum_df_grenadelauncher",
+    "weapon_momentum_df_bfg",
+    "weapon_momentum_df_lightninggun",
+    "weapon_momentum_bazooka",
+    "weapon_momentum_shield"
 };
 
 enum WeaponHudResource_t

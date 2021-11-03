@@ -21,15 +21,60 @@ extern ConVar sv_noclipspeed;
 extern ConVar sv_noclipspeed_vertical;
 extern ConVar sv_noclipspeed_duck_multiplier;
 extern ConVar sv_noclipspeed_sprint_multiplier;
+
+extern ConVar sv_jumpsound;
+
 extern ConVar sv_maxspeed;
 extern ConVar sv_accelerate;
+extern ConVar sv_duckscale;
+
+extern ConVar sv_maxairspeed;
 extern ConVar sv_airaccelerate;
+extern ConVar sv_airdecelerate;
+
+extern ConVar sv_maxairstrafespeed;
+extern ConVar sv_airstrafeaccelerate;
+extern ConVar sv_rampslide;
+extern ConVar sv_rampslide_gravity;
+extern ConVar sv_rampslide_speed;
+extern ConVar sv_rampslide_jumps;
+
+extern ConVar sv_jumpstyle;
+extern ConVar sv_strafestyle;
+extern ConVar sv_slidestyle;
+extern ConVar sv_slickstyle;
+extern ConVar sv_jump_buffertime;
+extern ConVar sv_flatknockback;
+extern ConVar sv_df_rocket_addspeed;
+extern ConVar sv_df_weapon_scan;
+extern ConVar sv_df_groundboost_time;
+extern ConVar sv_weapon_queue;
+extern ConVar sv_weapon_deploy_time;
+extern ConVar sv_snapvelocity;
+extern ConVar sv_scalecmd_fix;
+extern ConVar sv_autojump;
+extern ConVar sv_autojump_boost;
+extern ConVar sv_crouchjump;
+extern ConVar sv_crouchslide;
+extern ConVar sv_crouchslide_accelerate;
+extern ConVar sv_crouchslide_speedmult;
+extern ConVar sv_crouchslide_threshold;
+extern ConVar sv_wallcliptime;
+extern ConVar sv_aircontrol_enable;
+extern ConVar sv_aircontrol;
+extern ConVar sv_aircontrolpower;
+extern ConVar sv_forwardaccelerate;
+
+extern ConVar sv_wadescale;
+extern ConVar sv_swimscale;
+
 extern ConVar sv_wateraccelerate;
 extern ConVar sv_waterfriction;
 extern ConVar sv_footsteps;
 extern ConVar sv_rollspeed;
 extern ConVar sv_rollangle;
 extern ConVar sv_friction;
+extern ConVar sv_crouchfriction;
 extern ConVar sv_bounce;
 extern ConVar sv_maxvelocity;
 extern ConVar sv_stepsize;

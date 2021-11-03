@@ -1,0 +1,65 @@
+WeaponData
+{
+    "CrosshairMinDistance"      "7"
+    "CrosshairDeltaDistance"    "3"
+    "BuiltRightHanded"          "1"
+    "PlayerAnimationExtension"  "knife"
+    
+    // Weapon data is loaded by both the Game and Client DLLs.
+    "printname"         "#MOM_Weapon_StickybombLauncher"
+    
+    "anim_prefix"      "anim"
+    "bucket"            "0"
+    "bucket_position"   "0"
+
+    "clip_size"         "-1"
+    "default_clip"      "1"
+    "weight"            "0"
+
+    "ModelData"
+    {
+        "view"  "models/weapons/mom_knife/v_mom_knife.mdl"
+        "world" "models/weapons/mom_knife/w_mom_knife.mdl"
+    }
+
+    // Sounds for the weapon.
+    SoundData
+    {
+        "deploy"            "Weapon_Knife.Deploy"
+        "single_shot"       "HL2Player.SprintStart"
+    }
+
+    // Weapon Sprite data is loaded by the Client DLL.
+    TextureData
+    {
+        //Weapon Select Images
+        "weapon"
+        {
+                "font"		"WeaponIcons"
+                "character"	"i"
+        }
+        "weapon_s"
+        {	
+                "font"		"WeaponIconsSelected"
+                "character"	"i"
+        }
+        "weapon_small"
+        {
+                "font"		"WeaponIconsSmall"
+                "character"	"i"
+        }
+        "ammo"
+        {
+                "font"		"WeaponIconsSmall"
+                "character"	"x"
+        }
+        "crosshair"
+        {
+                "file"      "sprites/crosshairs"
+                "x"         "0"
+                "y"         "48"
+                "width"     "24"
+                "height"    "24"
+        }
+    }
+}

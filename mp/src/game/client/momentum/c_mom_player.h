@@ -76,6 +76,7 @@ public:
     uint64 GetSteamID() override;
 
     CNetworkHandle(C_TriggerSlide, m_CurrentSlideTrigger);
+    CNetworkHandle(C_TriggerOverbounce, m_CurrentOverbounceTrigger);
 
     void FireBullet(Vector vecSrc, const QAngle &shootAngles, float vecSpread, int iBulletType, CBaseEntity *pevAttacker, bool bDoEffects,
                     float x, float y);
@@ -107,7 +108,15 @@ public:
     Vector GetEscapeVel() const { return m_vecCornerEscapeVel; }
     void SetEscapeVel(const Vector &vecNewYaw) { m_vecCornerEscapeVel = vecNewYaw; }
 
-private:
+    float m_flKnockbackTime;
+
+    float m_flRemainingHaste;
+    float m_flRemainingDamageBoost;
+    CNetworkArray(int, m_iMomAmmo, WEAPON_MAX);
+
+    float m_flChargeTime;
+
+  private:
     // Mobility mod (parkour)
     bool m_bWasSprinting;
     bool m_bIsPowerSliding;

@@ -2,6 +2,7 @@
 #include "fx_mom_shared.h"
 #include "mom_player_shared.h"
 #include "weapon_base_gun.h"
+#include "movevars_shared.h"
 
 #include "tier0/memdbgon.h"
 
@@ -34,6 +35,7 @@ void CWeaponBaseGun::Spawn()
 
 bool CWeaponBaseGun::Deploy()
 {
+    bool returnValue;
     CMomentumPlayer *pPlayer = GetPlayerOwner();
     if (!pPlayer)
         return false;
@@ -43,7 +45,35 @@ bool CWeaponBaseGun::Deploy()
     m_bDelayFire = false;
     m_zoomFullyActiveTime = -1.0f;
 
-    return BaseClass::Deploy();
+    returnValue = BaseClass::Deploy();
+
+    float deployTime = sv_weapon_deploy_time.GetFloat();
+    if (deployTime >= 0.0f)
+    {
+        m_flNextPrimaryAttack = gpGlobals->curtime + deployTime;
+        m_flNextSecondaryAttack = gpGlobals->curtime + deployTime;
+        pPlayer->SetNextAttack(gpGlobals->curtime + deployTime);
+    }
+
+    return returnValue;
+}
+
+bool CWeaponBaseGun::CanDeploy()
+{
+    CMomentumPlayer *pPlayer = GetPlayerOwner();
+
+    CBaseCombatWeapon *curWeapon = pPlayer->GetActiveWeapon();
+
+    if (curWeapon != nullptr)
+    {
+        float nextFire = curWeapon->m_flNextPrimaryAttack - gpGlobals->curtime;
+        if (nextFire > 0)
+        {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 void CWeaponBaseGun::ItemPostFrame()
@@ -183,5 +213,47 @@ void CWeaponBaseGun::WeaponIdle()
     {
         SetWeaponIdleTime(gpGlobals->curtime + m_flIdleInterval);
         SendWeaponAnim(ACT_VM_IDLE);
+    }
+}
+
+void CWeaponBaseGun::CalculateMuzzlePoint(trace_t &trace, float speed, Vector& out, float addspeed)
+{
+    CMomentumPlayer *pPlayer = GetPlayerOwner();
+    Vector muzzle;
+    Vector start;
+    Vector vForward, vRight, vUp;
+    QAngle angForward;
+    const int MASK_RADIUS_DAMAGE = MASK_SHOT & (~CONTENTS_HITBOX);
+    float scale;
+    pPlayer->EyeVectors(&vForward, &vRight, &vUp);
+
+    VectorCopy(pPlayer->GetAbsOrigin(), muzzle);
+    muzzle[2] += pPlayer->GetViewOffset()[2];
+    VectorCopy(muzzle, start);
+    VectorMA(muzzle, sv_df_weapon_scan.GetFloat(), vForward, muzzle);
+    scale = 0.050 * (speed + addspeed);
+    VectorMA(muzzle, scale, vForward, muzzle);
+
+    UTIL_TraceLine(start, muzzle, MASK_RADIUS_DAMAGE, pPlayer, COLLISION_GROUP_NONE, &trace);
+
+    VectorCopy(trace.endpos, out);
+
+    SnapVectorTowards(out, pPlayer->GetAbsOrigin());
+}
+
+void CWeaponBaseGun::SnapVectorTowards(Vector &v, const Vector &to)
+{
+    int i;
+
+    for (i = 0; i < 3; i++)
+    {
+        if (to[i] <= v[i])
+        {
+            v[i] = (int)v[i];
+        }
+        else
+        {
+            v[i] = (int)v[i] + 1;
+        }
     }
 }

@@ -66,13 +66,14 @@
     
     velocityscale(vector) : "Velocity Scale Factor (X Y Z)" : "1 1 1" : "Scale the player's velocity per-axis"
     
-    mode(choices) : "Teleport mode" : 1 = 
+    mode(choices) : "Teleport mode" : 0 = 
     [
         0 : "Default (do nothing)"
         1 : "Reset velocity"
         2 : "Keep negative Z (downwards) velocity only"
         3 : "Redirect velocity to destination angles"
         4 : "Landmark teleport"
+        5 : "Defrag mode (reorient with 400 ups speed)"
     ]
 	
 	reorient_landmark(choices) : "Reorient Landmark" : 0 : "(Landmark mode only) Reorient origin, angles and velocity from the landmark's local space to the destination's. This means the destination room does not have to face the same way." =
@@ -345,6 +346,17 @@
     DisableGravity(integer) : "Disable Gravity" : 0 : "Disable entirely the gravity code while sliding. (useful when you don't want to lose speed while going up or increase speed while going down)"
 ]
 
+@SolidClass base(MomentumTrigger) = trigger_momentum_overbounce : "Trigger for overbounce zones." 
+[
+    MinSpeed(float) : "Minimum speed" : 0 : "The player must have at least this much Z speed to overbounce (this is a magnitude, so it should not be negative"
+    MaxSpeed(float) : "Maximum speed" : -1 : "The player must not have more than this much z speed to overbounce. Set to a negative value to not have a maximum speed."
+]
+
+@SolidClass base(MomentumTrigger) = trigger_momentum_weaponstrip : "Removes the specified player weapon, if the player has it."
+[
+    WeaponName(string) : "Weapon Name" : "" : "This is the weapon to remove from the player"
+]
+
 @SolidClass base(MomentumTrigger) = trigger_momentum_reversespeed : "Trigger for reversing the speed of the momentum player." 
 [
     ReverseHorizontal(integer) : "Reverse horizontal speed" : 1 : "Reverse accordingly the velocity based on x/y axis."
@@ -492,6 +504,27 @@
 @PointClass base(Weapon) studio("models/weapons/w_mom_shotgun.mdl") = weapon_momentum_shotgun : "Shotgun" []
 @PointClass base(Weapon) studio("models/weapons/mom_sniper.mdl") = weapon_momentum_sniper : "Sniper" []
 @PointClass base(Weapon) studio("models/weapons/w_mom_grenade.mdl") = weapon_momentum_grenade : "Grenade" []
+@PointClass base(Weapon) studio("models/weapons/mom_rocketlauncher/w_mom_rocketlauncher.mdl") = weapon_momentum_df_rocketlauncher : "DF Rocket Launcher" []
+@PointClass base(Weapon) studio("models/weapons/mom_stickylauncher/w_mom_stickylauncher.mdl") = weapon_momentum_df_grenadelauncher : "DF Grenade Launcher" []
+@PointClass base(Weapon) studio("models/weapons/v_smg_old.mdl") = weapon_momentum_df_plasmagun : "DF Plasma Gun" []
+
+@PointClass base(Angles) size(-30 -30 -30, 30 30 30) studioprop() = mom_weaponspawner : "Weapon Spawner"
+[
+    model(studio) : "World Model"
+    WeaponName(string) : "Weapon Name" : "" : "This is the weapon to give the player"
+]
+
+@PointClass base(Angles, Parentname) studio("models/pickups/pickup_powerup_haste.mdl") = mom_powerup_haste : "Haste Powerup"
+[
+    HasteTime(float) : "Haste duration" : "30" : "This is how long the haste powerup will last. -1 means infinite time."
+    DisappearTime(float) : "Disappear time" : "30" : "How long to disappear and be disabled after being picked up."
+]
+
+@PointClass base(Angles, Parentname) studio("models/pickups/pickup_powerup_crit.mdl") = mom_powerup_damageboost : "Damage Boost Powerup"
+[
+    DamageTime(float) : "Damage boost duration" : "30" : "This is how long the damage powerup will last. -1 means infinite time."
+    DisappearTime(float) : "Disappear time" : "30" : "How long to disappear and be disabled after being picked up."
+]
 
 
 //-------------------------------------------------------------------------

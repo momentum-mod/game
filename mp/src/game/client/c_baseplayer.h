@@ -259,7 +259,7 @@ public:
 	virtual bool				Weapon_ShouldSelectItem( C_BaseCombatWeapon *pWeapon );
 	virtual	bool				Weapon_Switch( C_BaseCombatWeapon *pWeapon, int viewmodelindex = 0 );		// Switch to given weapon if has ammo (false if failed)
 	virtual C_BaseCombatWeapon *GetLastWeapon( void ) { return m_hLastWeapon.Get(); }
-	virtual void 				SelectItem( const char *pstr, int iSubType = 0 );
+	virtual bool 				SelectItem( const char *pstr, int iSubType = 0 );
 
 	virtual void				UpdateClientData( void );
 
@@ -388,7 +388,7 @@ public:
 	bool					HasFiredWeapon( void ) { return m_bFiredWeapon; }
 	void					SetFiredWeapon( bool bFlag ) { m_bFiredWeapon = bFlag; }
 
-	virtual bool			CanUseFirstPersonCommand( void ){ return true; }
+	virtual bool CanUseFirstPersonCommand(void) { return true; }
 	
 protected:
 	fogparams_t				m_CurrentFog;

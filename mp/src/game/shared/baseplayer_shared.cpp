@@ -882,31 +882,31 @@ bool CBasePlayer::Weapon_ShouldSelectItem( CBaseCombatWeapon *pWeapon )
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-void CBasePlayer::SelectItem( const char *pstr, int iSubType )
+bool CBasePlayer::SelectItem( const char *pstr, int iSubType )
 {
-	if (!pstr)
-		return;
+ 	if (!pstr)
+        return false;
 
 	CBaseCombatWeapon *pItem = Weapon_OwnsThisType( pstr, iSubType );
 
 	if (!pItem)
-		return;
+        return false;
 
 	if( GetObserverMode() != OBS_MODE_NONE )
-		return;// Observers can't select things.
+        return false; // Observers can't select things.
 
 	if ( !Weapon_ShouldSelectItem( pItem ) )
-		return;
+        return false;
 
 	// FIX, this needs to queue them up and delay
 	// Make sure the current weapon can be holstered
 	if ( GetActiveWeapon() )
 	{
 		if ( !GetActiveWeapon()->CanHolster() && !pItem->ForceWeaponSwitch() )
-			return;
+			return false;
 	}
 
-	Weapon_Switch( pItem );
+	return Weapon_Switch( pItem );
 }
 
 //-----------------------------------------------------------------------------

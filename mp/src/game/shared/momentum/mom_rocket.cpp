@@ -50,6 +50,9 @@ void CMomRocket::Spawn()
     SetNextThink(gpGlobals->curtime);
 
     SpawnRocketSurprise();
+
+    m_bBazookaRocket = false;
+    m_bOverloadRocket = false;
 #endif
 }
 
