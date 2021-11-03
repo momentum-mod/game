@@ -175,12 +175,21 @@ float CGameMode_RJ::GetJumpFactor()
     return 289.0f;
 }
 
+ConVar mom_bazooka("mom_bazooka", "0", FCVAR_ARCHIVE, "Enable bazooka in RJ");	
+
 void CGameMode_RJ::OnPlayerSpawn(CMomentumPlayer *pPlayer)
 {
     CGameModeBase::OnPlayerSpawn(pPlayer);
 
 #ifdef GAME_DLL
-    pPlayer->GiveWeapon(WEAPON_BAZOOKA);
+    if (mom_bazooka.GetBool())
+    {
+        pPlayer->GiveWeapon(WEAPON_BAZOOKA);
+    }
+    else
+    {
+        pPlayer->GiveWeapon(WEAPON_ROCKETLAUNCHER);
+    }
     pPlayer->GiveWeapon(WEAPON_SHOTGUN);
 #endif
 }
