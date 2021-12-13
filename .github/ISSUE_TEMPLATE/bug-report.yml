@@ -40,6 +40,6 @@ body:
     label: Renderer
     options:
       - DX11 (default)
-      - DX9
+      - DX9 (Legacy)
   validations:
     required: true
