@@ -39,7 +39,7 @@ body:
   attributes:
     label: Renderer
     options:
-      - DX9 (default)
-      - DX11
+      - DX11 (default)
+      - DX9 (Legacy)
   validations:
     required: true
