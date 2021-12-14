@@ -4,17 +4,18 @@
 
 Table of Contents
 - [Build Guide](#build-guide)
-  - [Windows Build Guide](#windows-build-guide)
+  - [Windows](#windows)
     - [Prerequisites](#prerequisites)
     - [Cloning](#cloning)
     - [Building](#building)
   - [Linux](#linux)
+    - [Command Line](#command-line)
     - [NetBeans](#netbeans)
       - [Initial Setup](#initial-setup)
       - [NetBeans Configuration](#netbeans-configuration)
-  - [MacOS Build Guide](#macos-build-guide)
+  - [MacOS](#macos)
 
-## Windows Build Guide
+## Windows
 
 This Guide covers the general method of building the latest, publicly-available code from GitHub for Momentum for Windows, Linux and macOS.
 
@@ -98,6 +99,8 @@ You can launch with no debugger attached by pressing `CTRL+F5` instead...
 ---
 
 ## Linux
+
+### Command Line
 1. Install the following dependencies:
 ```sh
 sudo apt-get install build-essential gcc-multilib g++-multilib
@@ -200,7 +203,7 @@ The following steps require the configuration steps from above ([Initial Setup](
 6. Select `Run` -> `Build Project (F11)`  
 7. Select `Debug` -> `Debug Project (F5)` (`Run` -> `Run Project (F6)` does not work for some reason)  
 
-## MacOS Build Guide
+## MacOS
 
 ---
 **NOTE**
