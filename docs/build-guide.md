@@ -7,9 +7,9 @@ Table of Contents
   - [Windows Build Guide](#windows-build-guide)
     - [Prerequisites](#prerequisites)
     - [Cloning](#cloning)
-    - [Windows](#windows)
+    - [Building](#building)
   - [Linux](#linux)
-    - [NetBeans Build Guide](#netbeans-build-guide)
+    - [NetBeans](#netbeans)
       - [Initial Setup](#initial-setup)
       - [NetBeans Configuration](#netbeans-configuration)
   - [MacOS Build Guide](#macos-build-guide)
@@ -59,7 +59,7 @@ Your installation of GitHub Desktop may look different, but should otherwise fun
 
 ---
 
-### Windows
+### Building
 1. Download Momentum Mod on Steam or grab the `MomentumDev` folder from [***Google Drive***](https://drive.google.com/file/d/1HD1Mh8JrCBqP2sh8WJCpfybJGI4BPcZ4/view?usp=sharing).
 2. Download [***Visual Studio 2019***](https://visualstudio.microsoft.com/thank-you-downloading-visual-studio/?sku=Community&rel=16).
     > Your installation only requires the "Desktop development with C++" workload:
@@ -127,9 +127,9 @@ If we ever convert the project to CMake, this unfortunate note will go away, but
 
 ---
 
-### NetBeans Build Guide
+### NetBeans
 
-This guide will offer a high-level overview of compiling the mod on Linux using the [NetBeans IDE](https://netbeans.apache.org/).
+This section outlines compiling the game on Linux using the [NetBeans IDE](https://netbeans.apache.org/).
 
 #### Initial Setup
 
