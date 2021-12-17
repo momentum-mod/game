@@ -1,6 +1,6 @@
 # Build Guide
 
-![Build Guide Header](../images/build_guide/guide_building_the_game.jpeg)
+![Build Guide Header](./images/build_guide/guide_building_the_game.jpeg)
 
 Table of Contents
 - [Build Guide](#build-guide)
@@ -47,11 +47,11 @@ New Steam keys are currently reserved for users that are making contributions to
 
 1. Download [***GitHub Desktop***](https://desktop.github.com/), it will require a bit of setup, and may require an account.
 2. Go to the [***Main Page***](https://github.com/momentum-mod/game) and click ***Clone or Download > Open in Desktop***:  
-![Github Open In Desktop](../images/build_guide/build0.png)
+![Github Open In Desktop](./images/build_guide/build0.png)
     > You should have cloned the `develop` branch.  
     > If not, switch to it from the top (if you're using GitHub Desktop).  
     > It may also be called `origin/develop`:  
-    ![Develop Branch Github Desktop](../images/build_guide/build1.png)
+    ![Develop Branch Github Desktop](./images/build_guide/build1.png)
 
 ---
 **NOTE**
@@ -64,15 +64,15 @@ Your installation of GitHub Desktop may look different, but should otherwise fun
 1. Download Momentum Mod on Steam or grab the `MomentumDev` folder from [***Google Drive***](https://drive.google.com/file/d/1HD1Mh8JrCBqP2sh8WJCpfybJGI4BPcZ4/view?usp=sharing).
 2. Download [***Visual Studio 2019***](https://visualstudio.microsoft.com/thank-you-downloading-visual-studio/?sku=Community&rel=16).
     > Your installation only requires the "Desktop development with C++" workload:
-![Desktop development with C++ selected](../images/build_guide/build_desktop_c++.png)
+![Desktop development with C++ selected](./images/build_guide/build_desktop_c++.png)
 3. If you downloaded Momentum Mod from Steam, create an extra folder somewhere called `MomentumDev`, and copy everything from your `steamapps/common/Momentum Mod` folder to it. Then delete the `momentum` folder from `MomentumDev`.
     * Otherwise if you downloaded the `MomentumDev` folder from Google Drive, extract it somewhere.
 4. Edit the `creategameprojects.ps1` file to point the `$path` variable to the full path of the `MomentumDev` folder.  
     * This script will create a symlink of your `mp/game/momentum` folder into the `MomentumDev` folder automatically for you, which allows you to test changes immediately and run the debugger from Visual Studio.
-![creategameprojects screenshot](../images/build_guide/build2.png)
+![creategameprojects screenshot](./images/build_guide/build2.png)
 
 5. Run `creategameprojects.bat` **as administrator**.
-![running creategameprojects](../images/build_guide/build3.png)
+![running creategameprojects](./images/build_guide/build3.png)
 
 ---
 **NOTE**
@@ -82,12 +82,12 @@ If you can't run it as administrator, start `cmd.exe` as Administrator, then cha
 ---
 
 6. Open `momentum.sln`, go start the pot of coffee, come back a minute later, and click Build...
-![Visual Studio build screenshot](../images/build_guide/build4.png)
+![Visual Studio build screenshot](./images/build_guide/build4.png)
 
     ...then go finish the pot of coffee and pour yourself some.
 
 7. Click *Debug*.  
-![Visual Studio debug screenshot](../images/build_guide/build5.png)
+![Visual Studio debug screenshot](./images/build_guide/build5.png)
 
 ---
 **NOTE**
