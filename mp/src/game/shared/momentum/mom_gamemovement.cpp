@@ -162,27 +162,6 @@ void CMomentumGameMovement::WalkMove()
     trace_t pm;
     Vector forward, right, up;
 
-    if (g_pGameModeSystem->GameModeIs(GAMEMODE_KZ))
-    {
-        if (m_pPlayer->m_flStamina > 0)
-        {
-            float flRatio = (STAMINA_MAX - ((m_pPlayer->m_flStamina / 1000.0f) * STAMINA_RECOVER_RATE)) / STAMINA_MAX;
-
-            // This Goldsrc code was run with variable timesteps and it had framerate dependencies.
-            // People looking at Goldsrc for reference are usually
-            // (these days) measuring the stoppage at 60fps or greater, so we need
-            // to account for the fact that Goldsrc was applying more stopping power
-            // since it applied the slowdown across more frames.
-            float flReferenceFrametime = 1.0f / 70.0f;
-            float flFrametimeRatio = gpGlobals->frametime / flReferenceFrametime;
-
-            flRatio = pow(flRatio, flFrametimeRatio);
-
-            mv->m_vecVelocity.x *= flRatio;
-            mv->m_vecVelocity.y *= flRatio;
-        }
-    }
-
     AngleVectors(mv->m_vecViewAngles, &forward, &right, &up); // Determine movement angles
 
     CHandle<CBaseEntity> oldground;
@@ -257,6 +236,16 @@ void CMomentumGameMovement::WalkMove()
 
     // Set pmove velocity
     Accelerate(wishdir, wishspeed, sv_accelerate.GetFloat());
+
+    if (g_pGameModeSystem->GameModeIs(GAMEMODE_KZ) &&
+        gpGlobals->tickcount - m_pPlayer->m_iLandTick == 3)
+    {
+        float currentSpeed = mv->m_vecVelocity.Length2D();
+        if (currentSpeed > mv->m_flMaxSpeed)
+        {
+            mv->m_vecVelocity *= mv->m_flMaxSpeed / currentSpeed;
+        }
+    }
 
     // Cap ground speed if the speed is gained from the above Accelerate()
     if (g_pGameModeSystem->GameModeIs(GAMEMODE_PARKOUR))
@@ -694,6 +683,10 @@ void CMomentumGameMovement::HandleDuckingSpeedCrop()
     {
         if ((mv->m_nButtons & IN_DUCK) || (player->m_Local.m_bDucking) || (player->GetFlags() & FL_DUCKING))
         {
+            if (g_pGameModeSystem->GameModeIs(GAMEMODE_KZ))
+            {
+                mv->m_flMaxSpeed *= DUCK_SPEED_MULTIPLIER;
+            }
             mv->m_flForwardMove *= DUCK_SPEED_MULTIPLIER;
             mv->m_flSideMove *= DUCK_SPEED_MULTIPLIER;
             mv->m_flUpMove *= DUCK_SPEED_MULTIPLIER;
@@ -1428,9 +1421,11 @@ bool CMomentumGameMovement::CheckJumpButton()
     // Accelerate upward
     float startz = mv->m_vecVelocity[2];
 
-    if (!g_pGameModeSystem->IsCSBasedMode() && (player->m_Local.m_bDucking ||
-                                                player->GetFlags() & FL_DUCKING ||
-                                                m_pPlayer->m_nAirJumpState == AIRJUMP_NOW))
+    // NOTE: Consistent jump height on all tickrates for KZ.
+    if (g_pGameModeSystem->GameModeIs(GAMEMODE_KZ) ||
+        (!g_pGameModeSystem->IsCSBasedMode() && (player->m_Local.m_bDucking ||
+                                                 player->GetFlags() & FL_DUCKING ||
+                                                 m_pPlayer->m_nAirJumpState == AIRJUMP_NOW)))
     {
         mv->m_vecVelocity[2] = flGroundFactor * g_pGameModeSystem->GetGameMode()->GetJumpFactor();
 
@@ -1445,18 +1440,6 @@ bool CMomentumGameMovement::CheckJumpButton()
 
         if (!player->GetGroundEntity() && !m_pPlayer->m_CurrentSlideTrigger)
             m_pPlayer->UpdateLastAction(SurfInt::ACTION_JUMP);
-    }
-
-    // stamina stuff (scroll/kz gamemode only)
-    if (g_pGameModeSystem->GameModeIs(GAMEMODE_KZ))
-    {
-        if (m_pPlayer->m_flStamina > 0)
-        {
-            float flRatio = (STAMINA_MAX - ((m_pPlayer->m_flStamina / 1000.0) * STAMINA_RECOVER_RATE)) / STAMINA_MAX;
-            mv->m_vecVelocity[2] *= flRatio;
-        }
-
-        m_pPlayer->m_flStamina = (STAMINA_COST_JUMP / STAMINA_RECOVER_RATE) * 1000.0;
     }
 
     // Add the accelerated hop movement
@@ -3097,16 +3080,6 @@ void CMomentumGameMovement::CheckParameters()
 void CMomentumGameMovement::ReduceTimers()
 {
     float frame_msec = 1000.0f * gpGlobals->frametime;
-
-    if (m_pPlayer->m_flStamina > 0)
-    {
-        m_pPlayer->m_flStamina -= frame_msec;
-
-        if (m_pPlayer->m_flStamina < 0)
-        {
-            m_pPlayer->m_flStamina = 0;
-        }
-    }
 
     if (m_pPlayer->m_Local.m_slideBoostCooldown > 0)
     {

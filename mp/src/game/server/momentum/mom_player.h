@@ -383,9 +383,6 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
     int m_nAccelTicks;
     QAngle m_qangLastAngle;
 
-    // used by CMomentumGameMovement
-    float m_flStamina;
-
     bool m_bAllowUserTeleports;
 
     // Ladder stuff
