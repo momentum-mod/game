@@ -145,7 +145,6 @@ private:
     SurfInt::Type m_surfIntHistory[SurfInt::TYPE_COUNT]; // Keeps track of the history of interactions
 
     // KZ
-    bool m_bLandedOnGroundThisTick;
 
     CMomRunEntity *m_pSpecTarget;
 
