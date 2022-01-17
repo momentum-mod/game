@@ -27,6 +27,7 @@
 #define KZ_STAMINA_RECOVERY_RATE     0.4f  // per second.
 #define KZ_STAMINA_MULTIPLIER_HEIGHT 0.14f // how much height to remove with max stamina.
 #define KZ_STAMINA_MULTIPLIER_SPEED  0.06f // how much speed to remove with max stamina.
+#define KZ_DOUBLE_DUCK_HEIGHT        27.0f
 #define CS_WALK_SPEED 135.0f
 
 #define DUCK_SPEED_MULTIPLIER 0.34f
@@ -2029,6 +2030,28 @@ void CMomentumGameMovement::FullWalkMove()
     else
     // Not fully underwater
     {
+        if (g_pGameModeSystem->GameModeIs(GAMEMODE_KZ))
+        {
+            if (player->GetGroundEntity() != nullptr)
+            {
+                // double duck/g-strafe
+                if (player->m_afButtonReleased & IN_DUCK && !player->m_Local.m_bDucked)
+                {
+                    Vector newOrigin = mv->GetAbsOrigin();
+                    newOrigin[2] += KZ_DOUBLE_DUCK_HEIGHT;
+
+                    trace_t pm;
+                    TracePlayerBBox(newOrigin, newOrigin, PlayerSolidMask(), COLLISION_GROUP_PLAYER_MOVEMENT, pm);
+                    if (pm.fraction == 1.0f)
+                    {
+                        mv->SetAbsOrigin(newOrigin);
+                        // Redetermine position vars
+                        CategorizePosition();
+                    }
+                }
+            }
+        }
+
         // Was jump button pressed?
         if (mv->m_nButtons & IN_JUMP)
         {
