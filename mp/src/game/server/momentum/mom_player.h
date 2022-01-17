@@ -386,6 +386,7 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
     // KZ
     float m_flLandSpeed;
     float m_flDuckFraction;
+    float m_flStamina;
 
     bool m_bAllowUserTeleports;
 

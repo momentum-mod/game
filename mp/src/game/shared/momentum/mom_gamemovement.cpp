@@ -24,10 +24,9 @@
 #define STOP_EPSILON 0.1
 #define MAX_CLIP_PLANES 5
 
-#define STAMINA_MAX 100.0f
-#define STAMINA_COST_JUMP 25.0f
-#define STAMINA_COST_FALL 20.0f // not used
-#define STAMINA_RECOVER_RATE 19.0f
+#define KZ_STAMINA_RECOVERY_RATE     0.4f  // per second.
+#define KZ_STAMINA_MULTIPLIER_HEIGHT 0.14f // how much height to remove with max stamina.
+#define KZ_STAMINA_MULTIPLIER_SPEED  0.06f // how much speed to remove with max stamina.
 #define CS_WALK_SPEED 135.0f
 
 #define DUCK_SPEED_MULTIPLIER 0.34f
@@ -161,6 +160,16 @@ void CMomentumGameMovement::WalkMove()
     Vector dest;
     trace_t pm;
     Vector forward, right, up;
+
+    if (g_pGameModeSystem->GameModeIs(GAMEMODE_KZ))
+    {
+        if (m_pPlayer->m_flStamina > 0)
+        {
+            float ratio = 1.0 - (m_pPlayer->m_flStamina * KZ_STAMINA_MULTIPLIER_SPEED);
+            mv->m_vecVelocity.x *= ratio;
+            mv->m_vecVelocity.y *= ratio;
+        }
+    }
 
     AngleVectors(mv->m_vecViewAngles, &forward, &right, &up); // Determine movement angles
 
@@ -1262,9 +1271,6 @@ void CMomentumGameMovement::PreventBunnyHopping()
             if (currentSpeed > 0)
             {
                 mv->m_vecVelocity *= newSpeed / currentSpeed;
-                // NOTE(GameChaos): HACK! HACK! This is to fix incorrect last jump speed in the hud. I don't
-                // know if it has any bad side effects
-                m_pPlayer->SetLocalVelocity(mv->m_vecVelocity);
             }
         }
     }
@@ -1505,6 +1511,16 @@ bool CMomentumGameMovement::CheckJumpButton()
 
         if (!player->GetGroundEntity() && !m_pPlayer->m_CurrentSlideTrigger)
             m_pPlayer->UpdateLastAction(SurfInt::ACTION_JUMP);
+    }
+
+    // stamina stuff (scroll/kz gamemode only)
+    if (g_pGameModeSystem->GameModeIs(GAMEMODE_KZ))
+    {
+        if (m_pPlayer->m_flStamina > 0)
+        {
+            float ratio = 1 - (m_pPlayer->m_flStamina * KZ_STAMINA_MULTIPLIER_HEIGHT);
+            mv->m_vecVelocity[2] *= ratio;
+        }
     }
 
     // Add the accelerated hop movement
@@ -3126,6 +3142,13 @@ void CMomentumGameMovement::SetGroundEntity(const trace_t *pm)
     }
 }
 
+void CMomentumGameMovement::OnLand(float fVelocity) 
+{
+    float jumpFactor = g_pGameModeSystem->GetGameMode()->GetJumpFactor();
+    m_pPlayer->m_flStamina = 1 - Clamp(jumpFactor - fVelocity, 0.0f, 100.0f) / 100;
+    DevMsg("stamina %f\n", m_pPlayer->m_flStamina);
+}
+
 bool CMomentumGameMovement::CanAccelerate()
 {
     return BaseClass::CanAccelerate() || (player && player->IsObserver());
@@ -3145,6 +3168,17 @@ void CMomentumGameMovement::CheckParameters()
 void CMomentumGameMovement::ReduceTimers()
 {
     float frame_msec = 1000.0f * gpGlobals->frametime;
+
+    if (m_pPlayer->m_flStamina > 0)
+    {
+        m_pPlayer->m_flStamina -= (1.0f / KZ_STAMINA_RECOVERY_RATE) * gpGlobals->frametime;
+
+        if (m_pPlayer->m_flStamina < 0)
+        {
+            m_pPlayer->m_flStamina = 0;
+        }
+        DevMsg("stamina: %f\n", m_pPlayer->m_flStamina);
+    }
 
     if (m_pPlayer->m_Local.m_slideBoostCooldown > 0)
     {
