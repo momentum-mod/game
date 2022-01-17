@@ -237,13 +237,16 @@ void CMomentumGameMovement::WalkMove()
     // Set pmove velocity
     Accelerate(wishdir, wishspeed, sv_accelerate.GetFloat());
 
-    if (g_pGameModeSystem->GameModeIs(GAMEMODE_KZ) &&
-        gpGlobals->tickcount - m_pPlayer->m_iLandTick == 3)
+    int ticksSinceLanding = gpGlobals->tickcount - m_pPlayer->m_iLandTick;
+    if (g_pGameModeSystem->GameModeIs(GAMEMODE_KZ) && ticksSinceLanding <= 3)
     {
-        float currentSpeed = mv->m_vecVelocity.Length2D();
-        if (currentSpeed > mv->m_flMaxSpeed)
+        if (ticksSinceLanding == 3)
         {
-            mv->m_vecVelocity *= mv->m_flMaxSpeed / currentSpeed;
+            float currentSpeed = mv->m_vecVelocity.Length2D();
+            if (currentSpeed > mv->m_flMaxSpeed)
+            {
+                mv->m_vecVelocity *= mv->m_flMaxSpeed / currentSpeed;
+            }
         }
     }
 
@@ -1203,20 +1206,57 @@ void CMomentumGameMovement::PlayerMove()
     }
 }
 
+
+#define KZ_MIN_BHOP_CAP 275.0
+#define KZ_MAX_BHOP_CAP 355.0
 #define RJ_BUNNYHOP_MAX_SPEED_FACTOR 1.2f
 void CMomentumGameMovement::PreventBunnyHopping()
 {
-    float maxscaledspeed = RJ_BUNNYHOP_MAX_SPEED_FACTOR * mv->m_flMaxSpeed;
-    if (maxscaledspeed <= 0.0f)
-        return;
+    if (g_pGameModeSystem->GameModeIs(GAMEMODE_KZ))
+    {
+        int ticksSinceLanding = gpGlobals->tickcount - m_pPlayer->m_iLandTick;
+        if (ticksSinceLanding <= 3)
+        {
+            // float newSpeed = GameChaosCalcTweakedTakeoffSpeed(player);
+            float landingSpeed = m_pPlayer->m_flLandSpeed;
+            float newSpeed = landingSpeed;
+            if (landingSpeed > KZ_MIN_BHOP_CAP)
+            {
+                newSpeed = KZ_MAX_BHOP_CAP - (landingSpeed - KZ_MIN_BHOP_CAP);
+                if (newSpeed > landingSpeed)
+                {
+                    newSpeed = landingSpeed;
+                }
+                else if (newSpeed < KZ_MIN_BHOP_CAP)
+                {
+                    newSpeed = KZ_MIN_BHOP_CAP;
+                }
+            }
 
-    float speed = mv->m_vecVelocity.Length();
-    if (speed <= maxscaledspeed)
-        return;
+            float currentSpeed = mv->m_vecVelocity.Length2D();
+            if (currentSpeed > 0)
+            {
+                mv->m_vecVelocity *= newSpeed / currentSpeed;
+                // NOTE(GameChaos): HACK! HACK! This is to fix incorrect last jump speed in the hud. I don't
+                // know if it has any bad side effects
+                m_pPlayer->SetLocalVelocity(mv->m_vecVelocity);
+            }
+        }
+    }
+    else
+    {
+        float maxscaledspeed = RJ_BUNNYHOP_MAX_SPEED_FACTOR * mv->m_flMaxSpeed;
+        if (maxscaledspeed <= 0.0f)
+            return;
 
-    float fraction = maxscaledspeed / speed;
+        float speed = mv->m_vecVelocity.Length();
+        if (speed <= maxscaledspeed)
+            return;
 
-    mv->m_vecVelocity *= fraction;
+        float fraction = maxscaledspeed / speed;
+
+        mv->m_vecVelocity *= fraction;
+    }
 }
 
 void CMomentumGameMovement::CheckWaterJump()

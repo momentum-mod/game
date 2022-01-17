@@ -137,6 +137,7 @@ void CGameMode_KZ::SetGameModeVars()
     sv_airaccelerate.SetValue(100);
     sv_friction.SetValue(5.2f);
     sv_maxspeed.SetValue(250);
+    sv_stopspeed.SetValue(80);
     sv_maxvelocity.SetValue(3500);
     sv_considered_on_ground.SetValue(2);
 }

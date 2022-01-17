@@ -383,6 +383,9 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
     int m_nAccelTicks;
     QAngle m_qangLastAngle;
 
+    // KZ
+    float m_flLandSpeed;
+
     bool m_bAllowUserTeleports;
 
     // Ladder stuff

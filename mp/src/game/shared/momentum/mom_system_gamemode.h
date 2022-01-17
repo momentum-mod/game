@@ -101,6 +101,7 @@ public:
     const char* GetMapPrefix() override { return "kz_"; }
     const char* GetGameModeCfg() override { return "kz.cfg"; }
     float GetIntervalPerTick() override { return 0.0078125f; }
+    bool CanBhop() override { return false; }
     void SetGameModeVars() override;
     bool PlayerHasAutoBhop() override { return false; }
     bool WeaponIsAllowed(WeaponID_t weapon) override;

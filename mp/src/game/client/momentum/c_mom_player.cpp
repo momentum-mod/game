@@ -55,6 +55,7 @@ C_MomentumPlayer::C_MomentumPlayer(): m_pSpecTarget(nullptr)
     m_flStartSpeed = 0.0f;
     m_flEndSpeed = 0.0f;
     m_flGrabbableLadderTime = 0.0f;
+    m_flLandSpeed = 0;
 
     m_iLandTick = 0;
     m_iJumpTick = 0;
