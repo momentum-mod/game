@@ -146,6 +146,7 @@ private:
 
     // KZ
     float m_flLandSpeed;
+    float m_flDuckFraction;
 
     CMomRunEntity *m_pSpecTarget;
 

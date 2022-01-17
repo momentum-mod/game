@@ -688,11 +688,19 @@ void CMomentumGameMovement::HandleDuckingSpeedCrop()
         {
             if (g_pGameModeSystem->GameModeIs(GAMEMODE_KZ))
             {
-                mv->m_flMaxSpeed *= DUCK_SPEED_MULTIPLIER;
+                // NOTE: Interpolate to make ducking smoother, mimicking CSGO.
+                float duckMultiplier = DUCK_SPEED_MULTIPLIER * m_pPlayer->m_flDuckFraction + 1 * (1 - m_pPlayer->m_flDuckFraction);
+                mv->m_flMaxSpeed *= duckMultiplier;
+                mv->m_flForwardMove *= duckMultiplier;
+                mv->m_flSideMove *= duckMultiplier;
+                mv->m_flUpMove *= duckMultiplier;
             }
-            mv->m_flForwardMove *= DUCK_SPEED_MULTIPLIER;
-            mv->m_flSideMove *= DUCK_SPEED_MULTIPLIER;
-            mv->m_flUpMove *= DUCK_SPEED_MULTIPLIER;
+            else
+            {
+                mv->m_flForwardMove *= DUCK_SPEED_MULTIPLIER;
+                mv->m_flSideMove *= DUCK_SPEED_MULTIPLIER;
+                mv->m_flUpMove *= DUCK_SPEED_MULTIPLIER;
+            }
             m_iSpeedCropped |= SPEED_CROPPED_DUCK;
         }
     }
@@ -700,7 +708,13 @@ void CMomentumGameMovement::HandleDuckingSpeedCrop()
 
 float CMomentumGameMovement::GetTimeToDuck()
 {
-    return g_pGameModeSystem->IsTF2BasedMode() ? 0.2f : BaseClass::GetTimeToDuck();
+    if (g_pGameModeSystem->IsTF2BasedMode() || 
+        g_pGameModeSystem->GameModeIs(GAMEMODE_KZ))
+    {
+        return 0.2f;
+    }
+
+    return BaseClass::GetTimeToDuck();
 }
 
 float CMomentumGameMovement::GetDuckTimer()
@@ -882,6 +896,15 @@ void CMomentumGameMovement::Duck()
             DoUnduck(buttonsReleased);
         }
     }
+
+    if (player->m_Local.m_bDucked && !player->m_Local.m_bDucking)
+    {
+        m_pPlayer->m_flDuckFraction = 1;
+    }
+    else if (!player->m_Local.m_bDucked && !player->m_Local.m_bDucking)
+    {
+        m_pPlayer->m_flDuckFraction = 0;
+    }
 }
 
 void CMomentumGameMovement::DoDuck(int iButtonsPressed)
@@ -956,6 +979,7 @@ void CMomentumGameMovement::DoDuck(int iButtonsPressed)
         {
             // Calc parametric time
             float duckFraction = SimpleSpline(duckseconds / GetTimeToDuck());
+            m_pPlayer->m_flDuckFraction = duckFraction;
             SetDuckedEyeOffset(duckFraction);
         }
     }
@@ -1023,6 +1047,7 @@ void CMomentumGameMovement::DoUnduck(int iButtonsReleased)
                 {
                     // Calc parametric time
                     float duckFraction = SimpleSpline(1.0f - (duckseconds / TIME_TO_UNDUCK));
+                    m_pPlayer->m_flDuckFraction = duckFraction;
                     SetDuckedEyeOffset(duckFraction);
                     player->m_Local.m_bDucking = true;
                 }
