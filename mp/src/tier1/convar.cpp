@@ -954,7 +954,7 @@ void ConVar::SetValue( float value )
 		return;
 
 	char temp[32];
-	Q_snprintf(temp, sizeof(temp), "%f", value);
+	Q_snprintf(temp, sizeof(temp), "%.8f", value);
 	m_pParent->SetValue( temp );
 }
 

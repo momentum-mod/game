@@ -24,10 +24,6 @@
 #define STOP_EPSILON 0.1
 #define MAX_CLIP_PLANES 5
 
-#define STAMINA_MAX 100.0f
-#define STAMINA_COST_JUMP 25.0f
-#define STAMINA_COST_FALL 20.0f // not used
-#define STAMINA_RECOVER_RATE 19.0f
 #define CS_WALK_SPEED 135.0f
 
 #define DUCK_SPEED_MULTIPLIER 0.34f
@@ -35,6 +31,16 @@
 #define GROUND_FACTOR_MULTIPLIER 301.99337741082998788946739227784f // not used
 
 #define NON_JUMP_VELOCITY ((g_pGameModeSystem->IsTF2BasedMode()) ? 250.0f : 140.0f)
+
+// TODO: These should be constants after climb mode settings are set in stone.
+ConVar sv_kz_stamina_recovery_rate("sv_kz_stamina_recovery_rate", "0.4", 0, "How many seconds it takes for stamina to be recovered.");
+ConVar sv_kz_stamina_multiplier_height("sv_kz_stamina_multiplier_height", "0.14", 0, "How much height to remove with maximum stamina.");
+ConVar sv_kz_stamina_multiplier_speed("sv_kz_stamina_multiplier_speed", "0.06", 0, "How much speed to remove with maximum stamina.");
+ConVar sv_kz_double_duck_height("sv_kz_stamina_multiplier_speed", "24.0", 0, "Double duck height.");
+ConVar sv_kz_stamina_zspeed_amount("sv_kz_stamina_zspeed_amount", "100.0", 0, "At what z speed do you get no stamina anymore relative to negative jump factor z-speed. Shouldn't be more than jumpfactor.", true, 0, true, 300);
+ConVar sv_kz_min_bhop_cap("sv_kz_min_bhop_cap", "275.0", 0, "newspeed = sv_kz_max_bhop_cap - (landspeed - sv_kz_min_bhop_cap) only when landspeed >= sv_kz_min_bhop_cap");
+ConVar sv_kz_max_bhop_cap("sv_kz_max_bhop_cap", "355.0", 0, "newspeed = sv_kz_max_bhop_cap - (landspeed - sv_kz_min_bhop_cap) only when landspeed >= sv_kz_min_bhop_cap");
+ConVar sv_kz_bhop_grace_ticks("sv_kz_bhop_grace_ticks", "4", 0, "How many ticks after landing should the player be able to retain have the same bhop prespeed.");
 
 // remove this eventually
 ConVar sv_slope_fix("sv_slope_fix", "1");
@@ -166,20 +172,9 @@ void CMomentumGameMovement::WalkMove()
     {
         if (m_pPlayer->m_flStamina > 0)
         {
-            float flRatio = (STAMINA_MAX - ((m_pPlayer->m_flStamina / 1000.0f) * STAMINA_RECOVER_RATE)) / STAMINA_MAX;
-
-            // This Goldsrc code was run with variable timesteps and it had framerate dependencies.
-            // People looking at Goldsrc for reference are usually
-            // (these days) measuring the stoppage at 60fps or greater, so we need
-            // to account for the fact that Goldsrc was applying more stopping power
-            // since it applied the slowdown across more frames.
-            float flReferenceFrametime = 1.0f / 70.0f;
-            float flFrametimeRatio = gpGlobals->frametime / flReferenceFrametime;
-
-            flRatio = pow(flRatio, flFrametimeRatio);
-
-            mv->m_vecVelocity.x *= flRatio;
-            mv->m_vecVelocity.y *= flRatio;
+            float ratio = 1.0 - (m_pPlayer->m_flStamina * sv_kz_stamina_multiplier_speed.GetFloat());
+            mv->m_vecVelocity.x *= ratio;
+            mv->m_vecVelocity.y *= ratio;
         }
     }
 
@@ -257,6 +252,16 @@ void CMomentumGameMovement::WalkMove()
 
     // Set pmove velocity
     Accelerate(wishdir, wishspeed, sv_accelerate.GetFloat());
+
+    int ticksSinceLanding = gpGlobals->tickcount - m_pPlayer->m_iLandTick;
+    if (g_pGameModeSystem->GameModeIs(GAMEMODE_KZ) && ticksSinceLanding == sv_kz_bhop_grace_ticks.GetInt())
+    {
+        float currentSpeed = mv->m_vecVelocity.Length2D();
+        if (currentSpeed > mv->m_flMaxSpeed)
+        {
+            mv->m_vecVelocity *= mv->m_flMaxSpeed / currentSpeed;
+        }
+    }
 
     // Cap ground speed if the speed is gained from the above Accelerate()
     if (g_pGameModeSystem->GameModeIs(GAMEMODE_PARKOUR))
@@ -694,9 +699,21 @@ void CMomentumGameMovement::HandleDuckingSpeedCrop()
     {
         if ((mv->m_nButtons & IN_DUCK) || (player->m_Local.m_bDucking) || (player->GetFlags() & FL_DUCKING))
         {
-            mv->m_flForwardMove *= DUCK_SPEED_MULTIPLIER;
-            mv->m_flSideMove *= DUCK_SPEED_MULTIPLIER;
-            mv->m_flUpMove *= DUCK_SPEED_MULTIPLIER;
+            if (g_pGameModeSystem->GameModeIs(GAMEMODE_KZ))
+            {
+                // NOTE: Interpolate to make ducking smoother, mimicking CSGO.
+                float duckMultiplier = DUCK_SPEED_MULTIPLIER * m_pPlayer->m_flDuckFraction + 1 * (1 - m_pPlayer->m_flDuckFraction);
+                mv->m_flMaxSpeed *= duckMultiplier;
+                mv->m_flForwardMove *= duckMultiplier;
+                mv->m_flSideMove *= duckMultiplier;
+                mv->m_flUpMove *= duckMultiplier;
+            }
+            else
+            {
+                mv->m_flForwardMove *= DUCK_SPEED_MULTIPLIER;
+                mv->m_flSideMove *= DUCK_SPEED_MULTIPLIER;
+                mv->m_flUpMove *= DUCK_SPEED_MULTIPLIER;
+            }
             m_iSpeedCropped |= SPEED_CROPPED_DUCK;
         }
     }
@@ -704,7 +721,13 @@ void CMomentumGameMovement::HandleDuckingSpeedCrop()
 
 float CMomentumGameMovement::GetTimeToDuck()
 {
-    return g_pGameModeSystem->IsTF2BasedMode() ? 0.2f : BaseClass::GetTimeToDuck();
+    if (g_pGameModeSystem->IsTF2BasedMode() || 
+        g_pGameModeSystem->GameModeIs(GAMEMODE_KZ))
+    {
+        return 0.2f;
+    }
+
+    return BaseClass::GetTimeToDuck();
 }
 
 float CMomentumGameMovement::GetDuckTimer()
@@ -886,6 +909,15 @@ void CMomentumGameMovement::Duck()
             DoUnduck(buttonsReleased);
         }
     }
+
+    if (player->m_Local.m_bDucked && !player->m_Local.m_bDucking)
+    {
+        m_pPlayer->m_flDuckFraction = 1;
+    }
+    else if (!player->m_Local.m_bDucked && !player->m_Local.m_bDucking)
+    {
+        m_pPlayer->m_flDuckFraction = 0;
+    }
 }
 
 void CMomentumGameMovement::DoDuck(int iButtonsPressed)
@@ -960,6 +992,7 @@ void CMomentumGameMovement::DoDuck(int iButtonsPressed)
         {
             // Calc parametric time
             float duckFraction = SimpleSpline(duckseconds / GetTimeToDuck());
+            m_pPlayer->m_flDuckFraction = duckFraction;
             SetDuckedEyeOffset(duckFraction);
         }
     }
@@ -1008,6 +1041,31 @@ void CMomentumGameMovement::DoUnduck(int iButtonsReleased)
                 return;
             }
 
+            if (g_pGameModeSystem->GameModeIs(GAMEMODE_KZ))
+            {
+                if (player->GetGroundEntity() != nullptr)
+                {
+                    // double duck/g-strafe
+                    if (m_pPlayer->m_afButtonReleased & IN_DUCK && !player->m_Local.m_bDucked)
+                    {
+                        FinishUnDuck();
+                        // TODO: reduce player speed when double ducking and make double ducking more consistent
+                        Vector newOrigin = mv->GetAbsOrigin();
+                        newOrigin[2] += sv_kz_double_duck_height.GetFloat();
+
+                        trace_t pm;
+                        TracePlayerBBox(newOrigin, newOrigin, PlayerSolidMask(), COLLISION_GROUP_PLAYER_MOVEMENT, pm);
+                        if (pm.fraction == 1.0f)
+                        {
+                            mv->SetAbsOrigin(newOrigin);
+                            // Redetermine position vars
+                            CategorizePosition();
+                            return;
+                        }
+                    }
+                }
+            }
+
             if (m_pPlayer->m_bIsPowerSliding)
             {
                 EndPowerSlide();
@@ -1027,6 +1085,7 @@ void CMomentumGameMovement::DoUnduck(int iButtonsReleased)
                 {
                     // Calc parametric time
                     float duckFraction = SimpleSpline(1.0f - (duckseconds / TIME_TO_UNDUCK));
+                    m_pPlayer->m_flDuckFraction = duckFraction;
                     SetDuckedEyeOffset(duckFraction);
                     player->m_Local.m_bDucking = true;
                 }
@@ -1213,17 +1272,53 @@ void CMomentumGameMovement::PlayerMove()
 #define RJ_BUNNYHOP_MAX_SPEED_FACTOR 1.2f
 void CMomentumGameMovement::PreventBunnyHopping()
 {
-    float maxscaledspeed = RJ_BUNNYHOP_MAX_SPEED_FACTOR * mv->m_flMaxSpeed;
-    if (maxscaledspeed <= 0.0f)
-        return;
+    if (g_pGameModeSystem->GameModeIs(GAMEMODE_KZ))
+    {
+        int ticksSinceLanding = gpGlobals->tickcount - m_pPlayer->m_iLandTick;
+        if (ticksSinceLanding <= sv_kz_bhop_grace_ticks.GetInt())
+        {
+            float landingSpeed = m_pPlayer->m_vecLandVelocity.Length2D();
+            if (landingSpeed > 0)
+            {
+                float newSpeed = landingSpeed;
+                if (landingSpeed > sv_kz_min_bhop_cap.GetFloat())
+                {
+                    newSpeed = sv_kz_max_bhop_cap.GetFloat() - (landingSpeed - sv_kz_min_bhop_cap.GetFloat());
+                    if (newSpeed > landingSpeed)
+                    {
+                        newSpeed = landingSpeed;
+                    }
+                    else if (newSpeed < sv_kz_min_bhop_cap.GetFloat())
+                    {
+                        newSpeed = sv_kz_min_bhop_cap.GetFloat();
+                    }
+                }
 
-    float speed = mv->m_vecVelocity.Length();
-    if (speed <= maxscaledspeed)
-        return;
+                // Limit xy speed.
+                for (int i = 0; i < 2; i++)
+                {
+                    // NOTE: The reason we use landvelocity is because the direction of the velocity vector can
+                    // change drastically in the 3 ticks we're on ground, for example slamming into a block to
+                    // stop your forward momentum. This actually happens often.
+                    mv->m_vecVelocity[i] = m_pPlayer->m_vecLandVelocity[i] * newSpeed / landingSpeed;
+                }
+            }
+        }
+    }
+    else
+    {
+        float maxscaledspeed = RJ_BUNNYHOP_MAX_SPEED_FACTOR * mv->m_flMaxSpeed;
+        if (maxscaledspeed <= 0.0f)
+            return;
 
-    float fraction = maxscaledspeed / speed;
+        float speed = mv->m_vecVelocity.Length();
+        if (speed <= maxscaledspeed)
+            return;
 
-    mv->m_vecVelocity *= fraction;
+        float fraction = maxscaledspeed / speed;
+
+        mv->m_vecVelocity *= fraction;
+    }
 }
 
 void CMomentumGameMovement::CheckWaterJump()
@@ -1428,9 +1523,11 @@ bool CMomentumGameMovement::CheckJumpButton()
     // Accelerate upward
     float startz = mv->m_vecVelocity[2];
 
-    if (!g_pGameModeSystem->IsCSBasedMode() && (player->m_Local.m_bDucking ||
-                                                player->GetFlags() & FL_DUCKING ||
-                                                m_pPlayer->m_nAirJumpState == AIRJUMP_NOW))
+    // NOTE: Consistent jump height on all tickrates for KZ.
+    if (g_pGameModeSystem->GameModeIs(GAMEMODE_KZ) ||
+        (!g_pGameModeSystem->IsCSBasedMode() && (player->m_Local.m_bDucking ||
+                                                 player->GetFlags() & FL_DUCKING ||
+                                                 m_pPlayer->m_nAirJumpState == AIRJUMP_NOW)))
     {
         mv->m_vecVelocity[2] = flGroundFactor * g_pGameModeSystem->GetGameMode()->GetJumpFactor();
 
@@ -1452,11 +1549,9 @@ bool CMomentumGameMovement::CheckJumpButton()
     {
         if (m_pPlayer->m_flStamina > 0)
         {
-            float flRatio = (STAMINA_MAX - ((m_pPlayer->m_flStamina / 1000.0) * STAMINA_RECOVER_RATE)) / STAMINA_MAX;
-            mv->m_vecVelocity[2] *= flRatio;
+            float ratio = 1 - (m_pPlayer->m_flStamina * sv_kz_stamina_multiplier_height.GetFloat());
+            mv->m_vecVelocity[2] *= ratio;
         }
-
-        m_pPlayer->m_flStamina = (STAMINA_COST_JUMP / STAMINA_RECOVER_RATE) * 1000.0;
     }
 
     // Add the accelerated hop movement
@@ -1739,11 +1834,13 @@ void CMomentumGameMovement::CategorizePosition()
             if (!pm.m_pEnt || pm.plane.normal[2] < 0.7f)
             {
                 SetGroundEntity(nullptr);
-
-                // probably want to add a check for a +z velocity too!
-                if ((mv->m_vecVelocity.z > 0.0f) && (player->GetMoveType() != MOVETYPE_NOCLIP))
+                if (!g_pGameModeSystem->GameModeIs(GAMEMODE_KZ))
                 {
-                    player->m_surfaceFriction = 0.25f;
+                    // probably want to add a check for a +z velocity too!
+                    if ((mv->m_vecVelocity.z > 0.0f) && (player->GetMoveType() != MOVETYPE_NOCLIP))
+                    {
+                        player->m_surfaceFriction = 0.25f;
+                    }
                 }
             }
         }
@@ -3078,6 +3175,14 @@ void CMomentumGameMovement::SetGroundEntity(const trace_t *pm)
     }
 }
 
+void CMomentumGameMovement::OnLand(float fVelocity) 
+{
+    float jumpFactor = g_pGameModeSystem->GetGameMode()->GetJumpFactor();
+    // NOTE: This makes it so that after you're lower than the height you jumped from you get maximum stamina.
+    // sv_kz_stamina_zspeed_amount is how big the transition between 0 stamina and full stamina is.
+    m_pPlayer->m_flStamina = 1 - Clamp(jumpFactor - fVelocity, 0.0f, sv_kz_stamina_zspeed_amount.GetFloat()) / 100;
+}
+
 bool CMomentumGameMovement::CanAccelerate()
 {
     return BaseClass::CanAccelerate() || (player && player->IsObserver());
@@ -3100,7 +3205,7 @@ void CMomentumGameMovement::ReduceTimers()
 
     if (m_pPlayer->m_flStamina > 0)
     {
-        m_pPlayer->m_flStamina -= frame_msec;
+        m_pPlayer->m_flStamina -= (1.0f / sv_kz_stamina_recovery_rate.GetFloat()) * gpGlobals->frametime;
 
         if (m_pPlayer->m_flStamina < 0)
         {
