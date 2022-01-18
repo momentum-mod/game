@@ -384,7 +384,7 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
     QAngle m_qangLastAngle;
 
     // KZ
-    float m_flLandSpeed;
+    Vector m_vecLandVelocity;
     float m_flDuckFraction;
     float m_flStamina;
 

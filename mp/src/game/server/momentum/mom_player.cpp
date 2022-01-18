@@ -260,7 +260,7 @@ CMomentumPlayer::CMomentumPlayer()
 
     m_nButtonsToggled = 0;
 
-    m_flLandSpeed = 0;
+    m_vecLandVelocity.Init();
     m_flDuckFraction = 0;
 }
 
@@ -576,7 +576,7 @@ void CMomentumPlayer::OnJump()
 void CMomentumPlayer::OnLand()
 {
     m_iLandTick = gpGlobals->tickcount;
-    m_flLandSpeed = GetAbsVelocity().Length2D();
+    m_vecLandVelocity = GetAbsVelocity();
 
     if (m_Data.m_bIsInZone && m_Data.m_iCurrentZone == 1 && GetMoveType() == MOVETYPE_WALK && !m_bHasPracticeMode)
     {

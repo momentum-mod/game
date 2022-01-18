@@ -145,7 +145,7 @@ private:
     SurfInt::Type m_surfIntHistory[SurfInt::TYPE_COUNT]; // Keeps track of the history of interactions
 
     // KZ
-    float m_flLandSpeed;
+    Vector m_vecLandVelocity;
     float m_flDuckFraction;
     float m_flStamina;
 

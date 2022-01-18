@@ -38,8 +38,9 @@ ConVar sv_kz_stamina_multiplier_height("sv_kz_stamina_multiplier_height", "0.14"
 ConVar sv_kz_stamina_multiplier_speed("sv_kz_stamina_multiplier_speed", "0.06", 0, "How much speed to remove with maximum stamina.");
 ConVar sv_kz_double_duck_height("sv_kz_stamina_multiplier_speed", "24.0", 0, "Double duck height.");
 ConVar sv_kz_stamina_zspeed_amount("sv_kz_stamina_zspeed_amount", "100.0", 0, "At what z speed do you get no stamina anymore relative to negative jump factor z-speed. Shouldn't be more than jumpfactor.", true, 0, true, 300);
-ConVar sv_kz_min_bhop_cap("sv_kz_min_bhop_cap", "275.0", 0, "newspeed = sv_kz_max_bhop_cap - (m_flLandSpeed - sv_kz_min_bhop_cap) only when m_flLandSpeed >= sv_kz_min_bhop_cap");
-ConVar sv_kz_max_bhop_cap("sv_kz_max_bhop_cap", "355.0", 0, "newspeed = sv_kz_max_bhop_cap - (m_flLandSpeed - sv_kz_min_bhop_cap) only when m_flLandSpeed >= sv_kz_min_bhop_cap");
+ConVar sv_kz_min_bhop_cap("sv_kz_min_bhop_cap", "275.0", 0, "newspeed = sv_kz_max_bhop_cap - (landspeed - sv_kz_min_bhop_cap) only when landspeed >= sv_kz_min_bhop_cap");
+ConVar sv_kz_max_bhop_cap("sv_kz_max_bhop_cap", "355.0", 0, "newspeed = sv_kz_max_bhop_cap - (landspeed - sv_kz_min_bhop_cap) only when landspeed >= sv_kz_min_bhop_cap");
+ConVar sv_kz_bhop_grace_ticks("sv_kz_bhop_grace_ticks", "4", 0, "How many ticks after landing should the player be able to retain have the same bhop prespeed.");
 
 // remove this eventually
 ConVar sv_slope_fix("sv_slope_fix", "1");
@@ -253,15 +254,12 @@ void CMomentumGameMovement::WalkMove()
     Accelerate(wishdir, wishspeed, sv_accelerate.GetFloat());
 
     int ticksSinceLanding = gpGlobals->tickcount - m_pPlayer->m_iLandTick;
-    if (g_pGameModeSystem->GameModeIs(GAMEMODE_KZ) && ticksSinceLanding <= 3)
+    if (g_pGameModeSystem->GameModeIs(GAMEMODE_KZ) && ticksSinceLanding == sv_kz_bhop_grace_ticks.GetInt())
     {
-        if (ticksSinceLanding == 3)
+        float currentSpeed = mv->m_vecVelocity.Length2D();
+        if (currentSpeed > mv->m_flMaxSpeed)
         {
-            float currentSpeed = mv->m_vecVelocity.Length2D();
-            if (currentSpeed > mv->m_flMaxSpeed)
-            {
-                mv->m_vecVelocity *= mv->m_flMaxSpeed / currentSpeed;
-            }
+            mv->m_vecVelocity *= mv->m_flMaxSpeed / currentSpeed;
         }
     }
 
@@ -1277,28 +1275,33 @@ void CMomentumGameMovement::PreventBunnyHopping()
     if (g_pGameModeSystem->GameModeIs(GAMEMODE_KZ))
     {
         int ticksSinceLanding = gpGlobals->tickcount - m_pPlayer->m_iLandTick;
-        if (ticksSinceLanding <= 3)
+        if (ticksSinceLanding <= sv_kz_bhop_grace_ticks.GetInt())
         {
-            // float newSpeed = GameChaosCalcTweakedTakeoffSpeed(player);
-            float landingSpeed = m_pPlayer->m_flLandSpeed;
-            float newSpeed = landingSpeed;
-            if (landingSpeed > sv_kz_min_bhop_cap.GetFloat())
+            float landingSpeed = m_pPlayer->m_vecLandVelocity.Length2D();
+            if (landingSpeed > 0)
             {
-                newSpeed = sv_kz_max_bhop_cap.GetFloat() - (landingSpeed - sv_kz_min_bhop_cap.GetFloat());
-                if (newSpeed > landingSpeed)
+                float newSpeed = landingSpeed;
+                if (landingSpeed > sv_kz_min_bhop_cap.GetFloat())
                 {
-                    newSpeed = landingSpeed;
+                    newSpeed = sv_kz_max_bhop_cap.GetFloat() - (landingSpeed - sv_kz_min_bhop_cap.GetFloat());
+                    if (newSpeed > landingSpeed)
+                    {
+                        newSpeed = landingSpeed;
+                    }
+                    else if (newSpeed < sv_kz_min_bhop_cap.GetFloat())
+                    {
+                        newSpeed = sv_kz_min_bhop_cap.GetFloat();
+                    }
                 }
-                else if (newSpeed < sv_kz_min_bhop_cap.GetFloat())
-                {
-                    newSpeed = sv_kz_min_bhop_cap.GetFloat();
-                }
-            }
 
-            float currentSpeed = mv->m_vecVelocity.Length2D();
-            if (currentSpeed > 0)
-            {
-                mv->m_vecVelocity *= newSpeed / currentSpeed;
+                // Limit xy speed.
+                for (int i = 0; i < 2; i++)
+                {
+                    // NOTE: The reason we use landvelocity is because the direction of the velocity vector can
+                    // change drastically in the 3 ticks we're on ground, for example slamming into a block to
+                    // stop your forward momentum. This actually happens often.
+                    mv->m_vecVelocity[i] = m_pPlayer->m_vecLandVelocity[i] * newSpeed / landingSpeed;
+                }
             }
         }
     }
@@ -3178,7 +3181,6 @@ void CMomentumGameMovement::OnLand(float fVelocity)
     // NOTE: This makes it so that after you're lower than the height you jumped from you get maximum stamina.
     // sv_kz_stamina_zspeed_amount is how big the transition between 0 stamina and full stamina is.
     m_pPlayer->m_flStamina = 1 - Clamp(jumpFactor - fVelocity, 0.0f, sv_kz_stamina_zspeed_amount.GetFloat()) / 100;
-    DevMsg("stamina %f\n", m_pPlayer->m_flStamina);
 }
 
 bool CMomentumGameMovement::CanAccelerate()
