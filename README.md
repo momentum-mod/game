@@ -37,6 +37,7 @@ Basic things that I've changed from the original 0.8.7 Climb mode:
 - Changed ducking code to more closely match CS:GO.
 - Changed the player collision size to match CS:GO.
 - Changed jump height to be independent from tickrate (default jump height is now 57 or 66 when crouched).
+- Ground speed is capped to maxspeed **once** after `sv_kz_bhop_grace_ticks` to 250 or 85 if ducking.
 
 ## Useful commands for players that are used to KZ.
 
