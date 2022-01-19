@@ -30,6 +30,11 @@
 
 MAKE_TOGGLE_CONVAR(sv_debug_velocity_check, "0", FCVAR_NONE, "Prints out checks with velocity. 0 = OFF, 1 = ON.\n");
 
+// TODO: These should be constants after climb mode settings are set in stone.
+ConVar sv_edge_friction("sv_edge_friction", "2", 0, "How much the player gets slowed down close to edges that are high.");
+ConVar sv_edge_friction_height("sv_edge_friction_height", "66", 0, "How high an edge has to be to be affected by edge friction.");
+ConVar sv_edge_friction_distance("sv_edge_friction_height", "16", 0, "How close you have to be to an edge to get affected by edge friction.");
+
 // tickcount currently isn't set during prediction, although gpGlobals->curtime and
 // gpGlobals->frametime are. We should probably set tickcount (to player->m_nTickBase),
 // but we're REALLY close to shipping, so we can change that later and people can use
@@ -1671,6 +1676,29 @@ void CGameMovement::DoFriction(Vector &velocity)
 		// have low friction to stop you standing on them. So it might be better to 
 		// ignore surface info and just assume full friction when wallrunning.
 		float friction = sv_friction.GetFloat() * player->m_surfaceFriction;
+
+		// NOTE: edge friction for kz
+		if (g_pGameModeSystem->GameModeIs(GAMEMODE_KZ))
+        {
+			Vector start;
+			Vector stop;
+
+			for (int i = 0; i < 2; i++)
+            {
+                start[i] = mv->m_vecAbsOrigin[i] + mv->m_vecVelocity[i] / speed * sv_edge_friction_distance.GetFloat();
+				stop[i] = start[i];
+            }
+
+			start[2] = mv->m_vecAbsOrigin[2];
+			stop[2] = start[2] - sv_edge_friction_height.GetFloat();
+
+			trace_t pm;
+            TracePlayerBBox(start, stop, PlayerSolidMask(), COLLISION_GROUP_PLAYER_MOVEMENT, pm);
+            if (pm.fraction == 1.0f)
+            {
+				friction *= sv_edge_friction.GetFloat();
+            }
+        }
 
 		// Bleed off some speed, but if we have less than the bleed
 		//  threshold, bleed the threshold amount.
