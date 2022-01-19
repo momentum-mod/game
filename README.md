@@ -23,6 +23,19 @@ Maps that are included in Momentum-KZ-Maps-XXXX-XX-XX.zip:
 - kz_checkmate_bad_port - A quick and dirty port of kz_checkmate for gameplay testing.
 - kz_xc_nature - CSS map made by chichin: https://gamebanana.com/mods/123762
 
+Basic things that I've changed from the original 0.8.7 Climb mode:
+
+**Disclaimer! Not all of these are set in stone!**
+
+- Changed tickrate to 128.
+- sv_maxspeed is 250.
+- sv_airaccelerate is 10 by default.
+- sv_stopspeed is 80 to match CS:GO.
+- sv_considered_on_ground changed to 2 for ledgegrabs.
+- Changed ducking code to more closely match CS:GO.
+- Changed the player collision size to match CS:GO.
+- Changed jump height to be independent from tickrate (default jump height is now 57 or 66 when crouched).
+
 ## Useful commands for players that are used to KZ.
 
 - `mom_hud_menu_show savelocmenu` - A teleport menu similar to KZTimer's and GOKZ's, except you can set a checkpoint anywhere and it preserves your speed.
@@ -35,7 +48,7 @@ Maps that are included in Momentum-KZ-Maps-XXXX-XX-XX.zip:
 |-----------------------------------|---------------|-------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | sv_edge_friction                  | 1             | -                 | How much the player gets slowed down close to edges that are high. 1 = no effect, 2 = default CS 1.6 behaviour. This scales sv_friction when you're close to an edge.                                            |
 | sv_kz_double_duck                 | 1             | 0 or 1            | Toggle double duck.                                                                                                                                                                                              |
-| sv_kz_stamina_type                | 1             | 0 to 2            | Type of stamina. 0 = none, 1 = Mild version of CSGO's stamina, 2 = CSS/1.6 stamina                                                                                                                               |
+| sv_kz_stamina_type                | 1             | 0 to 2            | Type of stamina. 0 = none, 1 = Mild version of CS:GO's stamina, 2 = CSS/1.6 stamina                                                                                                                               |
 | sv_kz_bhop_cap_type               | 1             | 0 or 1            | 0 = SimpleKZ, 1 = Forces you to not strafe a lot if you want to go as fast as possible. if landspeed >= sv_kz_bhop_cap_1_min, then newspeed = sv_kz_bhop_cap_1_max - (landspeed - sv_kz_bhop_cap_1_min)          |
 
 ### Advanced commands:
