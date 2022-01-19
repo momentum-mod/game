@@ -34,10 +34,19 @@
 
 #define KZ_TIME_TO_UNDUCK 0.13f
 
+// CSS/1.6 style stamina constants
+#define STAMINA_MAX 100.0f
+#define STAMINA_COST_JUMP 25.0f
+#define STAMINA_COST_FALL 20.0f // not used
+#define STAMINA_RECOVER_RATE 19.0f
+
 // TODO: These should be constants after climb mode settings are set in stone.
-ConVar sv_kz_stamina_recovery_rate("sv_kz_stamina_recovery_rate", "0.4", 0, "How many seconds it takes for stamina to be recovered.");
-ConVar sv_kz_stamina_multiplier_height("sv_kz_stamina_multiplier_height", "0.14", 0, "How much height to remove with maximum stamina.");
-ConVar sv_kz_stamina_multiplier_speed("sv_kz_stamina_multiplier_speed", "0.06", 0, "How much speed to remove per tick. Scaled by stamina.");
+ConVar sv_kz_stamina_1_recovery_rate("sv_kz_stamina_1_recovery_rate", "0.4", 0, "sv_kz_stamina_type 1: How many seconds it takes for stamina to be recovered.");
+ConVar sv_kz_stamina_1_multiplier_height("sv_kz_stamina_1_multiplier_height", "0.14", 0, "sv_kz_stamina_type 1: How much height to remove with maximum stamina.");
+ConVar sv_kz_stamina_1_multiplier_speed("sv_kz_stamina_1_multiplier_speed", "0.06", 0, "sv_kz_stamina_type 1: How much speed to remove per tick.");
+ConVar sv_kz_stamina_2_cost_jump("sv_kz_stamina_2_cost_jump", "25", 0, "sv_kz_stamina_type 2: How much stamina gets added when you jump.");
+ConVar sv_kz_stamina_2_recovery_rate("sv_kz_stamina_2_recovery_rate", "19", 0, "sv_kz_stamina_type 2: How fast stamina recovers.");
+ConVar sv_kz_stamina_type("sv_kz_stamina_type", "1", 0, "Type of stamina. 0 = none, 1 = mild version of CSGO, 2 = CSS");
 ConVar sv_kz_double_duck_height("sv_kz_double_duck_height", "24.0", 0, "Double duck height.");
 ConVar sv_kz_double_duck("sv_kz_double_duck", "1", 0, "Enable or disable double duck.", true, 0, true, 1);
 ConVar sv_kz_stamina_zspeed_amount("sv_kz_stamina_zspeed_amount", "100.0", 0, "At what z speed do you get no stamina anymore relative to negative jump factor z-speed. Shouldn't be more than jumpfactor.", true, 0, true, 300);
@@ -175,9 +184,29 @@ void CMomentumGameMovement::WalkMove()
     {
         if (m_pPlayer->m_flStamina > 0)
         {
-            float ratio = 1.0 - (m_pPlayer->m_flStamina * sv_kz_stamina_multiplier_speed.GetFloat());
-            mv->m_vecVelocity.x *= ratio;
-            mv->m_vecVelocity.y *= ratio;
+            if (sv_kz_stamina_type.GetInt() == 1)
+            {
+                float ratio = 1.0 - (m_pPlayer->m_flStamina * sv_kz_stamina_1_multiplier_speed.GetFloat());
+                mv->m_vecVelocity.x *= ratio;
+                mv->m_vecVelocity.y *= ratio;
+            }
+            else if (sv_kz_stamina_type.GetInt() == 2)
+            {
+                float flRatio = (STAMINA_MAX - ((m_pPlayer->m_flStamina / 1000.0f) * sv_kz_stamina_2_recovery_rate.GetFloat())) / STAMINA_MAX;
+
+                // This Goldsrc code was run with variable timesteps and it had framerate dependencies.
+                // People looking at Goldsrc for reference are usually
+                // (these days) measuring the stoppage at 60fps or greater, so we need
+                // to account for the fact that Goldsrc was applying more stopping power
+                // since it applied the slowdown across more frames.
+                float flReferenceFrametime = 1.0f / 70.0f;
+                float flFrametimeRatio = gpGlobals->frametime / flReferenceFrametime;
+
+                flRatio = pow(flRatio, flFrametimeRatio);
+
+                mv->m_vecVelocity.x *= flRatio;
+                mv->m_vecVelocity.y *= flRatio;
+            }
         }
     }
 
@@ -1566,10 +1595,23 @@ bool CMomentumGameMovement::CheckJumpButton()
     // stamina stuff (scroll/kz gamemode only)
     if (g_pGameModeSystem->GameModeIs(GAMEMODE_KZ))
     {
-        if (m_pPlayer->m_flStamina > 0)
+        if (sv_kz_stamina_type.GetInt() == 1)
         {
-            float ratio = 1 - (m_pPlayer->m_flStamina * sv_kz_stamina_multiplier_height.GetFloat());
-            mv->m_vecVelocity[2] *= ratio;
+            if (m_pPlayer->m_flStamina > 0)
+            {
+                float ratio = 1 - (m_pPlayer->m_flStamina * sv_kz_stamina_1_multiplier_height.GetFloat());
+                mv->m_vecVelocity[2] *= ratio;
+            }
+        }
+        else if (sv_kz_stamina_type.GetInt() == 2)
+        {
+            if (m_pPlayer->m_flStamina > 0)
+            {
+                float flRatio = (STAMINA_MAX - ((m_pPlayer->m_flStamina / 1000.0) * sv_kz_stamina_2_recovery_rate.GetFloat())) / STAMINA_MAX;
+                mv->m_vecVelocity[2] *= flRatio;
+            }
+
+            m_pPlayer->m_flStamina = (sv_kz_stamina_2_cost_jump.GetFloat() / sv_kz_stamina_2_recovery_rate.GetFloat()) * 1000.0;
         }
     }
 
@@ -3196,10 +3238,13 @@ void CMomentumGameMovement::SetGroundEntity(const trace_t *pm)
 
 void CMomentumGameMovement::OnLand(float fVelocity) 
 {
-    float jumpFactor = g_pGameModeSystem->GetGameMode()->GetJumpFactor();
-    // NOTE: This makes it so that after you're lower than the height you jumped from you get maximum stamina.
-    // sv_kz_stamina_zspeed_amount is how big the transition between 0 stamina and full stamina is.
-    m_pPlayer->m_flStamina = 1 - Clamp(jumpFactor - fVelocity, 0.0f, sv_kz_stamina_zspeed_amount.GetFloat()) / 100;
+    if (sv_kz_stamina_type.GetInt() == 1)
+    {
+        float jumpFactor = g_pGameModeSystem->GetGameMode()->GetJumpFactor();
+        // NOTE: This makes it so that after you're lower than the height you jumped from you get maximum stamina.
+        // sv_kz_stamina_zspeed_amount is how big the transition between 0 stamina and full stamina is.
+        m_pPlayer->m_flStamina = 1 - Clamp(jumpFactor - fVelocity, 0.0f, sv_kz_stamina_zspeed_amount.GetFloat()) / 100;
+    }
 }
 
 bool CMomentumGameMovement::CanAccelerate()
@@ -3224,7 +3269,14 @@ void CMomentumGameMovement::ReduceTimers()
 
     if (m_pPlayer->m_flStamina > 0)
     {
-        m_pPlayer->m_flStamina -= (1.0f / sv_kz_stamina_recovery_rate.GetFloat()) * gpGlobals->frametime;
+        if (sv_kz_stamina_type.GetInt() == 1)
+        {
+            m_pPlayer->m_flStamina -= (1.0f / sv_kz_stamina_1_recovery_rate.GetFloat()) * gpGlobals->frametime;
+        }
+        else if (sv_kz_stamina_type.GetInt() == 2)
+        {
+            m_pPlayer->m_flStamina -= frame_msec;
+        }
 
         if (m_pPlayer->m_flStamina < 0)
         {
