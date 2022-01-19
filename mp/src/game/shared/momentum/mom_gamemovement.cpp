@@ -32,6 +32,8 @@
 
 #define NON_JUMP_VELOCITY ((g_pGameModeSystem->IsTF2BasedMode()) ? 250.0f : 140.0f)
 
+#define KZ_TIME_TO_UNDUCK 0.13f
+
 // TODO: These should be constants after climb mode settings are set in stone.
 ConVar sv_kz_stamina_recovery_rate("sv_kz_stamina_recovery_rate", "0.4", 0, "How many seconds it takes for stamina to be recovered.");
 ConVar sv_kz_stamina_multiplier_height("sv_kz_stamina_multiplier_height", "0.14", 0, "How much height to remove with maximum stamina.");
@@ -721,13 +723,29 @@ void CMomentumGameMovement::HandleDuckingSpeedCrop()
 
 float CMomentumGameMovement::GetTimeToDuck()
 {
-    if (g_pGameModeSystem->IsTF2BasedMode() || 
-        g_pGameModeSystem->GameModeIs(GAMEMODE_KZ))
+    if (g_pGameModeSystem->GameModeIs(GAMEMODE_KZ))
+    {
+        return 0.16f;
+    }
+
+    if (g_pGameModeSystem->IsTF2BasedMode())
     {
         return 0.2f;
     }
 
     return BaseClass::GetTimeToDuck();
+}
+
+float CMomentumGameMovement::GetTimeToUnDuck()
+{
+    if (g_pGameModeSystem->GameModeIs(GAMEMODE_KZ))
+    {
+        return KZ_TIME_TO_UNDUCK;
+    }
+    else
+    {
+        return TIME_TO_UNDUCK;
+    }
 }
 
 float CMomentumGameMovement::GetDuckTimer()
@@ -967,12 +985,12 @@ void CMomentumGameMovement::DoDuck(int iButtonsPressed)
         else if (player->m_Local.m_bDucking)
         {
             // Invert time if released before fully unducked
-            float remainingDuckMilliseconds = (duckTimer - player->m_Local.m_flDucktime) * (GetTimeToDuck() / TIME_TO_UNDUCK);
+            float remainingDuckMilliseconds = (duckTimer - player->m_Local.m_flDucktime) * (GetTimeToDuck() / GetTimeToUnDuck());
 
             player->m_Local.m_flDucktime = duckTimer - (GetTimeToDuck() * 1000.0f) + remainingDuckMilliseconds;
         }
     }
-
+    
     if (player->m_Local.m_bDucking)
     {
         float duckmilliseconds = max(0.0f, duckTimer - player->m_Local.m_flDucktime);
@@ -1026,9 +1044,9 @@ void CMomentumGameMovement::DoUnduck(int iButtonsReleased)
             else if (player->m_Local.m_bDucking)
             {
                 // Invert time if released before fully ducked
-                float remainingUnduckMilliseconds = (GetDuckTimer() - player->m_Local.m_flDucktime) * (TIME_TO_UNDUCK / GetTimeToDuck());
+                float remainingUnduckMilliseconds = (GetDuckTimer() - player->m_Local.m_flDucktime) * (GetTimeToUnDuck() / GetTimeToDuck());
 
-                player->m_Local.m_flDucktime = GetDuckTimer() - TIME_TO_UNDUCK_MS + remainingUnduckMilliseconds;
+                player->m_Local.m_flDucktime = GetDuckTimer() - GetTimeToUnDuck() * 1000 + remainingUnduckMilliseconds;
             }
         }
 
@@ -1077,14 +1095,14 @@ void CMomentumGameMovement::DoUnduck(int iButtonsReleased)
                 float duckseconds = duckmilliseconds / 1000.0f;
 
                 // Finish ducking immediately if duck time is over or not on ground
-                if ((duckseconds > TIME_TO_UNDUCK) || (!bIsSliding && bInAir))
+                if ((duckseconds > GetTimeToUnDuck()) || (!bIsSliding && bInAir))
                 {
                     FinishUnDuck();
                 }
                 else
                 {
                     // Calc parametric time
-                    float duckFraction = SimpleSpline(1.0f - (duckseconds / TIME_TO_UNDUCK));
+                    float duckFraction = SimpleSpline(1.0f - (duckseconds / GetTimeToUnDuck()));
                     m_pPlayer->m_flDuckFraction = duckFraction;
                     SetDuckedEyeOffset(duckFraction);
                     player->m_Local.m_bDucking = true;

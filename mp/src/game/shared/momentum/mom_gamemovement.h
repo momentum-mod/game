@@ -72,6 +72,7 @@ public:
     // Momentum-specific
     virtual void StuckGround();
     virtual void LimitStartZoneSpeed();
+    float GetTimeToUnDuck();
 
     // Validate tracerays
     bool IsValidMovementTrace(trace_t &tr);
