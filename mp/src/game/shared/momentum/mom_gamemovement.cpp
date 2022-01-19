@@ -37,8 +37,9 @@
 // TODO: These should be constants after climb mode settings are set in stone.
 ConVar sv_kz_stamina_recovery_rate("sv_kz_stamina_recovery_rate", "0.4", 0, "How many seconds it takes for stamina to be recovered.");
 ConVar sv_kz_stamina_multiplier_height("sv_kz_stamina_multiplier_height", "0.14", 0, "How much height to remove with maximum stamina.");
-ConVar sv_kz_stamina_multiplier_speed("sv_kz_stamina_multiplier_speed", "0.06", 0, "How much speed to remove with maximum stamina.");
-ConVar sv_kz_double_duck_height("sv_kz_stamina_multiplier_speed", "24.0", 0, "Double duck height.");
+ConVar sv_kz_stamina_multiplier_speed("sv_kz_stamina_multiplier_speed", "0.06", 0, "How much speed to remove per tick. Scaled by stamina.");
+ConVar sv_kz_double_duck_height("sv_kz_double_duck_height", "24.0", 0, "Double duck height.");
+ConVar sv_kz_double_duck("sv_kz_double_duck", "1", 0, "Enable or disable double duck.", true, 0, true, 1);
 ConVar sv_kz_stamina_zspeed_amount("sv_kz_stamina_zspeed_amount", "100.0", 0, "At what z speed do you get no stamina anymore relative to negative jump factor z-speed. Shouldn't be more than jumpfactor.", true, 0, true, 300);
 ConVar sv_kz_min_bhop_cap("sv_kz_min_bhop_cap", "275.0", 0, "newspeed = sv_kz_max_bhop_cap - (landspeed - sv_kz_min_bhop_cap) only when landspeed >= sv_kz_min_bhop_cap");
 ConVar sv_kz_max_bhop_cap("sv_kz_max_bhop_cap", "355.0", 0, "newspeed = sv_kz_max_bhop_cap - (landspeed - sv_kz_min_bhop_cap) only when landspeed >= sv_kz_min_bhop_cap");
@@ -1061,7 +1062,7 @@ void CMomentumGameMovement::DoUnduck(int iButtonsReleased)
 
             if (g_pGameModeSystem->GameModeIs(GAMEMODE_KZ))
             {
-                if (player->GetGroundEntity() != nullptr)
+                if (player->GetGroundEntity() != nullptr && sv_kz_double_duck.GetBool())
                 {
                     // double duck/g-strafe
                     if (m_pPlayer->m_afButtonReleased & IN_DUCK && !player->m_Local.m_bDucked)
