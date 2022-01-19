@@ -31,7 +31,7 @@
 MAKE_TOGGLE_CONVAR(sv_debug_velocity_check, "0", FCVAR_NONE, "Prints out checks with velocity. 0 = OFF, 1 = ON.\n");
 
 // TODO: These should be constants after climb mode settings are set in stone.
-ConVar sv_edge_friction("sv_edge_friction", "2", 0, "How much the player gets slowed down close to edges that are high.");
+ConVar sv_edge_friction("sv_edge_friction", "1", 0, "How much the player gets slowed down close to edges that are high. 1 = no effect, 2 = default CS 1.6 behaviour");
 ConVar sv_edge_friction_height("sv_edge_friction_height", "66", 0, "How high an edge has to be to be affected by edge friction.");
 ConVar sv_edge_friction_distance("sv_edge_friction_height", "16", 0, "How close you have to be to an edge to get affected by edge friction.");
 
