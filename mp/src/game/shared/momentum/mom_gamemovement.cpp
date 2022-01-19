@@ -44,20 +44,20 @@
 ConVar sv_kz_stamina_1_recovery_rate("sv_kz_stamina_1_recovery_rate", "0.4", 0, "sv_kz_stamina_type 1: How many seconds it takes for stamina to be recovered.");
 ConVar sv_kz_stamina_1_multiplier_height("sv_kz_stamina_1_multiplier_height", "0.14", 0, "sv_kz_stamina_type 1: How much height to remove with maximum stamina.");
 ConVar sv_kz_stamina_1_multiplier_speed("sv_kz_stamina_1_multiplier_speed", "0.06", 0, "sv_kz_stamina_type 1: How much speed to remove per tick.");
-ConVar sv_kz_stamina_1_zspeed_amount("sv_kz_stamina_1_zspeed_amount", "100.0", 0, "At what z speed do you get no stamina anymore relative to negative jump factor z-speed. Shouldn't be more than jumpfactor.", true, 0, true, 300);
+ConVar sv_kz_stamina_1_zspeed_amount("sv_kz_stamina_1_zspeed_amount", "100.0", 0, "sv_kz_stamina_type 1: At what z-speed do you get no stamina anymore relative to negative jump factor (jump factor is the vertical speed you get when you jump). Default jump factor is 301.993377.", true, 0, true, 300);
 ConVar sv_kz_stamina_2_cost_jump("sv_kz_stamina_2_cost_jump", "25", 0, "sv_kz_stamina_type 2: How much stamina gets added when you jump.");
 ConVar sv_kz_stamina_2_recovery_rate("sv_kz_stamina_2_recovery_rate", "19", 0, "sv_kz_stamina_type 2: How fast stamina recovers.");
-ConVar sv_kz_stamina_type("sv_kz_stamina_type", "1", 0, "Type of stamina. 0 = none, 1 = mild version of CSGO, 2 = CSS");
+ConVar sv_kz_stamina_type("sv_kz_stamina_type", "1", 0, "Type of stamina. 0 = none, 1 = Mild version of CSGO's stamina, 2 = CSS/1.6 stamina", true, 0, true, 2);
 
 ConVar sv_kz_double_duck_height("sv_kz_double_duck_height", "24.0", 0, "Double duck height.");
-ConVar sv_kz_double_duck("sv_kz_double_duck", "1", 0, "Enable or disable double duck.", true, 0, true, 1);
+ConVar sv_kz_double_duck("sv_kz_double_duck", "1", 0, "Toggle double duck.", true, 0, true, 1);
 
 ConVar sv_kz_bhop_cap_type("sv_kz_bhop_cap_type", "1", 0, "0 = SimpleKZ, 1 = Reduced stress on strafing, ~315 average prespeed. Forces you to not strafe a lot if you want to go as fast as possible.", true, 0, true, 1);
 ConVar sv_kz_bhop_cap_0_multiplier("sv_kz_bhop_cap_0_multiplier", "0.2", 0);
 ConVar sv_kz_bhop_cap_0_base("sv_kz_bhop_cap_0_base", "250.0", 0);
 ConVar sv_kz_bhop_cap_1_min("sv_kz_bhop_cap_1_min", "275.0", 0, "if landspeed >= sv_kz_bhop_cap_1_min, then newspeed = sv_kz_bhop_cap_1_max - (landspeed - sv_kz_bhop_cap_1_min)");
 ConVar sv_kz_bhop_cap_1_max("sv_kz_bhop_cap_1_max", "355.0", 0, "if landspeed >= sv_kz_bhop_cap_1_min, then newspeed = sv_kz_bhop_cap_1_max - (landspeed - sv_kz_bhop_cap_1_min)");
-ConVar sv_kz_bhop_grace_ticks("sv_kz_bhop_grace_ticks", "4", 0, "How many ticks after landing should the player be able to have the same bhop prespeed no matter what thick they jump on.");
+ConVar sv_kz_bhop_grace_ticks("sv_kz_bhop_grace_ticks", "4", 0, "How many ticks after landing should the player be able to have the same bhop prespeed no matter what tick they jump on.");
 
 // remove this eventually
 ConVar sv_slope_fix("sv_slope_fix", "1");
