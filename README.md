@@ -4,7 +4,7 @@
 
 ## What is this?
 
-This is a WIP fork of momentum mod where KZ players can test different game mechanics and will hopefully help decide what will eventually be in the real Climb gamemode in Momentum Mod!
+This is a **VERY WIP** fork of momentum mod where KZ players can test different game mechanics and will hopefully help decide what will eventually be in the real Climb gamemode in Momentum Mod!
 
 ## How do I install this???
 
