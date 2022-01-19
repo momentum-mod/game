@@ -10,12 +10,14 @@ This is a WIP fork of momentum mod where KZ players can test different game mech
 
 1. Download and install the 0.8.7 public build of Momentum Mod from here: https://github.com/momentum-mod/game/releases/tag/0.8.7-public-eval
 2. Download the latest release of Momentum-KZ from here: https://github.com/GameChaos/momentum-kz/releases
-3. Extract the Momentum-KZ .zip file into the root of your 0.8.7 installation folder (same folder where hl2.exe is).
-4. Extract the Momentum-KZ-Maps folder into the maps/ folder.
+3. Extract Momentum-KZ-XXXX-XX-XX.zip into the root of your 0.8.7 installation folder (same folder where hl2.exe is).
+4. Extract Momentum-KZ-Maps-XXXX-XX-XX.zip into the maps/ folder.
 
 If you want to fiddle with some commands like sv_airaccelerate, then add `-mapping` as a launch option to run_momentum.bat.
 
 ## Other Info
+
+If you need any help, then @GameChaos#8192 (that's me!) in the #general-climb channel in the [Momentum Mod Discord](https://discord.gg/n4v52uv), or PM me.
 
 Maps that are included in Momentum-KZ-Maps-XXXX-XX-XX.zip:
 - kz_100_metres - Similar to `100m` in Quake 1. Bhop in a straight line to get the best time.
