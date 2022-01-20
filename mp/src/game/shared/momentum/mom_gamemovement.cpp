@@ -1349,16 +1349,13 @@ void CMomentumGameMovement::PreventBunnyHopping()
                 }
                 else if (sv_kz_bhop_cap_type.GetInt() == 1)
                 {
-                    if (landingSpeed > sv_kz_bhop_cap_1_min.GetFloat())
+                    if (landingSpeed > sv_kz_bhop_cap_1_max_start.GetFloat())
                     {
-                        newSpeed = sv_kz_bhop_cap_1_max.GetFloat() - (landingSpeed - sv_kz_bhop_cap_1_min.GetFloat());
-                        if (newSpeed > landingSpeed)
+                        newSpeed = sv_kz_bhop_cap_1_max_start.GetFloat();
+                        if (landingSpeed > sv_kz_bhop_cap_1_multiplier_start.GetFloat())
                         {
-                            newSpeed = landingSpeed;
-                        }
-                        else if (newSpeed < sv_kz_bhop_cap_1_min.GetFloat())
-                        {
-                            newSpeed = sv_kz_bhop_cap_1_min.GetFloat();
+                            newSpeed += (landingSpeed - sv_kz_bhop_cap_1_multiplier_start.GetFloat()) * sv_kz_bhop_cap_1_multiplier.GetFloat();
+                            newSpeed = clamp(newSpeed, sv_kz_bhop_cap_1_min_end.GetFloat(), sv_kz_bhop_cap_1_max_end.GetFloat());
                         }
                     }
                 }
