@@ -24,6 +24,7 @@ Maps that are included in Momentum-KZ-Maps-XXXX-XX-XX.zip:
 - kz_bkz_goldbhop_bad_port - A quick and dirty port of bkz_goldbhop for gameplay testing.
 - kz_checkmate_bad_port - A quick and dirty port of kz_checkmate for gameplay testing.
 - kz_xc_nature - CSS map made by chichin: https://gamebanana.com/mods/123762
+- kz_gc_ladder_test - A WIP map by me for testing ladders.
 
 Basic things that I've changed from the original 0.8.7 Climb mode:
 
