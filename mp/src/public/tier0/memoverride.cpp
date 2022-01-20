@@ -278,7 +278,12 @@ ALLOC_CALL void * __cdecl _recalloc ( void * memblock, size_t count, size_t size
     return pMemOut;
 }
 
-size_t _msize_base( void *pMem )
+// fix new sdk
+#ifndef _CRT_NOEXCEPT
+#define _CRT_NOEXCEPT
+#endif
+
+size_t _msize_base( void *pMem ) _CRT_NOEXCEPT
 {
 	return g_pMemAlloc->GetSize(pMem);
 }
