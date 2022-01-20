@@ -1368,6 +1368,10 @@ void CMomentumGameMovement::PreventBunnyHopping()
                     // stop your forward momentum. This actually happens often.
                     mv->m_vecVelocity[i] = m_pPlayer->m_vecLandVelocity[i] * newSpeed / landingSpeed;
                 }
+
+                // NOTE: HACK! HACK! Set player's local velocity to fix hud's last jump speed being incorrect.
+                // I don't know what side effects this has, or if this is the correct way to do this.
+                m_pPlayer->SetLocalVelocity(mv->m_vecVelocity);
             }
         }
     }
