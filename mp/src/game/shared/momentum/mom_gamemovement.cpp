@@ -47,12 +47,12 @@ ConVar sv_kz_stamina_1_multiplier_speed("sv_kz_stamina_1_multiplier_speed", "0.0
 ConVar sv_kz_stamina_1_zspeed_amount("sv_kz_stamina_1_zspeed_amount", "100.0", 0, "sv_kz_stamina_type 1: At what z-speed do you get no stamina anymore relative to negative jump factor (jump factor is the vertical speed you get when you jump). Default jump factor is 301.993377.", true, 0, true, 300);
 ConVar sv_kz_stamina_2_cost_jump("sv_kz_stamina_2_cost_jump", "25", 0, "sv_kz_stamina_type 2: How much stamina gets added when you jump.");
 ConVar sv_kz_stamina_2_recovery_rate("sv_kz_stamina_2_recovery_rate", "19", 0, "sv_kz_stamina_type 2: How fast stamina recovers.");
-ConVar sv_kz_stamina_type("sv_kz_stamina_type", "1", 0, "Type of stamina. 0 = none, 1 = Mild version of CSGO's stamina, 2 = CSS/1.6 stamina", true, 0, true, 2);
+ConVar sv_kz_stamina_type("sv_kz_stamina_type", "0", 0, "Type of stamina. 0 = none, 1 = Mild version of CSGO's stamina, 2 = CSS/1.6 stamina", true, 0, true, 2);
 
 ConVar sv_kz_double_duck_height("sv_kz_double_duck_height", "24.0", 0, "Double duck height.");
-ConVar sv_kz_double_duck("sv_kz_double_duck", "1", 0, "Toggle double duck.", true, 0, true, 1);
+ConVar sv_kz_double_duck("sv_kz_double_duck", "0", 0, "Toggle double duck.", true, 0, true, 1);
 
-ConVar sv_kz_bhop_cap_type("sv_kz_bhop_cap_type", "1", 0, "0 = SimpleKZ, 1 = Reduced stress on strafing, ~315 average prespeed. Forces you to not strafe a lot if you want to go as fast as possible.", true, 0, true, 1);
+ConVar sv_kz_bhop_cap_type("sv_kz_bhop_cap_type", "0", 0, "0 = SimpleKZ, 1 = Reduced stress on strafing, ~315 average prespeed. Forces you to not strafe a lot if you want to go as fast as possible.", true, 0, true, 1);
 ConVar sv_kz_bhop_cap_0_multiplier("sv_kz_bhop_cap_0_multiplier", "0.2", 0);
 ConVar sv_kz_bhop_cap_0_base("sv_kz_bhop_cap_0_base", "250.0", 0);
 ConVar sv_kz_bhop_cap_1_min("sv_kz_bhop_cap_1_min", "275.0", 0, "if landspeed >= sv_kz_bhop_cap_1_min, then newspeed = sv_kz_bhop_cap_1_max - (landspeed - sv_kz_bhop_cap_1_min)");
