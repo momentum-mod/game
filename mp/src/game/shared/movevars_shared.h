@@ -40,6 +40,8 @@ extern ConVar sv_specaccelerate;
 extern ConVar sv_specspeed;
 extern ConVar sv_specnoclip;
 extern ConVar sv_swimsound;
+extern ConVar sv_ladder_dampen;
+extern ConVar sv_jump_z_offset;
 
 // Momentum convars
 extern ConVar sv_considered_on_ground;

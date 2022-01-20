@@ -66,8 +66,9 @@ ConVar sv_ramp_bumpcount("sv_ramp_bumpcount", "8", 0, "Helps with fixing surf/ra
 ConVar sv_ramp_initial_retrace_length("sv_ramp_initial_retrace_length", "0.2", 0,
                                       "Amount of units used in offset for retraces", true, 0.2f, true, 5.f);
 ConVar sv_jump_z_offset("sv_jump_z_offset", "1.5", 0, "Amount of units in axis z to offset every time a player jumps",
-                        true, 0.0f, true, 5.f);
+                        true, 0.0f, true, 5.f); // NOTE: changed in mom_system_gamemode.cpp
 
+// NOTE: sv_ladder_dampen is changed in mom_system_gamemode.cpp
 ConVar sv_ladder_dampen("sv_ladder_dampen", "0.2", FCVAR_REPLICATED,
                         "Amount to dampen perpendicular movement on a ladder", true, 0.0f, true, 1.0f);
 ConVar sv_ladder_angle("sv_ladder_angle", "-0.707", FCVAR_REPLICATED,
