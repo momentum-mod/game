@@ -55,8 +55,13 @@ ConVar sv_kz_double_duck("sv_kz_double_duck", "0", 0, "Toggle double duck.", tru
 ConVar sv_kz_bhop_cap_type("sv_kz_bhop_cap_type", "0", 0, "0 = SimpleKZ, 1 = Reduced stress on strafing, ~315 average prespeed. Forces you to not strafe a lot if you want to go as fast as possible.", true, 0, true, 1);
 ConVar sv_kz_bhop_cap_0_multiplier("sv_kz_bhop_cap_0_multiplier", "0.2", 0);
 ConVar sv_kz_bhop_cap_0_base("sv_kz_bhop_cap_0_base", "250.0", 0);
-ConVar sv_kz_bhop_cap_1_min("sv_kz_bhop_cap_1_min", "275.0", 0, "if landspeed >= sv_kz_bhop_cap_1_min, then newspeed = sv_kz_bhop_cap_1_max - (landspeed - sv_kz_bhop_cap_1_min)");
-ConVar sv_kz_bhop_cap_1_max("sv_kz_bhop_cap_1_max", "355.0", 0, "if landspeed >= sv_kz_bhop_cap_1_min, then newspeed = sv_kz_bhop_cap_1_max - (landspeed - sv_kz_bhop_cap_1_min)");
+
+ConVar sv_kz_bhop_cap_1_min_end("sv_kz_bhop_cap_1_min_end", "275.0", 0, "Minimum speed of the end of the speed cap. Your speed can't be limited any lower than this.", true, 0, false, 0);
+ConVar sv_kz_bhop_cap_1_max_end("sv_kz_bhop_cap_1_max_end", "9999.0", 0, "Maximum speed of the end part of the speed cap. Your speed can't be any higher than this.", true, 0, false, 0);
+ConVar sv_kz_bhop_cap_1_max_start("sv_kz_bhop_cap_1_max_start", "315.0", 0, "Maximum speed of the first part of the speed cap.");
+ConVar sv_kz_bhop_cap_1_multiplier_start("sv_kz_bhop_cap_1_multiplier_start", "355.0", 0, "At what landing speed does your speed start to be affected by sv_kz_bhop_cap_1_multiplier.");
+ConVar sv_kz_bhop_cap_1_multiplier("sv_kz_bhop_cap_1_multiplier", "-1.0", 0, "if landspeed > sv_kz_bhop_cap_1_multiplier_start, then newspeed = (landspeed - sv_kz_bhop_cap_1_multiplier_start) * sv_kz_bhop_cap_1_multiplier");
+
 ConVar sv_kz_bhop_grace_ticks("sv_kz_bhop_grace_ticks", "4", 0, "How many ticks after landing should the player be able to have the same bhop prespeed no matter what tick they jump on.");
 
 // remove this eventually
