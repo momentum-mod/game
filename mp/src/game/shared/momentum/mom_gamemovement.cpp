@@ -64,6 +64,8 @@ ConVar sv_kz_bhop_cap_1_multiplier("sv_kz_bhop_cap_1_multiplier", "-1.0", 0, "if
 
 ConVar sv_kz_bhop_grace_ticks("sv_kz_bhop_grace_ticks", "4", 0, "How many ticks after landing should the player be able to have the same bhop prespeed no matter what tick they jump on.");
 
+ConVar sv_kz_crouchjump("sv_kz_crouchjump", "0", 0, "Is crouch jumping enabled.", true, 0, true, 1);
+
 // remove this eventually
 ConVar sv_slope_fix("sv_slope_fix", "1");
 ConVar sv_ramp_fix("sv_ramp_fix", "1");
@@ -1594,24 +1596,45 @@ bool CMomentumGameMovement::CheckJumpButton()
     float startz = mv->m_vecVelocity[2];
 
     // NOTE: Consistent jump height on all tickrates for KZ.
-    if (g_pGameModeSystem->GameModeIs(GAMEMODE_KZ) ||
-        (!g_pGameModeSystem->IsCSBasedMode() && (player->m_Local.m_bDucking ||
-                                                 player->GetFlags() & FL_DUCKING ||
-                                                 m_pPlayer->m_nAirJumpState == AIRJUMP_NOW)))
+    float jumpFactor = flGroundFactor * g_pGameModeSystem->GetGameMode()->GetJumpFactor();
+    if (g_pGameModeSystem->GameModeIs(GAMEMODE_KZ))
     {
-        mv->m_vecVelocity[2] = flGroundFactor * g_pGameModeSystem->GetGameMode()->GetJumpFactor();
+        if (!sv_kz_crouchjump.GetBool() || (player->m_Local.m_bDucking ||
+                                            player->GetFlags() & FL_DUCKING))
+        {
+            mv->m_vecVelocity[2] = jumpFactor;
 
-        if (!player->GetGroundEntity() && !m_pPlayer->m_CurrentSlideTrigger)
-            m_pPlayer->UpdateLastAction(SurfInt::ACTION_DUCKJUMP);
+            if (!player->GetGroundEntity() && !m_pPlayer->m_CurrentSlideTrigger)
+                m_pPlayer->UpdateLastAction(SurfInt::ACTION_DUCKJUMP);
+        }
+        else
+        {
+            mv->m_vecVelocity[2] += jumpFactor;
+
+            if (!player->GetGroundEntity() && !m_pPlayer->m_CurrentSlideTrigger)
+                m_pPlayer->UpdateLastAction(SurfInt::ACTION_JUMP);
+        }
     }
     else
     {
-        // NOTE: CS-based modes should automatically come down here and use this branch ONLY. It is
-        // part of the fixes to make 64s more consistent done a while ago
-        mv->m_vecVelocity[2] += flGroundFactor * g_pGameModeSystem->GetGameMode()->GetJumpFactor();
+        if (!g_pGameModeSystem->IsCSBasedMode() && (player->m_Local.m_bDucking ||
+                                                    player->GetFlags() & FL_DUCKING ||
+                                                    m_pPlayer->m_nAirJumpState == AIRJUMP_NOW))
+        {
+            mv->m_vecVelocity[2] = jumpFactor;
 
-        if (!player->GetGroundEntity() && !m_pPlayer->m_CurrentSlideTrigger)
-            m_pPlayer->UpdateLastAction(SurfInt::ACTION_JUMP);
+            if (!player->GetGroundEntity() && !m_pPlayer->m_CurrentSlideTrigger)
+                m_pPlayer->UpdateLastAction(SurfInt::ACTION_DUCKJUMP);
+        }
+        else
+        {
+            // NOTE: CS-based modes should automatically come down here and use this branch ONLY. It is
+            // part of the fixes to make 64s more consistent done a while ago
+            mv->m_vecVelocity[2] += jumpFactor;
+
+            if (!player->GetGroundEntity() && !m_pPlayer->m_CurrentSlideTrigger)
+                m_pPlayer->UpdateLastAction(SurfInt::ACTION_JUMP);
+        }
     }
 
     // stamina stuff (scroll/kz gamemode only)
