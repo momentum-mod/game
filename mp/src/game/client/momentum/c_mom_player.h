@@ -144,6 +144,9 @@ private:
     SurfInt m_surfIntList[SurfInt::TYPE_COUNT]; // Stores interactions by type
     SurfInt::Type m_surfIntHistory[SurfInt::TYPE_COUNT]; // Keeps track of the history of interactions
 
+    // KZ
+    Vector m_vecLandVelocity;
+    float m_flDuckFraction;
     float m_flStamina;
 
     CMomRunEntity *m_pSpecTarget;

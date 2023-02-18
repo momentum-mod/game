@@ -56,6 +56,8 @@ void CGameModeBase::SetGameModeVars()
     sv_duck_collision_fix.SetValue(true);
     sv_ground_trigger_fix.SetValue(true);
     sv_edge_fix.SetValue(false); // MOM_TODO Let people test the edge fix in 0.8.4 so we can get their opinions
+    sv_ladder_dampen.SetValue(0.2f);
+    sv_jump_z_offset.SetValue(1.5f);
 }
 
 float CGameModeBase::GetJumpFactor()
@@ -136,8 +138,12 @@ void CGameMode_KZ::SetGameModeVars()
     sv_accelerate.SetValue(6.5f);
     sv_airaccelerate.SetValue(100);
     sv_friction.SetValue(5.2f);
-    sv_maxspeed.SetValue(320);
+    sv_maxspeed.SetValue(250);
+    sv_stopspeed.SetValue(80);
     sv_maxvelocity.SetValue(3500);
+    sv_considered_on_ground.SetValue(2);
+    sv_ladder_dampen.SetValue(1);
+    sv_jump_z_offset.SetValue(0);
 }
 
 bool CGameMode_KZ::WeaponIsAllowed(WeaponID_t weapon)

@@ -16,6 +16,7 @@ public:
     CMomentumGameMovement();
 
     void SetGroundEntity(const trace_t *pm) override;
+    void OnLand(float fVelocity) override;
 
     bool CanAccelerate() override;
     bool CheckJumpButton() override;
@@ -71,6 +72,7 @@ public:
     // Momentum-specific
     virtual void StuckGround();
     virtual void LimitStartZoneSpeed();
+    float GetTimeToUnDuck();
 
     // Validate tracerays
     bool IsValidMovementTrace(trace_t &tr);

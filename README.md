@@ -2,19 +2,110 @@
 
 > Momentum Mod is a free, standalone game built on the Source Engine centralizing the major movement gametypes found in games like Counter-Strike, Half-Life, Team Fortress, and Titanfall.
 
-## An Update From the Team
+## What is this?
 
-Momentum Mod was granted engine access from Valve! You can read what all this means on [the blog post about it](https://blog.momentum-mod.org/post/636153097782280192/you-got-a-license-for-that), but this ultimately means that unfortunately, **the game development from this point on has to be closed-source.** This means that there will be no further updates to this repository's code, as potentially leaking any Valve code has significantly negative outcomes for this project, and we are not going to take that risk.
+This is a **VERY WIP** fork of momentum mod where KZ players can test different game mechanics and will hopefully help decide what will eventually be in the real Climb gamemode in Momentum Mod!
 
-We are instead leaving the code on this repository completely public as a monument for how far we got while completely open source and with whose help. For those that have contributed, big or small, regardless of intent, the team and community thanks you greatly. Your work will *not* go uncredited!
+## How do I install this???
 
-While the game's development continues on a closed source repository, we will still be using this repository as a public issue tracker for the game! So if you find anything wrong, or have any suggestions, feel free to [open an issue about it](https://github.com/momentum-mod/game/issues/new/choose)! Issues get assigned to release project boards which you may view [at our organization's Projects boards page](https://github.com/orgs/momentum-mod/projects).
+1. Download and install the 0.8.7 public build of Momentum Mod from here: https://github.com/momentum-mod/game/releases/tag/0.8.7-public-eval
+2. Download the latest release of Momentum-KZ from here: https://github.com/GameChaos/momentum-kz/releases
+3. Extract Momentum-KZ-XXXX-XX-XX.zip into the root of your 0.8.7 installation folder (same folder where hl2.exe is).
+4. Extract Momentum-KZ-Maps-XXXX-XX-XX.zip into the maps/ folder.
 
-If you wish to try out the game, we have an 0.8.7 public build over at [our Releases page](https://github.com/momentum-mod/game/releases). Note that this build is significantly scuffed compared to the one going to be found on Steam, but exists regardless for those looking to at least try out the game a little, and aren't afraid to get their hands dirty. You may also build this version yourself, if you so wish, by following the steps outlined [here](docs/build-guide.md) for your relevant platform (please note that MacOS _is not_ supported).
+If you want to fiddle with some commands like sv_airaccelerate, then add `-mapping` as a launch option to run_momentum.bat.
 
-Feel free to also check out our other, still-fully-open-source repositories, like our [website](https://github.com/momentum-mod/website), [discord bot](https://github.com/momentum-mod/discord-bot), and [documentation site](https://github.com/momentum-mod/docs)! We appreciate any and all help we get towards the project, which can lead to a Momentum key!
+## Other Info
 
-Furthermore, please consider [wishlisting the game on Steam](https://store.steampowered.com/app/669270/Momentum_Mod/), and perhaps joining [our very active Discord server](https://discord.gg/n4v52uv) to stay up-to-date with the game's development!
+If you need any help, then @GameChaos#8192 (that's me!) in the #general-climb channel in the [Momentum Mod Discord](https://discord.gg/n4v52uv), or PM me.
 
-Thank you,  
-Momentum Mod Development Team
+Maps that are included in Momentum-KZ-Maps-XXXX-XX-XX.zip:
+- kz_100_metres - Similar to `100m` in Quake 1. Bhop in a straight line to get the best time.
+- kz_bkz_goldbhop_bad_port - A quick and dirty port of bkz_goldbhop for gameplay testing.
+- kz_checkmate_bad_port - A quick and dirty port of kz_checkmate for gameplay testing.
+- kz_xc_nature - CSS map made by chichin: https://gamebanana.com/mods/123762
+- kz_gc_ladder_test - A WIP map by me for testing ladders.
+
+Basic things that I've changed from the original 0.8.7 Climb mode:
+
+**Disclaimer! Not all of these are set in stone!**
+
+- Changed tickrate to 128.
+- sv_maxspeed is 250.
+- sv_stopspeed is 80 to match CS:GO.
+- sv_considered_on_ground changed to 2 for ledgegrabs.
+- Changed ducking code to more closely match CS:GO.
+- Changed the player collision size to match CS:GO.
+- Changed jump height to be independent from tickrate (default jump height is now 57 or 66 when crouched), also set sv_jump_z_offset to 0.
+- Ground speed is capped to maxspeed **once** after `sv_kz_bhop_grace_ticks` to 250 or 85 if ducking.
+- Fixed airaccel bug that scaled airaccel by 0.25x in the middle of your jump.
+
+## Useful commands for players that are used to KZ.
+
+- `mom_hud_menu_show savelocmenu` - A teleport menu similar to KZTimer's and GOKZ's, except you can set a checkpoint anywhere and it preserves your speed.
+
+## KZ Commands that change KZ game mechanics:
+
+### On-off commands:
+
+| Command Name                      | Default Value | Min and Max Value | Description                                                                                                                                                                                                      |
+|-----------------------------------|---------------|-------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| sv_edge_friction                  | 1             | -                 | How much the player gets slowed down close to edges that are high. 1 = no effect, 2 = default CS 1.6 behaviour. This scales sv_friction when you're close to an edge.                                            |
+| sv_kz_double_duck                 | 0             | 0 or 1            | Toggle double duck.                                                                                                                                                                                              |
+| sv_kz_stamina_type                | 0             | 0 to 2            | Type of stamina. 0 = none, 1 = Mild version of CS:GO's stamina, 2 = CSS/1.6 stamina                                                                                                                              |
+| sv_kz_bhop_cap_type               | 0             | 0 or 1            | 0 = SimpleKZ, 1 = Forces you to not strafe a lot if you want to go as fast as possible. if landspeed >= sv_kz_bhop_cap_1_min, then newspeed = sv_kz_bhop_cap_1_max - (landspeed - sv_kz_bhop_cap_1_min)          |
+
+### Advanced commands:
+
+| Command Name                      | Default Value | Min and Max Value | Description                                                                                                                                                                                                      |
+|-----------------------------------|---------------|-------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| sv_edge_friction_height           | 66            | -                 | How far from the ground an edge has to be for the player to be affected by edge friction.                                                                                                                        |
+| sv_edge_friction_distance         | 16            | -                 | How close you have to be to an edge to get affected by edge friction.                                                                                                                                            |
+|                                   |               |                   |                                                                                                                                                                                                                  |
+| sv_kz_stamina_1_recovery_rate     | 0.4           | -                 | sv_kz_stamina_type 1: How many seconds it takes for stamina to be recovered.                                                                                                                                     |
+| sv_kz_stamina_1_multiplier_height | 0.14          | -                 | sv_kz_stamina_type 1: How much height to remove with maximum stamina.                                                                                                                                            |
+| sv_kz_stamina_1_multiplier_speed  | 0.06          | -                 | sv_kz_stamina_type 1: How much speed to remove per tick.                                                                                                                                                         |
+| sv_kz_stamina_1_zspeed_amount     | 100.0         | -                 | sv_kz_stamina_type 1: At what z-speed do you get no stamina anymore relative to negative jump factor (jump factor is the vertical speed you get when you jump). Default jump factor is 301.993377.               |
+| sv_kz_stamina_2_cost_jump         | 25.0          | -                 | sv_kz_stamina_type 2: How much stamina gets added when you jump.                                                                                                                                                 |
+| sv_kz_stamina_2_recovery_rate     | 19.0          | -                 | sv_kz_stamina_type 2: How fast stamina recovers.                                                                                                                                                                 |
+|                                   |               |                   |                                                                                                                                                                                                                  |
+| sv_kz_double_duck_height          | 24.0          | -                 | The height you get from a double duck. If you hold duck in the air as well you can doubleduck onto 33 unit blocks                                                                                                |
+|                                   |               |                   |                                                                                                                                                                                                                  |
+| sv_kz_bhop_grace_ticks            | 4             | -                 | How many ticks after landing should the player be able to have the same bhop prespeed no matter what tick they jump on. To avoid confusion: if this is 3 here, then it's equivalent to 2 tick perfs in SimpleKZ. |
+| sv_kz_bhop_cap_0_multiplier       | 0.2           | -                 | if landspeed > sv_kz_bhop_cap_0_base, then newspeed = sv_kz_bhop_cap_0_base  + (landspeed - 250) * sv_kz_bhop_cap_0_multiplier.                                                                                  |
+| sv_kz_bhop_cap_0_base             | 250           | -                 | -                                                                                                                                                                                                                |
+|                                   |               |                   |                                                                                                                                                                                                                  |
+| sv_kz_bhop_cap_1_min_end          | 275.0         | -                 | Minimum speed of the end of the speed cap. Your speed can't be limited any lower than this.                                                                                                                      |
+| sv_kz_bhop_cap_1_max_end          | 9999.0        | -                 | Maximum speed of the end part of the speed cap. Your speed can't be any higher than this.                                                                                                                        |
+| sv_kz_bhop_cap_1_max_start        | 315.0         | -                 | Maximum speed of the first part of the speed cap.                                                                                                                                                                |
+| sv_kz_bhop_cap_1_multiplier_start | 355.0         | -                 | At what landing speed does your speed start to be affected by sv_kz_bhop_cap_1_multiplier.                                                                                                                       |
+| sv_kz_bhop_cap_1_multiplier       | -1.0          | -                 | if landspeed > sv_kz_bhop_cap_1_multiplier_start, then newspeed = (landspeed - sv_kz_bhop_cap_1_multiplier_start) * sv_kz_bhop_cap_1_multiplier                                                                  |
+
+### Algorithm of `sv_kz_bhop_cap_1...` (sv_kz_bhop_cap_type 1):
+
+landingSpeed is the horizontal speed that the player had on their first tick of landing.
+
+newSpeed is what their horizontal speed will be after jumping.
+
+```
+if landingSpeed > sv_kz_bhop_cap_1_max_start, then
+{
+	newSpeed = sv_kz_bhop_cap_1_max_start
+	if landingSpeed > sv_kz_bhop_cap_1_multiplier_start, then
+	{
+		newSpeed = newSpeed + (landingSpeed - sv_kz_bhop_cap_1_multiplier_start) * sv_kz_bhop_cap_1_multiplier;
+		if newSpeed < sv_kz_bhop_cap_1_min_end, then newSpeed = sv_kz_bhop_cap_1_min_end
+		if newSpeed > sv_kz_bhop_cap_1_max_end, then newSpeed = sv_kz_bhop_cap_1_max_end
+	}
+}
+```
+
+Some examples with the default convar settings:
+
+If landingSpeed is 310, then newSpeed will be 310.
+
+If landingSpeed is 340, then newSpeed will be 315.
+
+If landingSpeed is 370, then newSpeed will be 300.
+
+If landingSpeed is 600, then newSpeed will be 275.
