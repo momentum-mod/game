@@ -1133,14 +1133,19 @@ void CGameMovement::ProcessMovement( CBasePlayer *pPlayer, CMoveData *pMove )
 
 	mv = pMove;
 	mv->m_flMaxSpeed = pPlayer->GetPlayerMaxSpeed();
+	// CSGO (and therefore SKZ) caps ground speed at CS_PLAYER_SPEED_RUN (250.0f) as well
+	if (g_pGameModeSystem->GameModeIs(GAMEMODE_KZ))
+	{
+		mv->m_flMaxSpeed = MIN(250.0f, mv->m_flMaxSpeed);
+	}
 
 	// CheckV( player->CurrentCommandNumber(), "StartPos", mv->GetAbsOrigin() );
 
 	DiffPrint( "start %f %f %f", mv->GetAbsOrigin().x, mv->GetAbsOrigin().y, mv->GetAbsOrigin().z );
-
-	// Run the command.
+	
+    // Run the command.
 	PlayerMove();
-
+	    
 	FinishMove();
 
 	DiffPrint( "end %f %f %f", mv->GetAbsOrigin().x, mv->GetAbsOrigin().y, mv->GetAbsOrigin().z );
@@ -1849,10 +1854,17 @@ void CGameMovement::Accelerate( Vector& wishdir, float wishspeed, float accel )
 	// If not going to add any speed, done.
 	if (addspeed <= 0)
 		return;
-
 	// Determine amount of acceleration.
-	accelspeed = accel * gpGlobals->frametime * wishspeed * player->m_surfaceFriction;
-
+	if (g_pGameModeSystem->GameModeIs(GAMEMODE_KZ))
+	{
+		// Change acceleration based on movement modifiers (KZ)
+		const float kAccelerationScale = MAX(250.0f, wishspeed);
+		accelspeed = accel * gpGlobals->frametime * kAccelerationScale * player->m_surfaceFriction;
+	}
+	else
+	{
+		accelspeed = accel * gpGlobals->frametime * wishspeed * player->m_surfaceFriction;
+	}
 	// Cap at addspeed
 	if (accelspeed > addspeed)
 		accelspeed = addspeed;

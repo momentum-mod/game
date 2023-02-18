@@ -100,9 +100,10 @@ public:
     const char* GetDiscordIcon() override { return "mom_icon_kz"; }
     const char* GetMapPrefix() override { return "kz_"; }
     const char* GetGameModeCfg() override { return "kz.cfg"; }
-    float GetIntervalPerTick() override { return 0.01f; }
+    float GetIntervalPerTick() override { return 0.0078125f; }
     void SetGameModeVars() override;
     bool PlayerHasAutoBhop() override { return false; }
+    void OnPlayerSpawn(CMomentumPlayer *pPlayer) override;
     bool WeaponIsAllowed(WeaponID_t weapon) override;
     bool HasCapability(GameModeHUDCapability_t capability) override;
 };
